@@ -12,14 +12,14 @@ assert.ok(process.env.DISCORD_BOT_TOKEN !== undefined);
 const bot = new discord.Client( { token: process.env.DISCORD_BOT_TOKEN, autorun: true } );
 
 bot.on('ready', function() {
-	console.log('Logged in as %s - %s\n', bot.username, bot.id);
+    console.log('Logged in as %s - %s\n', bot.username, bot.id);
 });
 
 bot.on('message', function(user, userId, channelId, message, event) {
-	if ( message == "PHIL" ) {
-		bot.sendMessage({
+    if ( message == "PHIL" ) {
+        bot.sendMessage({
             to: channelId,
             message: "HELLO WORLD"
-		});
-	}
+        });
+    }
 });
