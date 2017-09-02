@@ -1,31 +1,37 @@
 {
-  "name": "node-js-getting-started",
-  "version": "0.2.6",
-  "description": "A sample Node.js app using Express 4",
+  "name": "PhilTheYeti",
+  "version": "0.0.1",
+  "description": "A Discord bot made specifically for the Official Hijack (Hiccup Haddock/Jack Frost) Discord server",
+  "main": "phil.js",
+  "author": "ahlec",
   "engines": {
-    "node": "6.11.1"
+    "node": "6.11.1",
+	"npm": "3.10.10"
   },
-  "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "node test.js"
+    "start": "node phil.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+	"discord.io": "^2.0.0",
     "ejs": "2.5.6",
-    "express": "4.15.2"
-  },
-  "devDependencies": {
-    "request": "^2.81.0",
-    "tape": "^4.7.0"
+    "express": "4.15.2",
+	"dotenv": "4.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/heroku/node-js-getting-started"
+    "url": "git+https://bitbucket.org/ahlec/phil.git"
   },
   "keywords": [
-    "node",
-    "heroku",
-    "express"
+    "bot",
+	"discord",
+	"hijack",
+	"node",
+	"hiccup haddock",
+	"jack frost",
+	"rotg",
+	"httyd",
+	"dreamworks"
   ],
   "license": "MIT"
 }
