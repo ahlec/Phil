@@ -5,11 +5,14 @@ const assert = require('assert');
 const discord = require('discord.io');
 const http = require('http');
 const express = require('express');
+const botCommands = require('./commands');
 
 // Make sure our environment is ready to operate
 require('dotenv').config({ silent: process.env.NODE_ENV === 'production' });
 assert.ok(process.env.DISCORD_BOT_TOKEN !== undefined);
 assert.ok(process.env.PORT !== undefined);
+assert.ok(process.env.COMMAND_PREFIX !== undefined);
+assert.ok(process.env.COMMAND_PREFIX.toLowerCase() === process.env.COMMAND_PREFIX); // Prefix must be lowercase!!
 
 // Connect to the bot
 const bot = new discord.Client( { token: process.env.DISCORD_BOT_TOKEN, autorun: true } );
@@ -19,12 +22,36 @@ bot.on('ready', function() {
 });
 
 bot.on('message', function(user, userId, channelId, message, event) {
-    if ( message == "PHIL" ) {
-        bot.sendMessage({
-            to: channelId,
-            message: "HELLO WORLD"
-        });
+    if (message === undefined || message === "") {
+	    return;
     }
+
+	// Process the incoming data
+    const isDirectMessage = ( channelId in bot.directMessages ? true : false );
+	const messageTokens = message.split(' ');
+	const words = message.split(' ');
+	const isPrompt = (words.length > 0 && words[0].toLowerCase().startsWith(process.env.COMMAND_PREFIX));
+	const command = (isPrompt ? words[0].substr(process.env.COMMAND_PREFIX.length) : undefined);
+
+    // Handle the message
+	if (isPrompt) {
+        console.log('user \'%s\' (%s) used command \'%s\'', user, userId, command);
+		if (botCommands[command]) {
+			if (isDirectMessage) {
+				bot.sendMessage({
+					to: channelId,
+					message: 'TODO!!'
+				});
+			} else {
+				botCommands[command].processPublicMessage(bot, user, userId, channelId, message);
+			}
+		} else {
+			bot.sendMessage({
+				to: channelId,
+				message: 'INVALID COMMAND!'
+			});
+		}
+	}
 });
 
 // Set up the web portal
