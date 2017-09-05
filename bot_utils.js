@@ -27,6 +27,18 @@ module.exports = (function() {
             });
         },
 
+        sendSuccessMessage: function(options) {
+            assert(typeof(options) === 'object');
+            assert(options.bot !== undefined);
+            assert(options.channelId !== undefined);
+            assert(typeof(options.message) === 'string');
+
+            options.bot.sendMessage({
+                to: options.channelId,
+                message: ':white_check_mark: **SUCCESS.** ' + options.message
+            });
+        },
+
         isMemberAnAdminOnServer: function(member, server) {
             for (let index = 0; index < member.roles.length; ++index) {
                 let role = server.roles[member.roles[index]];

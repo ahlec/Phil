@@ -9,5 +9,5 @@ CREATE TABLE hijack_prompts (
 
 CREATE TABLE requestable_roles (
 	request_string VARCHAR(100) NOT NULL,
-	role_id INTEGER NOT NULL
+	role_id VARCHAR(40) NOT NULL
 );
