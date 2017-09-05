@@ -17,7 +17,7 @@ module.exports = (function() {
                 return;
             }
 
-            const requestString = commandArgs[0];
+            const requestString = commandArgs[0].toLowerCase();
             const roleName = commandArgs.slice(1).join(' ');
             const serverId = bot.channels[channelId].guild_id;
             const server = bot.servers[serverId];
