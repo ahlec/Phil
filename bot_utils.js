@@ -2,12 +2,11 @@ module.exports = (function() {
     const discord = require('discord.io');
     const assert = require('assert');
 
-    function isRoleAnAdminRole(role) {
+    function doesRoleHavePermission(role, permission) {
         var binary = (role.permissions >>> 0).toString(2).split('');
-        var hasAdminPermission = false;
         for (let index = 0; index < binary.length; ++index) {
             let bit = binary[index];
-            if (bit === discord.Permissions.GENERAL_ADMINISTRATOR) {
+            if (bit === permission) {
                 return true;
             }
         }
@@ -42,18 +41,25 @@ module.exports = (function() {
         isMemberAnAdminOnServer: function(member, server) {
             for (let index = 0; index < member.roles.length; ++index) {
                 let role = server.roles[member.roles[index]];
-                if (isRoleAnAdminRole(role)) {
+                if (doesRoleHavePermission(role, discord.Permissions.GENERAL_ADMINISTRATOR)) {
                     return true;
                 }
             }
 
             // Check @everyone role
-            if (isRoleAnAdminRole(server.roles[server.id])) {
+            if (doesRoleHavePermission(server.roles[server.id], discord.Permissions.GENERAL_ADMINISTRATOR)) {
                 return true;
             }
 
             // The owner of the server is also an admin
             return (server.owner_id === member.id);
+        },
+
+        toStringDiscordError: function(err) {
+            if (err.response) {
+                return '[Code ' + err.response.code + ': ' + err.response.message + ']';
+            }
+            return err.toString();
         }
     }
 })();
