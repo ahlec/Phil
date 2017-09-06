@@ -5,6 +5,7 @@ module.exports = (function() {
 
     return {
         requiresAdmin: true,
+        aliases: [],
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             if (commandArgs.length < 2) {
                 botUtils.sendErrorMessage({

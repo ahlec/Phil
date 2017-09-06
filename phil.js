@@ -16,6 +16,7 @@ const express = require('express');
 const db = require('./database.js')(process.env.DATABASE_URL);
 const botCommands = require('./commands');
 const botUtils = require('./bot_utils.js');
+const stateManager = require('./state_manager.js');
 
 // Make sure that we have the correct database version
 db.query("SELECT value FROM info WHERE key = 'database-version'")
@@ -80,12 +81,25 @@ bot.on('message', function(user, userId, channelId, message, event) {
     }
 
     if (isDirectMessage) {
-        bot.sendMessage({
-            to: channelId,
-            message: '\\*urk?\\*'
-        });
+        if (botCommands[command].processPrivateMessage) {
+            botCommands[command].processPrivateMessage(bot, user, userId, channelId, words.slice(1), db);
+        } else {
+            botUtils.sendErrorMessage({
+                bot: bot,
+                channelId: channelId,
+                message: 'The `' + process.env.COMMAND_PREFIX + command + '` command can only be used in the public server itself.'
+            });
+        }
     } else {
-        botCommands[command].processPublicMessage(bot, user, userId, channelId, words.slice(1), db);
+        if (botCommands[command].processPublicMessage) {
+            botCommands[command].processPublicMessage(bot, user, userId, channelId, words.slice(1), db);
+        } else {
+            botUtils.sendErrorMessage({
+                bot: bot,
+                channelId: channelId,
+                message: 'The `' + process.env.COMMAND_PREFIX + command + '` command can only be used in a direct message with me.'
+            });
+        }
     }
 });
 

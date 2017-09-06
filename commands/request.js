@@ -5,6 +5,7 @@ module.exports = (function() {
 
     return {
         requiresAdmin: false,
+        aliases: ['giveme'],
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             const serverId = bot.channels[channelId].guild_id;
             const server = bot.servers[serverId];
