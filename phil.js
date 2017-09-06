@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_DATABASE_VERSION = 1;
 
 // Make sure our environment is ready to operate
 const assert = require('assert');
@@ -15,6 +16,19 @@ const express = require('express');
 const db = require('./database.js')(process.env.DATABASE_URL);
 const botCommands = require('./commands');
 const botUtils = require('./bot_utils.js');
+
+// Make sure that we have the correct database version
+db.query("SELECT value FROM info WHERE key = 'database-version'")
+    .then(result => {
+        if (result.rows[0].value != CURRENT_DATABASE_VERSION) {
+            console.error('The required database version is %s but the current database is version %s', CURRENT_DATABASE_VERSION, result.rows[0].value);
+            process.exit(1);
+        }
+    })
+    .catch(err => {
+        console.error('Encountered a database error when attempting to figure out the current database version. ' + err);
+        process.exit(1);
+    });
 
 // Connect to the bot
 const bot = new discord.Client( { token: process.env.DISCORD_BOT_TOKEN, autorun: true } );

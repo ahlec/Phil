@@ -1,3 +1,11 @@
+CREATE TABLE info (
+	key VARCHAR(40) NOT NULL,
+	value VARCHAR(40) NOT NULL,
+	PRIMARY KEY ("key")
+);
+
+INSERT INTO info(key, value) VALUES('database-version', '1');
+
 CREATE TABLE hijack_prompts (
 	prompt_id SERIAL NOT NULL,
 	suggesting_user VARCHAR(100) NOT NULL,
