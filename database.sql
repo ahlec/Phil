@@ -12,7 +12,9 @@ CREATE TABLE hijack_prompts (
 	suggesting_userId INTEGER NOT NULL,
 	date_suggested TIMESTAMP NULL,
 	has_been_posted BIT(1) NOT NULL DEFAULT E'',
-	prompt_text TEXT NOT NULL
+	prompt_text TEXT NOT NULL,
+	approved_by_user INTEGER NOT NULL,
+	approved_by_admin INTEGER NOT NULL
 );
 
 CREATE TABLE requestable_roles (

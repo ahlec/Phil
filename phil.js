@@ -16,7 +16,6 @@ const express = require('express');
 const db = require('./database.js')(process.env.DATABASE_URL);
 const botCommands = require('./commands');
 const botUtils = require('./bot_utils.js');
-const stateManager = require('./state_manager.js');
 
 // Make sure that we have the correct database version
 db.query("SELECT value FROM info WHERE key = 'database-version'")
