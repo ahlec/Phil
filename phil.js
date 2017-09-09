@@ -47,6 +47,10 @@ bot.on('message', function(user, userId, channelId, message, event) {
         return;
     }
 
+    if (channelId == process.env.HIJACK_CHANNEL_ID) {
+        promptManager.recordNewMessageInHijackChannel();
+    }
+
     // Process the incoming data
     const isDirectMessage = ( channelId in bot.directMessages ? true : false );
     const messageTokens = message.split(' ');
