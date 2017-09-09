@@ -14,7 +14,9 @@ CREATE TABLE hijack_prompts (
 	has_been_posted BIT(1) NOT NULL DEFAULT E'0',
 	prompt_text TEXT NOT NULL,
 	approved_by_user BIT(1) NOT NULL DEFAULT E'0',
-	approved_by_admin BIT(1) NOT NULL DEFAULT E'0'
+	approved_by_admin BIT(1) NOT NULL DEFAULT E'0',
+	prompt_number INTEGER NULL DEFAULT NULL,
+	prompt_date DATE NULL DEFAULT NULL
 );
 
 CREATE TABLE requestable_roles (

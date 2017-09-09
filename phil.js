@@ -8,6 +8,8 @@ assert.ok(process.env.PORT !== undefined);
 assert.ok(process.env.COMMAND_PREFIX !== undefined);
 assert.ok(process.env.COMMAND_PREFIX.toLowerCase() === process.env.COMMAND_PREFIX); // Prefix must be lowercase!!
 assert.ok(process.env.DATABASE_URL !== undefined);
+assert.ok(process.env.ADMIN_CHANNEL_ID !== undefined);
+assert.ok(process.env.HIJACK_CHANNEL_ID !== undefined);
 
 // Retrieve the modules
 const discord = require('discord.io');
@@ -16,6 +18,7 @@ const express = require('express');
 const db = require('./database.js')(process.env.DATABASE_URL);
 const botCommands = require('./commands');
 const botUtils = require('./bot_utils.js');
+const promptManager = require('./prompt_manager.js');
 
 // Make sure that we have the correct database version
 db.query("SELECT value FROM info WHERE key = 'database-version'")
@@ -35,6 +38,8 @@ const bot = new discord.Client( { token: process.env.DISCORD_BOT_TOKEN, autorun:
 
 bot.on('ready', function() {
     console.log('Logged in as %s - %s\n', bot.username, bot.id);
+
+    promptManager.start(bot, db);
 });
 
 bot.on('message', function(user, userId, channelId, message, event) {
