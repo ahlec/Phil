@@ -1,13 +1,14 @@
 module.exports = (function() {
     const botUtils = require('./bot_utils.js');
-    const refreshTime = 1000 * 60 * 60; // check every hour
+    const refreshTime = 1000 * 60 * 1; // check every hour
     const timeBetweenPromptReminder = 1000 * 60 * 60 * 6; // Remind of the daily prompt every six hours
-    const minimumTimeAfterLastMessageThatPostingInHijackChannelAllowed = 1000 * 60 * 10; // Hijack channel must be silent for ten minutes to be allowed to post
+    const minimumTimeAfterLastMessageThatPostingInHijackChannelAllowed = 1000 * 60 * 4; // Hijack channel must be silent for ten minutes to be allowed to post
 
     var _bot;
     var _db;
     var _timeSinceLastPromptPostedToHijackChannel = timeBetweenPromptReminder;
     var _dateTimeLastMessagePostedInHijackChannel;
+    var _intervalToCreateNewPrompt;
     var _intervalToSendPromptReminder;
 
     function canPostToHijackChannel() {
@@ -36,15 +37,11 @@ module.exports = (function() {
         _timeSinceLastPromptPostedToHijackChannel = timeBetweenPromptReminder;
     }
 
-    function selectNewPrompt(promptNumber) {
+    function chooseAndSendNewPrompt(promptNumber) {
         _db.query('SELECT prompt_id, prompt_text FROM hijack_prompts WHERE has_been_posted = E\'0\' AND approved_by_user = E\'1\' AND approved_by_admin = E\'1\' LIMIT 1')
             .then(results => {
                 if (results.rowCount === 0) {
-                    sendErrorMessage({
-                        bot: _bot,
-                        channelId: process.env.ADMIN_CHANNEL_ID,
-                        message: 'I couldn\'t post a prompt in the #hijack channel because there are no confirmed, unpublished prompts.'
-                    });
+                    sendErrorMessage('I couldn\'t post a prompt in the #hijack channel because there are no confirmed, unpublished prompts.');
                     return;
                 }
 
@@ -58,7 +55,36 @@ module.exports = (function() {
             })
             .catch(err => {
                 sendErrorMessage('There was an error when selecting the next prompt. `' + err + '`');
-            })
+            });
+    }
+
+    function selectNewPrompt(promptNumber) {
+        if (_intervalToSendPromptReminder) {
+            clearInterval(_intervalToSendPromptReminder);
+            _intervalToSendPromptReminder = undefined;
+        }
+
+        if (canPostToHijackChannel()) {
+            if (_intervalToCreateNewPrompt) {
+                clearInterval(_intervalToCreateNewPrompt);
+                _intervalToCreateNewPrompt = undefined;
+            }
+            chooseAndSendNewPrompt(promptNumber);
+            return;
+        }
+
+        console.log('NOT READY TO CHOOSE NEW PROMPT (too soon after last message)');
+
+        const timeRightNow = new Date();
+        const millisecondsSinceLastMessage = timeRightNow - _dateTimeLastMessagePostedInHijackChannel;
+        const millisecondsUntilTimeRequirementReached = (minimumTimeAfterLastMessageThatPostingInHijackChannelAllowed - millisecondsSinceLastMessage);
+        if (_intervalToCreateNewPrompt) {
+            clearInterval(_intervalToCreateNewPrompt);
+            _intervalToCreateNewPrompt = undefined;
+        }
+        _intervalToCreateNewPrompt = setInterval(function() {
+            selectNewPrompt(promptNumber);
+        }, millisecondsUntilTimeRequirementReached);
     }
 
     function sendDailyPromptReminder() {
@@ -79,6 +105,14 @@ module.exports = (function() {
     }
 
     function remindOfDailyPrompt() {
+        if (_intervalToCreateNewPrompt) {
+            if (_intervalToSendPromptReminder) {
+                clearInterval(_intervalToSendPromptReminder);
+                _intervalToSendPromptReminder = undefined;
+            }
+            return;
+        }
+
         if (canPostToHijackChannel()) {
             if (_intervalToSendPromptReminder) {
                 clearInterval(_intervalToSendPromptReminder);
@@ -88,7 +122,7 @@ module.exports = (function() {
             return;
         }
 
-        console.log('NOT READY (too soon after last message)');
+        console.log('NOT READY TO SEND PROMPT REMINDER (too soon after last message)');
 
         const timeRightNow = new Date();
         const millisecondsSinceLastMessage = timeRightNow - _dateTimeLastMessagePostedInHijackChannel;
@@ -107,7 +141,6 @@ module.exports = (function() {
                     selectNewPrompt(1);
                     return;
                 }
-
 
                 const dateOfLastPrompt = results.rows[0].prompt_date;
                 const dateRightNow = new Date();
@@ -145,12 +178,6 @@ module.exports = (function() {
 
         recordNewMessageInHijackChannel: function() {
             _dateTimeLastMessagePostedInHijackChannel = new Date();
-            console.log('new message in #hijack.');
-            if (_intervalToSendPromptReminder) {
-                console.log('NOT READY (too soon after last message)2');
-                clearInterval(_intervalToSendPromptReminder);
-                _intervalToSendPromptReminder = setInterval(remindOfDailyPrompt, minimumTimeAfterLastMessageThatPostingInHijackChannelAllowed);
-            }
         }
     };
 })();
