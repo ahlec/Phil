@@ -13,6 +13,10 @@ module.exports = (function() {
         return false;
     }
 
+    function isNumeric(input) {
+        return ( !isNaN(parseInt(input)) && isFinite(input) );
+    }
+
     return {
         sendErrorMessage: function(options) {
             assert(typeof(options) === 'object');
@@ -60,6 +64,37 @@ module.exports = (function() {
                 return '[Code ' + err.response.code + ': ' + err.response.message + ']';
             }
             return err.toString();
+        },
+
+        parseConfirmRejectArgument: function(arg) {
+            if (arg === '') {
+                return [];
+            }
+
+            if (isNumeric(arg)) {
+                return [parseInt(arg)];
+            }
+
+            const separatedPieces = arg.split('-');
+            if (separatedPieces.length === 2) {
+                if (!isNumeric(separatedPieces[0]) || !isNumeric(separatedPieces[1])) {
+                    return [];
+                }
+
+                const lowerBound = parseInt(separatedPieces[0]);
+                const upperBound = parseInt(separatedPieces[1]);
+                if (upperBound < lowerBound) {
+                    return [];
+                }
+
+                var includedNumbers = [];
+                for (let num = lowerBound; num <= upperBound; ++num) {
+                    includedNumbers.push(num);
+                }
+                return includedNumbers;
+            }
+
+            return [];
         }
     }
 })();

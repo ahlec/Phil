@@ -73,7 +73,8 @@ module.exports = (function() {
     }
 
     return {
-        requiresAdmin: true,
+        publicRequiresAdmin: true,
+        privateRequiresAdmin: true,
         aliases: [],
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             clearPreviousConfirmListForChannel(db, channelId)

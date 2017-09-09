@@ -4,7 +4,7 @@ module.exports = (function() {
     const botUtils = require('../bot_utils.js');
 
     return {
-        requiresAdmin: false,
+        publicRequiresAdmin: false,
         aliases: ['giveme'],
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             const serverId = bot.channels[channelId].guild_id;

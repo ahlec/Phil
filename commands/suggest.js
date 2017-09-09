@@ -33,7 +33,8 @@ module.exports = (function() {
     }
 
     return {
-        requiresAdmin: false,
+        publicRequiresAdmin: false,
+        privateRequiresAdmin: false,
         aliases: [],
         processPrivateMessage: function(bot, user, userId, channelId, commandArgs, db) {
             const prompt = commandArgs.join(' ').trim();

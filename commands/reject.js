@@ -37,7 +37,7 @@ module.exports = (function() {
 
     return {
         publicRequiresAdmin: true,
-        privateRequiresAdmin: false,
+        privateRequiresAdmin: true,
         aliases: [],
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             if (commandArgs.length !== 1) {
@@ -61,7 +61,7 @@ module.exports = (function() {
 
             var numFailedNumbers = 0;
             var numSuccessfulNumbers = 0;
-            function confirmNumber(number) {
+            function rejectNumber(number) {
                 number = number - 1; // Public facing, it's 1-based, but in the database it's 0-based
                 return db.query('SELECT prompt_id FROM prompt_confirmation_queue WHERE channel_id = $1 and confirm_number = $2', [channelId, number])
                     .then(result => {
@@ -71,9 +71,9 @@ module.exports = (function() {
                         }
 
                         const promptId = result.rows[0].prompt_id;
-                        db.query('UPDATE hijack_prompts SET approved_by_admin = E\'1\' WHERE prompt_id = $1', [promptId])
-                            .then(updateResult => {
-                                if (updateResult.rowCount === 0) {
+                        db.query('DELETE FROM hijack_prompts WHERE prompt_id = $1', [promptId])
+                            .then(deletePrompt => {
+                                if (deletePrompt.rowCount === 0) {
                                     numFailedNumbers++;
                                     return;
                                 }
@@ -86,16 +86,16 @@ module.exports = (function() {
                     });
             }
 
-            const promise = confirmNumber(numbersToConfirm[0]);
+            const promise = rejectNumber(numbersToConfirm[0]);
             for (let index = 1; index < numbersToConfirm.length; ++index) {
-                promise.then(confirmNumber(numbersToConfirm[index]));
+                promise.then(rejectNumber(numbersToConfirm[index]));
             }
 
             promise.then(function() {
                 if (numFailedNumbers > 0 && numSuccessfulNumbers > 0) {
                     bot.sendMessage({
                         to: channelId,
-                        message: ':warning: One or more of the prompts was confirmed, and one or more of the prompts was _not_. I\'d suggest calling `' + process.env.COMMAND_PREFIX + 'unconfirmed` again to refresh the list and see what was updated.'
+                        message: ':warning: One or more of the prompts was rejected, and one or more of the prompts was _not_. I\'d suggest calling `' + process.env.COMMAND_PREFIX + 'unconfirmed` again to refresh the list and see what was updated.'
                     });
                 } else if (numFailedNumbers > 0) {
                     const noun = (numFailedNumbers === 1 ? 'Prompt' : 'Prompts');
@@ -103,21 +103,16 @@ module.exports = (function() {
                     botUtils.sendErrorMessage({
                         bot: bot,
                         channelId: channelId,
-                        message: noun + ' ' + existenceVerb + ' not confirmed. If you see no other error, that means that the ' + noun.toLowerCase() + ' ' + existenceVerb + ' already confirmed, or the input was an invalid number.'
+                        message: noun + ' ' + existenceVerb + ' not rejected. If you see no other error, that means that the ' + noun.toLowerCase() + ' ' + existenceVerb + ' already rejected, or the input was an invalid number.'
                     });
                 } else {
                     botUtils.sendSuccessMessage({
                         bot: bot,
                         channelId: channelId,
-                        message: (numSuccessfulNumbers === 1 ? 'Prompt was' : 'Prompts were') + ' confirmed. You may continue using `' + process.env.COMMAND_PREFIX + 'confirm` or start over by using `' + process.env.COMMAND_PREFIX + 'unconfirmed`.'
+                        message: (numSuccessfulNumbers === 1 ? 'Prompt was' : 'Prompts were') + ' rejected. You may continue using `' + process.env.COMMAND_PREFIX + 'reject` or start over by using `' + process.env.COMMAND_PREFIX + 'unconfirmed`.'
                     });
                 }
             }).catch(handleError(bot, channelId));
-        },
-        processPrivateMessage: function(bot, user, userId, channelId, commandArgs, db) {
-            confirmPreviouslyUnconfirmedPrompt(db, userId)
-                .then(handleConfirmationResults(bot, channelId))
-                .catch(handleError(bot, channelId));
         }
     };
 })();

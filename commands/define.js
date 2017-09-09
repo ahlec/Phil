@@ -4,7 +4,8 @@ module.exports = (function() {
     const botUtils = require('../bot_utils.js');
 
     return {
-        requiresAdmin: true,
+        publicRequiresAdmin: true,
+        privateRequiresAdmin: true,
         aliases: [],
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             if (commandArgs.length < 2) {

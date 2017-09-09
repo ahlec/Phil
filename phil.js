@@ -64,7 +64,20 @@ bot.on('message', function(user, userId, channelId, message, event) {
         return;
     }
 
-    if (botCommands[command].requiresAdmin) {
+    var requiresAdmin;
+    var commandFunction;
+    var incorrectChannelErrorMessage;
+    if (isDirectMessage) {
+        requiresAdmin = botCommands[command].privateRequiresAdmin;
+        commandFunction = botCommands[command].processPrivateMessage;
+        incorrectChannelErrorMessage = 'The `' + process.env.COMMAND_PREFIX + command + '` command can only be used in the public server itself.';
+    } else {
+        requiresAdmin = botCommands[command].publicRequiresAdmin;
+        commandFunction = botCommands[command].processPublicMessage;
+        incorrectChannelErrorMessage = 'The `' + process.env.COMMAND_PREFIX + command + '` command can only be used in a direct message with me.';
+    }
+
+    if (requiresAdmin) {
         const serverId = bot.channels[channelId].guild_id;
         const server = bot.servers[serverId];
         const member = server.members[userId];
@@ -79,26 +92,14 @@ bot.on('message', function(user, userId, channelId, message, event) {
         }
     }
 
-    if (isDirectMessage) {
-        if (botCommands[command].processPrivateMessage) {
-            botCommands[command].processPrivateMessage(bot, user, userId, channelId, words.slice(1), db);
-        } else {
-            botUtils.sendErrorMessage({
-                bot: bot,
-                channelId: channelId,
-                message: 'The `' + process.env.COMMAND_PREFIX + command + '` command can only be used in the public server itself.'
-            });
-        }
+    if (commandFunction) {
+        commandFunction(bot, user, userId, channelId, words.slice(1), db);
     } else {
-        if (botCommands[command].processPublicMessage) {
-            botCommands[command].processPublicMessage(bot, user, userId, channelId, words.slice(1), db);
-        } else {
-            botUtils.sendErrorMessage({
-                bot: bot,
-                channelId: channelId,
-                message: 'The `' + process.env.COMMAND_PREFIX + command + '` command can only be used in a direct message with me.'
-            });
-        }
+        botUtils.sendErrorMessage({
+            bot: bot,
+            channelId: channelId,
+            message: incorrectChannelErrorMessage
+        });
     }
 });
 
