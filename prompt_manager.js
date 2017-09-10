@@ -41,7 +41,8 @@ module.exports = (function() {
         _db.query('SELECT prompt_id, prompt_text FROM hijack_prompts WHERE has_been_posted = E\'0\' AND approved_by_user = E\'1\' AND approved_by_admin = E\'1\' LIMIT 1')
             .then(results => {
                 if (results.rowCount === 0) {
-                    sendErrorMessage('I couldn\'t post a prompt in the #hijack channel because there are no confirmed, unpublished prompts.');
+                    // TODO: Make not spam as frequently
+                    //sendErrorMessage('I couldn\'t post a prompt in the #hijack channel because there are no confirmed, unpublished prompts.');
                     return;
                 }
 
