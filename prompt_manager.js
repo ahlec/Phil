@@ -1,8 +1,8 @@
 module.exports = (function() {
     const botUtils = require('./bot_utils.js');
-    const refreshTime = 1000 * 60 * 1; // check every hour
+    const refreshTime = 1000 * 60 * 60; // check every hour
     const timeBetweenPromptReminder = 1000 * 60 * 60 * 6; // Remind of the daily prompt every six hours
-    const minimumTimeAfterLastMessageThatPostingInHijackChannelAllowed = 1000 * 60 * 4; // Hijack channel must be silent for ten minutes to be allowed to post
+    const minimumTimeAfterLastMessageThatPostingInHijackChannelAllowed = 1000 * 60 * 10; // Hijack channel must be silent for ten minutes to be allowed to post
 
     var _bot;
     var _db;

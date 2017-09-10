@@ -10,6 +10,7 @@ assert.ok(process.env.COMMAND_PREFIX.toLowerCase() === process.env.COMMAND_PREFI
 assert.ok(process.env.DATABASE_URL !== undefined);
 assert.ok(process.env.ADMIN_CHANNEL_ID !== undefined);
 assert.ok(process.env.HIJACK_CHANNEL_ID !== undefined);
+assert.ok(process.env.ADMIN_ROLE_ID !== undefined);
 
 // Retrieve the modules
 const discord = require('discord.io');

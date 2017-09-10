@@ -44,6 +44,10 @@ module.exports = (function() {
 
         isMemberAnAdminOnServer: function(member, server) {
             for (let index = 0; index < member.roles.length; ++index) {
+                if (member.roles[index] === process.env.ADMIN_ROLE_ID) {
+                    return true;
+                }
+
                 let role = server.roles[member.roles[index]];
                 if (doesRoleHavePermission(role, discord.Permissions.GENERAL_ADMINISTRATOR)) {
                     return true;
