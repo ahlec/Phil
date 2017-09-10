@@ -14,7 +14,6 @@ assert.ok(process.env.ADMIN_ROLE_ID !== undefined);
 
 // Retrieve the modules
 const discord = require('discord.io');
-const http = require('http');
 const express = require('express');
 const db = require('./database.js')(process.env.DATABASE_URL);
 const botCommands = require('./commands');
@@ -129,5 +128,5 @@ app.listen(process.env.PORT, () => {
 
 // Ping the server every 15 minutes so that the Heroku dynos won't fall asleepe
 setInterval(() => {
-    http.get(process.env.PUBLIC_APP_URL);
+    botUtils.getUrl(process.env.PUBLIC_APP_URL);
 }, 1000 * 60 * 15);

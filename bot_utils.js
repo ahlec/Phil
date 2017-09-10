@@ -1,6 +1,9 @@
 module.exports = (function() {
     const discord = require('discord.io');
     const assert = require('assert');
+    const url = require('url');
+    const http = require('http');
+    const https = require('https');
 
     function doesRoleHavePermission(role, permission) {
         var binary = (role.permissions >>> 0).toString(2).split('');
@@ -18,6 +21,20 @@ module.exports = (function() {
     }
 
     return {
+        getUrl: function(inputUrl) {
+            const protocol = url.parse(inputUrl).protocol;
+            if (protocol == 'http:') {
+                return http.get(inputUrl);
+            }
+
+            if (protocol == 'https:') {
+                return https.get(inputUrl);
+            }
+
+            console.error('Unknown protocol \'' + protocol + '\'');
+            assert(false);
+        },
+
         sendErrorMessage: function(options) {
             assert(typeof(options) === 'object');
             assert(options.bot !== undefined);
