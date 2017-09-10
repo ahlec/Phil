@@ -21,7 +21,7 @@ module.exports = (function() {
                             requestables[result.rows[index].role_id].push(result.rows[index].request_string);
                         }
 
-                        var fullMessage = 'You must provide a valid requestable name of a role when using `' + process.env.COMMAND_PREFIX + 'request`. These are currently:\n';
+                        var fullMessage = ':snowflake: You must provide a valid requestable name of a role when using `' + process.env.COMMAND_PREFIX + 'request`. These are currently:\n';
                         for (let role_id in requestables) {
                             let requestStrings = requestables[role_id];
                             let role = server.roles[role_id];
@@ -42,9 +42,8 @@ module.exports = (function() {
                             fullMessage += ' to receive the "' + role.name + '" role\n';
                         }
 
-                        botUtils.sendErrorMessage({
-                            bot: bot,
-                            channelId: channelId,
+                        bot.sendMessage({
+                            to: channelId,
                             message: fullMessage
                         });
                     })
