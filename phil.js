@@ -1,5 +1,5 @@
 'use strict';
-const CURRENT_DATABASE_VERSION = 1;
+const CURRENT_DATABASE_VERSION = 2;
 
 // Make sure our environment is ready to operate
 const assert = require('assert');

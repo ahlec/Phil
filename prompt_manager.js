@@ -90,15 +90,23 @@ module.exports = (function() {
 
     function sendDailyPromptReminder() {
         const today = new Date();
-        _db.query('SELECT prompt_number, prompt_text FROM hijack_prompts WHERE prompt_date = $1', [today])
+        _db.query('SELECT prompt_id, prompt_number, prompt_text FROM hijack_prompts WHERE prompt_date = $1', [today])
             .then(results => {
                 if (results.rowCount === 0) {
                     return;
                 }
 
+                const promptId = results.rows[0].prompt_id;
                 const promptNumber = results.rows[0].prompt_number;
                 const promptText = results.rows[0].prompt_text;
-                sendPrompt(promptNumber, promptText);
+                _db.query('UPDATE hijack_prompts SET has_reminded_channel = E\'1\' WHERE prompt_id = $1', [promptId])
+                    .then(updateResults => {
+                        if (updateResults.rowCount === 0) {
+                            sendErrorMessage('Unable to update the database that the prompt is being reminded in the channel. `prompt_id = ' + promptId + '`');
+                            return;
+                        }
+                        sendPrompt(promptNumber, promptText);
+                    });
             })
             .catch(err => {
                 sendErrorMessage('There was an error when attempting to remind the channel of the daily prompt. `' + err + '`');
@@ -136,7 +144,7 @@ module.exports = (function() {
     }
 
     function checkPrompt() {
-        _db.query('SELECT prompt_number, prompt_date FROM hijack_prompts WHERE prompt_date IS NOT NULL ORDER BY prompt_date DESC LIMIT 1')
+        _db.query('SELECT prompt_number, prompt_date, has_reminded_channel FROM hijack_prompts WHERE prompt_date IS NOT NULL ORDER BY prompt_date DESC LIMIT 1')
             .then(results => {
                 if (results.rowCount === 0) {
                     selectNewPrompt(1);
@@ -146,12 +154,17 @@ module.exports = (function() {
                 const dateOfLastPrompt = results.rows[0].prompt_date;
                 const dateRightNow = new Date();
                 if (dateOfLastPrompt.toDateString() === dateRightNow.toDateString()) { // Same day as most recent prompt?
-                    if (_timeSinceLastPromptPostedToHijackChannel <= 0) {
-                        remindOfDailyPrompt();
+                    if (_timeSinceLastPromptPostedToHijackChannel > 0) {
+                        console.log('Not time to remind the daily prompt yet.');
+                        return;
+                    }
+                    
+                    if (results.rows[0].has_reminded_channel !== 0) {
+                        console.log('Have already reminded of today\'s prompt.');
                         return;
                     }
 
-                    // Do nothing
+                    remindOfDailyPrompt();
                     return;
                 }
 
