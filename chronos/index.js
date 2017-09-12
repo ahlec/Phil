@@ -64,18 +64,19 @@ module.exports = (function() {
         });
     });
 
-    function processDefinition(now, chronoDefinition) {
+    function processDefinition(now, chronoDefinition, index) {
         console.log('[CHRONOS] chrono \'%s\' is ready to be processed (if it can be)', chronoDefinition.name);
         chronoDefinition.canProcess(_publicApi, now, _bot, _db)
             .then(canProcess => {
                 if (!canProcess.ready) {
                     if (canProcess.retryIn !== undefined) {
                         console.log('[CHRONOS] chrono \'%s\' isn\'t ready yet. trying against in %d minute(s)', chronoDefinition.name, canProcess.retryIn);
-                        setTimeout(function() {
-                            processDefinition(new Date(), chronoDefinition);
+                        chronos[index].retryInTimeout = setTimeout(function() {
+                            processDefinition(new Date(), chronoDefinition, index);
                         }, canProcess.retryIn * 60 * 1000); // retryIn is measured in minutes
                     } else {
                         console.log('[CHRONOS] chrono \'%s\' was not ready to process yet', chronoDefinition.name);
+                        chronos[index].retryInTimeout = undefined;
                     }
                     return;
                 }
@@ -106,12 +107,16 @@ module.exports = (function() {
                 continue;
             }
 
+            if (chronos[index].retryInTimeout !== undefined) {
+                continue;
+            }
+
             const chronoDefinition = chronos[index].chronoDefinition;
             if (chronoDefinition.hourUtc > utcHour) {
                 continue;
             }
 
-            processDefinition(now, chronoDefinition);
+            processDefinition(now, chronoDefinition, index);
         }
     }
 
