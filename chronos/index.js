@@ -3,6 +3,7 @@ module.exports = (function() {
 
     const fs = require('fs');
     const assert = require('assert');
+    const botUtils = require('../bot_utils.js');
 
     function assertIsValidChrono(chronoDefinition) {
         assert(typeof(chronoDefinition) === 'object');
@@ -23,6 +24,16 @@ module.exports = (function() {
     var _db;
     var _chronosLoadedPromise;
     var _publicApi;
+
+    
+    function errorMessage(message) {
+        console.error('[CHRONOS] %s', message);
+        botUtils.sendErrorMessage({
+            bot: _bot,
+            channelId: process.env.ADMIN_CHANNEL_ID,
+            message: '[CHRONOS] ' + message
+        });
+    }
 
     _chronosLoadedPromise = new Promise((resolve, reject) => {
         fs.readdir(__dirname, function(err, filenames) {
@@ -53,6 +64,38 @@ module.exports = (function() {
         });
     });
 
+    function processDefinition(now, chronoDefinition) {
+        console.log('[CHRONOS] chrono \'%s\' is ready to be processed (if it can be)', chronoDefinition.name);
+        chronoDefinition.canProcess(_publicApi, now, _bot, _db)
+            .then(canProcess => {
+                if (!canProcess.ready) {
+                    if (canProcess.retryIn !== undefined) {
+                        console.log('[CHRONOS] chrono \'%s\' isn\'t ready yet. trying against in %d minute(s)', chronoDefinition.name, canProcess.retryIn);
+                        setTimeout(function() {
+                            processDefinition(new Date(), chronoDefinition);
+                        }, canProcess.retryIn * 60 * 1000); // retryIn is measured in minutes
+                    } else {
+                        console.log('[CHRONOS] chrono \'%s\' was not ready to process yet', chronoDefinition.name);
+                    }
+                    return;
+                }
+
+                console.log('[CHRONOS] chrono \'%s\' can be processed! it will now be processed.', chronoDefinition.name);
+                chronoDefinition.process(_publicApi, now, _bot, _db)
+                    .then(result => {
+                        if (result) {
+                            chronos[index].hasBeenTriggered = true;
+                        }
+                    })
+                    .catch(err => {
+                        errorMessage('Error processing the chrono \'' + chronoDefinition.name + '\'. `' + err + '`');
+                    });
+            })
+            .catch(err => {
+                errorMessage('Error running canProcess chrono for \'' + chronoDefinition.name + '\'. `' + err + '`');
+            });
+    }
+
     function processChronos() {
         const now = new Date();
         const utcHour = now.getUTCHours();
@@ -68,16 +111,13 @@ module.exports = (function() {
                 continue;
             }
 
-            console.log('[CHRONOS] chronos \'%s\' is ready to be processed (if it can be)', chronoDefinition.name);
-            if (chronoDefinition.canProcess(_publicApi, now, _bot, _db)) {
-                console.log('[CHRONOS] chronos \'%s\' can be processed! it will now be processed.', chronoDefinition.name);
-                chronoDefinition.process(_publicApi, now, _bot, _db);
-                chronos[index].hasBeenTriggered = true;
-            }
+            processDefinition(now, chronoDefinition);
         }
     }
 
     _publicApi = {
+        MinimumSilenceRequiredBeforePostingInChannel: 10, // 10 minutes
+
         start: function(bot, db) {
             if (_hasBeenStarted) {
                 console.error('[CHRONOS] The chronos manager has already been started.');
@@ -101,12 +141,11 @@ module.exports = (function() {
             channelsLastMessageTable[channelId] = new Date();
         },
 
-        getMinutesSinceLastMessageInChannel: function(channelId) {
+        getMinutesSinceLastMessageInChannel: function(channelId, now) {
             if (channelsLastMessageTable[channelId] === undefined) {
                 return 0; // I guess??
             }
 
-            const now = new Date();
             const millisecondsDiff = (now - channelsLastMessageTable[channelId]);
             if (millisecondsDiff <= 0) {
                 return 0;
