@@ -21,10 +21,66 @@ module.exports = (function() {
     var _hasBeenStarted = false;
     var _bot;
     var _db;
-    const _publicApi = {
+    var _chronosLoadedPromise;
+    var _publicApi;
+
+    _chronosLoadedPromise = new Promise((resolve, reject) => {
+        fs.readdir(__dirname, function(err, filenames) {
+            if (err) {
+                reject(err);
+                console.error('[CHRONOS] FAILED TO READ THE CHRONOS DIRECTORY!');
+                console.error(err);
+                process.exit(1);
+                return;
+            }
+
+            for (let index = 0; index < filenames.length; ++index) {
+                const filename = filenames[index];
+                if (filename === 'index.js' || !filename.endsWith('.js')) {
+                    continue;
+                }
+
+                let chronoDefinition = require(__dirname + '/' + filename);
+                assertIsValidChrono(chronoDefinition);
+                chronos.push({
+                    chronoDefinition: chronoDefinition,
+                    hasBeenTriggered: false
+                });
+                console.log('[CHRONOS] chrono \'%s\' registered', chronoDefinition.name);
+            }
+            console.log('[CHRONOS] total number chronos logged: %d', chronos.length);
+            resolve(chronos);
+        });
+    });
+
+    function processChronos() {
+        const now = new Date();
+        const utcHour = now.getUTCHours();
+        console.log('[CHRONOS] processing chronos with UTC hour = %d', utcHour);
+
+        for (let index = 0; index < chronos.length; ++index) {
+            if (chronos[index].hasBeenTriggered) {
+                continue;
+            }
+
+            const chronoDefinition = chronos[index].chronoDefinition;
+            if (chronoDefinition.hourUtc > utcHour) {
+                continue;
+            }
+
+            console.log('[CHRONOS] chronos \'%s\' is ready to be processed (if it can be)', chronoDefinition.name);
+            if (chronoDefinition.canProcess(_publicApi, now, _bot, _db)) {
+                console.log('[CHRONOS] chronos \'%s\' can be processed! it will now be processed.', chronoDefinition.name);
+                chronoDefinition.process(_publicApi, now, _bot, _db);
+                chronos[index].hasBeenTriggered = true;
+            }
+        }
+    }
+
+    _publicApi = {
         start: function(bot, db) {
             if (_hasBeenStarted) {
-                console.error('The chronos manager has already been started.');
+                console.error('[CHRONOS] The chronos manager has already been started.');
                 process.exit(1);
                 return;
             }
@@ -33,8 +89,12 @@ module.exports = (function() {
             _bot = bot;
             _db = db;
 
-            setInterval(processChronos, 1000 * 60 * 15); // Run every 15 minutes
-            processChronos(); // Also run at startup to make sure you get anything that ran earlier that day
+            console.log('[CHRONOS] Going to start chronos manager as soon as the filesystem promise is resolved.');
+            _chronosLoadedPromise.then(function() {
+                console.log('[CHRONOS] Filesystem promise is resolved. Starting.');
+                setInterval(processChronos, 1000 * 60 * 15); // Run every 15 minutes
+                processChronos(); // Also run at startup to make sure you get anything that ran earlier that day
+            });
         },
 
         recordNewMessageInChannel: function(channelId) {
@@ -55,53 +115,6 @@ module.exports = (function() {
             return Math.floor((millisecondsDiff / 1000) / 60);
         },
     };
-
-    fs.readdir(__dirname, function(err, filenames) {
-        if (err) {
-            console.error('FAILED TO READ THE CHRONOS DIRECTORY!');
-            console.error(err);
-            process.exit(1);
-            return;
-        }
-
-        for (let index = 0; index < filenames.length; ++index) {
-            const filename = filenames[index];
-            if (filename === 'index.js' || !filename.endsWith('.js')) {
-                continue;
-            }
-
-            let chronoDefinition = require(__dirname + '/' + filename);
-            assertIsValidChrono(chronoDefinition);
-            chronos.push({
-                chronoDefinition: chronoDefinition,
-                hasBeenTriggered: false
-            });
-            console.log('chrono \'%s\' registered', chronoDefinition.name);
-        }
-        console.log('total number chronos logged: %d', chronos.length);
-    });
-
-    function processChronos() {
-        const now = new Date();
-        const utcHour = now.getUTCHours();
-        for (let index = 0; index < chronos.length; ++index) {
-            if (chronos[index].hasBeenTriggered) {
-                continue;
-            }
-
-            const chronoDefinition = chronos[index].chronoDefinition;
-            if (chronoDefinition.hourUtc > utcHour) {
-                continue;
-            }
-
-            console.log('chronos \'%s\' is ready to be processed (if it can be)', chronoDefinition.name);
-            if (chronoDefinition.canProcess(_publicApi, now, _bot, _db)) {
-                console.log('chronos \'%s\' can be processed! it will now be processed.', chronoDefinition.name);
-                chronoDefinition.process(_publicApi, now, _bot, _db);
-                chronos[index].hasBeenTriggered = true;
-            }
-        }
-    }
 
     return _publicApi;
 })();
