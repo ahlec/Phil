@@ -18,7 +18,7 @@ const express = require('express');
 const db = require('./database.js')(process.env.DATABASE_URL);
 const botCommands = require('./commands');
 const botUtils = require('./bot_utils.js');
-const promptManager = require('./prompt_manager.js');
+const chronos = require('./chronos');
 
 // Make sure that we have the correct database version
 db.query("SELECT value FROM info WHERE key = 'database-version'")
@@ -39,7 +39,7 @@ const bot = new discord.Client( { token: process.env.DISCORD_BOT_TOKEN, autorun:
 bot.on('ready', function() {
     console.log('Logged in as %s - %s\n', bot.username, bot.id);
 
-    promptManager.start(bot, db);
+    chronos.start(bot, db);
 });
 
 bot.on('message', function(user, userId, channelId, message, event) {
@@ -47,9 +47,7 @@ bot.on('message', function(user, userId, channelId, message, event) {
         return;
     }
 
-    if (channelId == process.env.HIJACK_CHANNEL_ID) {
-        promptManager.recordNewMessageInHijackChannel();
-    }
+    chronos.recordNewMessageInChannel(channelId);
 
     // Process the incoming data
     const isDirectMessage = ( channelId in bot.directMessages ? true : false );
