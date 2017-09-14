@@ -38,10 +38,32 @@ module.exports = (function() {
             });
         },
         process: function(chronosManager, now, bot, db) {
-            return new Promise((resolve, reject) => {
-                console.log('hello world!');
-                resolve(true);
-            });
+            return db.query('SELECT prompt_number FROM hijack_prompts WHERE has_been_posted = E\'1\' ORDER BY prompt_number DESC LIMIT 1')
+                .then(promptNumberResults => {
+                    var promptNumber = 1;
+                    if (promptNumberResults.rowCount > 0) {
+                        promptNumber = promptNumberResults.rows[0].prompt_number + 1;
+                    }
+
+                    return db.query('SELECT prompt_id, prompt_text FROM hijack_prompts WHERE has_been_posted = E\'0\' AND approved_by_user = E\'1\' AND approved_by_admin = E\'1\' LIMIT 1')
+                        .then(results => {
+                            if (results.rowCount === 0) {
+                                // TODO: Make not spam as frequently
+                                //chronosManager.sendErrorMessage('I couldn\'t post a prompt in the #hijack channel because there are no confirmed, unpublished prompts.');
+                                return;
+                            }
+
+                            const promptId = results.rows[0].prompt_id;
+                            const promptText = results.rows[0].prompt_text;
+                            return db.query('UPDATE hijack_prompts SET has_been_posted = E\'1\', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3', [promptNumber, now, promptId])
+                                .then(updateResults => {
+                                    return new Promise((resolve, reject) => {
+                                        botUtils.sendHijackPrompt(bot, promptNumber, promptText);
+                                        resolve();
+                                    });
+                                });
+                        })
+                });
         }
     };
 })();

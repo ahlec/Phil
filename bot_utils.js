@@ -116,6 +116,13 @@ module.exports = (function() {
             }
 
             return [];
+        },
+
+        sendHijackPrompt: function(bot, promptNumber, promptText) {
+            bot.sendMessage({
+                to: process.env.HIJACK_CHANNEL_ID,
+                message: ':snowflake: **HIJACK PROMPT OF THE DAY #' + promptNumber + '**: ' + promptText
+            });
         }
     }
 })();

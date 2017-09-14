@@ -148,7 +148,8 @@ module.exports = (function() {
 
         getMinutesSinceLastMessageInChannel: function(channelId, now) {
             if (channelsLastMessageTable[channelId] === undefined) {
-                return 0; // I guess??
+                channelsLastMessageTable[channelId] = new Date(); // We'll set it here since we don't have a baseline but it helps us move past this section if the bot started out with the channel dead
+                return 0;
             }
 
             const millisecondsDiff = (now - channelsLastMessageTable[channelId]);
@@ -158,6 +159,10 @@ module.exports = (function() {
 
             return Math.floor((millisecondsDiff / 1000) / 60);
         },
+
+        sendErrorMessage: function(message) {
+            errorMessage(message);
+        }
     };
 
     return _publicApi;
