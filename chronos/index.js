@@ -84,9 +84,8 @@ module.exports = (function() {
                 console.log('[CHRONOS] chrono \'%s\' can be processed! it will now be processed.', chronoDefinition.name);
                 chronoDefinition.process(_publicApi, now, _bot, _db)
                     .then(result => {
-                        if (result) {
-                            chronos[index].hasBeenTriggered = true;
-                        }
+                        console.log('[CHRONOS] chrono \'%s\' finished with a result of %s', chronoDefinition.name, result);
+                        chronos[index].hasBeenTriggered = true;
                     })
                     .catch(err => {
                         errorMessage('Error processing the chrono \'' + chronoDefinition.name + '\'. `' + err + '`');
