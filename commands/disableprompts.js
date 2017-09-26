@@ -7,6 +7,7 @@ module.exports = (function() {
         publicRequiresAdmin: true,
         privateRequiresAdmin: true,
         aliases: [],
+        helpDescription: 'Prevents Phil from posting any daily prompts until you instruct him that it\'s okay to do so by using `' + process.env.COMMAND_PREFIX + 'enableprompts`.',
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             botUtils.isPromptDisabled(db)
                 .then(isDisabled => {

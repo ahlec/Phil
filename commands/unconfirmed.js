@@ -76,6 +76,7 @@ module.exports = (function() {
         publicRequiresAdmin: true,
         privateRequiresAdmin: true,
         aliases: [],
+        helpDescription: 'Creates a list of some of the unconfirmed prompts that are awaiting admin approval before being added to the prompt queue.',
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             clearPreviousConfirmListForChannel(db, channelId)
                 .then(createConfirmationQueue(db, bot, channelId))

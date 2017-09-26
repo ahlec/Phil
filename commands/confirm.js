@@ -39,6 +39,7 @@ module.exports = (function() {
         publicRequiresAdmin: true,
         privateRequiresAdmin: false,
         aliases: [],
+        hideFromHelpListing: true,
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             if (commandArgs.length !== 1) {
                 botUtils.sendErrorMessage({

@@ -17,6 +17,8 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         privateRequiresAdmin: false,
         aliases: [ 'apologize' ],
+        hideFromHelpListing: true,
+        helpDescription: 'Makes Phil apologise for making a mistake.',
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             const randomIndex = Math.floor(Math.random() * apologies.length);
             const apology = apologies[randomIndex];

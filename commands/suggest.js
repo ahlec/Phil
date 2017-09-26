@@ -36,6 +36,7 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         privateRequiresAdmin: false,
         aliases: [],
+        helpDescription: 'Suggests a new daily prompt for Phil to add to his list. (*DIRECT MESSAGE ONLY*)',
         processPrivateMessage: function(bot, user, userId, channelId, commandArgs, db) {
             const prompt = commandArgs.join(' ').trim();
             if (prompt.length === 0) {

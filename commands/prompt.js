@@ -14,6 +14,7 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         privateRequiresAdmin: false,
         aliases: [],
+        helpDescription: 'Asks Phil to remind you what the prompt of the day is.',
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             botUtils.isPromptDisabled(db)
                 .then(isDisabled => {

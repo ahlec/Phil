@@ -6,6 +6,7 @@ module.exports = (function() {
     return {
         publicRequiresAdmin: false,
         aliases: ['giveme'],
+        helpDescription: 'Asks Phil to give you a role. Using the command by itself will show you all of the roles he can give you.',
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             const serverId = bot.channels[channelId].guild_id;
             const server = bot.servers[serverId];

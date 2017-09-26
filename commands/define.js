@@ -7,6 +7,7 @@ module.exports = (function() {
         publicRequiresAdmin: true,
         privateRequiresAdmin: true,
         aliases: [],
+        helpDescription: 'Creates a new requestable role that users can use with `' + process.env.COMMAND_PREFIX + 'request`',
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             if (commandArgs.length < 2) {
                 botUtils.sendErrorMessage({
