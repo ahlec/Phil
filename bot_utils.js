@@ -118,9 +118,13 @@ module.exports = (function() {
             return [];
         },
 
-        sendHijackPrompt: function(bot, promptNumber, promptText) {
+        sendHijackPrompt: function(bot, promptNumber, promptText, optionalChannelId) {
+            if (typeof(optionalChannelId) === 'undefined') {
+                optionalChannelId = process.env.HIJACK_CHANNEL_ID;
+            }
+
             bot.sendMessage({
-                to: process.env.HIJACK_CHANNEL_ID,
+                to: optionalChannelId,
                 message: ':snowflake: **HIJACK PROMPT OF THE DAY #' + promptNumber + '**: ' + promptText
             });
         },

@@ -13,12 +13,27 @@ module.exports = (function() {
             if (commandArgs.length === 0) {
                 db.query("SELECT request_string, role_id FROM requestable_roles")
                     .then(result => {
+                        if (result.rowCount === 0) {
+                            botUtils.sendErrorMessage({
+                                bot: bot,
+                                channelId: channelId,
+                                message: 'There are no requestable roles defined. An admin should use `' + process.env.COMMAND_PREFIX + 'define` to create some roles.'
+                            });
+                            return;
+                        }
+
                         var requestables = {};
+                        const randomRequestableIndex = Math.floor(Math.random() * result.rowCount);
+                        var randomRequestable;
                         for (let index = 0; index < result.rowCount; ++index) {
                             if (requestables[result.rows[index].role_id] === undefined) {
                                 requestables[result.rows[index].role_id] = [];
                             }
                             requestables[result.rows[index].role_id].push(result.rows[index].request_string);
+
+                            if (index === randomRequestableIndex) {
+                                randomRequestable = result.rows[index].request_string;
+                            }
                         }
 
                         var fullMessage = ':snowflake: You must provide a valid requestable name of a role when using `' + process.env.COMMAND_PREFIX + 'request`. These are currently:\n';
@@ -41,6 +56,8 @@ module.exports = (function() {
 
                             fullMessage += ' to receive the "' + role.name + '" role\n';
                         }
+
+                        fullMessage += '\nJust use one of the above requestable names, like `' + process.env.COMMAND_PREFIX + 'request ' + randomRequestable + '`.';
 
                         bot.sendMessage({
                             to: channelId,
