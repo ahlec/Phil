@@ -140,6 +140,13 @@ module.exports = (function() {
                         resolve(false);
                     });
             });
+        },
+
+        getRandomArrayEntry: function(arr) {
+	        assert(typeof(arr) === 'object');
+	        assert(Array.isArray(arr));
+	        const randomIndex = Math.floor(Math.random() * arr.length);
+            return arr[randomIndex];
         }
     }
 })();
