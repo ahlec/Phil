@@ -85,6 +85,7 @@ module.exports = (function() {
                 var colorRoles = getAllColorRoles(server);
                 colorRoles = getAllUnusedRoles(server, colorRoles);
                 deleteUnusedRoles(bot, server, serverId, colorRoles);
+                resolve(true);
             });
         }
     };
