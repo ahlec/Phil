@@ -21,10 +21,6 @@ module.exports = (function() {
         });
     }
 
-    function isValidHexColor(input) {
-        return /^#[0-9A-F]{6}$/i.test(input);
-    }
-
     function sendInvalidHexCodeError(bot, channelId, input) {
         const decemberLink = botUtils.getRandomArrayEntry(decemberLinks);
         botUtils.sendErrorMessage({
@@ -84,13 +80,6 @@ module.exports = (function() {
         });
     }
 
-    function isHexColorRole(server, roleId) {
-        const role = server.roles[roleId];
-        const isHex = isValidHexColor(role.name);
-	    console.log('role %s is hex? %d', role.name, isHex);
-        return isHex;
-    }
-
     function sendRemoveRoleError(bot, channelId, err) {
         botUtils.sendErrorMessage({
             bot: bot,
@@ -124,7 +113,7 @@ module.exports = (function() {
             var latestRoleRemovalPromise;
             for (let index = 0; index < member.roles.length; ++index) {
                 let roleId = member.roles[index];
-                if (isHexColorRole(server, roleId)) {
+                if (botUtils.isHexColorRole(server, roleId)) {
                     if (latestRoleRemovalPromise) {
                         latestRoleRemovalPromise = latestRoleRemovalPromise.then(removeRoleFromUserAsPromise(bot, serverId, userId, roleId));
                     } else {
@@ -201,7 +190,7 @@ module.exports = (function() {
             }
 
             var hexColor = commandArgs[0];
-            if (!isValidHexColor(hexColor)) {
+            if (!botUtils.isValidHexColor(hexColor)) {
                 sendInvalidHexCodeError(bot, channelId, hexColor);
                 return;
             }

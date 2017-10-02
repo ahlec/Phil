@@ -20,6 +20,20 @@ module.exports = (function() {
         return ( !isNaN(parseInt(input)) && isFinite(input) );
     }
 
+    function _doesMemberUseRole(member, roleId) {
+        for (let index = 0; index < member.roles.length; ++index) {
+            if (member.roles[index] === roleId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function _isValidHexColor(input) {
+        return /^#[0-9A-F]{6}$/i.test(input);
+    }
+
     return {
         getUrl: function(inputUrl) {
             const protocol = url.parse(inputUrl).protocol;
@@ -58,6 +72,8 @@ module.exports = (function() {
                 message: ':white_check_mark: **SUCCESS.** ' + options.message
             });
         },
+
+        doesMemberUseRole: _doesMemberUseRole,
 
         isMemberAnAdminOnServer: function(member, server) {
             for (let index = 0; index < member.roles.length; ++index) {
@@ -143,10 +159,19 @@ module.exports = (function() {
         },
 
         getRandomArrayEntry: function(arr) {
-	        assert(typeof(arr) === 'object');
-	        assert(Array.isArray(arr));
-	        const randomIndex = Math.floor(Math.random() * arr.length);
+            assert(typeof(arr) === 'object');
+            assert(Array.isArray(arr));
+            const randomIndex = Math.floor(Math.random() * arr.length);
             return arr[randomIndex];
+        },
+
+        isValidHexColor: _isValidHexColor,
+
+        isHexColorRole: function(server, roleId) {
+            const role = server.roles[roleId];
+            const isHex = _isValidHexColor(role.name);
+            console.log('role %s is hex? %d', role.name, isHex);
+            return isHex;
         }
     }
 })();
