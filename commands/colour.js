@@ -51,7 +51,7 @@ module.exports = (function() {
             const serverId = bot.channels[channelId].guild_id;
             const server = bot.servers[serverId];
             for (let roleId in server.roles) {
-                if (server.roles[roleId] === hexColor) {
+                if (server.roles[roleId].name === hexColor) {
                     resolve(roleId);
                     return;
                 }
