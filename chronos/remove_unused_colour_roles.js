@@ -30,7 +30,8 @@ module.exports = (function() {
             }
 
             for (let j = indicesToRemove.length - 1; j >= 0; --j) {
-                unusedRoles.splice(j, 1);
+                const index = indicesToRemove[j];
+                unusedRoles.splice(index, 1);
             }
 
             if (unusedRoles.length === 0) {
