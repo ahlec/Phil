@@ -1,6 +1,6 @@
 'use strict';
 const CURRENT_DATABASE_VERSION = 2;
-const CURRENT_PHIL_VERSION = 3;
+const CURRENT_PHIL_VERSION = 4;
 
 // Make sure our environment is ready to operate
 const assert = require('assert');
@@ -12,6 +12,7 @@ assert.ok(process.env.DATABASE_URL !== undefined);
 assert.ok(process.env.ADMIN_CHANNEL_ID !== undefined);
 assert.ok(process.env.HIJACK_CHANNEL_ID !== undefined);
 assert.ok(process.env.ADMIN_ROLE_ID !== undefined);
+assert.ok(process.env.YOUTUBE_API_KEY !== undefined);
 
 // Retrieve the modules
 const discord = require('discord.io');
@@ -127,7 +128,7 @@ app.listen(process.env.PORT, () => {
     console.log('Web portal is running on port ' + process.env.PORT);
 });
 
-// Ping the server every 15 minutes so that the Heroku dynos won't fall asleepe
+// Ping the server every 12 minutes so that the Heroku dynos won't fall asleep
 setInterval(() => {
     botUtils.getUrl(process.env.PUBLIC_APP_URL);
-}, 1000 * 60 * 15);
+}, 1000 * 60 * 12);
