@@ -1,5 +1,6 @@
 'use strict';
 const CURRENT_DATABASE_VERSION = 2;
+const CURRENT_PHIL_VERSION = 3;
 
 // Make sure our environment is ready to operate
 const assert = require('assert');
@@ -35,6 +36,8 @@ db.query("SELECT value FROM info WHERE key = 'database-version'")
 
 // Connect to the bot
 const bot = new discord.Client( { token: process.env.DISCORD_BOT_TOKEN, autorun: true } );
+bot.PHIL_VERSION = CURRENT_PHIL_VERSION;
+bot.DATABASE_VERSION = CURRENT_DATABASE_VERSION;
 
 bot.on('ready', function() {
     console.log('Logged in as %s - %s\n', bot.username, bot.id);
