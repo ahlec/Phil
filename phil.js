@@ -11,6 +11,7 @@ assert.ok(process.env.COMMAND_PREFIX.toLowerCase() === process.env.COMMAND_PREFI
 assert.ok(process.env.DATABASE_URL !== undefined);
 assert.ok(process.env.ADMIN_CHANNEL_ID !== undefined);
 assert.ok(process.env.HIJACK_CHANNEL_ID !== undefined);
+assert.ok(process.env.NEWS_CHANNEL_ID !== undefined);
 assert.ok(process.env.ADMIN_ROLE_ID !== undefined);
 assert.ok(process.env.YOUTUBE_API_KEY !== undefined);
 
