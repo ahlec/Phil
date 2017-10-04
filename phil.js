@@ -1,6 +1,6 @@
 'use strict';
 const CURRENT_DATABASE_VERSION = 2;
-const CURRENT_PHIL_VERSION = 4;
+const CURRENT_PHIL_VERSION = 5;
 
 // Make sure our environment is ready to operate
 const assert = require('assert');

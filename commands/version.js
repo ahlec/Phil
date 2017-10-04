@@ -4,7 +4,7 @@ module.exports = (function() {
     return {
         publicRequiresAdmin: false,
         privateRequiresAdmin: false,
-        aliases: [ 'magicconch', 'mc' ],
+        aliases: [ 'versions' ],
         hideFromHelpListing: true,
         helpDescription: 'Prints out the current version numbers related to Phil.',
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
