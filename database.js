@@ -1,21 +1,21 @@
 module.exports = function(databaseUrl) {
     const pg = require('pg');
-	const pool = new pg.Pool({ connectionString: databaseUrl });
+    const pool = new pg.Pool({ connectionString: databaseUrl });
 
-	return {
+    return {
         query: function(text, values) {
-	        return new Promise((resolve, reject) => {
+            return new Promise((resolve, reject) => {
                 pool.connect(function(error, client, done) {
-		            client.query(text, values, function(err, result) {
-			            done();
+                    client.query(text, values, function(err, result) {
+                        done();
                         if (err) {
-	                        reject(err);
+                            reject(err);
                         } else {
-	                        resolve(result);
+                            resolve(result);
                         }
-		            });
-	            });
+                    });
+                });
             });
         }
-	};
+    };
 };

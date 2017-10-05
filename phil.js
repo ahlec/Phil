@@ -1,5 +1,5 @@
 'use strict';
-const CURRENT_DATABASE_VERSION = 2;
+const CURRENT_DATABASE_VERSION = 3;
 const CURRENT_PHIL_VERSION = 5;
 
 // Make sure our environment is ready to operate
@@ -14,6 +14,7 @@ assert.ok(process.env.HIJACK_CHANNEL_ID !== undefined);
 assert.ok(process.env.NEWS_CHANNEL_ID !== undefined);
 assert.ok(process.env.ADMIN_ROLE_ID !== undefined);
 assert.ok(process.env.YOUTUBE_API_KEY !== undefined);
+assert.ok(process.env.BOT_MANAGER_USERNAME !== undefined);
 
 // Retrieve the modules
 const discord = require('discord.io');
@@ -105,7 +106,17 @@ bot.on('message', function(user, userId, channelId, message, event) {
     }
 
     if (commandFunction) {
-        commandFunction(bot, user, userId, channelId, words.slice(1), db);
+        try {
+            commandFunction(bot, user, userId, channelId, words.slice(1), db);
+        } catch (err) {
+            console.err('Error occurred processing the \'' + command + '\' command.');
+            console.err(err);
+            botUtils.sendErrorMessage({
+                bot: bot,
+                channelId: channelId,
+                message: 'Uh oh. An elf just broke something. Hey @' + process.env.BOT_MANAGER_USERNAME + ', could you take a look for me?'
+            });
+        }
     } else {
         botUtils.sendErrorMessage({
             bot: bot,
