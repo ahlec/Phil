@@ -49,7 +49,7 @@ module.exports = (function() {
 
             db.query('UPDATE birthdays SET birthday_day = $1, birthday_month = $2 WHERE userid = $3', [day, month, userId])
                 .then(results => {
-                    if (results.rowCount === 1) {
+                    if (results.rowCount >= 1) {
                         resolve({
                             day: day,
                             month: monthNames[month - 1],
