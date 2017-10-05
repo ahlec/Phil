@@ -15,6 +15,9 @@ assert.ok(process.env.NEWS_CHANNEL_ID !== undefined);
 assert.ok(process.env.ADMIN_ROLE_ID !== undefined);
 assert.ok(process.env.YOUTUBE_API_KEY !== undefined);
 assert.ok(process.env.BOT_MANAGER_USERNAME !== undefined);
+assert.ok(process.env.HE_PRONOUNS_ROLE_ID !== undefined);
+assert.ok(process.env.SHE_PRONOUNS_ROLE_ID !== undefined);
+assert.ok(process.env.THEY_PRONOUNS_ROLE_ID !== undefined);
 
 // Retrieve the modules
 const discord = require('discord.io');

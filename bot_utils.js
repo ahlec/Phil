@@ -5,6 +5,51 @@ module.exports = (function() {
     const http = require('http');
     const https = require('https');
 
+    // -------------------------------- PRONOUNS
+    const PRONOUNS = {
+        HE: 0,
+        SHE: 1,
+        THEY: 2
+    };
+
+    const PRONOUN_CASES = {
+        HE: 0,
+        HIM: 1,
+        HIS: 2
+    };
+
+    const HE_PRONOUNS = {
+        [PRONOUN_CASES.HE]: 'he',
+        [PRONOUN_CASES.HIM]: 'him',
+        [PRONOUN_CASES.HIS]: 'his'
+    };
+
+    const SHE_PRONOUNS = {
+        [PRONOUN_CASES.HE]: 'she',
+        [PRONOUN_CASES.HIM]: 'her',
+        [PRONOUN_CASES.HIS]: 'hers'
+    };
+
+    const THEY_PRONOUNS = {
+        [PRONOUN_CASES.HE]: 'they',
+        [PRONOUN_CASES.HIM]: 'them',
+        [PRONOUN_CASES.HIS]: 'theirs'
+    };
+
+    const PRONOUN_ARRAYS = {
+        [PRONOUNS.HE]: HE_PRONOUNS,
+        [PRONOUNS.SHE]: SHE_PRONOUNS,
+        [PRONOUNS.THEY]: THEY_PRONOUNS
+    };
+
+    const PRONOUNS_FROM_ROLE_ID = {
+        [process.env.HE_PRONOUNS_ROLE_ID]: PRONOUNS.HE,
+        [process.env.SHE_PRONOUNS_ROLE_ID]: PRONOUNS.SHE,
+        [process.env.THEY_PRONOUNS_ROLE_ID]: PRONOUNS.THEY
+    }
+
+    // ------------------------------------------ INTERNAL FUNCTIONS
+
     function doesRoleHavePermission(role, permission) {
         var binary = (role.permissions >>> 0).toString(2).split('');
         for (let index = 0; index < binary.length; ++index) {
@@ -34,7 +79,28 @@ module.exports = (function() {
         return /^#[0-9A-F]{6}$/i.test(input);
     }
 
+    function _resolveMultiplePronounsToSinglePronoun(pronouns) {
+        if (pronouns.length === 0) {
+            return PRONOUNS.THEY;
+        }
+
+        if (pronouns.length === 1) {
+            return PRONOUNS_FROM_ROLE_ID[pronouns[0]];
+        }
+
+        if (pronouns.indexOf(PRONOUNS.THEY) >= 0) {
+            return PRONOUNS.THEY;
+        }
+
+        // Hmmm... What do I do in the case where the user has HE and SHE but not THEY?
+        // For right now, we'll go with 'They' until someone clarifies.
+        return PRONOUNS.THEY;
+    }
+
     return {
+        PRONOUNS: PRONOUNS,
+        PRONOUN_CASES, PRONOUN_CASES,
+
         getUrl: function(inputUrl) {
             const protocol = url.parse(inputUrl).protocol;
             if (protocol == 'http:') {
@@ -172,6 +238,30 @@ module.exports = (function() {
             const isHex = _isValidHexColor(role.name);
             console.log('role %s is hex? %d', role.name, isHex);
             return isHex;
+        },
+
+        getPronounForUser: function(bot, userId) {
+            const serverId = bot.channels[process.env.HIJACK_CHANNEL_ID].guild_id;
+            const server = bot.servers[serverId];
+            const member = server.members[userId];
+            const pronounsOfUser = [];
+
+            for (let index = 0; index < member.roles.length; ++index) {
+                const roleId = member.roles[index];
+                if (roleId in PRONOUNS_FROM_ROLE_ID) {
+                    pronounsOfUser.push(roleId);
+                }
+            }
+
+            return _resolveMultiplePronounsToSinglePronoun(pronounsOfUser);
+        },
+
+        getPronounOfCase: function(pronoun, pronounCase) {
+            const pronounArray = PRONOUN_ARRAYS[pronoun];
+            assert(typeof(pronounArray) === 'object');
+            const pronounStr = pronounArray[pronounCase];
+            assert(typeof(pronounStr) === 'string');
+            return pronounStr;
         }
     }
 })();

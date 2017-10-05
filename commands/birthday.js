@@ -116,7 +116,7 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         privateRequiresAdmin: false,
         aliases: [],
-        helpDescription: 'Informs Phil of your birthday, so he can share it with the server!',
+        helpDescription: 'Tell Phil when your birthday is so he can share your birthday with the server.',
         processPublicMessage: handleMessage,
         processPrivateMessage: handleMessage
     };
