@@ -5,16 +5,16 @@ const versions = require('./versions');
 
 function _interpretDbCurrentVersion(results) {
     if (results.rowCount === 0) {
-        throw 'There is no databse entry for the current database version number.';
+        return Promise.reject('There is no database entry for the current database version number.');
     }
 
     if (results.rows[0].value != versions.DATABASE) {
-        throw 'The required database version is ' + versions.DATABASE + ' but the current database is version ' + result.rows[0].value;
+        return Promise.reject('The required database version is ' + versions.DATABASE + ' but the current database is version ' + results.rows[0].value);
     }
 }
 
 function _handleDbCurrentVersionError(err) {
-    throw 'Encountered a database error when attempting to figure out the current database version. ' + err;
+    return Promise.reject('Encountered a database error when attempting to figure out the current database version. ' + err);
 }
 
 function _determineCurrentVersion(db) {
