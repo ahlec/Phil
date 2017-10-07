@@ -17,20 +17,16 @@ function _handleDbCurrentVersionError(err) {
     return Promise.reject('Encountered a database error when attempting to figure out the current database version. ' + err);
 }
 
-function _determineCurrentVersion(db) {
-    return db.query("SELECT value FROM info WHERE key = 'database-version'")
-        .catch(_handleDbCurrentVersionError)
-        .then(_interpretDbCurrentVersion)
-        .then(() => db);
-}
-
 module.exports = class Database {
     constructor() {
         this._pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
     }
 
     checkIsCurrentVersion() {
-        return _determineCurrentVersion(this);
+        return this.query("SELECT value FROM info WHERE key = 'database-version'")
+            .catch(_handleDbCurrentVersionError)
+            .then(_interpretDbCurrentVersion)
+            .then(() => this);
     }
 
     query(text, values) {
