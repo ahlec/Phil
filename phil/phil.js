@@ -7,6 +7,8 @@ const CommandRunner = require('./command-runner');
 
 module.exports = class Phil {
     constructor(db) {
+        assert(db);
+
         this._db = db;
 
         this._bot = new discord.Client( { token: process.env.DISCORD_BOT_TOKEN, autorun: true } );

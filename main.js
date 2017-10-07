@@ -8,29 +8,18 @@ const Phil = require('./phil/phil');
 
 const botUtils = require('./bot_utils.js');
 
-// STARTUP
+// [ run ]
 function handleStartupError(err) {
     console.error(err);
     process.exit(1);
 }
 
-function startup(resolve, reject) {
-    EnvironmentManager.assertVariablesValid()
-        .then(() => new Database())
-        .then(db => db.checkIsCurrentVersion())
-        .then(db => resolve(db))
-        .catch(handleStartupError);
-}
-
-// MAIN
-function botMain(db) {
-    const phil = new Phil(db);
-    phil.start();
-}
-
-// [ run ]
-new Promise(startup)
-    .then(botMain);
+EnvironmentManager.assertVariablesValid()
+    .then(() => new Database())
+    .then(db => db.checkIsCurrentVersion())
+    .then(db => new Phil(db))
+    .then(phil => phil.start())
+    .catch(handleStartupError);
 
 // Set up the web portal
 const app = express();

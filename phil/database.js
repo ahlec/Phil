@@ -3,29 +3,25 @@
 const pg = require('pg');
 const versions = require('./versions');
 
-function _interpretDbCurrentVersion(resolve, reject, results) {
+function _interpretDbCurrentVersion(results) {
     if (results.rowCount === 0) {
-        reject('There is no databse entry for the current database version number.');
-        return;
+        throw 'There is no databse entry for the current database version number.';
     }
 
     if (results.rows[0].value != versions.DATABASE) {
-        reject('The required database version is ' + versions.DATABASE + ' but the current database is version ' + result.rows[0].value);
-        return;
+        throw 'The required database version is ' + versions.DATABASE + ' but the current database is version ' + result.rows[0].value;
     }
-
-    resolve();
 }
 
-function _handleDbCurrentVersionError(reject, err) {
-    reject('Encountered a database error when attempting to figure out the current database version. ' + err);
+function _handleDbCurrentVersionError(err) {
+    throw 'Encountered a database error when attempting to figure out the current database version. ' + err;
 }
 
-function _determineCurrentVersion(db, resolve, reject) {
-    db.query("SELECT value FROM info WHERE key = 'database-version'")
-        .then(results => _interpretDbCurrentVersion(resolve, reject, results))
-        .then(() => resolve(db))
-        .catch(err => _handleDbCurrentVersionError(reject, err));
+function _determineCurrentVersion(db) {
+    return db.query("SELECT value FROM info WHERE key = 'database-version'")
+        .catch(_handleDbCurrentVersionError)
+        .then(_interpretDbCurrentVersion)
+        .then(() => db);
 }
 
 module.exports = class Database {
@@ -34,7 +30,7 @@ module.exports = class Database {
     }
 
     checkIsCurrentVersion() {
-        return new Promise((resolve, reject) => _determineCurrentVersion(this, resolve, reject));
+        return _determineCurrentVersion(this);
     }
 
     query(text, values) {
