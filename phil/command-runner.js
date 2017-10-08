@@ -1,6 +1,7 @@
 'use strict';
 
 const botUtils = require('../bot_utils.js');
+const util = require('util');
 const InputMessage = require('./input-message');
 
 module.exports = class CommandRunner {
@@ -115,6 +116,26 @@ module.exports = class CommandRunner {
 
     _runCommand(user, userId, channelId, commandData, input) {
         const commandArgs = input.getCommandArgs();
-        commandData.func(this._bot, user, userId, channelId, commandArgs, this._db);
+        const commandPromise = commandData.func(this._bot, user, userId, channelId, commandArgs, this._db);
+        if (!botUtils.isPromise(commandPromise)) {
+            console.error('Command \'%s\' did not return a promise with command args \'%s\'.', input.getCommandName(), util.inspect(commandArgs));
+        } else {
+            commandPromise.catch(err => this._reportCommandError(err, channelId));
+        }
+    }
+
+    _reportCommandError(err, channelId) {
+        console.error(err);
+
+        var errorMessage = err;
+        if (typeof(errorMessage) !== 'string') {
+            errorMessage = 'Uh oh. An elf just broke something. Hey @' + process.env.BOT_MANAGER_USERNAME + ', could you take a look for me?';
+        }
+
+        botUtils.sendErrorMessage({
+            bot: this._bot,
+            channelId: channelId,
+            message: errorMessage
+        });
     }
 };

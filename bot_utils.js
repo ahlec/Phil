@@ -262,6 +262,18 @@ module.exports = (function() {
             const pronounStr = pronounArray[pronounCase];
             assert(typeof(pronounStr) === 'string');
             return pronounStr;
+        },
+
+        isPromise: function(obj) {
+	        if (typeof(obj) !== 'object') {
+		        return false;
+	        }
+
+            if (typeof(obj.then) !== 'function') {
+	            return false;
+            }
+
+            return true;
         }
     }
 })();
