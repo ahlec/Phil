@@ -14,13 +14,14 @@ module.exports = class Phil {
         this._bot = new discord.Client( { token: process.env.DISCORD_BOT_TOKEN, autorun: true } );
 
         this._commands = require('../commands');
+
         this._chronos = require('../chronos');
+        this._hasStartedChronos = false;
 
         this._commandRunner = new CommandRunner(this._bot, this._commands, this._chronos, db);
     }
 
     start() {
-        this._chronos.start(this._bot, this._db);
         this._isConnectingAfterDisconnect = false;
 
         this._bot.on('ready', this._onReady.bind(this));
@@ -30,6 +31,12 @@ module.exports = class Phil {
 
     _onReady() {
         console.log('Logged in as %s - %s\n', this._bot.username, this._bot.id);
+
+        if (!this._hasStartedChronos) {
+            this._chronos.start(this._bot, this._db);
+            this._hasStartedChronos = true;
+        }
+
         if (this._isConnectingAfterDisconnect) {
             botUtils.sendErrorMessage({
                 bot: this._bot,
