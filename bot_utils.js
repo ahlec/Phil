@@ -265,12 +265,12 @@ module.exports = (function() {
         },
 
         isPromise: function(obj) {
-	        if (typeof(obj) !== 'object') {
-		        return false;
-	        }
+            if (typeof(obj) !== 'object') {
+                return false;
+            }
 
             if (typeof(obj.then) !== 'function') {
-	            return false;
+                return false;
             }
 
             return true;

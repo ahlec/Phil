@@ -4,15 +4,28 @@ module.exports = (function() {
     const botUtils = require('../bot_utils.js');
     const requestables = require('../phil/requestables');
 
+    function _filterOnlyRequestablesUserHas(requestables, server, userId) {
+	    const member = server.members[userId];
+	    const requestablesUserHas = [];
+
+        for (let requestable of requestables) {
+	        if (member.roles.indexOf(requestable.roleId) >= 0) {
+		        requestablesUserHas.push(requestable);
+	        }
+        }
+
+	    return requestablesUserHas;
+    }
+
     function _ensureAtLeastOneRequestable(requestables) {
         if (requestables.length === 0) {
-            return Promise.reject('There are no requestable roles defined. An admin should use `' + process.env.COMMAND_PREFIX + 'define` to create some roles.');
+            return Promise.reject('I haven\'t given you any requestable roles yet. You use `' + process.env.COMMAND_PREFIX + 'request` in order to obtain these roles.');
         }
 
         return requestables;
     }
 
-    function _composeRequestableListEntry(requestableInfo) {
+    function _composeRemovableRequestableListEntry(requestableInfo) {
         var entry = '- ';
 
         const requestStrings = requestableInfo.requestStrings;
@@ -28,26 +41,26 @@ module.exports = (function() {
             entry += '`' + requestStrings[index] + '`';
         }
 
-        entry += ' to receive the "' + requestableInfo.roleName + '" role\n';
+        entry += ' to remove the "' + requestableInfo.roleName + '" role\n';
         return entry;
     }
 
-    function _composeAllRequestablesList(requestables) {
+    function _composeRemovableRequestablesList(requestables) {
         const randomRequestableIndex = Math.floor(Math.random() * requestables.length);
         
-        var fullMessage = ':snowflake: You must provide a valid requestable name of a role when using `' + process.env.COMMAND_PREFIX + 'request`. These are currently:\n';
+        var fullMessage = ':snowflake: These are the roles you can remove using `' + process.env.COMMAND_PREFIX + 'remove`:\n';
         var randomRequestableString;
 
         for (let index = 0; index < requestables.length; ++index) {
             let requestableInfo = requestables[index];
-            fullMessage += _composeRequestableListEntry(requestableInfo);
+            fullMessage += _composeRemovableRequestableListEntry(requestableInfo);
 
             if (randomRequestableIndex == index) {
                 randomRequestableString = botUtils.getRandomArrayEntry(requestableInfo.requestStrings);
             }
         }
 
-        fullMessage += '\nJust use one of the above requestable names, like `' + process.env.COMMAND_PREFIX + 'request ' + randomRequestableString + '`.';
+        fullMessage += '\nJust use one of the above requestable names, like `' + process.env.COMMAND_PREFIX + 'remove ' + randomRequestableString + '`.';
         return fullMessage;
     }
 
@@ -58,25 +71,25 @@ module.exports = (function() {
         });
     }
 
-    function _ensureUserDoesntHaveRole(role, server, userId) {
+    function _ensureUserHasRole(role, server, userId) {
         const member = server.members[userId];
 
-        if (member.roles.indexOf(role.id) >= 0) {
-            return Promise.reject('You already have the "' + role.name + '" role.');
+        if (member.roles.indexOf(role.id) < 0) {
+            return Promise.reject('I haven\'t given you the "' + role.name + '" role.');
         }
 
         return role;
     }
 
-    function _giveRoleToUser(role, bot, serverId, userId) {
+    function _takeRoleFromUser(role, bot, serverId, userId) {
         return new Promise((resolve, reject) => {
-            bot.addToRole({
+            bot.removeFromRole({
                 serverID: serverId,
                 userID: userId,
                 roleID: role.id
             }, (err, response) => {
                 if (err) {
-                    reject('There was an error with discord when attempting to grant you the specified role. `' + botUtils.toStringDiscordError(err) + '`');
+                    reject('There was an error with discord when attempting to take away the specified role. `' + botUtils.toStringDiscordError(err) + '`');
                 } else {
                     resolve(role);
                 }
@@ -84,33 +97,34 @@ module.exports = (function() {
         });
     }
 
-    function _informUserOfNewRole(role, bot, userId, channelId) {
+    function _informUserOfRemoval(role, bot, userId, channelId) {
         botUtils.sendSuccessMessage({
             bot: bot,
             channelId: channelId,
-            message: 'You have been granted the "' + role.name + '" role!'
+            message: 'I\'ve removed the "' + role.name + '" role from you.'
         });
     }
 
     return {
         publicRequiresAdmin: false,
-        aliases: ['giveme'],
-        helpDescription: 'Asks Phil to give you a role. Using the command by itself will show you all of the roles he can give you.',
+        aliases: [],
+        helpDescription: 'Asks Phil to take away a requestable role that he has given you.',
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             const serverId = bot.channels[channelId].guild_id;
             const server = bot.servers[serverId];
 
             if (commandArgs.length === 0) {
                 return requestables.getAllRequestables(db, server)
+                    .then(requestables => _filterOnlyRequestablesUserHas(requestables, server, userId))
                     .then(_ensureAtLeastOneRequestable)
-                    .then(_composeAllRequestablesList)
+                    .then(_composeRemovableRequestablesList)
                     .then(fullMessage => _sendRequestablesList(fullMessage, bot, channelId));
             }
 
             return requestables.getRoleFromRequestable(commandArgs[0], db, server)
-                .then(role => _ensureUserDoesntHaveRole(role, server, userId))
-                .then(role => _giveRoleToUser(role, bot, serverId, userId))
-                .then(role => _informUserOfNewRole(role, bot, userId, channelId));
+                .then(role => _ensureUserHasRole(role, server, userId))
+                .then(role => _takeRoleFromUser(role, bot, serverId, userId))
+                .then(role => _informUserOfRemoval(role, bot, userId, channelId));
         }
     };
 })();
