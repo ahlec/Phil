@@ -200,30 +200,6 @@ module.exports = (function() {
             return [];
         },
 
-        sendHijackPrompt: function(bot, promptNumber, promptText, optionalChannelId) {
-            if (typeof(optionalChannelId) === 'undefined') {
-                optionalChannelId = process.env.HIJACK_CHANNEL_ID;
-            }
-
-            bot.sendMessage({
-                to: optionalChannelId,
-                message: ':snowflake: **HIJACK PROMPT OF THE DAY #' + promptNumber + '**: ' + promptText
-            });
-        },
-
-        isPromptDisabled: function(db) {
-            return new Promise((resolve, reject) => {
-                db.query('SELECT count(*) FROM info WHERE key = \'prompt_disabled\' AND value = \'1\'')
-                    .then(results => {
-                        if (results.rows[0].count > 0) {
-                            resolve(true);
-                            return;
-                        }
-                        resolve(false);
-                    });
-            });
-        },
-
         getRandomArrayEntry: function(arr) {
             assert(typeof(arr) === 'object');
             assert(Array.isArray(arr));

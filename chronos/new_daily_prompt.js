@@ -1,7 +1,8 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils.js');
+    const botUtils = require('../bot_utils');
+    const prompts = require('../phil/prompts');
 
     function selectNextUnpublishedPromptAndContinue(chronosManager, now, bot, db, promptNumber) {
         return db.query('SELECT prompt_id, prompt_text FROM hijack_prompts WHERE has_been_posted = E\'0\' AND approved_by_user = E\'1\' AND approved_by_admin = E\'1\' LIMIT 1')
@@ -18,7 +19,10 @@ module.exports = (function() {
                 return db.query('UPDATE hijack_prompts SET has_been_posted = E\'1\', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3', [promptNumber, now, promptId])
                     .then(updateResults => {
                         return new Promise((resolve, reject) => {
-                            botUtils.sendHijackPrompt(bot, promptNumber, promptText);
+                            prompts.sendPromptToChannel(bot, process.env.HIJACK_CHANNEL_ID, {
+                                    promptNumber: promptNumber,
+                                    text: promptText
+                                });
                             resolve(true);
                         });
                     });
@@ -73,9 +77,9 @@ module.exports = (function() {
         },
         process: function(chronosManager, now, bot, db) {
             return new Promise((resolve, reject) => {
-                botUtils.isPromptDisabled(db)
-                    .then(isDisabled => {
-                        if (isDisabled) {
+                prompts.getAreDailyPromptsEnabled(db)
+                    .then(arePromptsEnabled => {
+                        if (!arePromptsEnabled) {
                             console.log('prompts are disabled, so we won\'t process a new prompt today.');
                             resolve(false);
                             return;

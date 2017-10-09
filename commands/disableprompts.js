@@ -1,50 +1,34 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils.js');
+    const botUtils = require('../bot_utils');
+    const prompts = require('../phil/prompts');
+
+    function _ensurePromptsAreEnabled(arePromptsEnabled) {
+        if (arePromptsEnabled !== true) {
+            return Promise.reject('Prompt are not currently enabled, so I cannot disable them (because they\'re already disabled).');
+        }
+    }
+
+    function _sendPromptsDisabledMessage(bot, channelId) {
+        botUtils.sendSuccessMessage({
+            bot: bot,
+            channelId: channelId,
+            message: 'Prompts are now disabled until you use `' + process.env.COMMAND_PREFIX + 'enableprompts`.'
+        });
+    }
 
     return {
         publicRequiresAdmin: true,
         privateRequiresAdmin: true,
         aliases: [],
         helpDescription: 'Prevents Phil from posting any daily prompts until you instruct him that it\'s okay to do so by using `' + process.env.COMMAND_PREFIX + 'enableprompts`.',
+
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
-            botUtils.isPromptDisabled(db)
-                .then(isDisabled => {
-                    if (isDisabled) {
-                        botUtils.sendSuccessMessage({
-                            bot: bot,
-                            channelId: channelId,
-                            message: 'Prompts were already disabled, but will continue to stay disabled.'
-                        });
-                        return;
-                    }
-
-                    db.query('INSERT INTO info(key, value) VALUES(\'prompt_disabled\', \'1\')')
-                        .then(results => {
-                            if (results.rowCount > 0) {
-                                botUtils.sendSuccessMessage({
-                                    bot: bot,
-                                    channelId: channelId,
-                                    message: 'Prompts are now disabled until you use `' + process.env.COMMAND_PREFIX + 'enableprompts`.'
-                                });
-                                return;
-                            }
-
-                            botUtils.sendErrorMessage({
-                                bot: bot,
-                                channelId: channelId,
-                                message: 'Nothing completely broke, but the database wasn\'t actually modified.'
-                            });
-                        })
-                        .catch(err => {
-                            botUtils.sendErrorMessage({
-                                bot: bot,
-                                channelId: channelId,
-                                message: 'Database error when attempting to disable prompts. `' + err + '`'
-                            });
-                        });
-                });
+            return prompts.getAreDailyPromptsEnabled(db)
+                .then(_ensurePromptsAreEnabled)
+                .then(() => prompts.setPromptsEnabled(db, false))
+                .then(() => _sendPromptsDisabledMessage(bot, channelId));
         }
     };
 })();

@@ -1,8 +1,3 @@
-const botUtils = require('../bot_utils.js');
-const assert = require('assert');
-const discord = require('discord.io');
-const CommandRunner = require('./command-runner');
-
 module.exports = (function() {
     'use strict';
 
