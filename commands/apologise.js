@@ -1,6 +1,8 @@
 module.exports = (function() {
     'use strict';
 
+    const botUtils = require('../bot_utils');
+
     const apologies = [
         'I am incredibly sorry for my mistake.',
         'Es tut mir aber leid, dass ich ein schlechte Yeti war.',
@@ -13,20 +15,24 @@ module.exports = (function() {
         'On my Yeti honour and pride, I shall never do this again.'
     ];
 
+    function _sendMessage(bot, channelId, message) {
+        bot.sendMessage({
+            to: channelId,
+            message: message
+        });
+    }
+
     return {
         publicRequiresAdmin: false,
         privateRequiresAdmin: false,
         aliases: [ 'apologize' ],
         hideFromHelpListing: true,
         helpDescription: 'Makes Phil apologise for making a mistake.',
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
-            const randomIndex = Math.floor(Math.random() * apologies.length);
-            const apology = apologies[randomIndex];
 
-            bot.sendMessage({
-                to: channelId,
-                message: apology
-            });
+        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+            const apology = botUtils.getRandomArrayEntry(apologies);
+            return Promise.resolve()
+                .then(() => _sendMessage(bot, channelId, apology));
         }
     };
 })();

@@ -1,7 +1,7 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils.js');
+    const botUtils = require('../bot_utils');
     const conchReplies = [
         'Maybe someday',
         'Nothing',
@@ -16,17 +16,28 @@ module.exports = (function() {
         'Try asking again'
     ];
 
+    function _createMessage() {
+        const reply = botUtils.getRandomArrayEntry(conchReplies);
+        return ':shell: The Magic Conch Shell says: **' + reply + '**.'
+    }
+
+    function _sendMessage(bot, channelId, message) {
+        bot.sendMessage({
+            to: channelId,
+            message: message
+        });
+    }
+
     return {
         publicRequiresAdmin: false,
         privateRequiresAdmin: false,
         aliases: [ 'magicconch', 'mc' ],
         helpDescription: 'The Magic Conch Says...',
+
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
-            const reply = botUtils.getRandomArrayEntry(conchReplies);
-            bot.sendMessage({
-                to: channelId,
-                message: ':shell: The Magic Conch Shell says: **' + reply + '**.'
-            });
+            return Promise.resolve()
+                .then(() => _createMessage())
+                .then(message => _sendMessage(bot, channelId, message));
         }
     };
 })();
