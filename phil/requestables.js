@@ -88,6 +88,10 @@ module.exports = (function() {
         return role;
     }
 
+    function _onCreateDbError(err) {
+        return Promise.reject('Database error when attempting to create the requestable. `' + err + '`');
+    }
+
     return {
         getAllRequestables: function(db, server) {
             return db.query('SELECT request_string, role_id FROM requestable_roles')
@@ -100,6 +104,17 @@ module.exports = (function() {
             return db.query('SELECT role_id FROM requestable_roles WHERE request_string = $1', [requestable.toLowerCase()])
                 .catch(_onGetRoleFromDbError)
                 .then(results => _getRoleFromDbResults(results, requestable, server))
+        },
+
+        doesRequestableExist: function(requestable, db) {
+            return db.query('SELECT count(request_string) FROM requestable_roles WHERE request_string = $1', [requestable])
+                .then(results => (results.rows[0].count > 0));
+        },
+
+        createRequestable: function(data, db) {
+            return db.query('INSERT INTO requestable_roles VALUES($1, $2)', [data.requestString, data.roleId])
+                .catch(_onCreateDbError)
+                .then(() => data);
         }
     };
 })();
