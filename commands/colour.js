@@ -12,153 +12,6 @@ module.exports = (function() {
         'http://www.december.com/html/spec/color4.html',
     ];
 
-    function sendNoArgsProvidedError(bot, channelId) {
-        const decemberLink = botUtils.getRandomArrayEntry(decemberLinks);
-        botUtils.sendErrorMessage({
-            bot: bot,
-            channelId: channelId,
-            message: 'You must provide a hex code to this function of the colour that you\'d like to use. For example, `' + process.env.COMMAND_PREFIX + 'color #FFFFFF`. You could try checking out ' + decemberLink + ' for some codes.'
-        });
-    }
-
-    function sendInvalidHexCodeError(bot, channelId, input) {
-        const decemberLink = botUtils.getRandomArrayEntry(decemberLinks);
-        botUtils.sendErrorMessage({
-            bot: bot,
-            channelId: channelId,
-            message: '`' + input + '` isn\'t a valid hex code. I\'m looking for it in the format of `#RRGGBB`. You can try checking out ' + decemberLink + ' for some amazing colours.'
-        });
-    }
-
-    function sendCreateRoleError(bot, channelId, err) {
-        botUtils.sendErrorMessage({
-            bot: bot,
-            channelId: channelId,
-            message: 'I wasn\'t able to create the colour as a role on the server. `' + err + '`'
-        });
-    }
-
-    function sendEditRoleError(bot, channelId, err) {
-        botUtils.sendErrorMessage({
-            bot: bot,
-            channelId: channelId,
-            message: 'I had trouble editing the role I just created. `' + err + '`'
-        });
-    }
-
-    function getOrCreateColorRole(bot, channelId, hexColor) {
-        return new Promise((resolve, reject) => {
-            const serverId = bot.channels[channelId].guild_id;
-            const server = bot.servers[serverId];
-            for (let roleId in server.roles) {
-                if (server.roles[roleId].name === hexColor) {
-                    resolve(roleId);
-                    return;
-                }
-            }
-
-            bot.createRole(serverId, (createErr, response) => {
-                if (createErr) {
-                    sendCreateRoleError(bot, channelId, createErr);
-                    return;
-                }
-
-                var roleId = response.id;
-                bot.editRole({
-                    serverID: serverId,
-                    roleID: roleId,
-                    name: hexColor,
-                    color: hexColor
-                }, (editErr, editResponse) => {
-                    if (editErr) {
-                        sendEditRoleError(bot, channelId, editErr);
-                    } else {
-                        resolve(roleId);
-                    }
-                });
-            });
-        });
-    }
-
-    function sendRemoveRoleError(bot, channelId, err) {
-        botUtils.sendErrorMessage({
-            bot: bot,
-            channelId: channelId,
-            message: 'There was a problem when I tried to remove your previous colour role. `' + err + '`'
-        });
-    }
-
-    function removeRoleFromUserAsPromise(bot, serverId, userId, roleId) {
-        return new Promise((resolve, reject) => {
-            console.log('going to remove role %d from user %d', roleId, userId);
-            bot.removeFromRole({
-                serverID: serverId,
-                userID: userId,
-                roleID: roleId
-            }, (err, response) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
-        });
-    }
-
-    function removeCurrentColorRole(bot, channelId, userId) {
-        return new Promise((resolve, reject) => {
-            const serverId = bot.channels[channelId].guild_id;
-            const server = bot.servers[serverId];
-            const member = server.members[userId];
-            var latestRoleRemovalPromise;
-            for (let index = 0; index < member.roles.length; ++index) {
-                let roleId = member.roles[index];
-                if (botUtils.isHexColorRole(server, roleId)) {
-                    if (latestRoleRemovalPromise) {
-                        latestRoleRemovalPromise = latestRoleRemovalPromise.then(removeRoleFromUserAsPromise(bot, serverId, userId, roleId));
-                    } else {
-                        latestRoleRemovalPromise = removeRoleFromUserAsPromise(bot, serverId, userId, roleId);
-                    }
-                }
-            }
-
-            if (latestRoleRemovalPromise) {
-                latestRoleRemovalPromise.then(function() {
-                    resolve();
-                }).catch(err => {
-                    sendRemoveRoleError(bot, channelId, err);
-                });
-            } else {
-                resolve();
-            }
-        });
-    }
-
-    function sendSetColorRoleError(bot, channelId, err) {
-        botUtils.sendErrorMessage({
-            bot: bot,
-            channelId: channelId,
-            message: 'There was a problem I tried giving you your new role. `' + err + '`'
-        });
-    }
-
-    function setColorRole(bot, channelId, userId, roleId) {
-        return new Promise((resolve, reject) => {
-            const serverId = bot.channels[channelId].guild_id;
-            bot.addToRole({
-                serverID: serverId,
-                userID: userId,
-                roleID: roleId
-            }, (err, response) => {
-                if (err) {
-                    sendSetColorRoleError(bot, channelId, err);
-                } else {
-                    resolve();
-                }
-            });
-        });
-    }
-
     const compliments = [
         'That\'s a really pretty colour, too.',
         'It looks excellent on you.',
@@ -168,14 +21,128 @@ module.exports = (function() {
         'It\'s absolutely beautiful.'
     ];
 
-    function sendColorChangeSuccess(bot, channelId, hexColor) {
-        const randomIndex = Math.floor(Math.random() * compliments.length);
-        const compliment = compliments[randomIndex];
+    function getHexColorFromCommandArgs(commandArgs) {
+        const decemberLink = botUtils.getRandomArrayEntry(decemberLinks);
+
+        if (commandArgs.length === 0) {
+            return Promise.reject('You must provide a hex code to this function of the colour that you\'d like to use. For example, `' + process.env.COMMAND_PREFIX + 'color #FFFFFF`. You could try checking out ' + decemberLink + ' for some codes.');
+        }
+
+        var hexColor = commandArgs[0];
+        if (!botUtils.isValidHexColor(hexColor)) {
+            return Promise.reject('`' + hexColor + '` isn\'t a valid hex code. I\'m looking for it in the format of `#RRGGBB`. You can try checking out ' + decemberLink + ' for some amazing colours.');
+        }
+
+        hexColor = hexColor.toUpperCase();
+        return hexColor;
+    }
+
+    function updateNewColorRole(resolve, reject, bot, serverId, roleId, hexColor) {
+        bot.editRole({
+            serverID: serverId,
+            roleID: roleId,
+            name: hexColor,
+            color: hexColor
+        }, (editErr, editResponse) => {
+            if (editErr) {
+                reject('I had trouble editing the role I just created. `' + editErr + '`');
+            } else {
+                console.log('Role %d successfully edited into %s', roleId, hexColor);
+                resolve({
+                    roleId: roleId,
+                    hexColor: hexColor
+                });
+            }
+        });
+    }
+
+    function createColorRole(resolve, reject, bot, serverId, hexColor) {
+        bot.createRole(serverId, (createErr, response) => {
+            if (createErr) {
+                reject('I wasn\'t able to create the colour as a role on the server. `' + createErr + '`');
+                return;
+            }
+
+            const roleId = response.id;
+            console.log('New role created with roleId = %d', roleId);
+            updateNewColorRole(resolve, reject, bot, serverId, roleId, hexColor);
+        });
+    }
+
+    function getColorRoleData(bot, channelId, hexColor) {
+        const serverId = bot.channels[channelId].guild_id;
+        const server = bot.servers[serverId];
+        for (let roleId in server.roles) {
+            if (server.roles[roleId].name === hexColor) {
+                return {
+                    roleId: roleId,
+                    hexColor: hexColor
+                };
+            }
+        }
+
+        return new Promise((resolve, reject) => createColorRole(resolve, reject, bot, serverId, hexColor));
+    }
+
+    function removeRoleFromUser(bot, serverId, userId, roleId) {
+        return new Promise((resolve, reject) => {
+            console.log('going to remove role %d from user %d', roleId, userId);
+            bot.removeFromRole({
+                serverID: serverId,
+                userID: userId,
+                roleID: roleId
+            }, (err, response) => {
+                if (err) {
+                    reject('There was a problem when I tried to remove your previous colour role. `' + err + '`');
+                } else {
+                    resolve();
+                }
+            });
+        });
+    }
+
+    function removeCurrentColorRole(bot, channelId, userId, roleData) {
+        const serverId = bot.channels[channelId].guild_id;
+        const server = bot.servers[serverId];
+        const member = server.members[userId];
+
+        var latestRoleRemovalPromise = Promise.resolve();
+        for (let index = 0; index < member.roles.length; ++index) {
+            let removingRoleId = member.roles[index];
+            if (!botUtils.isHexColorRole(server, removingRoleId)) {
+                continue;
+            }
+
+            latestRoleRemovalPromise = latestRoleRemovalPromise.then(() => removeRoleFromUser(bot, serverId, userId, removingRoleId));
+        }
+
+        return latestRoleRemovalPromise.then(() => roleData);
+    }
+
+    function setColorRole(bot, channelId, userId, roleData) {
+        return new Promise((resolve, reject) => {
+            const serverId = bot.channels[channelId].guild_id;
+            bot.addToRole({
+                serverID: serverId,
+                userID: userId,
+                roleID: roleData.roleId
+            }, (err, response) => {
+                if (err) {
+                    reject('There was a problem I tried giving you your new role. `' + err + '`');
+                } else {
+                    resolve(roleData);
+                }
+            });
+        });
+    }
+
+    function sendColorChangeSuccess(bot, channelId, roleData) {
+        const compliment = botUtils.getRandomArrayEntry(compliments);
 
         botUtils.sendSuccessMessage({
             bot: bot,
             channelId: channelId,
-            message: 'Your colour has been changed to **' + hexColor + '**. ' + compliment
+            message: 'Your colour has been changed to **' + roleData.hexColor + '**. ' + compliment
         });
     }
 
@@ -184,28 +151,12 @@ module.exports = (function() {
         aliases: ['color'],
         helpDescription: 'Asks Phil to change your username colour to a hex code of your choosing.',
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
-            if (commandArgs.length === 0) {
-                sendNoArgsProvidedError(bot, channelId);
-                return;
-            }
-
-            var hexColor = commandArgs[0];
-            if (!botUtils.isValidHexColor(hexColor)) {
-                sendInvalidHexCodeError(bot, channelId, hexColor);
-                return;
-            }
-            hexColor = hexColor.toUpperCase();
-
-            getOrCreateColorRole(bot, channelId, hexColor)
-                .then(roleId => {
-                    removeCurrentColorRole(bot, channelId, userId)
-                        .then(function() {
-                            setColorRole(bot, channelId, userId, roleId)
-                                .then(function() {
-                                    sendColorChangeSuccess(bot, channelId, hexColor);
-                                });
-                        });
-                });
+            return Promise.resolve()
+                .then(() => getHexColorFromCommandArgs(commandArgs))
+                .then(hexColor => getColorRoleData(bot, channelId, hexColor))
+                .then(roleData => removeCurrentColorRole(bot, channelId, userId, roleData))
+                .then(roleData => setColorRole(bot, channelId, userId, roleData))
+                .then(roleData => sendColorChangeSuccess(bot, channelId, roleData));
         }
     };
 })();
