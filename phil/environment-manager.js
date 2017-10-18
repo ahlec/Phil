@@ -2,21 +2,27 @@
 
 const assert = require('assert');
 
+function _assertVariableExists(variableName) {
+    const envVariable = process.env[variableName];
+    assert.ok(envVariable, 'The environment variable `' + variableName + '` does not exist.');
+}
+
 function _assertEnvironmentVariables() {
-    assert.ok(process.env.DISCORD_BOT_TOKEN !== undefined);
-    assert.ok(process.env.PORT !== undefined);
-    assert.ok(process.env.COMMAND_PREFIX !== undefined);
+    _assertVariableExists('DISCORD_BOT_TOKEN');
+    _assertVariableExists('PORT');
+    _assertVariableExists('COMMAND_PREFIX');
     assert.ok(process.env.COMMAND_PREFIX.toLowerCase() === process.env.COMMAND_PREFIX); // Prefix must be lowercase!!
-    assert.ok(process.env.DATABASE_URL !== undefined);
-    assert.ok(process.env.ADMIN_CHANNEL_ID !== undefined);
-    assert.ok(process.env.HIJACK_CHANNEL_ID !== undefined);
-    assert.ok(process.env.NEWS_CHANNEL_ID !== undefined);
-    assert.ok(process.env.ADMIN_ROLE_ID !== undefined);
-    assert.ok(process.env.YOUTUBE_API_KEY !== undefined);
-    assert.ok(process.env.BOT_MANAGER_USERNAME !== undefined);
-    assert.ok(process.env.HE_PRONOUNS_ROLE_ID !== undefined);
-    assert.ok(process.env.SHE_PRONOUNS_ROLE_ID !== undefined);
-    assert.ok(process.env.THEY_PRONOUNS_ROLE_ID !== undefined);
+    _assertVariableExists('DATABASE_URL');
+    _assertVariableExists('ADMIN_CHANNEL_ID');
+    _assertVariableExists('HIJACK_CHANNEL_ID');
+    _assertVariableExists('NEWS_CHANNEL_ID');
+    _assertVariableExists('BOT_CONTROL_CHANNEL_ID');
+    _assertVariableExists('ADMIN_ROLE_ID');
+    _assertVariableExists('YOUTUBE_API_KEY');
+    _assertVariableExists('BOT_MANAGER_USERNAME');
+    _assertVariableExists('HE_PRONOUNS_ROLE_ID');
+    _assertVariableExists('SHE_PRONOUNS_ROLE_ID');
+    _assertVariableExists('THEY_PRONOUNS_ROLE_ID');
 }
 
 function _ensureNecessaryEnvironmentVariables(resolve, reject) {

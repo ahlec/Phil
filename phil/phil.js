@@ -5,6 +5,10 @@ const assert = require('assert');
 const discord = require('discord.io');
 const CommandRunner = require('./command-runner');
 
+function ignoreDiscordCode(code) {
+	return (code === 1000); // General disconnect code
+}
+
 module.exports = class Phil {
     constructor(db) {
         assert(db);
@@ -22,7 +26,7 @@ module.exports = class Phil {
     }
 
     start() {
-        this._isConnectingAfterDisconnect = false;
+        this._shouldSendDisconnectedMessage = false;
 
         this._bot.on('ready', this._onReady.bind(this));
         this._bot.on('message', this._onMessage.bind(this));
@@ -37,13 +41,13 @@ module.exports = class Phil {
             this._hasStartedChronos = true;
         }
 
-        if (this._isConnectingAfterDisconnect) {
+        if (this._shouldSendDisconnectedMessage) {
             botUtils.sendErrorMessage({
                 bot: this._bot,
-                channelId: process.env.ADMIN_CHANNEL_ID,
+                channelId: process.env.BOT_COMMAND_CHANNEL_ID,
                 message: 'Encountered an unexpected shutdown, @' + process.env.BOT_MANAGER_USERNAME + '. The logs should be in Heroku. I\'ve recovered though and connected again.'
             });
-            this._isConnectingAfterDisconnect = false;
+            this._shouldSendDisconnectedMessage = false;
         }
     }
 
@@ -58,7 +62,7 @@ module.exports = class Phil {
             console.error(err);
         }
         console.error('Reconnecting now...');
-        this._isConnectingAfterDisconnect = true;
+        this._shouldSendDisconnectedMessage = !ignoreDiscordCode(code);
         this._bot.connect();
     }
 };
