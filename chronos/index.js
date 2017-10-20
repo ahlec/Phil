@@ -30,7 +30,7 @@ module.exports = (function() {
         console.error('[CHRONOS] %s', message);
         botUtils.sendErrorMessage({
             bot: _bot,
-            channelId: process.env.ADMIN_CHANNEL_ID,
+            channelId: process.env.BOT_CONTROL_CHANNEL_ID,
             message: '[CHRONOS] ' + message
         });
     }

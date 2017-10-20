@@ -45,7 +45,7 @@ module.exports = (function() {
     function sendErrorDeletingRole(bot, roleId, err) {
         botUtils.sendErrorMessage({
             bot: bot,
-            channelId: process.env.ADMIN_CHANNEL_ID,
+            channelId: process.env.BOT_CONTROL_CHANNEL_ID,
             message: 'There was an error routinely deleting unused colour role \'' + roleId + '\'. `' + err + '`'
         });
     }

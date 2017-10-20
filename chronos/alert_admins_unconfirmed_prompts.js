@@ -6,7 +6,7 @@ module.exports = (function() {
     function sendDatabaseError(bot, err) {
         botUtils.sendErrorMessage({
             bot: bot,
-            channelId: process.env.ADMIN_CHANNEL_ID,
+            channelId: process.env.BOT_CONTROL_CHANNEL_ID,
             message: 'There was an error trying to count the number of unconfirmed prompts in the database. `' + err + '`'
         });
     }
@@ -40,7 +40,7 @@ module.exports = (function() {
 
         canProcess: function(chronosManager, now, bot, db) {
             return new Promise((resolve, reject) => {
-                const minutesSinceLastAdminMessage = chronosManager.getMinutesSinceLastMessageInChannel(process.env.ADMIN_CHANNEL_ID, now);
+                const minutesSinceLastAdminMessage = chronosManager.getMinutesSinceLastMessageInChannel(process.env.BOT_CONTROL_CHANNEL_ID, now);
                 if (minutesSinceLastAdminMessage < chronosManager.MinimumSilenceRequiredBeforePostingInChannel) {
                     resolve({
                         ready: false,
@@ -62,7 +62,7 @@ module.exports = (function() {
                             const reportMessage = getUnconfimedPromptsMessage(numUnconfirmedPrompts);
                             console.log('[alert admins unconfirmed prompt] ' + reportMessage);
                             bot.sendMessage({
-                                to: process.env.ADMIN_CHANNEL_ID,
+                                to: process.env.BOT_CONTROL_CHANNEL_ID,
                                 message: reportMessage
                             });
                         } else {
