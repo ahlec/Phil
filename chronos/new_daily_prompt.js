@@ -5,17 +5,17 @@ module.exports = (function() {
     const prompts = require('../phil/prompts');
 
     function selectNextUnpublishedPromptAndContinue(chronosManager, now, bot, db, promptNumber) {
-        return db.query('SELECT prompt_id, prompt_text FROM hijack_prompts WHERE has_been_posted = E\'0\' AND approved_by_user = E\'1\' AND approved_by_admin = E\'1\' LIMIT 1')
-            .then(results => {
-                if (results.rowCount === 0) {
+        return prompts.getPromptQueue(db, 1)
+            .then(queue => {
+                if (queue.length === 0) {
                     return new Promise((resolve, reject) => {
                         //chronosManager.sendErrorMessage('I couldn\'t post a prompt in the #hijack channel because there are no confirmed, unpublished prompts.');
                         resolve(false);
                     });
                 }
 
-                const promptId = results.rows[0].prompt_id;
-                const promptText = results.rows[0].prompt_text;
+                const promptId = queue[0].promptID;
+                const promptText = queue[0].promptText;
                 return db.query('UPDATE hijack_prompts SET has_been_posted = E\'1\', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3', [promptNumber, now, promptId])
                     .then(updateResults => {
                         return new Promise((resolve, reject) => {

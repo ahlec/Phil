@@ -124,6 +124,19 @@ module.exports = (function() {
             .then(results => _confirmRejectPerformDbAction(results, db, channelId, number, dbActionFunc, numSuccessful));
     }
 
+    function _parsePromptQueueDbResults(results) {
+        const queue = [];
+
+        for (let index = 0; index < results.rowCount; ++index) {
+            queue.push({
+                promptId: results.rows[index].prompt_id,
+                promptText: results.rows[index].prompt_text
+            });
+        }
+
+        return queue;
+    }
+
     return {
         getAreDailyPromptsEnabled: function(db) {
             return db.query('SELECT count(*) FROM info WHERE key = \'prompt_disabled\' AND value = \'1\'')
@@ -164,6 +177,11 @@ module.exports = (function() {
             }
 
             return promise;
+        },
+
+        getPromptQueue: function(db, maxNumResults) {
+            return db.query('SELECT prompt_id, prompt_text FROM hijack_prompts WHERE has_been_posted=E\'0\' AND approved_by_user=E\'1\' AND approved_by_user=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
+                .then(_parsePromptQueueDbResults);
         }
     };
 })();
