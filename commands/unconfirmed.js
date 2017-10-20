@@ -1,32 +1,44 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils.js');
+    const botUtils = require('../bot_utils');
     const MAX_LIST_LENGTH = 10;
 
     function clearPreviousConfirmListForChannel(db, channelId) {
         return db.query('DELETE FROM prompt_confirmation_queue WHERE channel_id = $1', [channelId]);
     }
 
-    function addPromptToConfirmationQueue(db, channelId, promptId, index) {
+    function parseUnconfirmedPromptsIntoList(results) {
+        var list = [];
+        for (let index = 0; index < results.rowCount; ++index) {
+            list.push({
+                index: index,
+                promptId: results.rows[index].prompt_id,
+                user: results.rows[index].suggesting_user,
+                prompt: results.rows[index].prompt_text
+            });
+        }
+        return list;
+    }
+
+    function getUnconfirmedPrompts(db) {
+        return db.query('SELECT prompt_id, suggesting_user, prompt_text FROM hijack_prompts WHERE approved_by_user = E\'1\' AND approved_by_admin = E\'0\' ORDER BY date_suggested ASC LIMIT $1', [MAX_LIST_LENGTH])
+            .then(results => parseUnconfirmedPromptsIntoList(results));
+    }
+
+    function addPromptToConfirmationQueue(db, channelId, listItem) {
+        const promptId = listItem.promptId;
+        const index = listItem.index;
         return db.query('INSERT INTO prompt_confirmation_queue VALUES($1, $2, $3)', [channelId, promptId, index]);
     }
 
-    function outputList(bot, channelId, list) {
-        return function() {
-            const existenceVerb = (list.length === 1 ? 'is' : 'are');
-            const noun = (list.length === 1 ? 'prompt' : 'prompts');
-            var message = ':pencil: Here ' + existenceVerb + ' ' + list.length + ' unconfirmed ' + noun + '.';
-            for (let index = 0; index < list.length; ++index) {
-                message += '\n        `' + (index + 1) + '`: "' + list[index].prompt + '"';
-            }
-            message += '\nConfirm prompts with `' + process.env.COMMAND_PREFIX + 'confirm`. You can specify a single prompt by using its number (`';
-            message += process.env.COMMAND_PREFIX + 'confirm 3`) or a range of prompts using a hyphen (`' + process.env.COMMAND_PREFIX + 'confirm 2-7`)';
-            bot.sendMessage({
-                to: channelId,
-                message: message
-            });
+    function createConfirmationQueueFromList(db, channelId, list) {
+        var promise = Promise.resolve();
+        for (let listItem of list) {
+            promise = promise.then(() => addPromptToConfirmationQueue(db, channelId, listItem));
         }
+
+        return promise.then(() => list);
     }
 
     function outputNoUnconfirmedPrompts(bot, channelId) {
@@ -36,39 +48,30 @@ module.exports = (function() {
         });
     }
 
-    function createConfirmationQueue(db, bot, channelId) {
-        return db.query('SELECT prompt_id, suggesting_user, prompt_text FROM hijack_prompts WHERE approved_by_user = E\'1\' AND approved_by_admin = E\'0\' ORDER BY date_suggested ASC LIMIT $1', [MAX_LIST_LENGTH])
-            .then(results => {
-                var promise;
-                var list = [];
-                for (let index = 0; index < results.rowCount; ++index) {
-                    list.push({
-                        index: index,
-                        user: results.rows[index].suggesting_user,
-                        prompt: results.rows[index].prompt_text
-                    });
-                    if (promise) {
-                        promise.then(addPromptToConfirmationQueue(db, channelId, results.rows[index].prompt_id, index));
-                    } else {
-                        promise = addPromptToConfirmationQueue(db, channelId, results.rows[index].prompt_id, index);
-                    }
-                }
 
-                if (promise) {
-                    return promise.then(outputList(bot, channelId, list));
-                } else {
-                    outputNoUnconfirmedPrompts(bot, channelId);
-                }
-            });
+    function outputList(bot, channelId, list) {
+        const existenceVerb = (list.length === 1 ? 'is' : 'are');
+        const noun = (list.length === 1 ? 'prompt' : 'prompts');
+        var message = ':pencil: Here ' + existenceVerb + ' ' + list.length + ' unconfirmed ' + noun + '.';
+
+        for (let listItem of list) {
+            message += '\n        `' + (listItem.index + 1) + '`: "' + listItem.prompt + '"';
+        }
+
+        message += '\nConfirm prompts with `' + process.env.COMMAND_PREFIX + 'confirm`. You can specify a single prompt by using its number (`';
+        message += process.env.COMMAND_PREFIX + 'confirm 3`) or a range of prompts using a hyphen (`' + process.env.COMMAND_PREFIX + 'confirm 2-7`)';
+
+        bot.sendMessage({
+            to: channelId,
+            message: message
+        });
     }
 
-    function handleError(bot, channelId) {
-        return function(err) {
-            botUtils.sendErrorMessage({
-                bot: bot,
-                channelId: channelId,
-                message: 'There was an error when trying to list unconfirmed prompts! `' + err + '`.'
-            });
+    function outputConfirmationQueue(bot, channelId, list) {
+        if (list.length === 0) {
+            outputNoUnconfirmedPrompts(bot, channelId);
+        } else {
+            outputList(bot, channelId, list);
         }
     }
 
@@ -77,10 +80,12 @@ module.exports = (function() {
         privateRequiresAdmin: true,
         aliases: [],
         helpDescription: 'Creates a list of some of the unconfirmed prompts that are awaiting admin approval before being added to the prompt queue.',
+
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
-            clearPreviousConfirmListForChannel(db, channelId)
-                .then(createConfirmationQueue(db, bot, channelId))
-                .catch(handleError(bot, channelId));
+            return clearPreviousConfirmListForChannel(db, channelId)
+                .then(() => getUnconfirmedPrompts(db))
+                .then(list => createConfirmationQueueFromList(db, channelId, list))
+                .then(list => outputConfirmationQueue(bot, channelId, list));
         }
     };
 })();
