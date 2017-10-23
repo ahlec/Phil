@@ -4,28 +4,29 @@ module.exports = (function() {
     const botUtils = require('../bot_utils');
     const prompts = require('../phil/prompts');
 
+    function _handleHasBeenPostedResults(results, bot, promptNumber, promptText) {
+        if (results.rowCount === 0) {
+            return Promise.reject('We found a prompt in the queue, but we couldn\'t update it to mark it as being posted.');
+        }
+
+        prompts.sendPromptToChannel(bot, process.env.HIJACK_CHANNEL_ID, {
+            promptNumber: promptNumber,
+            text: promptText
+        });
+        return Promise.resolve(true);
+    }
+
     function selectNextUnpublishedPromptAndContinue(chronosManager, now, bot, db, promptNumber) {
         return prompts.getPromptQueue(db, 1)
             .then(queue => {
                 if (queue.length === 0) {
-                    return new Promise((resolve, reject) => {
-                        //chronosManager.sendErrorMessage('I couldn\'t post a prompt in the #hijack channel because there are no confirmed, unpublished prompts.');
-                        resolve(false);
-                    });
+                    return Promise.resolve(false);
                 }
 
-                const promptId = queue[0].promptID;
+                const promptId = queue[0].promptId;
                 const promptText = queue[0].promptText;
                 return db.query('UPDATE hijack_prompts SET has_been_posted = E\'1\', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3', [promptNumber, now, promptId])
-                    .then(updateResults => {
-                        return new Promise((resolve, reject) => {
-                            prompts.sendPromptToChannel(bot, process.env.HIJACK_CHANNEL_ID, {
-                                    promptNumber: promptNumber,
-                                    text: promptText
-                                });
-                            resolve(true);
-                        });
-                    });
+                    .then(results => _handleHasBeenPostedResults(results, bot, promptNumber, promptText));
             });
     }
 
