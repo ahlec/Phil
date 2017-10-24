@@ -1,12 +1,12 @@
 'use strict';
 
 module.exports = (function() {
-	const versions = {
-	    CODE:     7,
-	    DATABASE: 3
+    const versions = {
+        CODE:     8,
+        DATABASE: 3
     };
 
-	Object.freeze(versions);
+    Object.freeze(versions);
 
     return versions;
 })();

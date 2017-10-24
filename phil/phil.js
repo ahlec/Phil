@@ -18,6 +18,7 @@ module.exports = class Phil {
         this._bot = new discord.Client( { token: process.env.DISCORD_BOT_TOKEN, autorun: true } );
 
         this._commands = require('../commands');
+        this._analyzers = require('../analyzers');
 
         this._chronos = require('../chronos');
         this._hasStartedChronos = false;
