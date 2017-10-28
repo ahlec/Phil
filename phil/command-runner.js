@@ -13,41 +13,36 @@ module.exports = class CommandRunner {
         this._db = db;
     }
 
-    isCommand(message) {
-        const input = InputMessage.parseFromMessage(message);
-        return (commandPrompt != null);
-    }
-
-    runMessage(user, userId, channelId, message) {
-        const input = InputMessage.parseFromMessage(message);
+    runMessage(message) {
+        const input = InputMessage.parseFromMessage(message.content);
         if (input === null) {
             return;
         }
-        this._logInputReceived(user, userId, input);
+        this._logInputReceived(message, input);
 
         const command = this._getCommandFromInputMessage(input);
         if (command === null) {
-            this._reportInvalidCommand(channelId, input);
+            this._reportInvalidCommand(message, input);
             return;
         }
 
-        const commandData = this._getCommandDataForChannel(command, input, channelId);
+        const commandData = this._getCommandDataForChannel(command, input, message);
         if (typeof(commandData.func) !== 'function') {
-            this._reportInvalidChannel(channelId, commandData);
+            this._reportInvalidChannel(message, commandData);
             return;
         }
 
-        if (!this._canUserUseCommand(commandData, userId, channelId)) {
-            this._reportCannotUseCommand(channelId, commandData);
+        if (!this._canUserUseCommand(commandData, message)) {
+            this._reportCannotUseCommand(message, commandData);
             return;
         }
 
-        this._runCommand(user, userId, channelId, commandData, input);
+        this._runCommand(message, commandData, input);
     }
 
-    _logInputReceived(user, userId, input) {
+    _logInputReceived(message, input) {
         const commandName = input.getCommandName();
-        console.log('user \'%s\' (%s) used command \'%s\'', user, userId, commandName);
+        console.log('user \'%s\' (%s) used command \'%s\'', message.user, message.userId, commandName);
     }
 
     _getCommandFromInputMessage(input) {
@@ -58,17 +53,17 @@ module.exports = class CommandRunner {
         return null;
     }
 
-    _reportInvalidCommand(channelId, input) {
+    _reportInvalidCommand(message, input) {
         const commandName = input.getCommandName();
         botUtils.sendErrorMessage({
             bot: this._bot,
-            channelId: channelId,
+            channelId: message.channelId,
             message: 'There is no `' + process.env.COMMAND_PREFIX + commandName + '` command.'
         });
     }
 
-    _getCommandDataForChannel(command, input, channelId) {
-        const isDirectMessage = ( channelId in this._bot.directMessages ? true : false );
+    _getCommandDataForChannel(command, input, message) {
+        const isDirectMessage = ( message.channelId in this._bot.directMessages ? true : false );
         const commandName = input.getCommandName();
 
         if (isDirectMessage) {
@@ -86,41 +81,41 @@ module.exports = class CommandRunner {
         };
     }
 
-    _reportInvalidChannel(channelId, commandData) {
+    _reportInvalidChannel(message, commandData) {
         botUtils.sendErrorMessage({
             bot: this._bot,
-            channelId: channelId,
+            channelId: message.channelId,
             message: commandData.incorrectChannelMessage
         });
     }
 
-    _canUserUseCommand(commandData, userId, channelId) {
+    _canUserUseCommand(commandData, message) {
         if (!commandData.requiresAdmin) {
             return true;
         }
         
-        const serverId = this._bot.channels[channelId].guild_id;
+        const serverId = this._bot.channels[message.channelId].guild_id;
         const server = this._bot.servers[serverId];
-        const member = server.members[userId];
+        const member = server.members[message.userId];
         return botUtils.isMemberAnAdminOnServer(member, server);
     }
 
-    _reportCannotUseCommand(channelId, commandData, input) {
+    _reportCannotUseCommand(message, commandData, input) {
         const commandName = input.getCommandName();
         botUtils.sendErrorMessage({
             bot: this._bot,
-            channelId: channelId,
+            channelId: message.channelId,
             message: 'The `' + process.env.COMMAND_PREFIX + commandName + '` command requires admin privileges to use here.'
         });
     }
 
-    _runCommand(user, userId, channelId, commandData, input) {
+    _runCommand(message, commandData, input) {
         const commandArgs = input.getCommandArgs();
-        const commandPromise = commandData.func(this._bot, user, userId, channelId, commandArgs, this._db);
+        const commandPromise = commandData.func(this._bot, message, commandArgs, this._db);
         if (!botUtils.isPromise(commandPromise)) {
             console.error('Command \'%s\' did not return a promise with command args \'%s\'.', input.getCommandName(), util.inspect(commandArgs));
         } else {
-            commandPromise.catch(err => this._reportCommandError(err, channelId));
+            commandPromise.catch(err => this._reportCommandError(err, message.channelId));
         }
     }
 

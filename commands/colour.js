@@ -2,7 +2,7 @@ module.exports = (function() {
     'use strict';
 
     const botUtils = require('../bot_utils');
-	const helpGroups = require('../phil/help-groups');
+    const helpGroups = require('../phil/help-groups');
     const util = require('util');
 
     const decemberLinks = [
@@ -148,17 +148,19 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: false,
         aliases: ['color'],
+        
         helpGroup: helpGroups.Groups.Roles,
         helpDescription: 'Asks Phil to change your username colour to a hex code of your choosing.',
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+
+        publicRequiresAdmin: false,
+        processPublicMessage: function(bot, message, commandArgs, db) {
             return Promise.resolve()
                 .then(() => getHexColorFromCommandArgs(commandArgs))
-                .then(hexColor => getColorRoleData(bot, channelId, hexColor))
-                .then(roleData => removeCurrentColorRole(bot, channelId, userId, roleData))
-                .then(roleData => setColorRole(bot, channelId, userId, roleData))
-                .then(roleData => sendColorChangeSuccess(bot, channelId, roleData));
+                .then(hexColor => getColorRoleData(bot, message.channelId, hexColor))
+                .then(roleData => removeCurrentColorRole(bot, message.channelId, message.userId, roleData))
+                .then(roleData => setColorRole(bot, message.channelId, message.userId, roleData))
+                .then(roleData => sendColorChangeSuccess(bot, message.channelId, roleData));
         }
     };
 })();

@@ -1,7 +1,7 @@
 'use strict';
 
 const EnvironmentManager = require('./phil/environment-manager');
-const Database = require('./phil/database.js');
+const Database = require('./phil/database');
 const Phil = require('./phil/phil');
 const WebPortal = require('./phil/web-portal');
 

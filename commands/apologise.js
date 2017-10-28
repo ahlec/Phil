@@ -16,10 +16,10 @@ module.exports = (function() {
         'On my Yeti honour and pride, I shall never do this again.'
     ];
 
-    function _sendMessage(bot, channelId, message) {
+    function _sendMessage(bot, channelId, apology) {
         bot.sendMessage({
             to: channelId,
-            message: message
+            message: apology
         });
     }
 
@@ -30,10 +30,10 @@ module.exports = (function() {
         helpGroup: helpGroups.Groups.None,
         helpDescription: 'Makes Phil apologise for making a mistake.',
 
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+        processPublicMessage: function(bot, message, commandArgs, db) {
             const apology = botUtils.getRandomArrayEntry(apologies);
             return Promise.resolve()
-                .then(() => _sendMessage(bot, channelId, apology));
+                .then(() => _sendMessage(bot, message.channelId, apology));
         }
     };
 })();

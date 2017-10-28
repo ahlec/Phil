@@ -20,17 +20,17 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: true,
-        privateRequiresAdmin: true,
         aliases: [],
-        helpGroup: helpGroups.Groups.Admin,
+
+        helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Prevents Phil from posting any daily prompts until you instruct him that it\'s okay to do so by using `' + process.env.COMMAND_PREFIX + 'enableprompts`.',
 
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+        publicRequiresAdmin: true,
+        processPublicMessage: function(bot, message, commandArgs, db) {
             return prompts.getAreDailyPromptsEnabled(db)
                 .then(_ensurePromptsAreEnabled)
                 .then(() => prompts.setPromptsEnabled(db, false))
-                .then(() => _sendPromptsDisabledMessage(bot, channelId));
+                .then(() => _sendPromptsDisabledMessage(bot, message.channelId));
         }
     };
 })();

@@ -51,20 +51,21 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: true,
-        privateRequiresAdmin: false,
         aliases: [],
+
         helpGroup: helpGroups.Groups.None,
 
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+        publicRequiresAdmin: true,
+        processPublicMessage: function(bot, message, commandArgs, db) {
             return prompts.getConfirmRejectNumbersFromCommandArgs(commandArgs)
-                .then(numbers => prompts.confirmRejectNumbers(db, channelId, numbers, confirmPrompt))
-                .then(numConfirmed => sendCompletionMessage(bot, channelId, numConfirmed));
+                .then(numbers => prompts.confirmRejectNumbers(db, message.channelId, numbers, confirmPrompt))
+                .then(numConfirmed => sendCompletionMessage(bot, message.channelId, numConfirmed));
         },
 
-        processPrivateMessage: function(bot, user, userId, channelId, commandArgs, db) {
-            return confirmPreviousSuggestion(db, userId)
-                .then(result => reportSuggestionConfirmationResult(result, bot, channelId));
+        privateRequiresAdmin: false,
+        processPrivateMessage: function(bot, message, commandArgs, db) {
+            return confirmPreviousSuggestion(db, message.userId)
+                .then(result => reportSuggestionConfirmationResult(result, bot, message.channelId));
         }
     };
 })();

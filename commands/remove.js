@@ -107,26 +107,28 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: false,
         aliases: [],
+
         helpGroup: helpGroups.Groups.Roles,
         helpDescription: 'Asks Phil to take away a requestable role that he has given you.',
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
-            const serverId = bot.channels[channelId].guild_id;
+
+        publicRequiresAdmin: false,
+        processPublicMessage: function(bot, message, commandArgs, db) {
+            const serverId = bot.channels[message.channelId].guild_id;
             const server = bot.servers[serverId];
 
             if (commandArgs.length === 0) {
                 return requestables.getAllRequestables(db, server)
-                    .then(requestables => _filterOnlyRequestablesUserHas(requestables, server, userId))
+                    .then(requestables => _filterOnlyRequestablesUserHas(requestables, server, message.userId))
                     .then(_ensureAtLeastOneRequestable)
                     .then(_composeRemovableRequestablesList)
-                    .then(fullMessage => _sendRequestablesList(fullMessage, bot, channelId));
+                    .then(fullMessage => _sendRequestablesList(fullMessage, bot, message.channelId));
             }
 
             return requestables.getRoleFromRequestable(commandArgs[0], db, server)
-                .then(role => _ensureUserHasRole(role, server, userId))
-                .then(role => _takeRoleFromUser(role, bot, serverId, userId))
-                .then(role => _informUserOfRemoval(role, bot, userId, channelId));
+                .then(role => _ensureUserHasRole(role, server, message.userId))
+                .then(role => _takeRoleFromUser(role, bot, serverId, message.userId))
+                .then(role => _informUserOfRemoval(role, bot, message.userId, message.channelId));
         }
     };
 })();

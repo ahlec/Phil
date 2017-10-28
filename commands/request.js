@@ -1,7 +1,7 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils.js');
+    const botUtils = require('../bot_utils');
     const requestables = require('../phil/requestables');
     const helpGroups = require('../phil/help-groups');
 
@@ -94,25 +94,27 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: false,
         aliases: ['giveme'],
+
         helpGroup: helpGroups.Groups.Roles,
         helpDescription: 'Asks Phil to give you a role. Using the command by itself will show you all of the roles he can give you.',
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
-            const serverId = bot.channels[channelId].guild_id;
+
+        publicRequiresAdmin: false,
+        processPublicMessage: function(bot, message, commandArgs, db) {
+            const serverId = bot.channels[message.channelId].guild_id;
             const server = bot.servers[serverId];
 
             if (commandArgs.length === 0) {
                 return requestables.getAllRequestables(db, server)
                     .then(_ensureAtLeastOneRequestable)
                     .then(_composeAllRequestablesList)
-                    .then(fullMessage => _sendRequestablesList(fullMessage, bot, channelId));
+                    .then(fullMessage => _sendRequestablesList(fullMessage, bot, message.channelId));
             }
 
             return requestables.getRoleFromRequestable(commandArgs[0], db, server)
-                .then(role => _ensureUserDoesntHaveRole(role, server, userId))
-                .then(role => _giveRoleToUser(role, bot, serverId, userId))
-                .then(role => _informUserOfNewRole(role, bot, userId, channelId));
+                .then(role => _ensureUserDoesntHaveRole(role, server, message.userId))
+                .then(role => _giveRoleToUser(role, bot, serverId, message.userId))
+                .then(role => _informUserOfNewRole(role, bot, message.userId, message.channelId));
         }
     };
 })();

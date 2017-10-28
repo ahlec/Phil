@@ -20,17 +20,17 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: true,
-        privateRequiresAdmin: true,
         aliases: [],
-        helpGroup: helpGroups.Groups.Admin,
+
+        helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Lets Phil once again post daily prompts in the appropriate channel. Usable to undo `' + process.env.COMMAND_PREFIX + 'disableprompts`.',
-        
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+
+        publicRequiresAdmin: true,
+        processPublicMessage: function(bot, message, commandArgs, db) {
             return prompts.getAreDailyPromptsEnabled(db)
                 .then(_ensurePromptsAreDisabled)
                 .then(() => prompts.setPromptsEnabled(db, true))
-                .then(() => _sendPromptsEnabledMessage(bot, channelId));
+                .then(() => _sendPromptsEnabledMessage(bot, message.channelId));
         }
     };
 })();

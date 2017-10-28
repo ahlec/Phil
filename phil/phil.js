@@ -4,6 +4,7 @@ const botUtils = require('../bot_utils.js');
 const assert = require('assert');
 const discord = require('discord.io');
 const CommandRunner = require('./command-runner');
+const discordMessage = require('./discord-message');
 
 function ignoreDiscordCode(code) {
     return (code === 1000); // General disconnect code
@@ -56,9 +57,10 @@ module.exports = class Phil {
         }
     }
 
-    _onMessage(user, userId, channelId, message, event) {
+    _onMessage(user, userId, channelId, msg, event) {
+        const message = discordMessage(event);
         if (this._commandRunner) {
-            this._commandRunner.runMessage(user, userId, channelId, message);
+            this._commandRunner.runMessage(message);
         }
     }
 

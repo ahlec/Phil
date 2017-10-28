@@ -35,18 +35,18 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: false,
-        privateRequiresAdmin: false,
         aliases: [],
+
         helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Suggests a new daily prompt for Phil to add to his list. (*DIRECT MESSAGE ONLY*)',
 
-        processPrivateMessage: function(bot, user, userId, channelId, commandArgs, db) {
+        privateRequiresAdmin: false,
+        processPrivateMessage: function(bot, message, commandArgs, db) {
             return Promise.resolve()
                 .then(() => getSuggestionFromCommandArgs(commandArgs))
-                .then(prompt => clearOutPreviouslyUnconfirmedPrompts(db, userId, prompt))
-                .then(prompt => addNewPrompt(db, user, userId, prompt))
-                .then(prompt => sendConfirmationMessage(bot, channelId, prompt));
+                .then(prompt => clearOutPreviouslyUnconfirmedPrompts(db, message.userId, prompt))
+                .then(prompt => addNewPrompt(db, message.user, message.userId, prompt))
+                .then(prompt => sendConfirmationMessage(bot, message.channelId, prompt));
         }
     };
 })();

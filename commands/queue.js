@@ -42,16 +42,17 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: true,
         aliases: [],
-        helpGroup: helpGroups.Groups.Admin,
+
+        helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Displays the current queue of approved prompts that will show up in chat shortly.',
 
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+        publicRequiresAdmin: true,
+        processPublicMessage: function(bot, message, commandArgs, db) {
             return prompts.getAreDailyPromptsEnabled(db)
                 .then(_ensureDailyPromptsAreEnabled)
                 .then(() => prompts.getPromptQueue(db, MAX_QUEUE_DISPLAY_LENGTH))
-                .then(queue => _sendPromptQueueToChannel(queue, bot, channelId));
+                .then(queue => _sendPromptQueueToChannel(queue, bot, message.channelId));
         }
     };
 })();

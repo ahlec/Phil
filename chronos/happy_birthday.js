@@ -1,7 +1,7 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils.js');
+    const botUtils = require('../bot_utils');
     const DATABASE_INFO_KEY = 'happy-birthday-last-wished';
 
     function getDateLastWished(db) {

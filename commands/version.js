@@ -16,16 +16,16 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: false,
-        privateRequiresAdmin: false,
         aliases: [ 'versions' ],
+
         helpGroup: helpGroups.Groups.General,
         helpDescription: 'Prints out the current version numbers related to Phil.',
 
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+        publicRequiresAdmin: false,
+        processPublicMessage: function(bot, message, commandArgs, db) {
             return Promise.resolve()
                 .then(_composeMessage)
-                .then(message => _sendMessage(bot, channelId, message));
+                .then(reply => _sendMessage(bot, message.channelId, reply));
         }
     };
 })();

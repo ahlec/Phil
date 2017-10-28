@@ -30,16 +30,16 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: false,
-        privateRequiresAdmin: false,
         aliases: [ 'magicconch', 'mc' ],
+
         helpGroup: helpGroups.Groups.Memes,
         helpDescription: 'The Magic Conch Says...',
 
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+        publicRequiresAdmin: false,
+        processPublicMessage: function(bot, message, commandArgs, db) {
             return Promise.resolve()
                 .then(() => _createMessage())
-                .then(message => _sendMessage(bot, channelId, message));
+                .then(reply => _sendMessage(bot, message.channelId, reply));
         }
     };
 })();

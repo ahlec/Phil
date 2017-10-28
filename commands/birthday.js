@@ -1,7 +1,7 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils.js');
+    const botUtils = require('../bot_utils');
     const chronoNode = require('chrono-node');
     const helpGroups = require('../phil/help-groups');
 
@@ -80,20 +80,23 @@ module.exports = (function() {
         });
     }
 
-    function handleMessage(bot, user, userId, channelId, commandArgs, db) {
+    function handleMessage(bot, message, commandArgs, db) {
         return Promise.resolve()
             .then(() => parseBirthday(commandArgs))
-            .then(birthday => setBirthdayInDatabase(db, user, userId, birthday))
-            .then(data => sendDatabaseSuccessMessage(bot, channelId, data));
+            .then(birthday => setBirthdayInDatabase(db, message.user, message.userId, birthday))
+            .then(data => sendDatabaseSuccessMessage(bot, message.channelId, data));
     }
 
     return {
-        publicRequiresAdmin: false,
-        privateRequiresAdmin: false,
         aliases: [],
+
         helpGroup: helpGroups.Groups.General,
         helpDescription: 'Tell Phil when your birthday is so he can share your birthday with the server.',
+
+        publicRequiresAdmin: false,
         processPublicMessage: handleMessage,
+
+        privateRequiresAdmin: false,
         processPrivateMessage: handleMessage
     };
 })();

@@ -27,15 +27,15 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: true,
-        privateRequiresAdmin: true,
         aliases: [],
+
         helpGroup: helpGroups.Groups.None,
 
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+        publicRequiresAdmin: true,
+        processPublicMessage: function(bot, message, commandArgs, db) {
             return prompts.getConfirmRejectNumbersFromCommandArgs(commandArgs)
-                .then(numbers => prompts.confirmRejectNumbers(db, channelId, numbers, rejectPrompt))
-                .then(numRejected => sendCompletionMessage(bot, channelId, numRejected));
+                .then(numbers => prompts.confirmRejectNumbers(db, message.channelId, numbers, rejectPrompt))
+                .then(numRejected => sendCompletionMessage(bot, message.channelId, numRejected));
         }
     };
 })();

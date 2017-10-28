@@ -65,14 +65,14 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: true,
-        privateRequiresAdmin: true,
         aliases: [],
-        helpGroup: helpGroups.Groups.Admin,
+
+        helpGroup: helpGroups.Groups.Roles,
         helpDescription: 'Creates a new requestable role that users can use with `' + process.env.COMMAND_PREFIX + 'request`',
 
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
-            const serverId = bot.channels[channelId].guild_id;
+        publicRequiresAdmin: true,
+        processPublicMessage: function(bot, message, commandArgs, db) {
+            const serverId = bot.channels[message.channelId].guild_id;
             const server = bot.servers[serverId];
 
             return Promise.resolve()
@@ -80,7 +80,7 @@ module.exports = (function() {
                 .then(commandArgs => _convertCommandArgsToData(commandArgs, server))
                 .then(data => _validateInputData(data, db))
                 .then(data => requestables.createRequestable(data, db))
-                .then(data => _sendSuccessMessage(bot, channelId, data));
+                .then(data => _sendSuccessMessage(bot, message.channelId, data));
         }
     };
 })();

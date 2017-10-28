@@ -162,29 +162,20 @@ module.exports = (function() {
         });
     }
 
-    function sendFunctionError(err, bot, channelId) {
-        // VERSION 7: When every command is rewritten to be a promise, move this to a command-runner .catch globally
-        botUtils.sendErrorMessage({
-            bot: bot,
-            channelId: channelId,
-            message: err
-        });
-    }
-
     return {
-        publicRequiresAdmin: false,
-        privateRequiresAdmin: false,
         aliases: [],
+
         helpGroup: helpGroups.Groups.General,
         helpDescription: 'Has Phil display the calendar of server events for the month in question.',
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+        
+        publicRequiresAdmin: false,
+        processPublicMessage: function(bot, message, commandArgs, db) {
             return Promise.resolve()
                 .then(() => determineMonth(commandArgs))
                 .then(createCalendarDataStructureForMonth)
                 .then(calendar => addDatesToCalendar(calendar, db, bot))
-                .then(calendar => composeMessageFromCalendar(calendar, bot, channelId))
-                .then(message => sendCalendarMessage(message, bot, channelId))
-                .catch(err => sendFunctionError(err, bot, channelId));
+                .then(calendar => composeMessageFromCalendar(calendar, bot, message.channelId))
+                .then(calendarMessage => sendCalendarMessage(calendarMessage, bot, message.channelId));
         }
     };
 })();

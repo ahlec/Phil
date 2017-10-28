@@ -12,16 +12,16 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: false,
-        privateRequiresAdmin: false,
         aliases: [ 'poison' ],
+
         helpGroup: helpGroups.Groups.Memes,
         helpDescription: 'Oh right, the poison.',
 
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+        publicRequiresAdmin: false,
+        processPublicMessage: function(bot, message, commandArgs, db) {
             const apology = botUtils.getRandomArrayEntry(apologies);
             return Promise.resolve()
-                .then(() => _sendMessage(bot, channelId, apology));
+                .then(() => _sendMessage(bot, message.channelId, apology));
         }
     };
 })();

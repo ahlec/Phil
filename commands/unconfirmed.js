@@ -77,17 +77,17 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: true,
-        privateRequiresAdmin: true,
         aliases: [],
-        helpGroup: helpGroups.Groups.Admin,
+
+        helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Creates a list of some of the unconfirmed prompts that are awaiting admin approval before being added to the prompt queue.',
 
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
-            return clearPreviousConfirmListForChannel(db, channelId)
+        publicRequiresAdmin: true,
+        processPublicMessage: function(bot, message, commandArgs, db) {
+            return clearPreviousConfirmListForChannel(db, message.channelId)
                 .then(() => getUnconfirmedPrompts(db))
-                .then(list => createConfirmationQueueFromList(db, channelId, list))
-                .then(list => outputConfirmationQueue(bot, channelId, list));
+                .then(list => createConfirmationQueueFromList(db, message.channelId, list))
+                .then(list => outputConfirmationQueue(bot, message.channelId, list));
         }
     };
 })();

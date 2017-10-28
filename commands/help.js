@@ -179,15 +179,16 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: false,
         aliases: [],
+
         helpGroup: helpGroups.Groups.General,
         helpDescription: 'Find out about all of the commands that Phil has available.',
-        
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+
+        publicRequiresAdmin: false,
+        processPublicMessage: function(bot, message, commandArgs, db) {
             return _groupsPromise
-                .then(groups => _createHelpMessage(groups, bot, channelId, userId))
-                .then(messages => _sendMessages(bot, channelId, messages));
+                .then(groups => _createHelpMessage(groups, bot, message.channelId, message.userId))
+                .then(helpMessages => _sendMessages(bot, message.channelId, helpMessages));
         },
 
         saveCommandDefinitions: function(commands) {

@@ -19,18 +19,18 @@ module.exports = (function() {
     }
     
     return {
-        publicRequiresAdmin: false,
-        privateRequiresAdmin: false,
         aliases: [],
+
         helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Asks Phil to remind you what the prompt of the day is.',
 
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+        publicRequiresAdmin: false,
+        processPublicMessage: function(bot, message, commandArgs, db) {
             return prompts.getAreDailyPromptsEnabled(db)
                 .then(_ensureDailyPromptsAreEnabled)
                 .then(() => prompts.getTodaysPrompt(db))
                 .then(_ensureThereIsPromptForToday)
-                .then(prompt => prompts.sendPromptToChannel(bot, channelId, prompt));
+                .then(prompt => prompts.sendPromptToChannel(bot, message.channelId, prompt));
         }
     };
 })();

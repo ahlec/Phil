@@ -3,7 +3,7 @@ module.exports = (function() {
 
     const fs = require('fs');
     const assert = require('assert');
-    const botUtils = require('../bot_utils.js');
+    const botUtils = require('../bot_utils');
 
     function assertIsValidChrono(chronoDefinition) {
         assert(typeof(chronoDefinition) === 'object');

@@ -48,19 +48,19 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: false,
-        privateRequiresAdmin: false,
         aliases: [ 'yt' ],
+
         helpGroup: helpGroups.Groups.General,
         helpDescription: 'Searches YouTube for something and posts a link to the first video.',
 
-        processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
+        publicRequiresAdmin: false,
+        processPublicMessage: function(bot, message, commandArgs, db) {
             return Promise.resolve()
                 .then(() => _getQuery(commandArgs))
                 .then(query => _ensureQueryProvided(query))
                 .then(_searchYouTube)
                 .then(_getYouTubeLink)
-                .then(link => _postYouTubeLink(bot, channelId, link));
+                .then(link => _postYouTubeLink(bot, message.channelId, link));
         }
     };
 })();
