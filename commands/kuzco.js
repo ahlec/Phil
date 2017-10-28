@@ -3,12 +3,45 @@ module.exports = (function() {
 
     const botUtils = require('../bot_utils');
     const helpGroups = require('../phil/help-groups');
+    const discord = require('../promises/discord');
 
-    function _sendMessage(bot, channelId, message) {
-        bot.sendMessage({
-            to: channelId,
-            message: message
-        });
+    function _getArguments(commandArgs) {
+        if (commandArgs.length === 0) {
+            return ['kuzco', 'poison'];
+        }
+
+        if (commandArgs.length === 1) {
+            return [commandArgs[0], 'poison'];
+        }
+
+        var indexOfSecondArgument = Math.ceil(commandArgs.length / 2);
+        return [
+            commandArgs.slice(0, indexOfSecondArgument).join(' ').trim(),
+            commandArgs.slice(indexOfSecondArgument).join(' ').trim()
+        ];
+    }
+
+    function _createReply(kuzcosPoison) {
+        return 'Oh right, the ' +
+            kuzcosPoison[1] +
+            '. The ' +
+            kuzcosPoison[1] +
+            ' for ' +
+            kuzcosPoison[0] +
+            '. The ' +
+            kuzcosPoison[1] +
+            ' chosen specially for ' +
+            kuzcosPoison[0] +
+            '. ' +
+            kuzcosPoison[0] +
+            '\'s ' +
+            kuzcosPoison[1] +
+            '.';
+    }
+
+    function _sendMessage(bot, channelId, messageId, reply) {
+        return discord.deleteMessage(bot, channelId, messageId)
+            .then(() => discord.sendMessage(bot, channelId, reply));
     }
 
     return {
@@ -19,9 +52,10 @@ module.exports = (function() {
 
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {
-            const apology = botUtils.getRandomArrayEntry(apologies);
             return Promise.resolve()
-                .then(() => _sendMessage(bot, message.channelId, apology));
+                .then(() => _getArguments(commandArgs))
+                .then(kuzcosPoison => _createReply(kuzcosPoison))
+                .then(reply => _sendMessage(bot, message.channelId, message.id, reply));
         }
     };
 })();

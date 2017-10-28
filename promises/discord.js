@@ -11,7 +11,34 @@ module.exports = (function() {
             } else {
                 resolve(response);
             }
-        })
+        });
+    }
+
+    function _performEditMessagePromise(resolve, reject, bot, channelId, messageId, text) {
+        bot.editMessage({
+            channelID: channelId,
+            messageID: messageId,
+            message: text
+        }, (err, response) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(response);
+            }
+        });
+    }
+
+    function _performDeleteMessagePromise(resolve, reject, bot, channelId, messageId) {
+        bot.deleteMessage({
+            channelID: channelId,
+            messageID: messageId
+        }, (err, response) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(response);
+            }
+        });
     }
 
     return {
@@ -31,6 +58,42 @@ module.exports = (function() {
             }
 
             return new Promise((resolve, reject) => _performSendMessagePromise(resolve, reject, bot, channelId, message));
+        },
+
+        editMessage: function(bot, channelId, messageId, text) {
+            if (typeof(bot) !== 'object') {
+                return Promise.reject('editMessage was not provided a valid bot.');
+            }
+
+            if (typeof(channelId) !== 'string') {
+                return Promise.reject('editMessage was not provided a channel');
+            }
+
+            if (typeof(messageId) !== 'string') {
+                return Promise.reject('editMessage was not provided a message id')
+            }
+
+            if (typeof(text) !== 'string') {
+                return Promise.reject('editMessage was not provided text');
+            }
+
+            return new Promise((resolve, reject) => _performEditMessagePromise(resolve, reject, bot, channelId, messageId, text));
+        },
+
+        deleteMessage: function(bot, channelId, messageId) {
+            if (typeof(bot) !== 'object') {
+                return Promise.reject('deleteMessage was not provided a valid bot.');
+            }
+
+            if (typeof(channelId) !== 'string') {
+                return Promise.reject('deleteMessage was not provided a channel');
+            }
+
+            if (typeof(messageId) !== 'string') {
+                return Promise.reject('deleteMessage was not provided a message');
+            }
+
+            return new Promise((resolve, reject) => _performDeleteMessagePromise(resolve, reject, bot, channelId, messageId));
         }
     };
 })();
