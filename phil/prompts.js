@@ -180,7 +180,7 @@ module.exports = (function() {
         },
 
         getPromptQueue: function(db, maxNumResults) {
-            return db.query('SELECT prompt_id, prompt_text FROM hijack_prompts WHERE has_been_posted=E\'0\' AND approved_by_user=E\'1\' AND approved_by_user=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
+            return db.query('SELECT prompt_id, prompt_text FROM hijack_prompts WHERE has_been_posted=E\'0\' AND approved_by_user=E\'1\' AND approved_by_admin=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
                 .then(_parsePromptQueueDbResults);
         }
     };
