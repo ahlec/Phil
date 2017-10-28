@@ -2,10 +2,74 @@ module.exports = (function() {
     'use strict';
 
     const botUtils = require('../bot_utils');
-    var _userCommands;
-    var _adminCommands;
+    const assert = require('assert');
+    const helpGroups = require('../phil/help-groups');
+    const discord = require('../promises/discord');
 
-    function helpInformationSortFunction(a, b) {
+    var _groupsPromise;
+
+    function _isAlias(command, commandImplementation) {
+        return (commandImplementation.aliases.indexOf(command) >= 0);
+    }
+
+    function _filterDisplayableCommands(commands) {
+        const displayable = {};
+        for (let command in commands) {
+            let commandImplementation = commands[command];
+
+            if (_isAlias(command, commandImplementation)) {
+                continue;
+            }
+
+            if (typeof(commandImplementation.helpGroup) !== 'number') {
+                return Promise.reject('Command \'' + command + '\' does not have a help group.');
+            }
+
+            if (commandImplementation.helpGroup < 0) {
+                continue;
+            }
+
+            displayable[command] = commandImplementation;
+        }
+
+        return displayable;
+    }
+
+    function _createHelpInfoArray(displayable) {
+        const helpInfo = [];
+
+        for (let command in displayable) {
+            let commandImplementation = displayable[command];
+
+            assert(typeof(commandImplementation.helpDescription) === 'string' && commandImplementation.helpDescription.length > 0);
+
+            helpInfo.push({
+                name: command,
+                group: commandImplementation.helpGroup,
+                isAdminFunction: (commandImplementation.publicRequiresAdmin === true),
+                message: commandImplementation.helpDescription,
+                aliases: commandImplementation.aliases
+            });
+        }
+
+        return helpInfo;
+    }
+
+    function _groupHelpInfo(helpInfo) {
+        const groups = {};
+
+        for (let info of helpInfo) {
+            if (!groups[info.group]) {
+                groups[info.group] = [];
+            }
+
+            groups[info.group].push(info);
+        }
+
+        return groups;
+    }
+
+    function _helpInformationSortFunction(a, b) {
         if (a.name === b.name) {
             return 0;
         }
@@ -13,16 +77,20 @@ module.exports = (function() {
         return (a.name < b.name ? -1 : 1);
     }
 
-    function _determineIfUserIsAdmin(bot, channelId, userId) {
-        const serverId = bot.channels[channelId].guild_id;
-        const server = bot.servers[serverId];
-        const member = server.members[userId];
-        const isUserAnAdmin = botUtils.isMemberAnAdminOnServer(member, server);
-        return isUserAnAdmin;
+    function _sortGroups(groups) {
+        for (let groupNumber in groups) {
+            groups[groupNumber].sort(_helpInformationSortFunction);
+        }
+
+        return groups;
     }
 
-    function _formatHelpInformationForDisplay(helpInformation, isAdminFunction) {
-        const emoji = (isAdminFunction ? ':large_orange_diamond:' : ':large_blue_diamond:');
+
+
+
+    function _formatHelpInformationForDisplay(helpInformation) {
+        const emoji = (helpInformation.isAdminFunction ? ':small_orange_diamond:' : ':small_blue_diamond:');
+
         var message = emoji + ' [`' + helpInformation.name + '`';
         if (helpInformation.aliases.length > 0) {
             message += ' (alias';
@@ -38,55 +106,96 @@ module.exports = (function() {
             }
             message += ')';
         }
-        message += '] ' + helpInformation.message;
+        message += '] ' + helpInformation.message + '\n';
         return message;
     }
 
-    function _createHelpMessage(isUserAnAdmin) {
-        var helpMessage = 'I\'m equipped to understand the following commands if you start them with `' + process.env.COMMAND_PREFIX + '` (like `' + process.env.COMMAND_PREFIX + 'help`):\n\n';
-        if (_userCommands.length > 0) {
-            helpMessage += '**USER COMMANDS**\n';
-            for (let command of _userCommands) {
-                helpMessage += _formatHelpInformationForDisplay(command, false) + '\n';
-            }
-        }
-
-        if (isUserAnAdmin && _adminCommands.length > 0) {
-            helpMessage += '\n**ADMIN COMMANDS**\n';
-            for (let command of _adminCommands) {
-                helpMessage += _formatHelpInformationForDisplay(command, true) + '\n';
-            }
-        }
-
-        helpMessage = helpMessage.replace(/^\s+|\s+$/g, '');
-        return helpMessage;
+    function _determineIfUserIsAdmin(bot, channelId, userId) {
+        const serverId = bot.channels[channelId].guild_id;
+        const server = bot.servers[serverId];
+        const member = server.members[userId];
+        const isUserAnAdmin = botUtils.isMemberAnAdminOnServer(member, server);
+        return isUserAnAdmin;
     }
 
-    function _sendMessage(bot, channelId, message) {
-        bot.sendMessage({
-            to: channelId,
-            message: message
-        });
+    function _getGroupItems(group, isUserAnAdmin, isAdminChannel) {
+        const items = [];
+
+        for (let item of group) {
+            let canDisplayItem = true;
+            if (item.isAdminFunction) {
+                canDisplayItem = (isUserAnAdmin && isAdminChannel)
+            }
+
+            if (canDisplayItem) {
+                items.push(item);
+            }
+        }
+
+        return items;
+    }
+
+    function _createHelpMessage(groups, bot, channelId, userId) {
+        const isUserAnAdmin = _determineIfUserIsAdmin(bot, channelId, userId);
+        const isAdminChannel = botUtils.isAdminChannel(channelId);
+
+        const messages = [];
+        var currentMessage = '';
+        for (let groupNumber in groups) {
+            let items = _getGroupItems(groups[groupNumber], isUserAnAdmin, isAdminChannel);
+            if (items.length === 0) {
+                continue;
+            }
+
+            currentMessage += '\n\n**';
+            currentMessage += helpGroups.getHeaderForGroup(groupNumber);
+            currentMessage += '**\n';
+
+            for (let helpInformation of items) {
+                let helpMessage = _formatHelpInformationForDisplay(helpInformation);
+
+                if (currentMessage.length + helpMessage.length >= discord.PUBLIC_CHANNEL_CHARACTER_LIMIT) {
+                    messages.push(currentMessage);
+                    currentMessage = '';
+                }
+
+                currentMessage += helpMessage;
+            }
+        }
+
+        currentMessage = currentMessage.replace(/^\s+|\s+$/g, '');
+        messages.push(currentMessage);
+
+        return messages;
+    }
+
+    function _sendMessages(bot, channelId, messages) {
+        var currentPromise = Promise.resolve();
+        for (let message of messages) {
+            currentPromise = currentPromise.then(() => discord.sendMessage(bot, channelId, message));
+        }
+
+        return currentPromise;
     }
 
     return {
         publicRequiresAdmin: false,
         aliases: [],
+        helpGroup: helpGroups.Groups.General,
         helpDescription: 'Find out about all of the commands that Phil has available.',
         
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
-            return Promise.resolve()
-                .then(() => _determineIfUserIsAdmin(bot, channelId, userId))
-                .then(isUserAnAdmin => _createHelpMessage(isUserAnAdmin))
-                .then(message => _sendMessage(bot, channelId, message));
+            return _groupsPromise
+                .then(groups => _createHelpMessage(groups, bot, channelId, userId))
+                .then(messages => _sendMessages(bot, channelId, messages));
         },
 
-        saveCommandDefinitions: function(userCommands, adminCommands) {
-            userCommands.sort(helpInformationSortFunction);
-            adminCommands.sort(helpInformationSortFunction);
-
-            _userCommands = userCommands;
-            _adminCommands = adminCommands;
+        saveCommandDefinitions: function(commands) {
+            _groupsPromise = Promise.resolve()
+                .then(() => _filterDisplayableCommands(commands))
+                .then(_createHelpInfoArray)
+                .then(_groupHelpInfo)
+                .then(_sortGroups);
         }
     };
 })();

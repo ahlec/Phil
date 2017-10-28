@@ -3,6 +3,7 @@ module.exports = (function() {
 
     const botUtils = require('../bot_utils.js');
     const requestables = require('../phil/requestables');
+    const helpGroups = require('../phil/help-groups');
 
     function _ensureAtLeastOneRequestable(requestables) {
         if (requestables.length === 0) {
@@ -95,6 +96,7 @@ module.exports = (function() {
     return {
         publicRequiresAdmin: false,
         aliases: ['giveme'],
+        helpGroup: helpGroups.Groups.Roles,
         helpDescription: 'Asks Phil to give you a role. Using the command by itself will show you all of the roles he can give you.',
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             const serverId = bot.channels[channelId].guild_id;

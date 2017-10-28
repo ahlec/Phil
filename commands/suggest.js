@@ -2,6 +2,7 @@ module.exports = (function() {
     'use strict';
 
     const botUtils = require('../bot_utils');
+    const helpGroups = require('../phil/help-groups');
 
     function getSuggestionFromCommandArgs(commandArgs) {
         var prompt = commandArgs.join(' ').trim();
@@ -37,6 +38,7 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         privateRequiresAdmin: false,
         aliases: [],
+        helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Suggests a new daily prompt for Phil to add to his list. (*DIRECT MESSAGE ONLY*)',
 
         processPrivateMessage: function(bot, user, userId, channelId, commandArgs, db) {

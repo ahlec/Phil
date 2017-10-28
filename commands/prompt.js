@@ -2,6 +2,7 @@ module.exports = (function() {
     'use strict';
 
     const prompts = require('../phil/prompts');
+    const helpGroups = require('../phil/help-groups');
 
     function _ensureDailyPromptsAreEnabled(arePromptsEnabled) {
         if (arePromptsEnabled !== true) {
@@ -21,6 +22,7 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         privateRequiresAdmin: false,
         aliases: [],
+        helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Asks Phil to remind you what the prompt of the day is.',
 
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {

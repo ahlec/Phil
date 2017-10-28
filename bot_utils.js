@@ -219,6 +219,10 @@ module.exports = (function() {
 
         isNumeric: function(input) {
             return ( !isNaN(parseInt(input)) && isFinite(input) );
+        },
+
+        isAdminChannel: function(channelId) {
+	        return (channelId === process.env.BOT_CONTROL_CHANNEL_ID || channelId === process.env.ADMIN_CHANNEL_ID);
         }
     }
 })();

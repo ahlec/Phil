@@ -2,6 +2,7 @@ module.exports = (function() {
     'use strict';
 
     const botUtils = require('../bot_utils');
+    const helpGroups = require('../phil/help-groups');
     const MAX_LIST_LENGTH = 10;
 
     function clearPreviousConfirmListForChannel(db, channelId) {
@@ -79,6 +80,7 @@ module.exports = (function() {
         publicRequiresAdmin: true,
         privateRequiresAdmin: true,
         aliases: [],
+        helpGroup: helpGroups.Groups.Admin,
         helpDescription: 'Creates a list of some of the unconfirmed prompts that are awaiting admin approval before being added to the prompt queue.',
 
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {

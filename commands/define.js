@@ -3,6 +3,7 @@ module.exports = (function() {
 
     const botUtils = require('../bot_utils');
     const requestables = require('../phil/requestables');
+    const helpGroups = require('../phil/help-groups');
 
     function _getRequestStringFromCommandArgs(commandArgs) {
         var requestString = commandArgs[0].toLowerCase();
@@ -67,6 +68,7 @@ module.exports = (function() {
         publicRequiresAdmin: true,
         privateRequiresAdmin: true,
         aliases: [],
+        helpGroup: helpGroups.Groups.Admin,
         helpDescription: 'Creates a new requestable role that users can use with `' + process.env.COMMAND_PREFIX + 'request`',
 
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {

@@ -3,6 +3,7 @@ module.exports = (function() {
 
     const botUtils = require('../bot_utils');
     const prompts = require('../phil/prompts');
+    const helpGroups = require('../phil/help-groups');
 
     // --------------------------------- Private message functionality
 
@@ -53,7 +54,7 @@ module.exports = (function() {
         publicRequiresAdmin: true,
         privateRequiresAdmin: false,
         aliases: [],
-        hideFromHelpListing: true,
+        helpGroup: helpGroups.Groups.None,
 
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             return prompts.getConfirmRejectNumbersFromCommandArgs(commandArgs)

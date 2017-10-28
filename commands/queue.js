@@ -2,6 +2,7 @@ module.exports = (function() {
     'use strict';
 
     const prompts = require('../phil/prompts');
+    const helpGroups = require('../phil/help-groups');
     const MAX_QUEUE_DISPLAY_LENGTH = 10;
 
     function _ensureDailyPromptsAreEnabled(arePromptsEnabled) {
@@ -43,6 +44,7 @@ module.exports = (function() {
     return {
         publicRequiresAdmin: true,
         aliases: [],
+        helpGroup: helpGroups.Groups.Admin,
         helpDescription: 'Displays the current queue of approved prompts that will show up in chat shortly.',
 
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {

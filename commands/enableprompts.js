@@ -3,6 +3,7 @@ module.exports = (function() {
 
     const botUtils = require('../bot_utils');
     const prompts = require('../phil/prompts');
+    const helpGroups = require('../phil/help-groups');
 
     function _ensurePromptsAreDisabled(arePromptsEnabled) {
         if (arePromptsEnabled !== false) {
@@ -22,6 +23,7 @@ module.exports = (function() {
         publicRequiresAdmin: true,
         privateRequiresAdmin: true,
         aliases: [],
+        helpGroup: helpGroups.Groups.Admin,
         helpDescription: 'Lets Phil once again post daily prompts in the appropriate channel. Usable to undo `' + process.env.COMMAND_PREFIX + 'disableprompts`.',
         
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {

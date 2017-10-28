@@ -2,6 +2,7 @@ module.exports = (function() {
     'use strict';
 
     const botUtils = require('../bot_utils');
+    const helpGroups = require('../phil/help-groups');
     const conchReplies = [
         'Maybe someday',
         'Nothing',
@@ -32,6 +33,7 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         privateRequiresAdmin: false,
         aliases: [ 'magicconch', 'mc' ],
+        helpGroup: helpGroups.Groups.Memes,
         helpDescription: 'The Magic Conch Says...',
 
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {

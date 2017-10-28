@@ -6,7 +6,7 @@ const discord = require('discord.io');
 const CommandRunner = require('./command-runner');
 
 function ignoreDiscordCode(code) {
-	return (code === 1000); // General disconnect code
+    return (code === 1000); // General disconnect code
 }
 
 module.exports = class Phil {
@@ -17,13 +17,13 @@ module.exports = class Phil {
 
         this._bot = new discord.Client( { token: process.env.DISCORD_BOT_TOKEN, autorun: true } );
 
-        this._commands = require('../commands');
         this._analyzers = require('../analyzers');
 
         this._chronos = require('../chronos');
         this._hasStartedChronos = false;
 
-        this._commandRunner = new CommandRunner(this._bot, this._commands, this._chronos, db);
+        require('../commands').then(commands => this._createCommandRunner(commands));
+
     }
 
     start() {
@@ -32,6 +32,10 @@ module.exports = class Phil {
         this._bot.on('ready', this._onReady.bind(this));
         this._bot.on('message', this._onMessage.bind(this));
         this._bot.on('disconnect', this._onDisconnect.bind(this));
+    }
+
+    _createCommandRunner(commands) {
+        this._commandRunner = new CommandRunner(this._bot, commands, this._chronos, this._db);
     }
 
     _onReady() {
@@ -53,7 +57,9 @@ module.exports = class Phil {
     }
 
     _onMessage(user, userId, channelId, message, event) {
-        this._commandRunner.runMessage(user, userId, channelId, message);
+        if (this._commandRunner) {
+            this._commandRunner.runMessage(user, userId, channelId, message);
+        }
     }
 
     _onDisconnect(err, code) {

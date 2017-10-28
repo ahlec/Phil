@@ -3,6 +3,7 @@ module.exports = (function() {
 
     const botUtils = require('../bot_utils');
     const prompts = require('../phil/prompts');
+    const helpGroups = require('../phil/help-groups');
 
     function rejectPrompt(db, promptId) {
         return db.query('DELETE FROM hijack_prompts WHERE prompt_id = $1', [promptId]);
@@ -29,7 +30,7 @@ module.exports = (function() {
         publicRequiresAdmin: true,
         privateRequiresAdmin: true,
         aliases: [],
-        hideFromHelpListing: true,
+        helpGroup: helpGroups.Groups.None,
 
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             return prompts.getConfirmRejectNumbersFromCommandArgs(commandArgs)

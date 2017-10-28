@@ -1,7 +1,8 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils.js');
+    const botUtils = require('../bot_utils');
+	const helpGroups = require('../phil/help-groups');
     const util = require('util');
 
     const decemberLinks = [
@@ -149,6 +150,7 @@ module.exports = (function() {
     return {
         publicRequiresAdmin: false,
         aliases: ['color'],
+        helpGroup: helpGroups.Groups.Roles,
         helpDescription: 'Asks Phil to change your username colour to a hex code of your choosing.',
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             return Promise.resolve()

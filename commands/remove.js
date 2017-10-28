@@ -1,20 +1,21 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils.js');
+    const botUtils = require('../bot_utils');
     const requestables = require('../phil/requestables');
+    const helpGroups = require('../phil/help-groups');
 
     function _filterOnlyRequestablesUserHas(requestables, server, userId) {
-	    const member = server.members[userId];
-	    const requestablesUserHas = [];
+        const member = server.members[userId];
+        const requestablesUserHas = [];
 
         for (let requestable of requestables) {
-	        if (member.roles.indexOf(requestable.roleId) >= 0) {
-		        requestablesUserHas.push(requestable);
-	        }
+            if (member.roles.indexOf(requestable.roleId) >= 0) {
+                requestablesUserHas.push(requestable);
+            }
         }
 
-	    return requestablesUserHas;
+        return requestablesUserHas;
     }
 
     function _ensureAtLeastOneRequestable(requestables) {
@@ -108,6 +109,7 @@ module.exports = (function() {
     return {
         publicRequiresAdmin: false,
         aliases: [],
+        helpGroup: helpGroups.Groups.Roles,
         helpDescription: 'Asks Phil to take away a requestable role that he has given you.',
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
             const serverId = bot.channels[channelId].guild_id;

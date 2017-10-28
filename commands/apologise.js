@@ -2,6 +2,7 @@ module.exports = (function() {
     'use strict';
 
     const botUtils = require('../bot_utils');
+    const helpGroups = require('../phil/help-groups');
 
     const apologies = [
         'I am incredibly sorry for my mistake.',
@@ -26,7 +27,7 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         privateRequiresAdmin: false,
         aliases: [ 'apologize' ],
-        hideFromHelpListing: true,
+        helpGroup: helpGroups.Groups.None,
         helpDescription: 'Makes Phil apologise for making a mistake.',
 
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {

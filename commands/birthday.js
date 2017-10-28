@@ -3,6 +3,7 @@ module.exports = (function() {
 
     const botUtils = require('../bot_utils.js');
     const chronoNode = require('chrono-node');
+    const helpGroups = require('../phil/help-groups');
 
     const util = require('util');
 
@@ -90,6 +91,7 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         privateRequiresAdmin: false,
         aliases: [],
+        helpGroup: helpGroups.Groups.General,
         helpDescription: 'Tell Phil when your birthday is so he can share your birthday with the server.',
         processPublicMessage: handleMessage,
         processPrivateMessage: handleMessage

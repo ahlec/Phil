@@ -2,6 +2,7 @@ module.exports = (function() {
     'use strict';
 
     const youTube = require('youtube-node');
+    const helpGroups = require('../phil/help-groups');
 
     function _getQuery(commandArgs) {
         return commandArgs.join(' ').trim();
@@ -50,6 +51,7 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         privateRequiresAdmin: false,
         aliases: [ 'yt' ],
+        helpGroup: helpGroups.Groups.General,
         helpDescription: 'Searches YouTube for something and posts a link to the first video.',
 
         processPublicMessage: function(bot, user, userId, channelId, commandArgs, db) {
