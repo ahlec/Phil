@@ -17,7 +17,7 @@ module.exports = (function() {
     }
 
     function loadAnalyzers(filenames) {
-        const analyzers = [];
+        const analyzers = {};
 
         for (let filename of filenames) {
             if (shouldSkipLoadingFile(filename)) {
@@ -25,7 +25,8 @@ module.exports = (function() {
             }
 
             let analyzer = loadAnalyzer(filename);
-            analyzers.push(analyzer);
+            let analyzerName = filename.slice(0, -3).toLowerCase();
+            analyzers[analyzerName] = analyzer;
         }
 
         return analyzers;
