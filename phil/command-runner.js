@@ -1,16 +1,20 @@
 'use strict';
 
-const botUtils = require('../bot_utils.js');
+const botUtils = require('../bot_utils');
 const util = require('util');
 const InputMessage = require('./input-message');
 
 module.exports = class CommandRunner {
-    constructor(bot, commands, chronos, db)
+    constructor(bot, commands, db)
     {
         this._bot = bot;
         this._commands = commands;
-        this._chronos = chronos;
         this._db = db;
+    }
+
+    isCommand(message) {
+        const input = InputMessage.parseFromMessage(message.content);
+        return (input !== null);
     }
 
     runMessage(message) {

@@ -4,7 +4,9 @@ const botUtils = require('../bot_utils.js');
 const assert = require('assert');
 const discord = require('discord.io');
 const CommandRunner = require('./command-runner');
+const AnalyzerManager = require('./analyzer-manager');
 const discordMessage = require('./discord-message');
+const util = require('util');
 
 function ignoreDiscordCode(code) {
     return (code === 1000); // General disconnect code
@@ -18,13 +20,11 @@ module.exports = class Phil {
 
         this._bot = new discord.Client( { token: process.env.DISCORD_BOT_TOKEN, autorun: true } );
 
-        this._analyzers = require('../analyzers');
-
         this._chronos = require('../chronos');
         this._hasStartedChronos = false;
 
         require('../commands').then(commands => this._createCommandRunner(commands));
-
+        require('../analyzers').then(analyzers => this._createAnalyzerManager(analyzers));
     }
 
     start() {
@@ -33,10 +33,15 @@ module.exports = class Phil {
         this._bot.on('ready', this._onReady.bind(this));
         this._bot.on('message', this._onMessage.bind(this));
         this._bot.on('disconnect', this._onDisconnect.bind(this));
+        this._bot.on('guildMemberAdd', this._onMemberAdd.bind(this));
     }
 
     _createCommandRunner(commands) {
-        this._commandRunner = new CommandRunner(this._bot, commands, this._chronos, this._db);
+        this._commandRunner = new CommandRunner(this._bot, commands, this._db);
+    }
+
+    _createAnalyzerManager(analyzers) {
+        this._analyzerManager = new AnalyzerManager(this._bot, analyzers, this._db);
     }
 
     _onReady() {
@@ -58,9 +63,17 @@ module.exports = class Phil {
     }
 
     _onMessage(user, userId, channelId, msg, event) {
+        this._chronos.recordNewMessageInChannel(channelId);
         const message = discordMessage(event);
-        if (this._commandRunner) {
+
+        if (!this._commandRunner || !this._analyzerManager) {
+            return;
+        }
+
+        if (this._commandRunner.isCommand(message)) {
             this._commandRunner.runMessage(message);
+        } else {
+            this._analyzerManager.analyzeMessage(message);
         }
     }
 
@@ -73,5 +86,17 @@ module.exports = class Phil {
         console.error('Reconnecting now...');
         this._shouldSendDisconnectedMessage = !ignoreDiscordCode(code);
         this._bot.connect();
+    }
+
+    _onMemberAdd(member) {
+        this._bot.sendMessage({
+            to: process.env.BOT_CONTROL_CHANNEL_ID,
+            message: 'A new member joined the channel.'
+        });
+        console.log(util.inspect(member));
+        this._bot.sendMessage({
+            to: process.env.BOT_CONTROL_CHANNEL_ID,
+            message: util.inspect(member)
+        });
     }
 };
