@@ -25,6 +25,15 @@ function handleTimesEncountered(bot, message, dateTimes, timezoneName, db) {
     return discord.sendMessage(bot, message.channelId, interjection);
 }
 
+function branchDoingQuestionnaire(bot, db, message, dateTimes, isDoingQuestionnaire) {
+    if (isDoingQuestionnaire) {
+        return;
+    }
+
+    return timezones.getTimezoneForUser(db, message.userId)
+        .then(timezoneName => handleTimesEncountered(bot, message, dateTimes, timezoneName, db));
+}
+
 module.exports = function(bot, message, db) {
     const dateTimes = chronoNode.parse(message.content);
 
@@ -32,8 +41,6 @@ module.exports = function(bot, message, db) {
         return Promise.resolve();
     }
 
-    console.log(message.channelId);
-
-    return timezones.getTimezoneForUser(db, message.userId)
-        .then(timezoneName => handleTimesEncountered(bot, message, dateTimes, timezoneName, db));
+    return timezones.isCurrentlyDoingQuestionnaire(db, message.userId)
+        .then(isDoingQuestionnaire => branchDoingQuestionnaire(bot, db, message, dateTimes, isDoingQuestionnaire));
 };
