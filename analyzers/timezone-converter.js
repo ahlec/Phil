@@ -2,8 +2,9 @@
 
 const chronoNode = require('chrono-node');
 const discord = require('../promises/discord');
+const timezones = require('../phil/timezones');
 
-function createInterjection(dateTimes) {
+function createInterjection(dateTimes, timezoneName) {
     var interjection = ':alarm_clock: ';
 
     for (let dateTime of dateTimes) {
@@ -15,6 +16,15 @@ function createInterjection(dateTimes) {
     return interjection;
 }
 
+function handleTimesEncountered(bot, message, dateTimes, timezoneName, db) {
+    if (!timezoneName || timezoneName.length === 0) {
+        return timezones.startQuestionnaire(bot, db, message.userId, false);
+    }
+
+    const interjection = createInterjection(dateTimes, timezoneName);
+    return discord.sendMessage(bot, message.channelId, interjection);
+}
+
 module.exports = function(bot, message, db) {
     const dateTimes = chronoNode.parse(message.content);
 
@@ -22,7 +32,8 @@ module.exports = function(bot, message, db) {
         return Promise.resolve();
     }
 
-    return Promise.resolve(dateTimes)
-        .then(createInterjection)
-        .then(interjection => discord.sendMessage(bot, message.channelId, interjection));
+    console.log(message.channelId);
+
+    return timezones.getTimezoneForUser(db, message.userId)
+        .then(timezoneName => handleTimesEncountered(bot, message, dateTimes, timezoneName, db));
 };
