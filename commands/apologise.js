@@ -24,12 +24,13 @@ module.exports = (function() {
     }
 
     return {
-        publicRequiresAdmin: false,
-        privateRequiresAdmin: false,
         aliases: [ 'apologize' ],
+
         helpGroup: helpGroups.Groups.None,
         helpDescription: 'Makes Phil apologise for making a mistake.',
-
+        versionAdded: 3,
+        
+        publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {
             const apology = botUtils.getRandomArrayEntry(apologies);
             return Promise.resolve()

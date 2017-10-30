@@ -34,6 +34,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.Memes,
         helpDescription: 'The Magic Conch Says...',
+        versionAdded: 3,
 
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {

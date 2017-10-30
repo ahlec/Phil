@@ -98,6 +98,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.Roles,
         helpDescription: 'Asks Phil to give you a role. Using the command by itself will show you all of the roles he can give you.',
+        versionAdded: 1,
 
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {

@@ -24,6 +24,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Lets Phil once again post daily prompts in the appropriate channel. Usable to undo `' + process.env.COMMAND_PREFIX + 'disableprompts`.',
+        versionAdded: 2,
 
         publicRequiresAdmin: true,
         processPublicMessage: function(bot, message, commandArgs, db) {

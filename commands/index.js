@@ -21,7 +21,6 @@ module.exports = (function() {
             }
 
             const command = filename.slice(0, -3).toLowerCase();
-            let commandImplementation = 
             commands[command] = require(__dirname + '/' + filename);
             console.log('command \'%s\' registered', command);
         }

@@ -92,6 +92,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.General,
         helpDescription: 'Tell Phil when your birthday is so he can share your birthday with the server.',
+        versionAdded: 5,
 
         publicRequiresAdmin: false,
         processPublicMessage: handleMessage,

@@ -5,6 +5,7 @@ module.exports = (function() {
     const assert = require('assert');
     const helpGroups = require('../phil/help-groups');
     const discord = require('../promises/discord');
+    const versions = require('../phil/versions');
 
     var _groupsPromise;
 
@@ -35,6 +36,10 @@ module.exports = (function() {
         return displayable;
     }
 
+    function _isVersionNew(versionAdded) {
+        return (versionAdded >= versions.CODE - 1);
+    }
+
     function _createHelpInfoArray(displayable) {
         const helpInfo = [];
 
@@ -48,7 +53,8 @@ module.exports = (function() {
                 group: commandImplementation.helpGroup,
                 isAdminFunction: (commandImplementation.publicRequiresAdmin === true),
                 message: commandImplementation.helpDescription,
-                aliases: commandImplementation.aliases
+                aliases: commandImplementation.aliases,
+                isNew: _isVersionNew(commandImplementation.versionAdded)
             });
         }
 
@@ -89,9 +95,13 @@ module.exports = (function() {
 
 
     function _formatHelpInformationForDisplay(helpInformation) {
-        const emoji = (helpInformation.isAdminFunction ? ':small_orange_diamond:' : ':small_blue_diamond:');
+        var message = (helpInformation.isAdminFunction ? ':small_orange_diamond:' : ':small_blue_diamond:');
 
-        var message = emoji + ' [`' + helpInformation.name + '`';
+        if (helpInformation.isNew) {
+            message += ':new:'
+        }
+        
+        message += ' [`' + helpInformation.name + '`';
         if (helpInformation.aliases.length > 0) {
             message += ' (alias';
             if (helpInformation.aliases.length > 1) {
@@ -183,6 +193,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.General,
         helpDescription: 'Find out about all of the commands that Phil has available.',
+        versionAdded: 3,
 
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {

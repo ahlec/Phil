@@ -69,6 +69,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.Roles,
         helpDescription: 'Creates a new requestable role that users can use with `' + process.env.COMMAND_PREFIX + 'request`',
+        versionAdded: 1,
 
         publicRequiresAdmin: true,
         processPublicMessage: function(bot, message, commandArgs, db) {

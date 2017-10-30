@@ -23,6 +23,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Asks Phil to remind you what the prompt of the day is.',
+        versionAdded: 3,
 
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {

@@ -167,6 +167,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.General,
         helpDescription: 'Has Phil display the calendar of server events for the month in question.',
+        versionAdded: 6,
         
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {

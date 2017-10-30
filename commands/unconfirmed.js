@@ -81,6 +81,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Creates a list of some of the unconfirmed prompts that are awaiting admin approval before being added to the prompt queue.',
+        versionAdded: 1,
 
         publicRequiresAdmin: true,
         processPublicMessage: function(bot, message, commandArgs, db) {

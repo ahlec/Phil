@@ -52,6 +52,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.General,
         helpDescription: 'Searches YouTube for something and posts a link to the first video.',
+        versionAdded: 4,
 
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {

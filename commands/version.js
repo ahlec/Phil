@@ -20,6 +20,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.General,
         helpDescription: 'Prints out the current version numbers related to Phil.',
+        versionAdded: 3,
 
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {

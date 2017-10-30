@@ -49,6 +49,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.Memes,
         helpDescription: 'Oh right, the poison.',
+        versionAdded: 8,
 
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {

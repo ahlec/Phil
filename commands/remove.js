@@ -111,6 +111,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.Roles,
         helpDescription: 'Asks Phil to take away a requestable role that he has given you.',
+        versionAdded: 7,
 
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {

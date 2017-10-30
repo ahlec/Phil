@@ -152,6 +152,7 @@ module.exports = (function() {
         
         helpGroup: helpGroups.Groups.Roles,
         helpDescription: 'Asks Phil to change your username colour to a hex code of your choosing.',
+        versionAdded: 3,
 
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {

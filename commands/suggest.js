@@ -39,6 +39,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Suggests a new daily prompt for Phil to add to his list. (*DIRECT MESSAGE ONLY*)',
+        versionAdded: 1,
 
         privateRequiresAdmin: false,
         processPrivateMessage: function(bot, message, commandArgs, db) {

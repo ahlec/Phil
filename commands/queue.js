@@ -46,6 +46,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Displays the current queue of approved prompts that will show up in chat shortly.',
+        versionAdded: 7,
 
         publicRequiresAdmin: true,
         processPublicMessage: function(bot, message, commandArgs, db) {

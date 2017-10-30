@@ -54,6 +54,7 @@ module.exports = (function() {
         aliases: [],
 
         helpGroup: helpGroups.Groups.None,
+        versionAdded: 1,
 
         publicRequiresAdmin: true,
         processPublicMessage: function(bot, message, commandArgs, db) {

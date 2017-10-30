@@ -24,6 +24,7 @@ module.exports = (function() {
 
         helpGroup: helpGroups.Groups.Prompts,
         helpDescription: 'Prevents Phil from posting any daily prompts until you instruct him that it\'s okay to do so by using `' + process.env.COMMAND_PREFIX + 'enableprompts`.',
+        versionAdded: 2,
 
         publicRequiresAdmin: true,
         processPublicMessage: function(bot, message, commandArgs, db) {
