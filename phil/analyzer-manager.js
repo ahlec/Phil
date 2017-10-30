@@ -13,29 +13,29 @@ module.exports = class AnalyzerManager {
     analyzeMessage(message) {
         for (let analyzerName in this._analyzers) {
             let analyzer = this._analyzers[analyzerName];
-	        this._runAnalyzer(analyzerName, analyzer, message);
+            this._runAnalyzer(analyzerName, analyzer, message);
         }
     }
 
     _runAnalyzer(analyzerName, analyzer, message) {
-	    const promise = analyzer(this._bot, message, this._db);
+        const promise = analyzer(this._bot, message, this._db);
         if (!botUtils.isPromise(promise)) {
-	        console.error('Analyzer \'%s\' did not return a promise', analyzerName);
+            console.error('Analyzer \'%s\' did not return a promise', analyzerName);
         } else {
-	        promise.catch(err => this._reportAnalyzerError(err, analyzerName));
+            promise.catch(err => this._reportAnalyzerError(err, analyzerName));
         }
     }
 
     _reportAnalyzerError(err, analyzerName) {
-	    console.error(err);
+        console.error(err);
 
         if (typeof(err) !== 'string') {
-	        err = utils.inspect(err);
+            err = utils.inspect(err);
         }
 
-	    this._bot.sendMessage({
-		    to: process.env.BOT_CONTROL_CHANNEL_ID,
-		    message: ':bangbang: **Analyzer error:** ' + analyzerName + '\n' + err
-	    });
+        this._bot.sendMessage({
+            to: process.env.BOT_CONTROL_CHANNEL_ID,
+            message: ':bangbang: **Analyzer error:** ' + analyzerName + '\n' + err
+        });
     }
 };

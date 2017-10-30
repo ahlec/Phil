@@ -63,9 +63,9 @@ module.exports = class Phil {
     }
 
     _onMessage(user, userId, channelId, msg, event) {
-	    const message = discordMessage(event);
+        const message = discordMessage(event);
         if (this._shouldIgnoreMessage(message)) {
-	        return;
+            return;
         }
 
         this._chronos.recordNewMessageInChannel(channelId);
@@ -82,16 +82,16 @@ module.exports = class Phil {
     }
 
     _shouldIgnoreMessage(message) {
-	    const user = this._bot.users[message.userId];
+        const user = this._bot.users[message.userId];
         if (!user) {
-	        return true;
+            return true;
         }
 
         if (user.bot) {
-	        return true;
+            return true;
         }
 
-	    return false;
+        return false;
     }
 
     _onDisconnect(err, code) {
