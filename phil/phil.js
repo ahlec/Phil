@@ -6,6 +6,7 @@ const discord = require('discord.io');
 const CommandRunner = require('./command-runner');
 const AnalyzerManager = require('./analyzer-manager');
 const discordMessage = require('./discord-message');
+const greeting = require('./greeting');
 const util = require('util');
 
 function ignoreDiscordCode(code) {
@@ -113,14 +114,7 @@ module.exports = class Phil {
     }
 
     _onMemberAdd(member) {
-        this._bot.sendMessage({
-            to: process.env.BOT_CONTROL_CHANNEL_ID,
-            message: 'A new member joined the channel.'
-        });
-        console.log(util.inspect(member));
-        this._bot.sendMessage({
-            to: process.env.BOT_CONTROL_CHANNEL_ID,
-            message: util.inspect(member)
-        });
+        console.log('A new member has joined the server.');
+        greeting(this._bot, member);
     }
 };

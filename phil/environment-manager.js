@@ -13,10 +13,12 @@ function _assertEnvironmentVariables() {
     _assertVariableExists('COMMAND_PREFIX');
     assert.ok(process.env.COMMAND_PREFIX.toLowerCase() === process.env.COMMAND_PREFIX); // Prefix must be lowercase!!
     _assertVariableExists('DATABASE_URL');
+    _assertVariableExists('INTRODUCTIONS_CHANNEL_ID');
     _assertVariableExists('ADMIN_CHANNEL_ID');
     _assertVariableExists('HIJACK_CHANNEL_ID');
     _assertVariableExists('NEWS_CHANNEL_ID');
     _assertVariableExists('BOT_CONTROL_CHANNEL_ID');
+    _assertVariableExists('WELCOME_RULES_CHANNEL_ID');
     _assertVariableExists('ADMIN_ROLE_ID');
     _assertVariableExists('YOUTUBE_API_KEY');
     _assertVariableExists('BOT_MANAGER_USERNAME');
