@@ -48,4 +48,10 @@ When it comes time to push him to Heroku and have him running on the cloud rathe
 
 ## Components
 
-(Coming soon)
+Phil is made up of a couple of different components. I won't go into all of the details about what makes Phil tick, because more or less it's straightforward (well, as straight-forward as reading through anybody else's source code ever is). However, there are some constructs that I'd like to touch upon.
+
+**Commands**. These are the most obvious of the components. Commands are any function that a user is capable of invoking by using the command prefix + the name of a command (ie `p!prompt` or `p!help` if the command prefix is `p!`). Commands can be run in direct messages, but will most commonly happen in the server itself. They're functions that require someone explicitly triggering them to happen.
+
+**Chronos**. "Chronos" is actually the plural; an individual one of these is a **chrono**. Chronos are Phil's equivalent of a chron job. It's something that Phil will run at a certain point in time to perform some kind of action. Some of these can be posting something on a regular interval in the chat; others can be performing some kind of cleanup operation on a routine basis. Unlike commands, individual chronos cannot be triggered or named by any user, and they happen even if nobody says anything (they're based on time rather than on user input). These grew out of the original foundation for posting a new daily prompt. Added in [Version 2](https://github.com/ahlec/Phil/commit/e58552001312a5cda42ce99d671a2e3f5c6ebee9).
+
+**Analyzers**. Analyzers are the flip side of a coin from commands. Both commands and analyzers react to a user posting a message in a server. However, commands are invoked by naming the specific command that you want. It's a very explicit process. Analyzers work just the opposite. If a message that a user sends is not a command, it gets passed over to the analyzers. Analyzers can example any message that isn't a command that a user sends and react to them. It's a very implicit process. They might look for particular trigger words in order to provide a response to them, or they'll do some kind of data analysis on the message. This system was first added in [Version 8](https://github.com/ahlec/Phil/commit/8c68373a3874fd08ca97974f376d5dbeb844d8c2).
