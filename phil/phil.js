@@ -23,7 +23,9 @@ module.exports = class Phil {
         this._chronos = require('../chronos');
         this._hasStartedChronos = false;
 
-        require('../commands').then(commands => this._createCommandRunner(commands));
+        require('../commands')
+            .then(commands => this._createCommandRunner(commands))
+            .catch(err => this._reportStartupError(err));
         require('../analyzers').then(analyzers => this._createAnalyzerManager(analyzers));
     }
 
@@ -38,6 +40,11 @@ module.exports = class Phil {
 
     _createCommandRunner(commands) {
         this._commandRunner = new CommandRunner(this._bot, commands, this._db);
+    }
+
+    _reportStartupError(err) {
+        console.error('[STARTUP ERROR] %s', err);
+        process.exit(1);
     }
 
     _createAnalyzerManager(analyzers) {

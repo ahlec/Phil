@@ -43,7 +43,8 @@ module.exports = (function() {
 
     function informHelpCommand(commands) {
         if (commands['help']) {
-            commands['help'].saveCommandDefinitions(commands);
+            return commands['help'].saveCommandDefinitions(commands)
+                .then(() => commands);
         }
 
         return commands;

@@ -23,6 +23,7 @@ function _assertEnvironmentVariables() {
     _assertVariableExists('HE_PRONOUNS_ROLE_ID');
     _assertVariableExists('SHE_PRONOUNS_ROLE_ID');
     _assertVariableExists('THEY_PRONOUNS_ROLE_ID');
+    _assertVariableExists('HIJACK_FANDOM_GOOGLE_MAP_LINK');
 }
 
 function _ensureNecessaryEnvironmentVariables(resolve, reject) {

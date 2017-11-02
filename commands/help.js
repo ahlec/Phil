@@ -2,7 +2,6 @@ module.exports = (function() {
     'use strict';
 
     const botUtils = require('../bot_utils');
-    const assert = require('assert');
     const helpGroups = require('../phil/help-groups');
     const discord = require('../promises/discord');
     const versions = require('../phil/versions');
@@ -46,7 +45,9 @@ module.exports = (function() {
         for (let command in displayable) {
             let commandImplementation = displayable[command];
 
-            assert(typeof(commandImplementation.helpDescription) === 'string' && commandImplementation.helpDescription.length > 0);
+            if (typeof(commandImplementation.helpDescription) !== 'string' || commandImplementation.helpDescription.length === 0) {
+                return Promise.reject('command \'' + command + '\' didn\'t provide a helpDescription string');
+            }
 
             helpInfo.push({
                 name: command,
@@ -100,7 +101,7 @@ module.exports = (function() {
         if (helpInformation.isNew) {
             message += ':new:'
         }
-        
+
         message += ' [`' + helpInformation.name + '`';
         if (helpInformation.aliases.length > 0) {
             message += ' (alias';
@@ -208,6 +209,7 @@ module.exports = (function() {
                 .then(_createHelpInfoArray)
                 .then(_groupHelpInfo)
                 .then(_sortGroups);
+            return _groupsPromise;
         }
     };
 })();
