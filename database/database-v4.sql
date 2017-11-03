@@ -1,5 +1,7 @@
 UPDATE info SET value = '4' WHERE key = 'database-version';
 
+INSERT INTO info(key, value) VALUES('booty-day-last-reminded', '1969-12-31');
+
 CREATE TABLE timezones(
 	username VARCHAR(100) NOT NULL,
 	userid VARCHAR(40) NOT NULL,
