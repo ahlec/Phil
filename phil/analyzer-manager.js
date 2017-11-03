@@ -1,6 +1,7 @@
 'use strict';
 
 const botUtils = require('../bot_utils');
+const util = require('util');
 
 module.exports = class AnalyzerManager {
     constructor(bot, analyzers, db)
@@ -30,7 +31,7 @@ module.exports = class AnalyzerManager {
         console.error(err);
 
         if (typeof(err) !== 'string') {
-            err = utils.inspect(err);
+            err = util.inspect(err);
         }
 
         this._bot.sendMessage({

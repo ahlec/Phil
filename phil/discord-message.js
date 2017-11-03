@@ -3,7 +3,7 @@
 const assert = require('assert');
 const util = require('util');
 
-module.exports = function(event) {
+module.exports = function(event, bot) {
     assert(event);
     assert(event.d);
     assert(event.t === 'MESSAGE_CREATE');
@@ -13,6 +13,7 @@ module.exports = function(event) {
         channelId: event.d.channel_id,
         user: event.d.author.username,
         userId: event.d.author.id,
-        content: event.d.content
+        content: event.d.content,
+        isDirectMessage: ( event.d.channel_id in bot.directMessages ? true : false ),
     };
 };

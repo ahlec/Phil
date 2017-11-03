@@ -25,13 +25,22 @@ function handleTimesEncountered(bot, message, dateTimes, timezoneName, db) {
     return discord.sendMessage(bot, message.channelId, interjection);
 }
 
-function branchDoingQuestionnaire(bot, db, message, dateTimes, isDoingQuestionnaire) {
-    if (isDoingQuestionnaire) {
+function branchDeclinedProvidingTimezone(bot, db, message, dateTimes, declinedProviding) {
+    if (declinedProviding) {
         return;
     }
 
     return timezones.getTimezoneForUser(db, message.userId)
         .then(timezoneName => handleTimesEncountered(bot, message, dateTimes, timezoneName, db));
+}
+
+function branchDoingQuestionnaire(bot, db, message, dateTimes, isDoingQuestionnaire) {
+    if (isDoingQuestionnaire) {
+        return;
+    }
+
+    return timezones.hasDeclinedProvidingTimezone(db, message.userId)
+        .then(declinedProviding => branchDeclinedProvidingTimezone(bot, db, message, dateTimes, declinedProviding));
 }
 
 module.exports = function(bot, message, db) {

@@ -71,7 +71,7 @@ module.exports = class Phil {
     }
 
     _onMessage(user, userId, channelId, msg, event) {
-        const message = discordMessage(event);
+        const message = discordMessage(event, this._bot);
         if (this._shouldIgnoreMessage(message)) {
             return;
         }
