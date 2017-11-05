@@ -61,7 +61,7 @@ module.exports = (function() {
 
         process: function(chronosManager, now, bot, db) {
             return markRemindedInDatabase(db, now)
-                .then(() => discord.sendMessage(bot, process.env.NEWS_CHANNEL_ID, ':peek: It\'s booty day! Post your Hijack booties!'));
+                .then(() => discord.sendMessage(bot, process.env.NEWS_CHANNEL_ID, process.env.CUSTOM_EMOJI_PEEK + ' It\'s booty day! Post your Hijack booties!'));
         }
     };
 })();
