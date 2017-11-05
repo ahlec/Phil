@@ -63,7 +63,7 @@ module.exports = (function() {
         const member = server.members[userId];
 
         if (member.roles.indexOf(role.id) >= 0) {
-            return Promise.reject('You already have the "' + role.name + '" role.');
+            return Promise.reject('You already have the "' + role.name + '" role. You can use `' + process.env.COMMAND_PREFIX + 'remove` to remove the role if you wish.');
         }
 
         return role;
