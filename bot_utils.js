@@ -177,7 +177,6 @@ module.exports = (function() {
         isHexColorRole: function(server, roleId) {
             const role = server.roles[roleId];
             const isHex = _isValidHexColor(role.name);
-            console.log('role %s is hex? %d', role.name, isHex);
             return isHex;
         },
 
