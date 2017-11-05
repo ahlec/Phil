@@ -1,5 +1,6 @@
 'use strict';
 
+const botUtils = require('../bot_utils');
 const util = require('util');
 
 module.exports = class ChronoManager {
@@ -51,6 +52,11 @@ module.exports = class ChronoManager {
         const utcHour = now.getUTCHours();
         console.log('[CHRONOS] processing chronos with UTC hour = %d', utcHour);
 
+        if (this._isNewDay(now)) {
+            console.log('[CHRONOS] new UTC day, so resetting all chronos');
+            this._resetNewDay();
+        }
+
         var lastPromise = Promise.resolve();
         for (let chrono of this._chronos) {
             if (chrono.hasBeenTriggered) {
@@ -66,6 +72,22 @@ module.exports = class ChronoManager {
             }
 
             lastPromise = lastPromise.then(() => this._processChrono(now, chrono, true));
+        }
+
+        this._chronosLastProcessed = now;
+    }
+
+    _isNewDay(now) {
+        if (!this._chronosLastProcessed) {
+            return false;
+        }
+
+        return !botUtils.isSameDay(this._chronosLastProcessed, now);
+    }
+
+    _resetNewDay() {
+        for (let chrono of this._chronos) {
+            chrono.hasBeenTriggered = false;
         }
     }
 
