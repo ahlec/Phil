@@ -7,6 +7,13 @@ function _assertVariableExists(variableName) {
     assert.ok(envVariable, 'The environment variable `' + variableName + '` does not exist.');
 }
 
+function _assertCustomEmoji(variableName) {
+	_assertVariableExists(variableName);
+
+    const envVariable = process.env[variableName];
+    assert.ok(/<:[a-zA-Z0-9_]{2,}:[0-9]{10,}>/.test(envVariable), 'The environment variable `' + variableName + '` is not in the proper custom emoji format. Type \\ before the custom emoji and copy in everything, including the < and >');
+}
+
 function _assertEnvironmentVariables() {
     _assertVariableExists('DISCORD_BOT_TOKEN');
     _assertVariableExists('PORT');
@@ -26,6 +33,7 @@ function _assertEnvironmentVariables() {
     _assertVariableExists('SHE_PRONOUNS_ROLE_ID');
     _assertVariableExists('THEY_PRONOUNS_ROLE_ID');
     _assertVariableExists('HIJACK_FANDOM_GOOGLE_MAP_LINK');
+	_assertCustomEmoji('CUSTOM_EMOJI_PEEK');
 }
 
 function _ensureNecessaryEnvironmentVariables(resolve, reject) {

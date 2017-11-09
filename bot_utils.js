@@ -177,7 +177,6 @@ module.exports = (function() {
         isHexColorRole: function(server, roleId) {
             const role = server.roles[roleId];
             const isHex = _isValidHexColor(role.name);
-            console.log('role %s is hex? %d', role.name, isHex);
             return isHex;
         },
 
@@ -223,6 +222,18 @@ module.exports = (function() {
 
         isAdminChannel: function(channelId) {
             return (channelId === process.env.BOT_CONTROL_CHANNEL_ID || channelId === process.env.ADMIN_CHANNEL_ID);
+        },
+
+        isSameDay: function(dateA, dateB) {
+            if (dateA.getUTCFullYear() !== dateB.getUTCFullYear()) {
+                return false;
+            }
+
+            if (dateA.getUTCMonth() !== dateB.getUTCMonth()) {
+                return false;
+            }
+
+            return (dateA.getUTCDate() === dateB.getUTCDate());
         }
     }
 })();

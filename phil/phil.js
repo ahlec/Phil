@@ -4,6 +4,7 @@ const botUtils = require('../bot_utils.js');
 const assert = require('assert');
 const discord = require('discord.io');
 const CommandRunner = require('./command-runner');
+const ChronoManager = require('./chrono-manager');
 const AnalyzerManager = require('./analyzer-manager');
 const discordMessage = require('./discord-message');
 const greeting = require('./greeting');
@@ -21,13 +22,14 @@ module.exports = class Phil {
 
         this._bot = new discord.Client( { token: process.env.DISCORD_BOT_TOKEN, autorun: true } );
 
-        this._chronos = require('../chronos');
-        this._hasStartedChronos = false;
-
         require('../commands')
             .then(commands => this._createCommandRunner(commands))
             .catch(err => this._reportStartupError(err));
-        require('../analyzers').then(analyzers => this._createAnalyzerManager(analyzers));
+        require('../chronos')
+            .then(chronos => this._createChronoManager(chronos))
+            .catch(err => this._reportStartupError(err));
+        require('../analyzers')
+            .then(analyzers => this._createAnalyzerManager(analyzers));
     }
 
     start() {
@@ -43,6 +45,10 @@ module.exports = class Phil {
         this._commandRunner = new CommandRunner(this._bot, commands, this._db);
     }
 
+    _createChronoManager(chronos) {
+        this._chronoManager = new ChronoManager(this._bot, chronos, this._db);
+    }
+
     _reportStartupError(err) {
         console.error('[STARTUP ERROR] %s', err);
         process.exit(1);
@@ -55,10 +61,7 @@ module.exports = class Phil {
     _onReady() {
         console.log('Logged in as %s - %s\n', this._bot.username, this._bot.id);
 
-        if (!this._hasStartedChronos) {
-            this._chronos.start(this._bot, this._db);
-            this._hasStartedChronos = true;
-        }
+        this._chronoManager.start();
 
         if (this._shouldSendDisconnectedMessage) {
             botUtils.sendErrorMessage({
@@ -76,7 +79,9 @@ module.exports = class Phil {
             return;
         }
 
-        this._chronos.recordNewMessageInChannel(channelId);
+        if (this._chronoManager) {
+            this._chronoManager.recordNewMessageInChannel(channelId);
+        }
 
         if (!this._commandRunner || !this._analyzerManager) {
             return;
