@@ -5,12 +5,6 @@ module.exports = (function() {
     const prompts = require('../phil/prompts');
     const helpGroups = require('../phil/help-groups');
 
-    function _ensureDailyPromptsAreEnabled(arePromptsEnabled) {
-        if (arePromptsEnabled !== true) {
-            return Promise.reject('Daily prompts are temporarily disabled! Feel free to ping an admin and ask why and when they\'ll be back online.');
-        }
-    }
-
     function _ensureThereIsPromptForToday(prompt) {
         if (prompt === null) {
             return Promise.reject('There\'s no prompt for today. That probably means that I\'m out of them! Why don\'t you suggest more by sending me `' + process.env.COMMAND_PREFIX + 'suggest` and including your prompt?');
@@ -28,8 +22,7 @@ module.exports = (function() {
 
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {
-            return features.getIsFeatureEnabled(features.Features.DailyPrompts, db)
-                .then(_ensureDailyPromptsAreEnabled)
+            return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
                 .then(() => prompts.getTodaysPrompt(db))
                 .then(_ensureThereIsPromptForToday)
                 .then(prompt => prompts.sendPromptToChannel(bot, message.channelId, prompt));

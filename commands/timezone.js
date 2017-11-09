@@ -1,11 +1,13 @@
 module.exports = (function() {
     'use strict';
 
+    const features = require('../phil/features');
     const helpGroups = require('../phil/help-groups');
     const timezones = require('../phil/timezones');
 
     function handleMessage(bot, message, commandArgs, db) {
-        return timezones.startQuestionnaire(bot, db, message.userId, true);
+        return features.ensureFeatureIsEnabled(features.Features.TimezoneProcessing, db)
+            .then(() => timezones.startQuestionnaire(bot, db, message.userId, true));
     }
 
     return {

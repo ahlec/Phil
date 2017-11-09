@@ -6,12 +6,6 @@ module.exports = (function() {
     const helpGroups = require('../phil/help-groups');
     const MAX_QUEUE_DISPLAY_LENGTH = 10;
 
-    function _ensureDailyPromptsAreEnabled(arePromptsEnabled) {
-        if (arePromptsEnabled !== true) {
-            return Promise.reject('Daily prompts are temporarily disabled, so we don\'t have a queue. You can use `' + process.env.COMMAND_PREFIX + 'enableprompts` to turn them back on.');
-        }
-    }
-
     function _makeMessageOutOfQueue(queue) {
         if (queue.length === 0) {
             return ':large_blue_diamond: There are no prompts in the queue right now.';
@@ -51,8 +45,7 @@ module.exports = (function() {
 
         publicRequiresAdmin: true,
         processPublicMessage: function(bot, message, commandArgs, db) {
-            return features.getIsFeatureEnabled(features.Features.DailyPrompts, db)
-                .then(_ensureDailyPromptsAreEnabled)
+            return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
                 .then(() => prompts.getPromptQueue(db, MAX_QUEUE_DISPLAY_LENGTH))
                 .then(queue => _sendPromptQueueToChannel(queue, bot, message.channelId));
         }

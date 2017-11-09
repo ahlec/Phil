@@ -50,6 +50,26 @@ function _getFeatureByNumber(featureNumber) {
     return Promise.resolve(feature);
 }
 
+function _getFeatureDisplayName(featureNumber) {
+    return _getFeatureByNumber(featureNumber)
+        .then(feature => feature.displayName);
+}
+
+function _getIsFeatureEnabled(featureNumber, db) {
+    return _getFeatureByNumber(featureNumber)
+        .then(feature => db.query('SELECT count(*) FROM info WHERE key = $1 AND value =\'1\'', [feature.enabledDbInfoKey]))
+        .then(results => (results.rows[0].count == 0));
+}
+
+function _ensureFeatureIsEnabled(featureNumber, isEnabled) {
+    if (isEnabled) {
+        return;
+    }
+
+    return _getFeatureDisplayName(featureNumber)
+        .then(displayName => Promise.reject('The **' + displayName + '** feature is currently disabled. Feel free to ping an admin and ask why and/or when the feature will be back online.'));
+}
+
 function _setFeatureEnabledDb(feature, db, enabled) {
     if (enabled === true) {
         return db.query('DELETE FROM info WHERE key = $1', [feature.enabledDbInfoKey]);
@@ -83,15 +103,13 @@ module.exports = {
         return _getFeatureNumberByName(stitchedInput);
     },
 
-    getFeatureDisplayName: function(featureNumber) {
-        return _getFeatureByNumber(featureNumber)
-            .then(feature => feature.displayName);
-    },
+    getFeatureDisplayName: _getFeatureDisplayName,
 
-    getIsFeatureEnabled: function(featureNumber, db) {
-        return _getFeatureByNumber(featureNumber)
-            .then(feature => db.query('SELECT count(*) FROM info WHERE key = $1 AND value =\'1\'', [feature.enabledDbInfoKey]))
-            .then(results => (results.rows[0].count == 0));
+    getIsFeatureEnabled: _getIsFeatureEnabled,
+
+    ensureFeatureIsEnabled: function(featureNumber, db) {
+        return _getIsFeatureEnabled(featureNumber, db)
+            .then(isEnabled => _ensureFeatureIsEnabled(featureNumber, isEnabled));
     },
 
     setIsFeatureEnabled: function(featureNumber, db, enabled) {
