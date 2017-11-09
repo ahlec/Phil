@@ -1,7 +1,7 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils');
+    const botUtils = require('../phil/utils');
     const helpGroups = require('../phil/help-groups');
 
     const apologies = [
@@ -29,7 +29,7 @@ module.exports = (function() {
         helpGroup: helpGroups.Groups.None,
         helpDescription: 'Makes Phil apologise for making a mistake.',
         versionAdded: 3,
-        
+
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {
             const apology = botUtils.getRandomArrayEntry(apologies);

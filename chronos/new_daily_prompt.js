@@ -2,7 +2,7 @@ module.exports = (function() {
     'use strict';
 
     const features = require('../phil/features');
-    const botUtils = require('../bot_utils');
+    const botUtils = require('../phil/utils');
     const prompts = require('../phil/prompts');
 
     function _handleHasBeenPostedResults(results, bot, promptNumber, promptText) {

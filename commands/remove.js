@@ -1,7 +1,7 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils');
+    const botUtils = require('../phil/utils');
     const requestables = require('../phil/requestables');
     const helpGroups = require('../phil/help-groups');
 
@@ -48,7 +48,7 @@ module.exports = (function() {
 
     function _composeRemovableRequestablesList(requestables) {
         const randomRequestableIndex = Math.floor(Math.random() * requestables.length);
-        
+
         var fullMessage = ':snowflake: These are the roles you can remove using `' + process.env.COMMAND_PREFIX + 'remove`:\n';
         var randomRequestableString;
 

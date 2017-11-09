@@ -1,7 +1,7 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils');
+    const botUtils = require('../phil/utils');
     const helpGroups = require('../phil/help-groups');
     const MAX_LIST_LENGTH = 10;
 

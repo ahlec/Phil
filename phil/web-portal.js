@@ -1,6 +1,6 @@
 'use strict';
 
-const botUtils = require('../bot_utils.js');
+const botUtils = require('../phil/utils');
 const express = require('express');
 
 module.exports = class WebPortal {

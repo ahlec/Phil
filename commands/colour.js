@@ -1,7 +1,7 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils');
+    const botUtils = require('../phil/utils');
     const helpGroups = require('../phil/help-groups');
     const util = require('util');
 
@@ -149,7 +149,7 @@ module.exports = (function() {
 
     return {
         aliases: ['color'],
-        
+
         helpGroup: helpGroups.Groups.Roles,
         helpDescription: 'Asks Phil to change your username colour to a hex code of your choosing.',
         versionAdded: 3,

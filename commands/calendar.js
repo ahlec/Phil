@@ -1,7 +1,7 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils');
+    const botUtils = require('../phil/utils');
     const chronoNode = require('chrono-node');
     const helpGroups = require('../phil/help-groups');
 
@@ -168,7 +168,7 @@ module.exports = (function() {
         helpGroup: helpGroups.Groups.General,
         helpDescription: 'Has Phil display the calendar of server events for the month in question.',
         versionAdded: 6,
-        
+
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {
             return Promise.resolve()

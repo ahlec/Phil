@@ -1,6 +1,6 @@
 'use strict';
 
-const botUtils = require('../bot_utils.js');
+const botUtils = require('../phil/utils');
 const assert = require('assert');
 const discord = require('discord.io');
 const CommandRunner = require('./command-runner');

@@ -2,7 +2,7 @@ module.exports = (function() {
     'use strict';
 
     const fs = require('../promises/fs');
-    const botUtils = require('../bot_utils');
+    const botUtils = require('../phil/utils');
 
     function shouldSkipLoadingCommand(filename) {
         if (filename === 'index.js' || !filename.endsWith('.js')) {

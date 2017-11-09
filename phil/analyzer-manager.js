@@ -1,6 +1,6 @@
 'use strict';
 
-const botUtils = require('../bot_utils');
+const botUtils = require('../phil/utils');
 const util = require('util');
 
 module.exports = class AnalyzerManager {

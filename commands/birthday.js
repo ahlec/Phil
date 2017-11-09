@@ -1,7 +1,7 @@
 module.exports = (function() {
     'use strict';
 
-    const botUtils = require('../bot_utils');
+    const botUtils = require('../phil/utils');
     const chronoNode = require('chrono-node');
     const helpGroups = require('../phil/help-groups');
 

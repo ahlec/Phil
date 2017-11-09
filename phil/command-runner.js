@@ -1,6 +1,6 @@
 'use strict';
 
-const botUtils = require('../bot_utils');
+const botUtils = require('../phil/utils');
 const util = require('util');
 const InputMessage = require('./input-message');
 
@@ -77,7 +77,7 @@ module.exports = class CommandRunner {
                 incorrectChannelMessage: 'The `' + process.env.COMMAND_PREFIX + commandName + '` command can only be used in the public server itself.'
             };
         }
-        
+
         return {
             requiresAdmin: command.publicRequiresAdmin,
             func: command.processPublicMessage,
@@ -97,7 +97,7 @@ module.exports = class CommandRunner {
         if (!commandData.requiresAdmin) {
             return true;
         }
-        
+
         const serverId = this._bot.channels[message.channelId].guild_id;
         const server = this._bot.servers[serverId];
         const member = server.members[message.userId];
