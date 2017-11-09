@@ -1,6 +1,7 @@
 module.exports = (function() {
     'use strict';
 
+    const features = require('../phil/features');
     const prompts = require('../phil/prompts');
     const helpGroups = require('../phil/help-groups');
     const MAX_QUEUE_DISPLAY_LENGTH = 10;
@@ -50,7 +51,7 @@ module.exports = (function() {
 
         publicRequiresAdmin: true,
         processPublicMessage: function(bot, message, commandArgs, db) {
-            return prompts.getAreDailyPromptsEnabled(db)
+            return features.getIsFeatureEnabled(features.Features.DailyPrompts, db)
                 .then(_ensureDailyPromptsAreEnabled)
                 .then(() => prompts.getPromptQueue(db, MAX_QUEUE_DISPLAY_LENGTH))
                 .then(queue => _sendPromptQueueToChannel(queue, bot, message.channelId));

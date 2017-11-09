@@ -15,27 +15,15 @@ module.exports = (function() {
 
     function _composeRequestableListEntry(requestableInfo) {
         var entry = '- ';
-
         const requestStrings = requestableInfo.requestStrings;
-        for (let index = 0; index < requestStrings.length; ++index) {
-            if (index > 0) {
-                if (index < requestStrings.length - 1) {
-                    entry += ', ';
-                } else {
-                    entry += ' or ';
-                }
-            }
-
-            entry += '`' + requestStrings[index] + '`';
-        }
-
+        entry += botUtils.stitchTogetherArray(requestStrings);
         entry += ' to receive the "' + requestableInfo.roleName + '" role\n';
         return entry;
     }
 
     function _composeAllRequestablesList(requestables) {
         const randomRequestableIndex = Math.floor(Math.random() * requestables.length);
-        
+
         var fullMessage = ':snowflake: You must provide a valid requestable name of a role when using `' + process.env.COMMAND_PREFIX + 'request`. These are currently:\n';
         var randomRequestableString;
 

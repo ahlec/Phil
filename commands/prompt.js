@@ -1,6 +1,7 @@
 module.exports = (function() {
     'use strict';
 
+    const features = require('../phil/features');
     const prompts = require('../phil/prompts');
     const helpGroups = require('../phil/help-groups');
 
@@ -17,7 +18,7 @@ module.exports = (function() {
 
         return prompt;
     }
-    
+
     return {
         aliases: [],
 
@@ -27,7 +28,7 @@ module.exports = (function() {
 
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {
-            return prompts.getAreDailyPromptsEnabled(db)
+            return features.getIsFeatureEnabled(features.Features.DailyPrompts, db)
                 .then(_ensureDailyPromptsAreEnabled)
                 .then(() => prompts.getTodaysPrompt(db))
                 .then(_ensureThereIsPromptForToday)

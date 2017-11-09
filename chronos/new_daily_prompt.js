@@ -1,6 +1,7 @@
 module.exports = (function() {
     'use strict';
 
+    const features = require('../phil/features');
     const botUtils = require('../bot_utils');
     const prompts = require('../phil/prompts');
 
@@ -78,7 +79,7 @@ module.exports = (function() {
         },
         process: function(chronosManager, now, bot, db) {
             return new Promise((resolve, reject) => {
-                prompts.getAreDailyPromptsEnabled(db)
+                features.getIsFeatureEnabled(features.Features.DailyPrompts, db)
                     .then(arePromptsEnabled => {
                         if (!arePromptsEnabled) {
                             console.log('prompts are disabled, so we won\'t process a new prompt today.');

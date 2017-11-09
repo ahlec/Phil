@@ -234,6 +234,23 @@ module.exports = (function() {
             }
 
             return (dateA.getUTCDate() === dateB.getUTCDate());
+        },
+
+        stitchTogetherArray: function(values) {
+            var str = '';
+            for (let index = 0; index < values.length; ++index) {
+                if (index > 0) {
+                    if (index < values.length - 1) {
+                        str += ', ';
+                    } else {
+                        str += ' or ';
+                    }
+                }
+
+                str += '`' + values[index] + '`';
+            }
+
+            return str;
         }
     }
 })();
