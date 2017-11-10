@@ -20,7 +20,8 @@
     "youtube-node": "1.3.2",
     "chrono-node": "1.3.5",
     "countries-and-timezones": "1.0.0",
-    "countryjs": "1.8.0"
+    "countryjs": "1.8.0",
+    "moment-timezone": "0.5.14"
   },
   "repository": {
     "type": "git",

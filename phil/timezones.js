@@ -3,6 +3,7 @@
 const discord = require('../promises/discord');
 const chronoNode = require('chrono-node');
 const countryTimezones = require('../data/country-timezones.json');
+const moment = require('moment-timezone');
 
 const QUESTIONNAIRE_STAGES = {
     None: 0,
@@ -65,8 +66,13 @@ function insertNewTimezoneRow(bot, db, userId, initialStage) {
     return db.query('INSERT INTO timezones(username, userid, stage) VALUES($1, $2, $3)', [username, userId, initialStage]);
 }
 
-function buildSpecificationListFromCountryTimezones(timezoneData) {
-    var message = 'Okay! Your country has a couple of timezones. Please tell me the **number** next to the ';
+function getTimezoneDataFromCountryDb(db, userId) {
+    return db.query('SELECT country_name FROM timezones WHERE userid = $1', [userId])
+        .then(results => countryTimezones[results.rows[0].country_name]);
+}
+
+function buildSpecificationListFromCountryTimezones(timezoneData, messagePrefix) {
+    var message = messagePrefix + ' Your country has a couple of timezones. Please tell me the **number** next to the ';
     if (timezoneData.isCities) {
         message += 'city closest to you that\'s in your timezone';
     } else {
@@ -82,6 +88,26 @@ function buildSpecificationListFromCountryTimezones(timezoneData) {
     return message;
 }
 
+function getSpecificationList(db, userId, messagePrefix) {
+    return getTimezoneDataFromCountryDb(db, userId)
+        .then(timezoneData => buildSpecificationListFromCountryTimezones(timezoneData, messagePrefix));
+}
+
+function buildConfirmationMessage(dbResults, messagePrefix) {
+    const timezoneName = dbResults.rows[0].timezone_name;
+    const converted = moment.utc().tz(timezoneName);
+
+    var message = messagePrefix + ' If I understand you correctly, your current time should be **';
+    message += converted.format('HH:mm (A) on D MMMM YYYY');
+    message += '**. Is this correct? Simply reply with `yes` or `no`.';
+    return message;
+}
+
+function getConfirmationMessage(db, userId, messagePrefix) {
+    return db.query('SELECT timezone_name FROM timezones WHERE userId = $1 LIMIT 1', [userId])
+        .then(results => buildConfirmationMessage(results, messagePrefix));
+}
+
 const GetQuestionnaireStageMessageFuncs = {};
 GetQuestionnaireStageMessageFuncs[QUESTIONNAIRE_STAGES.None] = function(db, userId) {
     return Promise.resolve('<None>');
@@ -93,12 +119,10 @@ GetQuestionnaireStageMessageFuncs[QUESTIONNAIRE_STAGES.Country] = function(db, u
     return Promise.resolve('Alright! Let\'s get started! Can you start by telling me the name of the country you\'re in? I\'ll never display this information publicly in the chat.');
 };
 GetQuestionnaireStageMessageFuncs[QUESTIONNAIRE_STAGES.Specification] = function(db, userId) {
-    return db.query('SELECT country_name FROM timezones WHERE userid = $1', [userId])
-        .then(results => countryTimezones[results.rows[0].country_name])
-        .then(buildSpecificationListFromCountryTimezones);
+    return getSpecificationList(db, userId, 'Okay!');
 };
 GetQuestionnaireStageMessageFuncs[QUESTIONNAIRE_STAGES.Confirmation] = function(db, userId) {
-    return null;
+    return getConfirmationMessage(db, userId, 'Roger!');
 };
 GetQuestionnaireStageMessageFuncs[QUESTIONNAIRE_STAGES.Finished] = function(db, userId) {
     return Promise.resolve('All done! I\'ve recorded your timezone information! When you mention a date or time in the server again, I\'ll convert it for you! If you ever need to change it, just use `' + process.env.COMMAND_PREFIX + 'timezone` to do so!');
@@ -188,22 +212,52 @@ function processCountryStage(bot, db, message) {
         .then(setStage(bot, db, message.userId, QUESTIONNAIRE_STAGES.Specification));
 }
 
-function processDaylightSavingStage(bot, db, message) {
-    const response = message.content.toLowerCase().trim();
-
-    var isInUnitedStates;
-    if (response === 'yes') {
-        isInUnitedStates = 1;
-    } else if (response === 'no') {
-        isInUnitedStates = 0;
-    } else {
-        return discord.sendMessage(bot, message.channelId, 'I didn\'t quite catch that. Are you in the United States or not? `Yes` or `no` is good enough.');
+function branchSpecificationStage(bot, db, userId, input, timezoneData) {
+    input = input - 1; // Front-facing, it's one-based
+    if (input < 0 || input >= timezoneData.timezones.length) {
+        return getSpecificationList(db, userId, 'That wasn\'t actually a number with a timezone I can understand. Can we try again?')
+            .then(reply => discord.sendMessage(bot, userId, reply));
     }
 
-    return db.query('UPDATE timezone_questionnaire SET is_united_states = $1 WHERE userid = $2', [isInUnitedStates, message.userId])
+    const timezoneName = timezoneData.timezones[input].name;
+    return db.query('UPDATE timezones SET timezone_name = $1 WHERE userid = $2', [timezoneName, userId])
         .then(ensureRowWasModified)
-        .then(setStage(bot, db, message.userId, QUESTIONNAIRE_STAGES.Finished));
+        .then(setStage(bot, db, userId, QUESTIONNAIRE_STAGES.Confirmation));
 }
+
+function processSpecificationStage(bot, db, message) {
+    const input = parseInt(message.content);
+    if (isNaN(input)) {
+        return getSpecificationList(db, message.userId, 'Sorry, that wasn\'t actually a number. Can you try again?')
+            .then(reply => discord.sendMessage(bot, message.userId, reply));
+    }
+
+    return getTimezoneDataFromCountryDb(db, message.userId)
+        .then(timezoneData => branchSpecificationStage(bot, db, message.userId, input, timezoneData));
+}
+
+function processConfirmationStage(bot, db, message) {
+    const content = message.content.toLowerCase().trim();
+
+    if (content === 'yes') {
+        return setStage(bot, db, message.userId, QUESTIONNAIRE_STAGES.Finished);
+    }
+
+    if (content === 'no') {
+        return db.query('UPDATE timezones SET timezone_name = NULL WHERE userid = $1', [message.userId])
+            .then(ensureRowWasModified)
+            .then(setStage(bot, db, message.userId, QUESTIONNAIRE_STAGES.Country));
+    }
+
+    return getConfirmationMessage(db, message.userId, 'Hmmmm, that wasn\'t one of the answers.')
+        .then(reply => discord.sendMessage(bot, message.channelId, reply));
+}
+
+const ProcessQuestionnaireStageFuncs = {};
+ProcessQuestionnaireStageFuncs[QUESTIONNAIRE_STAGES.LetsBegin] = processLetsBeginStage;
+ProcessQuestionnaireStageFuncs[QUESTIONNAIRE_STAGES.Country] = processCountryStage;
+ProcessQuestionnaireStageFuncs[QUESTIONNAIRE_STAGES.Specification] = processSpecificationStage;
+ProcessQuestionnaireStageFuncs[QUESTIONNAIRE_STAGES.Confirmation] = processConfirmationStage;
 
 function processQuestionnaireStage(bot, db, message, results) {
     if (!processIsCurrentlyDoingQuestionnaireResults(results)) {
@@ -211,23 +265,13 @@ function processQuestionnaireStage(bot, db, message, results) {
     }
 
     const currentStage = results.rows[0].stage;
+    const processFunc = ProcessQuestionnaireStageFuncs[currentStage];
 
-    switch (currentStage) {
-        case QUESTIONNAIRE_STAGES.LetsBegin:
-        {
-            return processLetsBeginStage(bot, db, message);
-        }
-        case QUESTIONNAIRE_STAGES.Country:
-        {
-            return processCountryStage(bot, db, message);
-        }
-        case QUESTIONNAIRE_STAGES.DaylightSavingsTime:
-        {
-            return processDaylightSavingStage(bot, db, message);
-        }
+    if (!processFunc) {
+        return Promise.reject('Unknown questionnaire stage \'' + currentStage + '\'');
     }
 
-    return Promise.reject('Unknown questionnaire stage \'' + currentStage + '\'');
+    return processFunc(bot, db, message);
 }
 
 module.exports = {
