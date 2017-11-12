@@ -51,6 +51,7 @@ module.exports = class Phil {
 
     _reportStartupError(err) {
         console.error('[STARTUP ERROR] %s', err);
+        console.error(err);
         process.exit(1);
     }
 

@@ -276,9 +276,8 @@ function processQuestionnaireStage(bot, db, message, results) {
 
 module.exports = {
     getTimezoneForUser: function(db, userId) { // results null if nothing, otherwise a timezone
-        //return db.query('SELECT timezone_name FROM timezones WHERE userid = $1 LIMIT 1', [userId])
-        //    .then(processDatabaseTimezoneResults);
-        return Promise.resolve(null);
+        return db.query('SELECT timezone_name FROM timezones WHERE userid = $1 AND stage = $2 LIMIT 1', [userId, QUESTIONNAIRE_STAGES.Finished])
+            .then(processDatabaseTimezoneResults);
     },
 
     hasDeclinedProvidingTimezone: function(db, userId) { // resolves [true/false] for if the user has declined to provide their timezone

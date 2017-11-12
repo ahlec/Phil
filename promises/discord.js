@@ -14,6 +14,19 @@ module.exports = (function() {
         });
     }
 
+    function _performSendEmbedMessagePromise(resolve, reject, bot, channelId, embedData) {
+        bot.sendMessage({
+            to: channelId,
+            embed: embedData
+        }, (err, response) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(response);
+            }
+        });
+    }
+
     function _performEditMessagePromise(resolve, reject, bot, channelId, messageId, text) {
         bot.editMessage({
             channelID: channelId,
@@ -58,6 +71,22 @@ module.exports = (function() {
             }
 
             return new Promise((resolve, reject) => _performSendMessagePromise(resolve, reject, bot, channelId, message));
+        },
+
+        sendEmbedMessage: function(bot, channelId, embedData) {
+            if (typeof(bot) !== 'object') {
+                return Promise.reject('sendEmbedMessage was not provided a valid bot.');
+            }
+
+            if (typeof(channelId) !== 'string') {
+                return Promise.reject('sendEmbedMessage was not provided a channel');
+            }
+
+            if (typeof(embedData) !== 'object') {
+                return Promise.reject('sendEmbedMessage was not provided embedData');
+            }
+
+            return new Promise((resolve, reject) => _performSendEmbedMessagePromise(resolve, reject, bot, channelId, embedData));
         },
 
         editMessage: function(bot, channelId, messageId, text) {

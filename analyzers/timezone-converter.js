@@ -3,16 +3,26 @@
 const chronoNode = require('chrono-node');
 const discord = require('../promises/discord');
 const timezones = require('../phil/timezones');
+const moment = require('moment-timezone');
+const features = require('../phil/features');
 
 function createInterjection(dateTimes, timezoneName) {
-    var interjection = ':alarm_clock: ';
+    var interjection = '';
 
     for (let dateTime of dateTimes) {
-        interjection += dateTime.text + ':';
-        interjection += '\n';
+        if (interjection.length > 0) {
+            interjection += '\n\n';
+        }
+
+        interjection += '**' + dateTime.text + '**\n';
+
+        const usersTime = moment.tz(dateTime.start.date(), timezoneName);
+        const utcTime = usersTime.tz('Etc/UTC');
+        interjection += utcTime.format('HH:mm (A) on D MMMM YYYY');
+
+        interjection += ' UTC';
     }
 
-    interjection = interjection.trim();
     return interjection;
 }
 
@@ -22,7 +32,14 @@ function handleTimesEncountered(bot, message, dateTimes, timezoneName, db) {
     }
 
     const interjection = createInterjection(dateTimes, timezoneName);
-    return discord.sendMessage(bot, message.channelId, interjection);
+    return discord.sendEmbedMessage(bot, message.channelId, {
+        color: 0x7A378B,
+        title: 'Timezone Conversion',
+        description: interjection,
+        footer: {
+            text: 'All times converted from user\'s local timezone to UTC'
+        }
+    });
 }
 
 function branchDeclinedProvidingTimezone(bot, db, message, dateTimes, declinedProviding) {
@@ -43,6 +60,15 @@ function branchDoingQuestionnaire(bot, db, message, dateTimes, isDoingQuestionna
         .then(declinedProviding => branchDeclinedProvidingTimezone(bot, db, message, dateTimes, declinedProviding));
 }
 
+function branchFeatureEnabled(bot, db, message, dateTimes, isFeatureEnabled) {
+    if (!isFeatureEnabled) {
+        return;
+    }
+
+    return timezones.isCurrentlyDoingQuestionnaire(db, message.userId)
+        .then(isDoingQuestionnaire => branchDoingQuestionnaire(bot, db, message, dateTimes, isDoingQuestionnaire));
+}
+
 module.exports = function(bot, message, db) {
     const dateTimes = chronoNode.parse(message.content);
 
@@ -50,6 +76,6 @@ module.exports = function(bot, message, db) {
         return Promise.resolve();
     }
 
-    return timezones.isCurrentlyDoingQuestionnaire(db, message.userId)
-        .then(isDoingQuestionnaire => branchDoingQuestionnaire(bot, db, message, dateTimes, isDoingQuestionnaire));
+    return features.getIsFeatureEnabled(features.Features.TimezoneProcessing, db)
+        .then(isEnabled => branchFeatureEnabled(bot, db, message, dateTimes, isEnabled));
 };
