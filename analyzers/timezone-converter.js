@@ -17,8 +17,10 @@ function createInterjection(dateTimes, timezoneName) {
         interjection += '**' + dateTime.text + '**\n';
 
         const usersTime = moment.tz(dateTime.start.date(), timezoneName);
-        const utcTime = usersTime.tz('Etc/UTC');
+        const utcTime = moment(usersTime).tz('Etc/UTC');
         interjection += utcTime.format('HH:mm (A) on D MMMM YYYY');
+
+        console.log('input time of %s became %s because of timezone %s', usersTime.format('HH:mm (A) on D MMMM YYYY'), utcTime.format('HH:mm (A) on D MMMM YYYY'), timezoneName);
 
         interjection += ' UTC';
     }
@@ -30,6 +32,8 @@ function handleTimesEncountered(bot, message, dateTimes, timezoneName, db) {
     if (!timezoneName || timezoneName.length === 0) {
         return timezones.startQuestionnaire(bot, db, message.userId, false);
     }
+
+    console.log('convert timezones from user (%s - %d)\'s timezone of %s to UTC', message.user, message.userId, timezoneName);
 
     const interjection = createInterjection(dateTimes, timezoneName);
     return discord.sendEmbedMessage(bot, message.channelId, {
