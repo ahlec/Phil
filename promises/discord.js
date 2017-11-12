@@ -54,6 +54,19 @@ module.exports = (function() {
         });
     }
 
+    function _performDeleteRolePromise(resolve, reject, bot, serverId, roleId) {
+        bot.deleteRole({
+            serverID: serverId,
+            roleID: roleId
+        }, (err, response) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(response);
+            }
+        });
+    }
+
     return {
         PUBLIC_CHANNEL_CHARACTER_LIMIT: 2000,
 
@@ -123,6 +136,23 @@ module.exports = (function() {
             }
 
             return new Promise((resolve, reject) => _performDeleteMessagePromise(resolve, reject, bot, channelId, messageId));
+        },
+
+        deleteRole: function(bot, serverId, roleId) {
+            if (typeof(bot) !== 'object') {
+                return Promise.reject('deleteRole was not provided a valid bot.');
+            }
+
+            if (typeof(serverId) !== 'string') {
+                return Promise.reject('deleteRole was not provided a server');
+            }
+
+            if (typeof(roleId) !== 'string') {
+                return Promise.reject('deleteRole was not provided a role');
+            }
+
+            return new Promise((resolve, reject) => _performDeleteRolePromise(resolve, reject, bot, serverId, roleId));
+
         }
     };
 })();
