@@ -6,6 +6,23 @@ const timezones = require('../phil/timezones');
 const moment = require('moment-timezone');
 const features = require('../phil/features');
 
+function getUsersTime(dateTime, timezoneName) {
+    // NOTE: We can't use the chrono-node version because it's wonky and does its own timezone stuff
+
+    var dateMoment = moment();
+
+    dateMoment.set('year', dateTime.start.get('year'));
+    dateMoment.set('month', dateTime.start.get('month')-1);
+    dateMoment.set('date', dateTime.start.get('day'));
+    dateMoment.set('hour', dateTime.start.get('hour'));
+    dateMoment.set('minute', dateTime.start.get('minute'));
+    dateMoment.set('second', dateTime.start.get('second'));
+    dateMoment.set('millisecond', dateTime.start.get('millisecond'));
+    dateMoment.tz(timezoneName);
+
+    return dateMoment;
+}
+
 function createInterjection(dateTimes, timezoneName) {
     var interjection = '';
 
@@ -16,7 +33,7 @@ function createInterjection(dateTimes, timezoneName) {
 
         interjection += '**' + dateTime.text + '**\n';
 
-        const usersTime = moment.tz(dateTime.start.date(), timezoneName);
+        const usersTime = getUsersTime(dateTime, timezoneName);
         const utcTime = moment(usersTime).tz('Etc/UTC');
         interjection += utcTime.format('HH:mm (A) on D MMMM YYYY');
 
