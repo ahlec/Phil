@@ -4,17 +4,35 @@ module.exports = (function() {
     const features = require('../phil/features');
     const botUtils = require('../phil/utils');
     const prompts = require('../phil/prompts');
+    const discord = require('../promises/discord');
+
+    function _processQueueLength(bot, queueLength) {
+        if (queueLength >= process.env.PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD) {
+            return;
+        }
+
+        var are = (queueLength == 1 ? 'is' : 'are');
+        var promptNoun = (queueLength == 1 ? 'prompt' : 'prompts');
+
+        var message = ':warning: The prompt queue is growing short. There ' + are + ' **' + (queueLength > 0 ? queueLength : 'no') + '** more ' + promptNoun + ' in the queue.';
+        return discord.sendMessage(bot, process.env.BOT_CONTROL_CHANNEL_ID, message);
+    }
+
+    function _handleRemainingQueue(db, bot) {
+        if (process.env.PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD <= 0) {
+            return;
+        }
+
+        return prompts.getPromptQueueLength(db)
+            .then(queueLength => _processQueueLength(bot, queueLength));
+    }
 
     function _handleHasBeenPostedResults(results, bot, promptNumber, promptText) {
         if (results.rowCount === 0) {
             return Promise.reject('We found a prompt in the queue, but we couldn\'t update it to mark it as being posted.');
         }
 
-        prompts.sendPromptToChannel(bot, process.env.HIJACK_CHANNEL_ID, {
-            promptNumber: promptNumber,
-            text: promptText
-        });
-        return Promise.resolve(true);
+        return prompts.sendPromptToChannel(bot, process.env.HIJACK_CHANNEL_ID, promptNumber, promptText );
     }
 
     function selectNextUnpublishedPromptAndContinue(chronosManager, now, bot, db, promptNumber) {
@@ -27,7 +45,9 @@ module.exports = (function() {
                 const promptId = queue[0].promptId;
                 const promptText = queue[0].promptText;
                 return db.query('UPDATE hijack_prompts SET has_been_posted = E\'1\', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3', [promptNumber, now, promptId])
-                    .then(results => _handleHasBeenPostedResults(results, bot, promptNumber, promptText));
+                    .then(results => _handleHasBeenPostedResults(results, bot, promptNumber, promptText))
+                    .then(() => _handleRemainingQueue(db, bot))
+                    .then(() => true);
             });
     }
 

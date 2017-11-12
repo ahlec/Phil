@@ -34,6 +34,7 @@ function _assertEnvironmentVariables() {
     _assertVariableExists('THEY_PRONOUNS_ROLE_ID');
     _assertVariableExists('HIJACK_FANDOM_GOOGLE_MAP_LINK');
 	_assertCustomEmoji('CUSTOM_EMOJI_PEEK');
+    _assertVariableExists('PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD');
 }
 
 function _ensureNecessaryEnvironmentVariables(resolve, reject) {

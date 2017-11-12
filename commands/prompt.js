@@ -25,7 +25,7 @@ module.exports = (function() {
             return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
                 .then(() => prompts.getTodaysPrompt(db))
                 .then(_ensureThereIsPromptForToday)
-                .then(prompt => prompts.sendPromptToChannel(bot, message.channelId, prompt));
+                .then(prompt => prompts.sendPromptToChannel(bot, message.channelId, prompt.promptNumber, prompt.text));
         }
     };
 })();

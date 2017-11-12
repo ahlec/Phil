@@ -2,6 +2,7 @@ module.exports = (function() {
     'use strict';
 
     const botUtils = require('../phil/utils');
+    const discord = require('../promises/discord');
     const assert = require('assert');
 
     function _parsePromptFromDbRow(dbRow) {
@@ -126,11 +127,8 @@ module.exports = (function() {
                 .then(_parseTodaysPromptDbResults);
         },
 
-        sendPromptToChannel: function(bot, channelId, prompt) {
-            bot.sendMessage({
-                to: channelId,
-                message: ':snowflake: **HIJACK PROMPT OF THE DAY #' + prompt.promptNumber + '**: ' + prompt.text
-            });
+        sendPromptToChannel: function(bot, channelId, promptNumber, promptText) {
+            return discord.sendMessage(bot, channelId, ':snowflake: **HIJACK PROMPT OF THE DAY #' + promptNumber + '**: ' + promptText);
         },
 
         getConfirmRejectNumbersFromCommandArgs: function(commandArgs) { // Resolves: array of integers
@@ -152,6 +150,11 @@ module.exports = (function() {
         getPromptQueue: function(db, maxNumResults) {
             return db.query('SELECT prompt_id, prompt_text FROM hijack_prompts WHERE has_been_posted=E\'0\' AND approved_by_user=E\'1\' AND approved_by_admin=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
                 .then(_parsePromptQueueDbResults);
-        }
+        },
+
+        getPromptQueueLength: function(db) {
+            return db.query('SELECT count(*) FROM hijack_prompts WHERE has_been_posted = E\'0\' AND approved_by_user = E\'1\' AND approved_by_admin = E\'1\'')
+                .then(results => results.rows[0].count);
+        },
     };
 })();
