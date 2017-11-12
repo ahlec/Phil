@@ -6,7 +6,7 @@ const prompts = require('../phil/prompts');
 const discord = require('../promises/discord');
 
 function branchCanProcessTodaysPrompt(chronosManager, now, bot, db, prompt) {
-    if (!prompt) {
+    if (prompt !== null) {
         return Promise.resolve({
             ready: false
         });
