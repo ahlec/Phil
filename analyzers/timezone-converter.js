@@ -69,8 +69,13 @@ function branchFeatureEnabled(bot, db, message, dateTimes, isFeatureEnabled) {
         .then(isDoingQuestionnaire => branchDoingQuestionnaire(bot, db, message, dateTimes, isDoingQuestionnaire));
 }
 
+function parseDateTimesFromMessage(content) {
+    const dateTimes = chronoNode.parse(content);
+    return dateTimes.filter(dateTime => dateTime.start.isCertain('hour'));
+}
+
 module.exports = function(bot, message, db) {
-    const dateTimes = chronoNode.parse(message.content);
+    const dateTimes = parseDateTimesFromMessage(message.content);
 
     if (dateTimes.length === 0) {
         return Promise.resolve();
