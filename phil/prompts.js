@@ -128,7 +128,11 @@ module.exports = (function() {
         },
 
         sendPromptToChannel: function(bot, channelId, promptNumber, promptText) {
-            return discord.sendMessage(bot, channelId, ':snowflake: **HIJACK PROMPT OF THE DAY #' + promptNumber + '**: ' + promptText);
+            return discord.sendEmbedMessage(bot, channelId, {
+                color: 0xB0E0E6,
+                title: ':snowflake: Hijack Prompt of the Day #' + promptNumber + ' :dragon_face:',
+                description: promptText
+            });
         },
 
         getConfirmRejectNumbersFromCommandArgs: function(commandArgs) { // Resolves: array of integers

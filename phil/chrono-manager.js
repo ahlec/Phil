@@ -2,6 +2,7 @@
 
 const botUtils = require('../phil/utils');
 const util = require('util');
+const discord = require('../promises/discord');
 
 module.exports = class ChronoManager {
     constructor(bot, chronos, db)
@@ -151,9 +152,13 @@ module.exports = class ChronoManager {
             err = util.inspect(err);
         }
 
-        this._bot.sendMessage({
-            to: process.env.BOT_CONTROL_CHANNEL_ID,
-            message: ':warning: **Chrono error:** ' + chrono.definition.name + '\n' + err
+        discord.sendEmbedMessage(this._bot, process.env.BOT_CONTROL_CHANNEL_ID, {
+            color: 0xCD5555,
+            title: ':no_entry: Chrono Error',
+            description: err,
+            footer: {
+                text: 'chrono: ' + chrono.definition.name
+            }
         });
     }
 };

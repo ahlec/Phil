@@ -2,6 +2,7 @@
 
 const botUtils = require('../phil/utils');
 const util = require('util');
+const discord = require('../promises/discord');
 
 module.exports = class AnalyzerManager {
     constructor(bot, analyzers, db)
@@ -34,9 +35,13 @@ module.exports = class AnalyzerManager {
             err = util.inspect(err);
         }
 
-        this._bot.sendMessage({
-            to: process.env.BOT_CONTROL_CHANNEL_ID,
-            message: ':bangbang: **Analyzer error:** ' + analyzerName + '\n' + err
+        discord.sendEmbedMessage(this._bot, process.env.BOT_CONTROL_CHANNEL_ID, {
+            color: 0xCD5555,
+            title: ':no_entry: Analyzer Error',
+            description: err,
+            footer: {
+                text: 'analyzer: ' + analyzerName
+            }
         });
     }
 };
