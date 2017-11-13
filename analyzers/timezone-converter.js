@@ -10,6 +10,7 @@ function getUsersTime(dateTime, timezoneName) {
     // NOTE: We can't use the chrono-node version because it's wonky and does its own timezone stuff
 
     var dateMoment = moment();
+    dateMoment.tz(timezoneName);
 
     dateMoment.set('year', dateTime.start.get('year'));
     dateMoment.set('month', dateTime.start.get('month')-1);
@@ -18,7 +19,6 @@ function getUsersTime(dateTime, timezoneName) {
     dateMoment.set('minute', dateTime.start.get('minute'));
     dateMoment.set('second', dateTime.start.get('second'));
     dateMoment.set('millisecond', dateTime.start.get('millisecond'));
-    dateMoment.tz(timezoneName);
 
     return dateMoment;
 }
