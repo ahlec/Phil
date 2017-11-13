@@ -285,6 +285,14 @@ module.exports = {
             .then(processDeclinedProvidingResults);
     },
 
+    ensureTimezoneProvided: function(timezoneName) {
+        if (!timezoneName || timezoneName.length === 0) {
+            return Promise.reject('In order to use this command, you must first provide your timezone to me so I know how to convert your local time. You can use `' + process.env.COMMAND_PREFIX + 'timezone` to start that process.');
+        }
+
+        return timezoneName;
+    },
+
     startQuestionnaire: function(bot, db, userId, manuallyStartedQuestionnaire) { // resolves [true/false] for if it started or not
         return Promise.resolve()
             .then(() => canStartQuestionnaire(db, userId, manuallyStartedQuestionnaire))

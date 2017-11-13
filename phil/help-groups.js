@@ -5,7 +5,8 @@ const groupHeaders = [
     ':trident: GENERAL',
     ':joy: MEMES',
     ':military_medal: ROLES',
-    ':writing_hand: PROMPTS'
+    ':writing_hand: PROMPTS',
+    ':clock4: TIME'
 ];
 
 module.exports = {
@@ -15,6 +16,7 @@ module.exports = {
         Memes: 1,
         Roles: 2,
         Prompts: 3,
+        Time: 4,
         Admin: ADMIN_GROUP,
     },
 

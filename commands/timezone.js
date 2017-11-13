@@ -13,7 +13,7 @@ module.exports = (function() {
     return {
         aliases: [ 'timezones', 'tz' ],
 
-        helpGroup: helpGroups.Groups.General,
+        helpGroup: helpGroups.Groups.Time,
         helpDescription: 'Begins a private message dialogue with Phil to set your timezone, or to change your current timezone.',
         versionAdded: 8,
 
