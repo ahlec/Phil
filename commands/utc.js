@@ -26,18 +26,29 @@ module.exports = (function() {
         return dateTimes[0].start;
     }
 
-    function convertTimeToUtc(inputTime, timezoneName) {
+    function formatTimeToString(time) {
+        return time.format('HH:mm (h:mm A)');
+    }
+
+    function createReply(inputTime, timezoneName) {
         const timezoneOffset = moment().tz(timezoneName).utcOffset();
         inputTime.assign('timezoneOffset', timezoneOffset);
         const usersTime = inputTime.moment();
-        return moment(usersTime).tz('Etc/UTC');
+
+        var reply = formatTimeToString(usersTime) + ' local time is **';
+
+        const utcTime = moment(usersTime).tz('Etc/UTC');
+        reply += formatTimeToString(utcTime);
+        reply += '** UTC.';
+
+        return reply;
     }
 
-    function sendReply(bot, channelId, utcTime) {
+    function sendReply(bot, channelId, reply) {
         return discord.sendEmbedMessage(bot, channelId, {
             color: 0x7A378B,
             title: 'Timezone Conversion',
-            description: utcTime.format('HH:mm (A) on D MMMM YYYY'),
+            description: reply,
             footer: {
                 text: 'Converted from user\'s local timezone to UTC. If the time provided is incorrect, your timezone might need to be updated. Use ' + process.env.COMMAND_PREFIX + 'timezone to change/set.'
             }
@@ -62,8 +73,8 @@ module.exports = (function() {
             return features.ensureFeatureIsEnabled(features.Features.TimezoneProcessing, db)
                 .then(() => timezones.getTimezoneForUser(db, message.userId))
                 .then(timezones.ensureTimezoneProvided)
-                .then(timezoneName => convertTimeToUtc(inputTime, timezoneName))
-                .then(utcTime => sendReply(bot, message.channelId, utcTime));
+                .then(timezoneName => createReply(inputTime, timezoneName))
+                .then(reply => sendReply(bot, message.channelId, reply));
         }
     };
 })();

@@ -8,7 +8,6 @@ module.exports = function(event, bot) {
     assert(event.d);
     assert(event.t === 'MESSAGE_CREATE');
 
-    console.log(event.d);
     const mentions = [];
     for (let mention of event.d.mentions) {
         mentions.push({
