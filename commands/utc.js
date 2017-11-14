@@ -31,12 +31,12 @@ module.exports = (function() {
     }
 
     function createReply(inputTime, timezoneName) {
-        const usersTime = inputTime.moment();
-        var reply = formatTimeToString(usersTime) + ' local time is **';
+        const localTime = inputTime.clone().moment();
+        var reply = formatTimeToString(localTime) + ' local time is **';
 
         const timezoneOffset = moment().tz(timezoneName).utcOffset();
         inputTime.assign('timezoneOffset', timezoneOffset);
-        const utcTime = moment(usersTime).tz('Etc/UTC');
+        const utcTime = inputTime.moment().tz('Etc/UTC');
         reply += formatTimeToString(utcTime);
         reply += '** UTC.';
 
