@@ -60,7 +60,7 @@ function postNewPrompt(chronosManager, now, bot, db, promptNumber) {
 }
 
 function alertQueueDwindling(bot, queueLength) {
-    if (queueLength >= process.env.PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD) {
+    if (queueLength >= parseInt(process.env.PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD)) {
         return;
     }
 
@@ -72,7 +72,7 @@ function alertQueueDwindling(bot, queueLength) {
 }
 
 function handleRemainingQueue(db, bot) {
-    if (process.env.PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD <= 0) {
+    if (parseInt(process.env.PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD) <= 0) {
         return;
     }
 

@@ -158,7 +158,7 @@ module.exports = (function() {
 
         getPromptQueueLength: function(db) {
             return db.query('SELECT count(*) FROM hijack_prompts WHERE has_been_posted = E\'0\' AND approved_by_user = E\'1\' AND approved_by_admin = E\'1\'')
-                .then(results => results.rows[0].count);
+                .then(results => parseInt(results.rows[0].count));
         },
     };
 })();
