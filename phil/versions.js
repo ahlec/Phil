@@ -2,7 +2,7 @@
 
 module.exports = (function() {
     const versions = {
-        CODE:     10,
+        CODE:     11,
         DATABASE: 5
     };
 
