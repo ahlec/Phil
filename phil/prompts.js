@@ -5,6 +5,8 @@ module.exports = (function() {
     const discord = require('../promises/discord');
     const assert = require('assert');
 
+    const LEADERBOARD_SIZE = 10;
+
     function _parsePromptFromDbRow(dbRow) {
         return {
             promptNumber: dbRow.prompt_number,
@@ -120,6 +122,24 @@ module.exports = (function() {
         return queue;
     }
 
+    function _parseLeaderboardDbResults(results, bot) {
+        const leaderboard = [];
+
+        for (let index = 0; index < results.rowCount; ++index) {
+            let userId = results.rows[index].suggesting_userid;
+            const user = bot.users[userId];
+
+            leaderboard.push({
+                userId: userId,
+                userName: (user == null ? results.rows[index].suggesting_user : user.username),
+                isStillInServer: (user != null),
+                score: parseInt(results.rows[index].score)
+            });
+        }
+
+        return leaderboard;
+    }
+
     return {
         getTodaysPrompt: function(db) {
             const today = new Date();
@@ -160,5 +180,10 @@ module.exports = (function() {
             return db.query('SELECT count(*) FROM hijack_prompts WHERE has_been_posted = E\'0\' AND approved_by_user = E\'1\' AND approved_by_admin = E\'1\'')
                 .then(results => parseInt(results.rows[0].count));
         },
+
+        getLeaderboard: function(bot, db) {
+            return db.query('SELECT suggesting_userid, suggesting_user, count(prompt_id) as "score" FROM hijack_prompts WHERE approved_by_user = E\'1\' AND approved_by_admin = E\'1\' GROUP BY suggesting_userid, suggesting_user ORDER BY score DESC LIMIT $1', [LEADERBOARD_SIZE] )
+                .then(results => _parseLeaderboardDbResults(results, bot));
+        }
     };
 })();

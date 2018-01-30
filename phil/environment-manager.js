@@ -33,7 +33,8 @@ function _assertEnvironmentVariables() {
     _assertVariableExists('SHE_PRONOUNS_ROLE_ID');
     _assertVariableExists('THEY_PRONOUNS_ROLE_ID');
     _assertVariableExists('HIJACK_FANDOM_GOOGLE_MAP_LINK');
-	_assertCustomEmoji('CUSTOM_EMOJI_PEEK');
+    _assertCustomEmoji('CUSTOM_EMOJI_PEEK');
+    _assertCustomEmoji('CUSTOM_EMOJI_TRANSPARENT');
     _assertVariableExists('PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD');
 }
 
