@@ -31,7 +31,7 @@ module.exports = (function() {
             requestString: _getRequestStringFromCommandArgs(commandArgs)
         };
 
-        const roleName = commandArgs.slice(1).join(' ').trim();
+        const roleName = commandArgs.slice(1).join(' ').trim().toLowerCase();
         for (let roleId in server.roles) {
             const role = server.roles[roleId];
             if (role.name.toLowerCase() === roleName) {
