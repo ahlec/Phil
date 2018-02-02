@@ -23,9 +23,9 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {
             return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
-                .then(() => prompts.getTodaysPrompt(db))
+                .then(() => prompts.getTodaysPrompt(bot, db))
                 .then(_ensureThereIsPromptForToday)
-                .then(prompt => prompts.sendPromptToChannel(bot, message.channelId, prompt.promptNumber, prompt.text));
+                .then(prompt => prompts.sendPromptToChannel(bot, message.channelId, prompt.promptNumber, prompt));
         }
     };
 })();

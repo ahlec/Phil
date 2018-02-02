@@ -39,7 +39,7 @@ module.exports = (function() {
         message += '**';
 
         if (!entry.isStillInServer) {
-            message + ' (no longer in server)';
+            message += ' (no longer in server)';
         }
 
         message += ' submitted **'

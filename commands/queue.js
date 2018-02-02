@@ -46,7 +46,7 @@ module.exports = (function() {
         publicRequiresAdmin: true,
         processPublicMessage: function(bot, message, commandArgs, db) {
             return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
-                .then(() => prompts.getPromptQueue(db, MAX_QUEUE_DISPLAY_LENGTH))
+                .then(() => prompts.getPromptQueue(db, bot, MAX_QUEUE_DISPLAY_LENGTH))
                 .then(queue => _sendPromptQueueToChannel(queue, bot, message.channelId));
         }
     };

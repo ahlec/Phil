@@ -7,19 +7,26 @@ module.exports = (function() {
 
     const LEADERBOARD_SIZE = 10;
 
-    function _parsePromptFromDbRow(dbRow) {
+    function _parsePromptDbResult(dbRow, bot) {
+        const userId = dbRow.suggesting_userid;
+        const user = bot.users[userId];
+
         return {
+            userId: userId,
+            userName: (user == null ? dbRow.suggesting_user : user.username),
+            isStillInServer: (user != null),
+            promptId: dbRow.prompt_id,
             promptNumber: dbRow.prompt_number,
             text: dbRow.prompt_text
         };
     }
 
-    function _parseTodaysPromptDbResults(results) {
+    function _parseTodaysPromptDbResults(results, bot) {
         if (results.rowCount === 0) {
             return null;
         }
 
-        return _parsePromptFromDbRow(results.rows[0]);
+        return _parsePromptDbResult(results.rows[0], bot);
     }
 
     function _getSingleCommandArg(commandArgs) {
@@ -109,14 +116,11 @@ module.exports = (function() {
             .then(results => _confirmRejectPerformDbAction(results, db, channelId, number, dbActionFunc, numSuccessful));
     }
 
-    function _parsePromptQueueDbResults(results) {
+    function _parsePromptQueueDbResults(results, bot) {
         const queue = [];
 
         for (let index = 0; index < results.rowCount; ++index) {
-            queue.push({
-                promptId: results.rows[index].prompt_id,
-                promptText: results.rows[index].prompt_text
-            });
+            queue.push(_parsePromptDbResult(results.rows[index], bot));
         }
 
         return queue;
@@ -141,17 +145,26 @@ module.exports = (function() {
     }
 
     return {
-        getTodaysPrompt: function(db) {
+        getTodaysPrompt: function(bot, db) {
             const today = new Date();
-            return db.query('SELECT prompt_number, prompt_text FROM hijack_prompts WHERE has_been_posted = E\'1\' AND prompt_date = $1', [today])
-                .then(_parseTodaysPromptDbResults);
+            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text FROM hijack_prompts WHERE has_been_posted = E\'1\' AND prompt_date = $1', [today])
+                .then(results => _parseTodaysPromptDbResults(results, bot));
         },
 
-        sendPromptToChannel: function(bot, channelId, promptNumber, promptText) {
+        sendPromptToChannel: function(bot, channelId, promptNumber, prompt) {
+            var footer = 'This was suggested by ' + prompt.userName;
+            if (!prompt.isStillInServer) {
+                footer += ' (who is no longer in server)';
+            }
+            footer += '. You can suggest your own by using ' + process.env.COMMAND_PREFIX + 'suggest.';
+
             return discord.sendEmbedMessage(bot, channelId, {
                 color: 0xB0E0E6,
                 title: ':snowflake: Hijack Prompt of the Day #' + promptNumber + ' :dragon_face:',
-                description: promptText
+                description: prompt.text,
+                footer: {
+                    text: footer
+                }
             });
         },
 
@@ -171,9 +184,9 @@ module.exports = (function() {
             return promise;
         },
 
-        getPromptQueue: function(db, maxNumResults) {
-            return db.query('SELECT prompt_id, prompt_text FROM hijack_prompts WHERE has_been_posted=E\'0\' AND approved_by_user=E\'1\' AND approved_by_admin=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
-                .then(_parsePromptQueueDbResults);
+        getPromptQueue: function(db, bot, maxNumResults) {
+            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text FROM hijack_prompts WHERE has_been_posted=E\'0\' AND approved_by_user=E\'1\' AND approved_by_admin=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
+                .then(results => _parsePromptQueueDbResults(results, bot));
         },
 
         getPromptQueueLength: function(db) {

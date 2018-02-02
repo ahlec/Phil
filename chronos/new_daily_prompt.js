@@ -32,29 +32,28 @@ function branchCanProcessFeatureEnabled(chronosManager, now, bot, db, isEnabled)
         });
     }
 
-    return prompts.getTodaysPrompt(db)
+    return prompts.getTodaysPrompt(bot, db)
         .then(prompt => branchCanProcessTodaysPrompt(chronosManager, now, bot, db, prompt));
 }
 
-function handleHasBeenPostedResults(results, bot, promptNumber, promptText) {
+function handleHasBeenPostedResults(results, bot, promptNumber, prompt) {
     if (results.rowCount === 0) {
         return Promise.reject('We found a prompt in the queue, but we couldn\'t update it to mark it as being posted.');
     }
 
-    return prompts.sendPromptToChannel(bot, process.env.HIJACK_CHANNEL_ID, promptNumber, promptText );
+    return prompts.sendPromptToChannel(bot, process.env.HIJACK_CHANNEL_ID, promptNumber, prompt);
 }
 
 function postNewPrompt(chronosManager, now, bot, db, promptNumber) {
-    return prompts.getPromptQueue(db, 1)
+    return prompts.getPromptQueue(db, bot, 1)
         .then(queue => {
             if (queue.length === 0) {
                 return Promise.resolve(false);
             }
 
-            const promptId = queue[0].promptId;
-            const promptText = queue[0].promptText;
-            return db.query('UPDATE hijack_prompts SET has_been_posted = E\'1\', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3', [promptNumber, now, promptId])
-                .then(results => handleHasBeenPostedResults(results, bot, promptNumber, promptText))
+            const prompt = queue[0];
+            return db.query('UPDATE hijack_prompts SET has_been_posted = E\'1\', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3', [promptNumber, now, prompt.promptId])
+                .then(results => handleHasBeenPostedResults(results, bot, promptNumber, prompt))
                 .then(() => true);
         });
 }
