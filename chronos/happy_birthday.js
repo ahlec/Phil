@@ -36,11 +36,11 @@ function getDataFromUserIds(bot, userIds) {
     const serverId = bot.channels[process.env.NEWS_CHANNEL_ID].guild_id;
     const server = bot.servers[serverId];
 
-    var userNames = [];
+    var names = [];
     for (let index = 0; index < userIds.length; ++index) {
         const userId = userIds[index];
-        const user = bot.users[userId];
-        userNames.push(user.username);
+        const member = server.members[userId];
+        names.push(member.nick);
     }
 
     var pronoun = botUtils.PRONOUNS.THEY;
@@ -49,7 +49,7 @@ function getDataFromUserIds(bot, userIds) {
     }
 
     return {
-        userNames: userNames,
+        names: names,
         pronoun: pronoun
     };
 }
@@ -67,28 +67,28 @@ function updateDatabase(db, now, data) {
 }
 
 function createBirthdayWish(data) {
-    if (data.userNames.length === 0) {
+    if (data.names.length === 0) {
         return '';
     }
 
     var message = ':birthday: Today is ';
     var separator = ', ';
-    if (data.userNames.length === 2) {
+    if (data.names.length === 2) {
         message += 'both ';
         separator = '';
     }
 
-    for (let index = 0; index < data.userNames.length; ++index) {
+    for (let index = 0; index < data.names.length; ++index) {
         if (index > 0) {
             message += separator;
 
-            if (index === data.userNames.length - 1) {
+            if (index === data.names.length - 1) {
                 message += ' and ';
             } else {
                 message += ' ';
             }
         }
-        message += '**' + data.userNames[index] + '**';
+        message += '**' + data.names[index] + '**';
     }
 
     message += '\'s birthday! Wish ';

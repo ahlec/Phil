@@ -35,14 +35,14 @@ module.exports = (function() {
         message += ' ';
         message += rankText;
         message += ': **';
-        message += entry.userName;
+        message += entry.displayName;
         message += '**';
 
         if (!entry.isStillInServer) {
             message += ' (no longer in server)';
         }
 
-        message += ' submitted **'
+        message += ' has submitted **'
         message += entry.score;
         message += '** prompt';
         if (entry.score !== 1) {
@@ -88,7 +88,7 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {
             return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
-                .then(() => prompts.getLeaderboard(bot, db))
+                .then(() => prompts.getLeaderboard(bot, db, message.server))
                 .then(createLeaderboardMessage)
                 .then(leaderboardMessage => sendLeaderboardToChat(bot, message.channelId, leaderboardMessage));
         }

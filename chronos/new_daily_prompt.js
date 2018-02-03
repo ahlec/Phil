@@ -32,7 +32,10 @@ function branchCanProcessFeatureEnabled(chronosManager, now, bot, db, isEnabled)
         });
     }
 
-    return prompts.getTodaysPrompt(bot, db)
+    const serverId = bot.channels[process.env.HIJACK_CHANNEL_ID].guild_id;
+    const server = bot.servers[serverId];
+
+    return prompts.getTodaysPrompt(bot, db, server)
         .then(prompt => branchCanProcessTodaysPrompt(chronosManager, now, bot, db, prompt));
 }
 
@@ -45,7 +48,10 @@ function handleHasBeenPostedResults(results, bot, promptNumber, prompt) {
 }
 
 function postNewPrompt(chronosManager, now, bot, db, promptNumber) {
-    return prompts.getPromptQueue(db, bot, 1)
+    const serverId = bot.channels[process.env.HIJACK_CHANNEL_ID].guild_id;
+    const server = bot.servers[serverId];
+
+    return prompts.getPromptQueue(db, bot, server, 1)
         .then(queue => {
             if (queue.length === 0) {
                 return Promise.resolve(false);

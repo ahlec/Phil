@@ -3,6 +3,19 @@
 const assert = require('assert');
 const util = require('util');
 
+function getServer(bot, channelId) {
+    if (!bot.channels[channelId]) {
+        return null;
+    }
+
+    const serverId = bot.channels[channelId].guild_id;
+    if (!bot.servers[serverId]) {
+        return null;
+    }
+
+    return bot.servers[serverId];
+}
+
 module.exports = function(event, bot) {
     assert(event);
     assert(event.d);
@@ -24,6 +37,7 @@ module.exports = function(event, bot) {
         userId: event.d.author.id,
         content: event.d.content,
         isDirectMessage: ( event.d.channel_id in bot.directMessages ? true : false ),
-        mentions: mentions
+        mentions: mentions,
+        server: getServer(bot, event.d.channel_id)
     };
 };

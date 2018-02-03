@@ -7,26 +7,26 @@ module.exports = (function() {
 
     const LEADERBOARD_SIZE = 10;
 
-    function _parsePromptDbResult(dbRow, bot) {
+    function _parsePromptDbResult(dbRow, bot, server) {
         const userId = dbRow.suggesting_userid;
-        const user = bot.users[userId];
+        const member = server.members[userId];
 
         return {
             userId: userId,
-            userName: (user == null ? dbRow.suggesting_user : user.username),
-            isStillInServer: (user != null),
+            displayName: (member == null ? dbRow.suggesting_user : member.nick),
+            isStillInServer: (member != null),
             promptId: dbRow.prompt_id,
             promptNumber: dbRow.prompt_number,
             text: dbRow.prompt_text
         };
     }
 
-    function _parseTodaysPromptDbResults(results, bot) {
+    function _parseTodaysPromptDbResults(results, bot, server) {
         if (results.rowCount === 0) {
             return null;
         }
 
-        return _parsePromptDbResult(results.rows[0], bot);
+        return _parsePromptDbResult(results.rows[0], bot, server);
     }
 
     function _getSingleCommandArg(commandArgs) {
@@ -116,27 +116,27 @@ module.exports = (function() {
             .then(results => _confirmRejectPerformDbAction(results, db, channelId, number, dbActionFunc, numSuccessful));
     }
 
-    function _parsePromptQueueDbResults(results, bot) {
+    function _parsePromptQueueDbResults(results, bot, server) {
         const queue = [];
 
         for (let index = 0; index < results.rowCount; ++index) {
-            queue.push(_parsePromptDbResult(results.rows[index], bot));
+            queue.push(_parsePromptDbResult(results.rows[index], bot, server));
         }
 
         return queue;
     }
 
-    function _parseLeaderboardDbResults(results, bot) {
+    function _parseLeaderboardDbResults(results, bot, server) {
         const leaderboard = [];
 
         for (let index = 0; index < results.rowCount; ++index) {
             let userId = results.rows[index].suggesting_userid;
-            const user = bot.users[userId];
+            const member = server.members[userId];
 
             leaderboard.push({
                 userId: userId,
-                userName: (user == null ? results.rows[index].suggesting_user : user.username),
-                isStillInServer: (user != null),
+                displayName: (member == null ? results.rows[index].suggesting_user : member.nick),
+                isStillInServer: (member != null),
                 score: parseInt(results.rows[index].score)
             });
         }
@@ -145,14 +145,14 @@ module.exports = (function() {
     }
 
     return {
-        getTodaysPrompt: function(bot, db) {
+        getTodaysPrompt: function(bot, db, server) {
             const today = new Date();
             return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text FROM hijack_prompts WHERE has_been_posted = E\'1\' AND prompt_date = $1', [today])
-                .then(results => _parseTodaysPromptDbResults(results, bot));
+                .then(results => _parseTodaysPromptDbResults(results, bot, server));
         },
 
         sendPromptToChannel: function(bot, channelId, promptNumber, prompt) {
-            var footer = 'This was suggested by ' + prompt.userName;
+            var footer = 'This was suggested by ' + prompt.displayName;
             if (!prompt.isStillInServer) {
                 footer += ' (who is no longer in server)';
             }
@@ -184,9 +184,9 @@ module.exports = (function() {
             return promise;
         },
 
-        getPromptQueue: function(db, bot, maxNumResults) {
+        getPromptQueue: function(db, bot, server, maxNumResults) {
             return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text FROM hijack_prompts WHERE has_been_posted=E\'0\' AND approved_by_admin=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
-                .then(results => _parsePromptQueueDbResults(results, bot));
+                .then(results => _parsePromptQueueDbResults(results, bot, server));
         },
 
         getPromptQueueLength: function(db) {
@@ -194,9 +194,9 @@ module.exports = (function() {
                 .then(results => parseInt(results.rows[0].count));
         },
 
-        getLeaderboard: function(bot, db) {
+        getLeaderboard: function(bot, db, server) {
             return db.query('SELECT suggesting_userid, suggesting_user, count(prompt_id) as "score" FROM hijack_prompts WHERE approved_by_admin = E\'1\' GROUP BY suggesting_userid, suggesting_user ORDER BY score DESC LIMIT $1', [LEADERBOARD_SIZE] )
-                .then(results => _parseLeaderboardDbResults(results, bot));
+                .then(results => _parseLeaderboardDbResults(results, bot, server));
         }
     };
 })();

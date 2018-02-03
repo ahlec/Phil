@@ -105,26 +105,26 @@ module.exports = (function() {
         return Promise.reject('There was a database error when attempting to get the birthdays for this month. `' + err + '`');
     }
 
-    function addBirthdaysDbResults(calendar, results, bot) {
+    function addBirthdaysDbResults(calendar, results, bot, server) {
         for (let index = 0; index < results.rowCount; ++index) {
             const userId = results.rows[index].userid;
-            const user = bot.users[userId];
-            if (user === undefined) {
+            const member = server.members[userId];
+            if (member === undefined) {
                 continue;
             }
 
             const day = results.rows[index].birthday_day;
-            const message = '**' + user.username + '**\'s birthday.';
+            const message = '**' + member.nick + '**\'s birthday.';
             addEntryToCalendar(calendar, day, message);
         }
 
         return calendar;
     }
 
-    function addBirthdaysForMonth(calendar, db, bot) {
+    function addBirthdaysForMonth(calendar, db, bot, server) {
         return db.query('SELECT userid, birthday_day FROM birthdays WHERE birthday_month = $1', [calendar.month])
             .catch(handleBirthdayDbError)
-            .then(results => addBirthdaysDbResults(calendar, results, bot));
+            .then(results => addBirthdaysDbResults(calendar, results, bot, server));
     }
 
     function addServerEventsForMonth(calendar) {
@@ -132,15 +132,12 @@ module.exports = (function() {
         return calendar;
     }
 
-    function addDatesToCalendar(calendar, db, bot) {
-        return addBirthdaysForMonth(calendar, db, bot)
+    function addDatesToCalendar(calendar, db, bot, server) {
+        return addBirthdaysForMonth(calendar, db, bot, server)
             .then(addServerEventsForMonth);
     }
 
-    function composeMessageFromCalendar(calendar, bot, channelId) {
-        const serverId = bot.channels[channelId].guild_id;
-        const server = bot.servers[serverId];
-
+    function composeMessageFromCalendar(calendar, bot, server) {
         var message = calendar.monthInfo.emoji + ' **' + calendar.monthInfo.fullName + '** calendar for the ' + server.name + ' Server\n\n';
 
         for (let index = 0; index < calendar.days.length; ++index) {
@@ -171,11 +168,14 @@ module.exports = (function() {
 
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {
+            const serverId = bot.channels[message.channelId].guild_id;
+            const server = bot.servers[serverId];
+
             return Promise.resolve()
                 .then(() => determineMonth(commandArgs))
                 .then(createCalendarDataStructureForMonth)
-                .then(calendar => addDatesToCalendar(calendar, db, bot))
-                .then(calendar => composeMessageFromCalendar(calendar, bot, message.channelId))
+                .then(calendar => addDatesToCalendar(calendar, db, bot, server))
+                .then(calendar => composeMessageFromCalendar(calendar, bot, server))
                 .then(calendarMessage => sendCalendarMessage(calendarMessage, bot, message.channelId));
         }
     };
