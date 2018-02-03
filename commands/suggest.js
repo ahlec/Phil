@@ -3,6 +3,7 @@ module.exports = (function() {
 
     const botUtils = require('../phil/utils');
     const helpGroups = require('../phil/help-groups');
+    const discord = require('../promises/discord');
 
     function getSuggestionFromCommandArgs(commandArgs) {
         var prompt = commandArgs.join(' ').trim();
@@ -21,11 +22,10 @@ module.exports = (function() {
     }
 
     function sendConfirmationMessage(bot, channelId, prompt) {
-        bot.sendMessage({
-            to: channelId,
-            message: ':diamond_shape_with_a_dot_inside: You\'ve suggested the prompt "**' + prompt + '**".\n' +
-                '* If you\'re satisfied with this, please say `' + process.env.COMMAND_PREFIX + 'confirm`.\n' +
-                '* If you want to change it or cancel it, use `' + process.env.COMMAND_PREFIX + 'suggest` again to cancel this, or do nothing.'
+        return discord.sendEmbedMessage(bot, channelId, {
+            color: 0xB0E0E6,
+            title: ':envelope_with_arrow: Submission Received',
+            description: 'The following prompt has been sent to the admins for approval:\n\n**' + prompt + '**\n\nIf it\'s approved, you\'ll see it in chat shortly and you\'ll receive a point for the leaderboard!'
         });
     }
 
