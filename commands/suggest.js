@@ -15,11 +15,6 @@ module.exports = (function() {
         return prompt;
     }
 
-    function clearOutPreviouslyUnconfirmedPrompts(db, userId, prompt) {
-        return db.query('DELETE FROM hijack_prompts WHERE suggesting_userid = $1 AND approved_by_user = E\'0\'', [userId])
-            .then(() => prompt);
-    }
-
     function addNewPrompt(db, user, userId, prompt) {
         return db.query('INSERT INTO hijack_prompts(suggesting_user, suggesting_userid, date_suggested, prompt_text) VALUES($1, $2, CURRENT_TIMESTAMP, $3)', [user, userId, prompt])
             .then(() => prompt);
@@ -45,7 +40,6 @@ module.exports = (function() {
         processPrivateMessage: function(bot, message, commandArgs, db) {
             return Promise.resolve()
                 .then(() => getSuggestionFromCommandArgs(commandArgs))
-                .then(prompt => clearOutPreviouslyUnconfirmedPrompts(db, message.userId, prompt))
                 .then(prompt => addNewPrompt(db, message.user, message.userId, prompt))
                 .then(prompt => sendConfirmationMessage(bot, message.channelId, prompt));
         }

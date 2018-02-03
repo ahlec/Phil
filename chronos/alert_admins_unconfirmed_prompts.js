@@ -44,7 +44,7 @@ module.exports = {
     },
 
     process: function(chronosManager, now, bot, db) {
-        return db.query('SELECT count(*) FROM hijack_prompts WHERE approved_by_user = E\'1\' AND approved_by_admin = E\'0\'')
+        return db.query('SELECT count(*) FROM hijack_prompts WHERE approved_by_admin = E\'0\'')
             .then(results => results.rows[0].count)
             .then(getUnconfimedPromptsMessage)
             .then(unconfirmedMessage => sendAlertMessage(bot, unconfirmedMessage))

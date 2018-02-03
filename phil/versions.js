@@ -3,7 +3,7 @@
 module.exports = (function() {
     const versions = {
         CODE:     11,
-        DATABASE: 5
+        DATABASE: 6
     };
 
     Object.freeze(versions);

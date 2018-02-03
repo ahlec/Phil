@@ -23,7 +23,7 @@ module.exports = (function() {
     }
 
     function getUnconfirmedPrompts(db) {
-        return db.query('SELECT prompt_id, suggesting_user, prompt_text FROM hijack_prompts WHERE approved_by_user = E\'1\' AND approved_by_admin = E\'0\' ORDER BY date_suggested ASC LIMIT $1', [MAX_LIST_LENGTH])
+        return db.query('SELECT prompt_id, suggesting_user, prompt_text FROM hijack_prompts WHERE approved_by_admin = E\'0\' ORDER BY date_suggested ASC LIMIT $1', [MAX_LIST_LENGTH])
             .then(results => parseUnconfirmedPromptsIntoList(results));
     }
 
