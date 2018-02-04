@@ -17,7 +17,8 @@ module.exports = (function() {
             isStillInServer: (member != null),
             promptId: dbRow.prompt_id,
             promptNumber: dbRow.prompt_number,
-            text: dbRow.prompt_text
+            text: dbRow.prompt_text,
+            submittedAnonymously: (parseInt(dbRow.submitted_anonymously) === 1)
         };
     }
 
@@ -144,19 +145,31 @@ module.exports = (function() {
         return leaderboard;
     }
 
+    function _getPromptMessageFooter(prompt) {
+        var footer = 'This was suggested ';
+
+        if (prompt.submittedAnonymously) {
+            footer += 'anonymously';
+        } else {
+            footer += 'by ' + prompt.displayName;
+            if (!prompt.isStillInServer) {
+                footer += ' (who is no longer in server)';
+            }
+        }
+
+        footer += '. You can suggest your own by using ' + process.env.COMMAND_PREFIX + 'suggest.';
+        return footer;
+    }
+
     return {
         getTodaysPrompt: function(bot, db, server) {
             const today = new Date();
-            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text FROM hijack_prompts WHERE has_been_posted = E\'1\' AND prompt_date = $1', [today])
+            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously FROM hijack_prompts WHERE has_been_posted = E\'1\' AND prompt_date = $1', [today])
                 .then(results => _parseTodaysPromptDbResults(results, bot, server));
         },
 
         sendPromptToChannel: function(bot, channelId, promptNumber, prompt) {
-            var footer = 'This was suggested by ' + prompt.displayName;
-            if (!prompt.isStillInServer) {
-                footer += ' (who is no longer in server)';
-            }
-            footer += '. You can suggest your own by using ' + process.env.COMMAND_PREFIX + 'suggest.';
+            var footer = _getPromptMessageFooter(prompt);
 
             return discord.sendEmbedMessage(bot, channelId, {
                 color: 0xB0E0E6,
@@ -185,7 +198,7 @@ module.exports = (function() {
         },
 
         getPromptQueue: function(db, bot, server, maxNumResults) {
-            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text FROM hijack_prompts WHERE has_been_posted=E\'0\' AND approved_by_admin=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
+            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously FROM hijack_prompts WHERE has_been_posted=E\'0\' AND approved_by_admin=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
                 .then(results => _parsePromptQueueDbResults(results, bot, server));
         },
 

@@ -17,7 +17,7 @@ module.exports = (function() {
     }
 
     function addNewPrompt(db, user, userId, prompt) {
-        return db.query('INSERT INTO hijack_prompts(suggesting_user, suggesting_userid, date_suggested, prompt_text) VALUES($1, $2, CURRENT_TIMESTAMP, $3)', [user, userId, prompt])
+        return db.query('INSERT INTO hijack_prompts(suggesting_user, suggesting_userid, date_suggested, prompt_text, submitted_anonymously) VALUES($1, $2, CURRENT_TIMESTAMP, $3, E\'0\')', [user, userId, prompt])
             .then(() => prompt);
     }
 
