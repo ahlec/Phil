@@ -8,12 +8,12 @@ module.exports = (function() {
         aliases: [],
 
         helpGroup: helpGroups.Groups.Prompts,
-        helpDescription: 'Suggests a new daily prompt for Phil to add to his list. (*DIRECT MESSAGE ONLY*)',
-        versionAdded: 1,
+        helpDescription: 'Suggests a new prompt to Phil anonymously. Your name will not be displayed, but you will still receive leaderboard points should it be approved. (*DIRECT MESSAGE ONLY*)',
+        versionAdded: 11,
 
         privateRequiresAdmin: false,
         processPrivateMessage: function(bot, message, commandArgs, db) {
-            return suggesting.suggestCommand(bot, message, commandArgs, db, false);
+            return suggesting.suggestCommand(bot, message, commandArgs, db, true);
         }
     };
 })();
