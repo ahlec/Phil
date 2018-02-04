@@ -32,10 +32,8 @@ function branchCanProcessFeatureEnabled(chronosManager, now, bot, db, isEnabled)
         });
     }
 
-    const serverId = bot.channels[process.env.HIJACK_CHANNEL_ID].guild_id;
-    const server = bot.servers[serverId];
-
-    return prompts.getTodaysPrompt(bot, db, server)
+    const bucket = prompts.getBucketFromChannelId(db, process.env.HIJACK_CHANNEL_ID);
+    return prompts.getTodaysPrompt(bot, db, bucket)
         .then(prompt => branchCanProcessTodaysPrompt(chronosManager, now, bot, db, prompt));
 }
 

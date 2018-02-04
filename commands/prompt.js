@@ -5,6 +5,14 @@ module.exports = (function() {
     const prompts = require('../phil/prompts');
     const helpGroups = require('../phil/help-groups');
 
+    function _ensureChannelHasBucket(bucket) {
+        if (bucket === null) {
+            return Promise.reject('This channel is not configured to work with prompts.');
+        }
+
+        return bucket;
+    }
+
     function _ensureThereIsPromptForToday(prompt) {
         if (prompt === null) {
             return Promise.reject('There\'s no prompt for today. That probably means that I\'m out of them! Why don\'t you suggest more by sending me `' + process.env.COMMAND_PREFIX + 'suggest` and including your prompt?');
@@ -23,7 +31,9 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {
             return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
-                .then(() => prompts.getTodaysPrompt(bot, db, message.server))
+                .then(() => prompts.getBucketFromChannelId(db, message.channelId))
+                .then(_ensureChannelHasBucket)
+                .then(bucket => prompts.getTodaysPrompt(bot, db, bucket))
                 .then(_ensureThereIsPromptForToday)
                 .then(prompt => prompts.sendPromptToChannel(bot, message.channelId, prompt.promptNumber, prompt));
         }

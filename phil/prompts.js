@@ -7,7 +7,8 @@ module.exports = (function() {
 
     const LEADERBOARD_SIZE = 10;
 
-    function _parsePromptDbResult(dbRow, bot, server) {
+    function _parsePromptDbResult(dbRow, bot, bucket) {
+        const server = bot.servers[bucket.serverId];
         const userId = dbRow.suggesting_userid;
         const member = server.members[userId];
 
@@ -20,14 +21,6 @@ module.exports = (function() {
             text: dbRow.prompt_text,
             submittedAnonymously: (parseInt(dbRow.submitted_anonymously) === 1)
         };
-    }
-
-    function _parseTodaysPromptDbResults(results, bot, server) {
-        if (results.rowCount === 0) {
-            return null;
-        }
-
-        return _parsePromptDbResult(results.rows[0], bot, server);
     }
 
     function _getSingleCommandArg(commandArgs) {
@@ -161,11 +154,41 @@ module.exports = (function() {
         return footer;
     }
 
+    function _parseBucketDbResult(dbRow) {
+        return {
+            id: parseInt(dbRow.bucket_id),
+            serverId: dbRow.server_id,
+            channelId: dbRow.channel_id,
+            handle: dbRow.reference_handle,
+            displayName: dbRow.display_name
+        };
+    }
+
     return {
-        getTodaysPrompt: function(bot, db, server) {
+        getBucketFromChannelId: function(db, channelId) {
+            return db.query('SELECT bucket_id, server_id, channel_id, reference_handle, display_name FROM prompt_buckets WHERE channel_id = $1', [channelId])
+                .then(results => {
+                    if (results.rowCount === 0) {
+                        return null;
+                    }
+
+                    assert(results.rowCount === 1);
+                    return _parseBucketDbResult(results.rows[0]);
+                });
+        },
+
+        getTodaysPrompt: function(bot, db, bucket) {
             const today = new Date();
-            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously FROM prompts WHERE has_been_posted = E\'1\' AND prompt_date = $1', [today])
-                .then(results => _parseTodaysPromptDbResults(results, bot, server));
+            return db.query(`SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously
+                    FROM prompts
+                    WHERE bucket_id = $1 AND has_been_posted = E\'1\' AND prompt_date = $2`, [bucket.id, today])
+                .then(results => {
+                    if (results.rowCount === 0) {
+                        return null;
+                    }
+
+                    return _parsePromptDbResult(results.rows[0], bot, bucket);
+                });
         },
 
         sendPromptToChannel: function(bot, channelId, promptNumber, prompt) {
@@ -208,7 +231,14 @@ module.exports = (function() {
         },
 
         getLeaderboard: function(bot, db, server) {
-            return db.query('SELECT suggesting_userid, suggesting_user, count(prompt_id) as "score" FROM prompts WHERE approved_by_admin = E\'1\' GROUP BY suggesting_userid, suggesting_user ORDER BY score DESC LIMIT $1', [LEADERBOARD_SIZE] )
+            return db.query(`SELECT suggesting_userid, suggesting_user, count(prompt_id) as "score"
+                    FROM prompts p
+                    JOIN prompt_buckets pb
+                        ON p.bucket_id = pb.bucket_id
+                    WHERE approved_by_admin = E\'1\' AND pb.server_id = $1
+                    GROUP BY suggesting_userid, suggesting_user
+                    ORDER BY score DESC
+                    LIMIT $2`, [server.id, LEADERBOARD_SIZE] )
                 .then(results => _parseLeaderboardDbResults(results, bot, server));
         }
     };
