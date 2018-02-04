@@ -15,7 +15,7 @@ function getSuggestionFromCommandArgs(commandArgs) {
 
 function addNewPrompt(db, user, userId, prompt, suggestAnonymously) {
     var suggestBit = (suggestAnonymously ? 1 : 0);
-    return db.query('INSERT INTO hijack_prompts(suggesting_user, suggesting_userid, date_suggested, prompt_text, submitted_anonymously) VALUES($1, $2, CURRENT_TIMESTAMP, $3, $4)', [user, userId, prompt, suggestBit])
+    return db.query('INSERT INTO prompts(suggesting_user, suggesting_userid, date_suggested, prompt_text, submitted_anonymously) VALUES($1, $2, CURRENT_TIMESTAMP, $3, $4)', [user, userId, prompt, suggestBit])
         .then(() => prompt);
 }
 

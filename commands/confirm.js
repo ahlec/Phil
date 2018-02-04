@@ -8,7 +8,7 @@ module.exports = (function() {
     // --------------------------------- Public message functionality
 
     function confirmPrompt(db, promptId) {
-        return db.query('UPDATE hijack_prompts SET approved_by_admin = E\'1\' WHERE prompt_id = $1', [promptId]);
+        return db.query('UPDATE prompts SET approved_by_admin = E\'1\' WHERE prompt_id = $1', [promptId]);
     }
 
     function sendCompletionMessage(bot, channelId, numConfirmed) {

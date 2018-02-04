@@ -58,7 +58,7 @@ function postNewPrompt(chronosManager, now, bot, db, promptNumber) {
             }
 
             const prompt = queue[0];
-            return db.query('UPDATE hijack_prompts SET has_been_posted = E\'1\', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3', [promptNumber, now, prompt.promptId])
+            return db.query('UPDATE prompts SET has_been_posted = E\'1\', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3', [promptNumber, now, prompt.promptId])
                 .then(results => handleHasBeenPostedResults(results, bot, promptNumber, prompt))
                 .then(() => true);
         });
@@ -95,7 +95,7 @@ module.exports = {
     },
 
     process: function(chronosManager, now, bot, db) {
-        return db.query('SELECT prompt_number FROM hijack_prompts WHERE has_been_posted = E\'1\' ORDER BY prompt_number DESC LIMIT 1')
+        return db.query('SELECT prompt_number FROM prompts WHERE has_been_posted = E\'1\' ORDER BY prompt_number DESC LIMIT 1')
             .then(results => (results.rowCount > 0 ? results.rows[0].prompt_number + 1 : 1))
             .then(promptNumber => postNewPrompt(chronosManager, now, bot, db, promptNumber))
             .then(() => handleRemainingQueue(db, bot))

@@ -6,7 +6,7 @@ module.exports = (function() {
     const helpGroups = require('../phil/help-groups');
 
     function rejectPrompt(db, promptId) {
-        return db.query('DELETE FROM hijack_prompts WHERE prompt_id = $1', [promptId]);
+        return db.query('DELETE FROM prompts WHERE prompt_id = $1', [promptId]);
     }
 
     function sendCompletionMessage(bot, channelId, numRejected) {

@@ -164,7 +164,7 @@ module.exports = (function() {
     return {
         getTodaysPrompt: function(bot, db, server) {
             const today = new Date();
-            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously FROM hijack_prompts WHERE has_been_posted = E\'1\' AND prompt_date = $1', [today])
+            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously FROM prompts WHERE has_been_posted = E\'1\' AND prompt_date = $1', [today])
                 .then(results => _parseTodaysPromptDbResults(results, bot, server));
         },
 
@@ -198,17 +198,17 @@ module.exports = (function() {
         },
 
         getPromptQueue: function(db, bot, server, maxNumResults) {
-            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously FROM hijack_prompts WHERE has_been_posted=E\'0\' AND approved_by_admin=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
+            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously FROM prompts WHERE has_been_posted=E\'0\' AND approved_by_admin=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
                 .then(results => _parsePromptQueueDbResults(results, bot, server));
         },
 
         getPromptQueueLength: function(db) {
-            return db.query('SELECT count(*) FROM hijack_prompts WHERE has_been_posted = E\'0\' AND approved_by_admin = E\'1\'')
+            return db.query('SELECT count(*) FROM prompts WHERE has_been_posted = E\'0\' AND approved_by_admin = E\'1\'')
                 .then(results => parseInt(results.rows[0].count));
         },
 
         getLeaderboard: function(bot, db, server) {
-            return db.query('SELECT suggesting_userid, suggesting_user, count(prompt_id) as "score" FROM hijack_prompts WHERE approved_by_admin = E\'1\' GROUP BY suggesting_userid, suggesting_user ORDER BY score DESC LIMIT $1', [LEADERBOARD_SIZE] )
+            return db.query('SELECT suggesting_userid, suggesting_user, count(prompt_id) as "score" FROM prompts WHERE approved_by_admin = E\'1\' GROUP BY suggesting_userid, suggesting_user ORDER BY score DESC LIMIT $1', [LEADERBOARD_SIZE] )
                 .then(results => _parseLeaderboardDbResults(results, bot, server));
         }
     };
