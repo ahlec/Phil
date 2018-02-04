@@ -22,7 +22,7 @@ module.exports = (function() {
         helpDescription: 'Has Phil echo the message provided in the news channel.',
         versionAdded: 11,
 
-        publicRequiresAdmin: false,
+        publicRequiresAdmin: true,
         processPublicMessage: function(bot, message, commandArgs, db) {
             return Promise.resolve()
                 .then(() => getEchoedStatementFromCommandArgs(commandArgs))
