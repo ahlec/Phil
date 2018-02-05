@@ -110,16 +110,6 @@ module.exports = (function() {
             .then(results => _confirmRejectPerformDbAction(results, db, channelId, number, dbActionFunc, numSuccessful));
     }
 
-    function _parsePromptQueueDbResults(results, bot, server) {
-        const queue = [];
-
-        for (let index = 0; index < results.rowCount; ++index) {
-            queue.push(_parsePromptDbResult(results.rows[index], bot, server));
-        }
-
-        return queue;
-    }
-
     function _parseLeaderboardDbResults(results, bot, server) {
         const leaderboard = [];
 
@@ -177,6 +167,31 @@ module.exports = (function() {
                 });
         },
 
+        getBucketFromReferenceHandle: function(db, referenceHandle) {
+            return db.query('SELECT bucket_id, server_id, channel_id, reference_handle, display_name FROM prompt_buckets WHERE reference_handle = $1', [referenceHandle])
+                .then(results => {
+                    if (results.rowCount === 0) {
+                        return null;
+                    }
+
+                    assert(results.rowCount === 1);
+                    return _parseBucketDbResult(results.rows[0]);
+                });
+        },
+
+        getAllBucketsForServer: function(db, server) {
+            return db.query('SELECT bucket_id, server_id, channel_id, reference_handle, display_name FROM prompt_buckets WHERE server_id = $1', [server.id])
+                .then(results => {
+                    const buckets = [];
+
+                    for (let index = 0; index < results.rowCount; ++index) {
+                        buckets.push(_parseBucketDbResult(results.rows[index]));
+                    }
+
+                    return buckets;
+                });
+        },
+
         getTodaysPrompt: function(bot, db, bucket) {
             const today = new Date();
             return db.query(`SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously
@@ -220,9 +235,17 @@ module.exports = (function() {
             return promise;
         },
 
-        getPromptQueue: function(db, bot, server, maxNumResults) {
+        getPromptQueue: function(db, bot, bucket, maxNumResults) {
             return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously FROM prompts WHERE has_been_posted=E\'0\' AND approved_by_admin=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
-                .then(results => _parsePromptQueueDbResults(results, bot, server));
+                .then(results => {
+                    const queue = [];
+
+                    for (let index = 0; index < results.rowCount; ++index) {
+                        queue.push(_parsePromptDbResult(results.rows[index], bot, bucket));
+                    }
+
+                    return queue;
+                });
         },
 
         getPromptQueueLength: function(db) {
