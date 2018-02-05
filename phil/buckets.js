@@ -74,8 +74,8 @@ function getFromChannelId(bot, db, channelId) {
         });
 }
 
-function getFromReferenceHandle(bot, db, referenceHandle) {
-    return db.query('SELECT bucket_id, server_id, channel_id, reference_handle, display_name FROM prompt_buckets WHERE reference_handle = $1', [referenceHandle])
+function getFromReferenceHandle(bot, db, server, referenceHandle) {
+    return db.query('SELECT bucket_id, server_id, channel_id, reference_handle, display_name FROM prompt_buckets WHERE server_id = $1 AND reference_handle = $2', [server.id, referenceHandle])
         .then(results => {
             if (results.rowCount === 0) {
                 return null;
@@ -111,7 +111,7 @@ module.exports = {
                 .then(serverBuckets => _getOnlyBucketOnServer(serverBuckets, commandName));
         }
 
-        return getFromReferenceHandle(bot, db, firstParameter)
+        return getFromReferenceHandle(bot, db, server, firstParameter)
             .then(bucket => {
                 if (bucket === null || !bucket.isValid) {
                     return getAllForServer(bot, db, server)
