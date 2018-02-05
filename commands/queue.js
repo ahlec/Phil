@@ -3,47 +3,48 @@ module.exports = (function() {
 
     const features = require('../phil/features');
     const prompts = require('../phil/prompts');
+    const buckets = require('../phil/buckets');
     const helpGroups = require('../phil/help-groups');
     const discord = require('../promises/discord');
     const botUtils = require('../phil/utils');
     const MAX_QUEUE_DISPLAY_LENGTH = 10;
 
-    function _createMultipleUnspecifiedBucketsError(buckets, server) {
-        if (buckets.length === 0) {
+    function _createMultipleUnspecifiedBucketsError(serverBuckets, server) {
+        if (serverBuckets.length === 0) {
             return Promise.reject('There are no prompt buckets configured on this server.');
         }
 
         var message = 'This command must be provided the valid reference handle of one of the buckets configured on this server:\n\n';
 
-        for (let bucket of buckets) {
+        for (let bucket of serverBuckets) {
             const channel = server.channels[bucket.channelId];
             message += '`' + bucket.handle + '` - ' + bucket.displayName + ' (posts to #' + channel.name + ')\n';
         }
 
-        const randomBucket = botUtils.getRandomArrayEntry(buckets);
+        const randomBucket = botUtils.getRandomArrayEntry(serverBuckets);
         message += '\nPlease try the command once more, specifying which bucket, like `' + process.env.COMMAND_PREFIX + 'queue ' + randomBucket.handle + '`.';
         return Promise.reject(message);
     }
 
-    function _getOnlyBucketOnServer(buckets, server) {
-        if (buckets.length === 1) {
-            return buckets[0];
+    function _getOnlyBucketOnServer(serverBuckets, server) {
+        if (serverBuckets.length === 1) {
+            return serverBuckets[0];
         }
 
-        return _createMultipleUnspecifiedBucketsError(buckets, server);
+        return _createMultipleUnspecifiedBucketsError(serverBuckets, server);
     }
 
     function retrieveBucket(db, commandArgs, server) {
         if (commandArgs.length === 0) {
-            return prompts.getAllBucketsForServer(db, server)
-                .then(buckets => _getOnlyBucketOnServer(buckets, server));
+            return buckets.getAllForServer(db, server)
+                .then(serverBuckets => _getOnlyBucketOnServer(serverBuckets, server));
         }
 
-        return prompts.getBucketFromReferenceHandle(db, commandArgs[0])
+        return buckets.getFromReferenceHandle(db, commandArgs[0])
             .then(bucket => {
                 if (bucket === null) {
-                    return prompts.getAllBucketsForServer(db, server)
-                        .then(buckets => _createMultipleUnspecifiedBucketsError(buckets, server));
+                    return buckets.getAllForServer(db, server)
+                        .then(serverBuckets => _createMultipleUnspecifiedBucketsError(serverBuckets, server));
                 }
 
                 return bucket;

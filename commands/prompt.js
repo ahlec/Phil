@@ -3,6 +3,7 @@ module.exports = (function() {
 
     const features = require('../phil/features');
     const prompts = require('../phil/prompts');
+    const buckets = require('../phil/buckets');
     const helpGroups = require('../phil/help-groups');
 
     function _ensureChannelHasBucket(bucket) {
@@ -31,7 +32,7 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {
             return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
-                .then(() => prompts.getBucketFromChannelId(db, message.channelId))
+                .then(() => buckets.getFromChannelId(db, message.channelId))
                 .then(_ensureChannelHasBucket)
                 .then(bucket => prompts.getTodaysPrompt(bot, db, bucket))
                 .then(_ensureThereIsPromptForToday)

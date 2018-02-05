@@ -3,6 +3,7 @@
 const features = require('../phil/features');
 const botUtils = require('../phil/utils');
 const prompts = require('../phil/prompts');
+const buckets = require('../phil/buckets');
 const discord = require('../promises/discord');
 
 function branchCanProcessTodaysPrompt(chronosManager, now, bot, db, prompt) {
@@ -32,7 +33,7 @@ function branchCanProcessFeatureEnabled(chronosManager, now, bot, db, isEnabled)
         });
     }
 
-    const bucket = prompts.getBucketFromChannelId(db, process.env.HIJACK_CHANNEL_ID);
+    const bucket = buckets.getFromChannelId(db, process.env.HIJACK_CHANNEL_ID);
     return prompts.getTodaysPrompt(bot, db, bucket)
         .then(prompt => branchCanProcessTodaysPrompt(chronosManager, now, bot, db, prompt));
 }

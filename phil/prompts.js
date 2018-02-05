@@ -144,54 +144,7 @@ module.exports = (function() {
         return footer;
     }
 
-    function _parseBucketDbResult(dbRow) {
-        return {
-            id: parseInt(dbRow.bucket_id),
-            serverId: dbRow.server_id,
-            channelId: dbRow.channel_id,
-            handle: dbRow.reference_handle,
-            displayName: dbRow.display_name
-        };
-    }
-
     return {
-        getBucketFromChannelId: function(db, channelId) {
-            return db.query('SELECT bucket_id, server_id, channel_id, reference_handle, display_name FROM prompt_buckets WHERE channel_id = $1', [channelId])
-                .then(results => {
-                    if (results.rowCount === 0) {
-                        return null;
-                    }
-
-                    assert(results.rowCount === 1);
-                    return _parseBucketDbResult(results.rows[0]);
-                });
-        },
-
-        getBucketFromReferenceHandle: function(db, referenceHandle) {
-            return db.query('SELECT bucket_id, server_id, channel_id, reference_handle, display_name FROM prompt_buckets WHERE reference_handle = $1', [referenceHandle])
-                .then(results => {
-                    if (results.rowCount === 0) {
-                        return null;
-                    }
-
-                    assert(results.rowCount === 1);
-                    return _parseBucketDbResult(results.rows[0]);
-                });
-        },
-
-        getAllBucketsForServer: function(db, server) {
-            return db.query('SELECT bucket_id, server_id, channel_id, reference_handle, display_name FROM prompt_buckets WHERE server_id = $1', [server.id])
-                .then(results => {
-                    const buckets = [];
-
-                    for (let index = 0; index < results.rowCount; ++index) {
-                        buckets.push(_parseBucketDbResult(results.rows[index]));
-                    }
-
-                    return buckets;
-                });
-        },
-
         getTodaysPrompt: function(bot, db, bucket) {
             const today = new Date();
             return db.query(`SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously
