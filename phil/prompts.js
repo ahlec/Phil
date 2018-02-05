@@ -206,6 +206,19 @@ module.exports = (function() {
                 .then(results => parseInt(results.rows[0].count));
         },
 
+        getUnconfirmedPrompts: function(bot, db, bucket, maxNumResults) {
+            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, -1 as "prompt_number", prompt_text, submitted_anonymously FROM prompts WHERE bucket_id = $1 AND approved_by_admin = E\'0\' ORDER BY date_suggested ASC LIMIT $2', [bucket.id, maxNumResults])
+                .then(results => {
+                    var list = [];
+
+                    for (let index = 0; index < results.rowCount; ++index) {
+                        list.push(_parsePromptDbResult(results.rows[index], bot, bucket));
+                    }
+
+                    return list;
+                });
+        },
+
         getLeaderboard: function(bot, db, server) {
             return db.query(`SELECT suggesting_userid, suggesting_user, count(prompt_id) as "score"
                     FROM prompts p

@@ -3,40 +3,23 @@ module.exports = (function() {
 
     const botUtils = require('../phil/utils');
     const helpGroups = require('../phil/help-groups');
+    const buckets = require('../phil/buckets');
+    const prompts = require('../phil/prompts');
     const MAX_LIST_LENGTH = 10;
 
     function clearPreviousConfirmListForChannel(db, channelId) {
         return db.query('DELETE FROM prompt_confirmation_queue WHERE channel_id = $1', [channelId]);
     }
 
-    function parseUnconfirmedPromptsIntoList(results) {
-        var list = [];
-        for (let index = 0; index < results.rowCount; ++index) {
-            list.push({
-                index: index,
-                promptId: results.rows[index].prompt_id,
-                user: results.rows[index].suggesting_user,
-                prompt: results.rows[index].prompt_text
-            });
-        }
-        return list;
-    }
-
-    function getUnconfirmedPrompts(db) {
-        return db.query('SELECT prompt_id, suggesting_user, prompt_text FROM prompts WHERE approved_by_admin = E\'0\' ORDER BY date_suggested ASC LIMIT $1', [MAX_LIST_LENGTH])
-            .then(results => parseUnconfirmedPromptsIntoList(results));
-    }
-
-    function addPromptToConfirmationQueue(db, channelId, listItem) {
+    function addPromptToConfirmationQueue(db, channelId, listItem, index) {
         const promptId = listItem.promptId;
-        const index = listItem.index;
         return db.query('INSERT INTO prompt_confirmation_queue VALUES($1, $2, $3)', [channelId, promptId, index]);
     }
 
     function createConfirmationQueueFromList(db, channelId, list) {
         var promise = Promise.resolve();
-        for (let listItem of list) {
-            promise = promise.then(() => addPromptToConfirmationQueue(db, channelId, listItem));
+        for (let index = 0; index < list.length; ++index) {
+            promise = promise.then(() => addPromptToConfirmationQueue(db, channelId, list[index], index));
         }
 
         return promise.then(() => list);
@@ -55,8 +38,8 @@ module.exports = (function() {
         const noun = (list.length === 1 ? 'prompt' : 'prompts');
         var message = ':pencil: Here ' + existenceVerb + ' ' + list.length + ' unconfirmed ' + noun + '.';
 
-        for (let listItem of list) {
-            message += '\n        `' + (listItem.index + 1) + '`: "' + listItem.prompt + '"';
+        for (let index = 0; index < list.length; ++index) {
+            message += '\n        `' + (index + 1) + '`: "' + list[index].text + '"';
         }
 
         message += '\nConfirm prompts with `' + process.env.COMMAND_PREFIX + 'confirm`. You can specify a single prompt by using its number (`';
@@ -86,7 +69,8 @@ module.exports = (function() {
         publicRequiresAdmin: true,
         processPublicMessage: function(bot, message, commandArgs, db) {
             return clearPreviousConfirmListForChannel(db, message.channelId)
-                .then(() => getUnconfirmedPrompts(db))
+                .then(() => buckets.retrieveFromCommandArgs(bot, db, commandArgs, message.server, 'unconfirmed'))
+                .then(bucket => prompts.getUnconfirmedPrompts(bot, db, bucket, MAX_LIST_LENGTH))
                 .then(list => createConfirmationQueueFromList(db, message.channelId, list))
                 .then(list => outputConfirmationQueue(bot, message.channelId, list));
         }
