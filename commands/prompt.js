@@ -32,7 +32,7 @@ module.exports = (function() {
         publicRequiresAdmin: false,
         processPublicMessage: function(bot, message, commandArgs, db) {
             return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
-                .then(() => buckets.getFromChannelId(db, message.channelId))
+                .then(() => buckets.getFromChannelId(bot, db, message.channelId))
                 .then(_ensureChannelHasBucket)
                 .then(bucket => prompts.getTodaysPrompt(bot, db, bucket))
                 .then(_ensureThereIsPromptForToday)

@@ -33,7 +33,7 @@ function branchCanProcessFeatureEnabled(chronosManager, now, bot, db, isEnabled)
         });
     }
 
-    const bucket = buckets.getFromChannelId(db, process.env.HIJACK_CHANNEL_ID);
+    const bucket = buckets.getFromChannelId(bot, db, process.env.HIJACK_CHANNEL_ID);
     return prompts.getTodaysPrompt(bot, db, bucket)
         .then(prompt => branchCanProcessTodaysPrompt(chronosManager, now, bot, db, prompt));
 }

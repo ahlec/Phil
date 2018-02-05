@@ -9,7 +9,7 @@ module.exports = (function() {
     const botUtils = require('../phil/utils');
     const MAX_QUEUE_DISPLAY_LENGTH = 10;
 
-    function _createMultipleUnspecifiedBucketsError(serverBuckets, server) {
+    function _createMultipleUnspecifiedBucketsError(serverBuckets) {
         if (serverBuckets.length === 0) {
             return Promise.reject('There are no prompt buckets configured on this server.');
         }
@@ -17,8 +17,15 @@ module.exports = (function() {
         var message = 'This command must be provided the valid reference handle of one of the buckets configured on this server:\n\n';
 
         for (let bucket of serverBuckets) {
-            const channel = server.channels[bucket.channelId];
-            message += '`' + bucket.handle + '` - ' + bucket.displayName + ' (posts to #' + channel.name + ')\n';
+            message += '`' + bucket.handle + '` - ' + bucket.displayName + ' (';
+
+            if (bucket.isValid) {
+                message += 'posts to <#' + bucket.channelId + '>';
+            } else {
+                message += 'configuration invalid'
+            }
+
+            message += ')\n';
         }
 
         const randomBucket = botUtils.getRandomArrayEntry(serverBuckets);
@@ -26,25 +33,40 @@ module.exports = (function() {
         return Promise.reject(message);
     }
 
-    function _getOnlyBucketOnServer(serverBuckets, server) {
-        if (serverBuckets.length === 1) {
+    function _getOnlyBucketOnServer(serverBuckets) {
+        if (serverBuckets.length === 1 && serverBuckets[0].isValid) {
             return serverBuckets[0];
         }
 
-        return _createMultipleUnspecifiedBucketsError(serverBuckets, server);
+        return _createMultipleUnspecifiedBucketsError(serverBuckets);
     }
 
-    function retrieveBucket(db, commandArgs, server) {
-        if (commandArgs.length === 0) {
-            return buckets.getAllForServer(db, server)
-                .then(serverBuckets => _getOnlyBucketOnServer(serverBuckets, server));
+    function getFirstParameterFromCommandArgs(commandArgs) {
+        const input = commandArgs.join(' ').trim();
+        if (input.length === 0) {
+            return null;
         }
 
-        return buckets.getFromReferenceHandle(db, commandArgs[0])
+        const indexFirstSpace = input.indexOf(' ');
+        if (indexFirstSpace < 0) {
+            return input;
+        }
+
+        return input.substr(0, indexFirstSpace);
+    }
+
+    function retrieveBucket(bot, db, commandArgs, server) {
+        const firstParameter = getFirstParameterFromCommandArgs(commandArgs);
+        if (!firstParameter || firstParameter.length === 0) {
+            return buckets.getAllForServer(bot, db, server)
+                .then(_getOnlyBucketOnServer);
+        }
+
+        return buckets.getFromReferenceHandle(bot, db, firstParameter)
             .then(bucket => {
-                if (bucket === null) {
-                    return buckets.getAllForServer(db, server)
-                        .then(serverBuckets => _createMultipleUnspecifiedBucketsError(serverBuckets, server));
+                if (bucket === null || !bucket.isValid) {
+                    return buckets.getAllForServer(bot, db, server)
+                        .then(_createMultipleUnspecifiedBucketsError);
                 }
 
                 return bucket;
@@ -83,7 +105,7 @@ module.exports = (function() {
         publicRequiresAdmin: true,
         processPublicMessage: function(bot, message, commandArgs, db) {
             return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
-                .then(() => retrieveBucket(db, commandArgs, message.server))
+                .then(() => retrieveBucket(bot, db, commandArgs, message.server))
                 .then(bucket => prompts.getPromptQueue(db, bot, bucket, MAX_QUEUE_DISPLAY_LENGTH))
                 .then(_makeMessageOutOfQueue)
                 .then(response => discord.sendMessage(bot, message.channelId, response));
