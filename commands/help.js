@@ -81,6 +81,10 @@ module.exports = (function() {
             return 0;
         }
 
+        if (a.isAdminFunction !== b.isAdminFunction) {
+            return (a.isAdminFunction ? 1 : -1); // Admin functions should always come after non-admin functions
+        }
+
         return (a.name < b.name ? -1 : 1);
     }
 
