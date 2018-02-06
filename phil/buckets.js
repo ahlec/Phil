@@ -75,8 +75,8 @@ function _createMultipleUnspecifiedBucketsError(serverBuckets, commandName) {
     return Promise.reject(message);
 }
 
-function _getOnlyBucketOnServer(serverBuckets, commandName) {
-    if (serverBuckets.length === 1 && serverBuckets[0].isValid) {
+function _getOnlyBucketOnServer(serverBuckets, commandName, allowInvalidServers) {
+    if (serverBuckets.length === 1 && (allowInvalidServers || erverBuckets[0].isValid)) {
         return serverBuckets[0];
     }
 
@@ -125,16 +125,16 @@ module.exports = {
     getFromReferenceHandle: getFromReferenceHandle,
     getAllForServer: getAllForServer,
 
-    retrieveFromCommandArgs: function(bot, db, commandArgs, server, commandName) {
+    retrieveFromCommandArgs: function(bot, db, commandArgs, server, commandName, allowInvalidServers) {
         const firstParameter = _getFirstParameterFromCommandArgs(commandArgs);
         if (!firstParameter || firstParameter.length === 0) {
             return getAllForServer(bot, db, server)
-                .then(serverBuckets => _getOnlyBucketOnServer(serverBuckets, commandName));
+                .then(serverBuckets => _getOnlyBucketOnServer(serverBuckets, commandName, allowInvalidServers));
         }
 
         return getFromReferenceHandle(bot, db, server, firstParameter)
             .then(bucket => {
-                if (bucket === null || !bucket.isValid) {
+                if (bucket === null || (!allowInvalidServers && !bucket.isValid)) {
                     return getAllForServer(bot, db, server)
                         .then(serverBuckets => _createMultipleUnspecifiedBucketsError(serverBuckets, commandName));
                 }

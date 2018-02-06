@@ -53,7 +53,7 @@ module.exports = (function() {
         publicRequiresAdmin: true,
         processPublicMessage: function(bot, message, commandArgs, db) {
             return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
-                .then(() => buckets.retrieveFromCommandArgs(bot, db, commandArgs, message.server, 'bucket'))
+                .then(() => buckets.retrieveFromCommandArgs(bot, db, commandArgs, message.server, 'bucket', true))
                 .then(bucket => sendBucketToChannel(bot, message.channelId, bucket));
         }
     };
