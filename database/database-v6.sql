@@ -4,6 +4,13 @@ ALTER TABLE hijack_prompts DROP COLUMN approved_by_user;
 ALTER TABLE hijack_prompts ADD COLUMN submitted_anonymously BIT(1) NOT NULL DEFAULT E'0';
 ALTER TABLE hijack_prompts RENAME TO prompts;
 
+CREATE TABLE server_configs (
+	server_id VARCHAR NOT NULL UNIQUE,
+	bot_control_channel_id VARCHAR NOT NULL
+);
+
+INSERT INTO server_configs(server_id, bot_control_channel_id) VALUES('240114141031825408', '240767750568542209');
+
 CREATE TABLE prompt_buckets (
 	bucket_id SERIAL NOT NULL UNIQUE,
 	server_id VARCHAR NOT NULL,
