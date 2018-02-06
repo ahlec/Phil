@@ -3,16 +3,37 @@
 const assert = require('assert');
 const botUtils = require('../phil/utils');
 
-function parseBucketDbResult(dbRow, bot) {
+function determineIsBucketValid(dbRow, bot) {
     const server = bot.servers[dbRow.server_id];
+    if (!server) {
+        return false;
+    }
 
+    if (!(dbRow.channel_id in server.channels)) {
+        return false;
+    }
+
+    if (dbRow.required_role_id) {
+        if (!(dbRow.required_role_id in server.roles)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function parseBucketDbResult(dbRow, bot) {
+    var isValid = determineIsBucketValid(dbRow, bot);
     return {
         id: parseInt(dbRow.bucket_id),
         serverId: dbRow.server_id,
         channelId: dbRow.channel_id,
-        isValid: (dbRow.channel_id in server.channels ? true : false ),
+        isValid: isValid,
         handle: dbRow.reference_handle,
-        displayName: dbRow.display_name
+        displayName: dbRow.display_name,
+        isPaused: (parseInt(dbRow.is_paused) === 1),
+        shouldPinPosts: (parseInt(dbRow.should_pin_posts) === 1),
+        requiredRoleId: dbRow.required_role_id
     };
 }
 
@@ -63,7 +84,7 @@ function _getOnlyBucketOnServer(serverBuckets, commandName) {
 }
 
 function getFromChannelId(bot, db, channelId) {
-    return db.query('SELECT bucket_id, server_id, channel_id, reference_handle, display_name FROM prompt_buckets WHERE channel_id = $1', [channelId])
+    return db.query('SELECT * FROM prompt_buckets WHERE channel_id = $1', [channelId])
         .then(results => {
             if (results.rowCount === 0) {
                 return null;
@@ -75,7 +96,7 @@ function getFromChannelId(bot, db, channelId) {
 }
 
 function getFromReferenceHandle(bot, db, server, referenceHandle) {
-    return db.query('SELECT bucket_id, server_id, channel_id, reference_handle, display_name FROM prompt_buckets WHERE server_id = $1 AND reference_handle = $2', [server.id, referenceHandle])
+    return db.query('SELECT * FROM prompt_buckets WHERE server_id = $1 AND reference_handle = $2', [server.id, referenceHandle])
         .then(results => {
             if (results.rowCount === 0) {
                 return null;
@@ -87,7 +108,7 @@ function getFromReferenceHandle(bot, db, server, referenceHandle) {
 }
 
 function getAllForServer(bot, db, server) {
-    return db.query('SELECT bucket_id, server_id, channel_id, reference_handle, display_name FROM prompt_buckets WHERE server_id = $1', [server.id])
+    return db.query('SELECT * FROM prompt_buckets WHERE server_id = $1', [server.id])
         .then(results => {
             const buckets = [];
 

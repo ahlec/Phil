@@ -9,7 +9,10 @@ CREATE TABLE prompt_buckets (
 	server_id VARCHAR NOT NULL,
 	channel_id VARCHAR NOT NULL,
 	reference_handle VARCHAR(30) NOT NULL UNIQUE,
-	display_name VARCHAR(100) NOT NULL
+	display_name VARCHAR(100) NOT NULL,
+	is_paused BIT(1) NOT NULL DEFAULT E'0',
+	should_pin_posts BIT(1) NOT NULL DEFAULT E'0',
+	required_role_id VARCHAR NULL
 );
 
 INSERT INTO prompt_buckets(server_id, channel_id, reference_handle, display_name) VALUES('240114141031825408', '254309217442332673', 'hijack-daily', 'Hijack Daily Prompts (SFW)');
