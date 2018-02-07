@@ -43,7 +43,7 @@ INSERT INTO chronos(chrono_handle, required_feature_id, utc_hour) VALUES('new-da
 INSERT INTO chronos(chrono_handle, required_feature_id, utc_hour) VALUES('alert-admins-unconfirmed-prompts', 0, 15);
 INSERT INTO chronos(chrono_handle, utc_hour) VALUES('booty-day', 7);
 INSERT INTO chronos(chrono_handle, utc_hour) VALUES('happy-birthday', 7);
-INSERT INTO chronos(chrono_handle, utc_hour) VALUES('require-unused-colour-roles', 0);
+INSERT INTO chronos(chrono_handle, utc_hour) VALUES('remove-unused-colour-roles', 0);
 
 CREATE TABLE server_chronos (
     server_id VARCHAR NOT NULL REFERENCES server_configs(server_id),

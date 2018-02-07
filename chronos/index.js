@@ -14,10 +14,6 @@ module.exports = (function() {
 
     function assertIsValidChrono(chronoDefinition) {
         assert(typeof(chronoDefinition) === 'object');
-        assert(typeof(chronoDefinition.name) === 'string');
-        assert(chronoDefinition.name.length > 0);
-        assert(typeof(chronoDefinition.hourUtc) === 'number');
-        assert(chronoDefinition.hourUtc >= 0 && chronoDefinition.hourUtc <= 23);
         assert(typeof(chronoDefinition.canProcess) === 'function');
         assert(chronoDefinition.canProcess.length === 4); // ( chronosManager (this), now, bot, db )
         assert(typeof(chronoDefinition.process) === 'function');
@@ -25,7 +21,8 @@ module.exports = (function() {
     }
 
     function loadChronos(filenames) {
-        const chronos = [];
+        const chronos = {};
+
         for (let filename of filenames) {
             if (shouldSkipLoadingChrono(filename)) {
                 continue;
@@ -34,12 +31,9 @@ module.exports = (function() {
             let chronoDefinition = require(__dirname + '/' + filename);
             assertIsValidChrono(chronoDefinition);
 
-            chronos.push({
-                definition: chronoDefinition,
-                hasBeenTriggered: false
-            });
-
-            console.log('chrono \'%s\' registered', chronoDefinition.name);
+            const chronoHandle = filename.slice(0, -3).toLowerCase();
+            chronos[chronoHandle] = chronoDefinition;
+            console.log('chrono \'%s\' registered', chronoHandle);
         }
 
         return chronos;
