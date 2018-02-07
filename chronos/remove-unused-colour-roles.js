@@ -39,9 +39,6 @@ function deleteUnusedRoles(bot, server, serverId, colorRoles) {
 }
 
 module.exports = {
-    name: 'remove unused colour roles',
-    hourUtc: 0, // 8pm EST, 5pm PST
-
     canProcess: function(chronosManager, now, bot, db) {
         return Promise.resolve({ready: true});
     },

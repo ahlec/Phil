@@ -4,34 +4,6 @@ const botUtils = require('../phil/utils');
 const util = require('util');
 const discord = require('../promises/discord');
 
-function getChronosToEvaluate(db, utcHour) {
-    return db.query(`SELECT
-            sc.server_id,
-            c.chrono_handle
-        FROM server_chronos sc
-        JOIN chronos c
-            ON sc.chrono_id = c.chrono_id
-        LEFT JOIN server_features sf
-            ON c.required_feature_id = sf.feature_id AND sc.server_id = sf.server_id
-        WHERE
-            sc.is_enabled = E'1' AND
-            c.utc_hour <= $1 AND
-            (sf.is_enabled = E'1' OR sf.is_enabled IS NULL) AND
-            (sc.date_last_ran IS NULL OR sc.date_last_ran < CURRENT_DATE)`, [utcHour])
-        .then(results => {
-            const instances = [];
-
-            for (let dbRow of results.rows) {
-                instances.push({
-                    serverId: dbRow.server_id,
-                    chronoHandle: dbRow.chrono_handle
-                });
-            }
-
-            return instances;
-        });
-}
-
 module.exports = class ChronoManager {
     constructor(bot, chronos, db)
     {
@@ -81,16 +53,36 @@ module.exports = class ChronoManager {
         const utcHour = now.getUTCHours();
         console.log('[CHRONOS] processing chronos with UTC hour = %d', utcHour);
 
-        return getChronosToEvaluate(this._db, utcHour)
-            .then(toEvaluate => {
-                for (let instance of toEvaluate) {
-                    this._processChronoInstance(instance);
+        this._db.query(`SELECT
+                sc.server_id,
+                c.chrono_handle
+            FROM server_chronos sc
+            JOIN chronos c
+                ON sc.chrono_id = c.chrono_id
+            LEFT JOIN server_features sf
+                ON c.required_feature_id = sf.feature_id AND sc.server_id = sf.server_id
+            WHERE
+                sc.is_enabled = E'1' AND
+                c.utc_hour <= $1 AND
+                (sf.is_enabled = E'1' OR sf.is_enabled IS NULL) AND
+                (sc.date_last_ran IS NULL OR sc.date_last_ran < CURRENT_DATE)`, [utcHour])
+            .then(results => {
+                for (let dbRow of results.rows) {
+                    this._processChronoInstance(now, dbRow.chrono_handle, dbRow.server_id);
                 }
             });
     }
 
-    _processChronoInstance(instance) {
-        console.log('[CHRONOS] %s for serverId %s', instance.chronoHandle, instance.serverId);
+    _processChronoInstance(now, chronoHandle, serverId) {
+        console.log('[CHRONOS] %s for serverId %s', chronoHandle, serverId);
+
+        const chronoDefinition = this._chronos[chronoHandle];
+        if (!chronoDefinition) {
+            console.error('[CHRONOS]     there is no chrono with the handle %s', chronoHandle);
+            return;
+        }
+
+        console.log(util.inspect(chronoDefinition));
     }
 
 /*

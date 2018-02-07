@@ -111,9 +111,6 @@ function sendBirthdayWish(bot, birthdayWish) {
 }
 
 module.exports = {
-    name: 'happy birthday',
-    hourUtc: 7, // 3am EST, 12am PST
-
     canProcess: function(chronosManager, now, bot, db) {
         return db.query('SELECT value FROM info WHERE key = $1 LIMIT 1', [DATABASE_INFO_KEY])
             .then(interpretGetDateLastWished)

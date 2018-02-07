@@ -43,9 +43,6 @@ function processServer(chronosManager, now, bot, db, serverId) {
 }
 
 module.exports = {
-    name: 'alert admins unconfirmed prompts',
-    hourUtc: 15, // 11am EST, 8am PST
-
     canProcess: function(chronosManager, now, bot, db) {
         return Promise.resolve({
             ready: true

@@ -44,9 +44,6 @@ function markRemindedInDatabase(db, now) {
 }
 
 module.exports = {
-    name: 'booty day',
-    hourUtc: 7, // 2am EST, 11pm PST
-
     canProcess: function(chronosManager, now, bot, db) {
         if (now.getUTCDate() !== 3) {
             return Promise.resolve({

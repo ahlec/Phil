@@ -85,9 +85,6 @@ function handleRemainingQueue(db, bot) {
 }
 
 module.exports = {
-    name: 'new daily prompt',
-    hourUtc: 1, // 8am EST, 5am PST
-
     canProcess: function(chronosManager, now, bot, db) {
         return features.getIsFeatureEnabled(features.Features.DailyPrompts, db)
             .then(isEnabled => branchCanProcessFeatureEnabled(chronosManager, now, bot, db, isEnabled));
