@@ -4,6 +4,34 @@ const botUtils = require('../phil/utils');
 const util = require('util');
 const discord = require('../promises/discord');
 
+function getChronosToEvaluate(db, utcHour) {
+    return db.query(`SELECT
+            sc.server_id,
+            c.chrono_handle
+        FROM server_chronos sc
+        JOIN chronos c
+            ON sc.chrono_id = c.chrono_id
+        LEFT JOIN server_features sf
+            ON c.required_feature_id = sf.feature_id AND sc.server_id = sf.server_id
+        WHERE
+            sc.is_enabled = E'1' AND
+            c.utc_hour <= $1 AND
+            (sf.is_enabled = E'1' OR sf.is_enabled IS NULL) AND
+            (sc.date_last_ran IS NULL OR sc.date_last_ran < CURRENT_DATE)`, [utcHour])
+        .then(results => {
+            const instances = [];
+
+            for (let dbRow of results.rows) {
+                instances.push({
+                    serverId: dbRow.server_id,
+                    chronoHandle: dbRow.chrono_handle
+                });
+            }
+
+            return instances;
+        });
+}
+
 module.exports = class ChronoManager {
     constructor(bot, chronos, db)
     {
@@ -53,6 +81,19 @@ module.exports = class ChronoManager {
         const utcHour = now.getUTCHours();
         console.log('[CHRONOS] processing chronos with UTC hour = %d', utcHour);
 
+        return getChronosToEvaluate(this._db, utcHour)
+            .then(toEvaluate => {
+                for (let instance of toEvaluate) {
+                    this._processChronoInstance(instance);
+                }
+            });
+    }
+
+    _processChronoInstance(instance) {
+        console.log('[CHRONOS] %s for serverId %s', instance.chronoHandle, instance.serverId);
+    }
+
+/*
         if (this._isNewDay(now)) {
             console.log('[CHRONOS] new UTC day, so resetting all chronos');
             this._resetNewDay();
@@ -161,4 +202,5 @@ module.exports = class ChronoManager {
             }
         });
     }
+    */
 };

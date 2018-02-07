@@ -25,3 +25,29 @@ CREATE TABLE prompt_buckets (
 INSERT INTO prompt_buckets(server_id, channel_id, reference_handle, display_name) VALUES('240114141031825408', '254309217442332673', 'hijack-daily', 'Hijack Daily Prompts (SFW)');
 
 ALTER TABLE prompts ADD COLUMN bucket_id INTEGER NOT NULL DEFAULT E'1' REFERENCES prompt_buckets(bucket_id);
+
+CREATE TABLE server_features (
+    server_id VARCHAR NOT NULL REFERENCES server_configs(server_id),
+    feature_id INTEGER NOT NULL,
+    is_enabled BIT(1) NOT NULL DEFAULT E'1'
+);
+
+CREATE TABLE chronos (
+    chrono_id SERIAL NOT NULL UNIQUE,
+    chrono_handle VARCHAR(100) NOT NULL UNIQUE,
+    required_feature_id INTEGER,
+    utc_hour INTEGER NOT NULL
+);
+
+INSERT INTO chronos(chrono_handle, required_feature_id, utc_hour) VALUES('new-daily-prompts', 0, 12);
+INSERT INTO chronos(chrono_handle, required_feature_id, utc_hour) VALUES('alert-admins-unconfirmed-prompts', 0, 15);
+INSERT INTO chronos(chrono_handle, utc_hour) VALUES('booty-day', 7);
+INSERT INTO chronos(chrono_handle, utc_hour) VALUES('happy-birthday', 7);
+INSERT INTO chronos(chrono_handle, utc_hour) VALUES('require-unused-colour-roles', 0);
+
+CREATE TABLE server_chronos (
+    server_id VARCHAR NOT NULL REFERENCES server_configs(server_id),
+    chrono_id INTEGER NOT NULL REFERENCES chronos(chrono_id),
+    is_enabled BIT(1) NOT NULL DEFAULT E'1',
+    date_last_ran DATE
+);
