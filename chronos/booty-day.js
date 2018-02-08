@@ -14,21 +14,10 @@ function interpretLastRemindedResults(results, now) {
     }
 
     if (now.getUTCFullYear() != dateLastReminded.getUTCFullYear()) {
-        return false;
+        return true;
     }
 
-    return (now.getUTCMonth() == dateLastReminded.getUTCMonth());
-}
-
-function hasAlreadyRemindedBootyDayThisMonth(db, now) {
-    return db.query('SELECT value FROM info WHERE key = $1', [DATABASE_INFO_KEY])
-        .then(results => interpretLastRemindedResults(results, now));
-}
-
-function canProcessFromHasRemindedThisMonth(hasReminded) {
-    return {
-        ready: !hasReminded
-    };
+    return (now.getUTCMonth() != dateLastReminded.getUTCMonth());
 }
 
 function ensureDatabaseUpdated(results) {
@@ -38,25 +27,19 @@ function ensureDatabaseUpdated(results) {
     }
 }
 
-function markRemindedInDatabase(db, now) {
-    return db.query('UPDATE info SET value = $1 WHERE key = $2', [now, DATABASE_INFO_KEY])
-        .then(ensureDatabaseUpdated);
-}
-
 module.exports = {
     canProcess: function(bot, db, serverId, now) {
         if (now.getUTCDate() !== 3) {
-            return Promise.resolve({
-                ready: false
-            });
+            return false;
         }
 
-        return hasAlreadyRemindedBootyDayThisMonth(db, now)
-            .then(canProcessFromHasRemindedThisMonth);
+        return db.query('SELECT value FROM info WHERE key = $1', [DATABASE_INFO_KEY])
+            .then(results => interpretLastRemindedResults(results, now));
     },
 
     process: function(bot, db, serverId, now) {
-        return markRemindedInDatabase(db, now)
+        return db.query('UPDATE info SET value = $1 WHERE key = $2', [now, DATABASE_INFO_KEY])
+            .then(ensureDatabaseUpdated)
             .then(() => discord.sendMessage(bot, process.env.NEWS_CHANNEL_ID, process.env.CUSTOM_EMOJI_PEEK + ' It\'s booty day! Post your Hijack booties!'));
     }
 };
