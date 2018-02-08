@@ -43,13 +43,13 @@ function processServer(chronosManager, now, bot, db, serverId) {
 }
 
 module.exports = {
-    canProcess: function(chronosManager, now, bot, db) {
+    canProcess: function(bot, db, serverId, now) {
         return Promise.resolve({
             ready: true
         });
     },
 
-    process: function(chronosManager, now, bot, db) {
+    process: function(bot, db, serverId, now) {
         var returnValue = Promise.resolve();
         for (let serverId in bot.servers) {
             returnValue = returnValue.then(() => processServer(chronosManager, now, bot, db,serverId));

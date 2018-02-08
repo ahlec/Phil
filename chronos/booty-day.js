@@ -44,7 +44,7 @@ function markRemindedInDatabase(db, now) {
 }
 
 module.exports = {
-    canProcess: function(chronosManager, now, bot, db) {
+    canProcess: function(bot, db, serverId, now) {
         if (now.getUTCDate() !== 3) {
             return Promise.resolve({
                 ready: false
@@ -55,7 +55,7 @@ module.exports = {
             .then(canProcessFromHasRemindedThisMonth);
     },
 
-    process: function(chronosManager, now, bot, db) {
+    process: function(bot, db, serverId, now) {
         return markRemindedInDatabase(db, now)
             .then(() => discord.sendMessage(bot, process.env.NEWS_CHANNEL_ID, process.env.CUSTOM_EMOJI_PEEK + ' It\'s booty day! Post your Hijack booties!'));
     }

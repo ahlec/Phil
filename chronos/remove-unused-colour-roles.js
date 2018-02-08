@@ -39,12 +39,11 @@ function deleteUnusedRoles(bot, server, serverId, colorRoles) {
 }
 
 module.exports = {
-    canProcess: function(chronosManager, now, bot, db) {
+    canProcess: function(bot, db, serverId, now) {
         return Promise.resolve({ready: true});
     },
 
-    process: function(chronosManager, now, bot, db) {
-        const serverId = bot.channels[process.env.HIJACK_CHANNEL_ID].guild_id;
+    process: function(bot, db, serverId, now) {
         const server = bot.servers[serverId];
 
         return Promise.resolve(server)

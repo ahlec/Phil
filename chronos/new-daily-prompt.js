@@ -85,12 +85,12 @@ function handleRemainingQueue(db, bot) {
 }
 
 module.exports = {
-    canProcess: function(chronosManager, now, bot, db) {
+    canProcess: function(bot, db, serverId, now) {
         return features.getIsFeatureEnabled(features.Features.DailyPrompts, db)
             .then(isEnabled => branchCanProcessFeatureEnabled(chronosManager, now, bot, db, isEnabled));
     },
 
-    process: function(chronosManager, now, bot, db) {
+    process: function(bot, db, serverId, now) {
         return db.query('SELECT prompt_number FROM prompts WHERE has_been_posted = E\'1\' ORDER BY prompt_number DESC LIMIT 1')
             .then(results => (results.rowCount > 0 ? results.rows[0].prompt_number + 1 : 1))
             .then(promptNumber => postNewPrompt(chronosManager, now, bot, db, promptNumber))

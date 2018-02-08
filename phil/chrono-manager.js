@@ -51,10 +51,12 @@ module.exports = class ChronoManager {
     _processChronos() {
         const now = new Date();
         const utcHour = now.getUTCHours();
-        console.log('[CHRONOS] processing chronos with UTC hour = %d', utcHour);
+        const utcDate = now.getUTCFullYear() + '-' + (now.getUTCMonth() + 1) + '-' + now.getUTCDate();
+        console.log('[CHRONOS] processing chronos with UTC hour = %d on UTC %s', utcHour, utcDate);
 
         this._db.query(`SELECT
                 sc.server_id,
+                c.chrono_id,
                 c.chrono_handle
             FROM server_chronos sc
             JOIN chronos c
@@ -65,15 +67,15 @@ module.exports = class ChronoManager {
                 sc.is_enabled = E'1' AND
                 c.utc_hour <= $1 AND
                 (sf.is_enabled = E'1' OR sf.is_enabled IS NULL) AND
-                (sc.date_last_ran IS NULL OR sc.date_last_ran < CURRENT_DATE)`, [utcHour])
+                (sc.date_last_ran IS NULL OR sc.date_last_ran < $2)`, [utcHour, utcDate])
             .then(results => {
                 for (let dbRow of results.rows) {
-                    this._processChronoInstance(now, dbRow.chrono_handle, dbRow.server_id);
+                    this._processChronoInstance(now, dbRow.chrono_handle, dbRow.chrono_id, dbRow.server_id, utcDate);
                 }
             });
     }
 
-    _processChronoInstance(now, chronoHandle, serverId) {
+    _processChronoInstance(now, chronoHandle, chronoId, serverId, utcDate) {
         console.log('[CHRONOS] %s for serverId %s', chronoHandle, serverId);
 
         const chronoDefinition = this._chronos[chronoHandle];
@@ -82,117 +84,44 @@ module.exports = class ChronoManager {
             return;
         }
 
-        console.log(util.inspect(chronoDefinition));
+        return this._runChrono(now, chronoHandle, serverId, chronoDefinition)
+            .catch(err => this._reportChronoError(err, chronoHandle, serverId))
+            .then(() => this._markChronoProcessed(chronoId, serverId, utcDate));
     }
 
-/*
-        if (this._isNewDay(now)) {
-            console.log('[CHRONOS] new UTC day, so resetting all chronos');
-            this._resetNewDay();
-        }
+    _runChrono(now, chronoHandle, serverId, chronoDefinition) {
+        return chronoDefinition.canProcess(this._bot, this._db, serverId, now)
+            .then(canProcess => {
+                if (!canProcess) {
+                    console.log('[CHRONOS]     cannot process %s for server %s', chronoHandle, serverId);
+                    return;
+                }
 
-        var lastPromise = Promise.resolve();
-        for (let chrono of this._chronos) {
-            if (chrono.hasBeenTriggered) {
-                continue;
-            }
-
-            if (chrono.retryInTimeout !== undefined) {
-                continue;
-            }
-
-            if (chrono.definition.hourUtc > utcHour) {
-                continue;
-            }
-
-            lastPromise = lastPromise.then(() => this._processChrono(now, chrono, true));
-        }
-
-        this._chronosLastProcessed = now;
+                return chronoDefinition.process(this._bot, this._db, serverId, now)
+            });
     }
 
-    _isNewDay(now) {
-        if (!this._chronosLastProcessed) {
-            return false;
-        }
-
-        return !botUtils.isSameDay(this._chronosLastProcessed, now);
+    _markChronoProcessed(chronoId, serverId, utcDate) {
+        return this._db.query(`UPDATE server_chronos
+            SET date_last_ran = $1
+            WHERE server_id = $2 AND chrono_id = $3`, [utcDate, serverId, chronoId]);
     }
 
-    _resetNewDay() {
-        for (let chrono of this._chronos) {
-            chrono.hasBeenTriggered = false;
-        }
-    }
-
-    _processChrono(now, chrono, shouldPrintHeader) {
-        if (shouldPrintHeader) {
-            console.log('[CHRONOS] \'%s\' has met the time requirement to be processed', chrono.definition.name);
-        }
-
-        return chrono.definition.canProcess(this, now, this._bot, this._db)
-            .then(results => this._interpretCanProcess(now, chrono, results))
-            .then(canProceedToProcess => this._branchProcessChrono(now, chrono, canProceedToProcess))
-            .catch(err => this._reportChronoError(err, chrono));
-    }
-
-    _interpretCanProcess(now, chrono, results) {
-        if (results.ready) {
-            return true;
-        }
-
-        if (results.retryIn === undefined) {
-            console.log('[CHRONOS]     \'%s\' is not ready to be processed yet.', chrono.definition.name);
-            return false;
-        }
-
-        console.log('[CHRONOS]     it\'s time to activate chrono \'%s\' but we need to defer this for %d minute(s) first.', chrono.definition.name, results.retryIn);
-        const retryMilliseconds = results.retryIn * 60 * 1000; // retryIn is measured in milliseconds
-        chrono.retryInTimeout = setTimeout(this._retryProcessingChrono.bind(this, chrono), retryMilliseconds);
-        return false;
-    }
-
-    _retryProcessingChrono(chrono) {
-        const now = new Date();
-        clearTimeout(chrono.retryInTimeout);
-        chrono.retryInTimeout = undefined;
-
-        console.log('[CHRONOS] retrying chrono \'%s\' now that the time has elapsed properly.', chrono.definition.name);
-        this._processChrono(now, chrono, false);
-    }
-
-    _branchProcessChrono(now, chrono, canProceedToProcess) {
-        if (!canProceedToProcess) {
-            return;
-        }
-
-        console.log('[CHRONOS]     processing \'%s\'', chrono.definition.name);
-
-        return chrono.definition.process(this, now, this._bot, this._db)
-            .then(result => this._handleProcessingComplete(chrono, result));
-    }
-
-    _handleProcessingComplete(chrono, result) {
-        console.log('[CHRONOS]     \'%s\' finished. The result was %s', chrono.definition.name, result);
-        chrono.hasBeenTriggered = true;
-    }
-
-    _reportChronoError(err, chrono) {
-        console.error('[CHRONOS]     error from \'%s\'', chrono.definition.name);
+    _reportChronoError(err, chronoHandle, serverId) {
+        console.error('[CHRONOS]     error running %s for server %s', chronoHandle, serverId);
         console.error(err);
 
         if (typeof(err) !== 'string') {
             err = util.inspect(err);
         }
 
-        discord.sendEmbedMessage(this._bot, process.env.BOT_CONTROL_CHANNEL_ID, {
+        return discord.sendEmbedMessage(this._bot, process.env.BOT_CONTROL_CHANNEL_ID, {
             color: 0xCD5555,
             title: ':no_entry: Chrono Error',
             description: err,
             footer: {
-                text: 'chrono: ' + chrono.definition.name
+                text: 'chrono: ' + chronoHandle
             }
         });
     }
-    */
 };

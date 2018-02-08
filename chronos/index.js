@@ -15,9 +15,9 @@ module.exports = (function() {
     function assertIsValidChrono(chronoDefinition) {
         assert(typeof(chronoDefinition) === 'object');
         assert(typeof(chronoDefinition.canProcess) === 'function');
-        assert(chronoDefinition.canProcess.length === 4); // ( chronosManager (this), now, bot, db )
+        assert(chronoDefinition.canProcess.length === 4); // (bot, db, serverId, now)
         assert(typeof(chronoDefinition.process) === 'function');
-        assert(chronoDefinition.process.length === 4); // ( chronosManager (this), now, bot, db )
+        assert(chronoDefinition.process.length === 4); // (bot, db, serverId, now)
     }
 
     function loadChronos(filenames) {

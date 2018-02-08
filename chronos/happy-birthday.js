@@ -111,13 +111,13 @@ function sendBirthdayWish(bot, birthdayWish) {
 }
 
 module.exports = {
-    canProcess: function(chronosManager, now, bot, db) {
+    canProcess: function(bot, db, serverId, now) {
         return db.query('SELECT value FROM info WHERE key = $1 LIMIT 1', [DATABASE_INFO_KEY])
             .then(interpretGetDateLastWished)
             .then(dateLastWished => ({ ready: !botUtils.isSameDay(now, dateLastWished) }) );
     },
 
-    process: function(chronosManager, now, bot, db) {
+    process: function(bot, db, serverId, now) {
         return getBirthdayUserIds(db, now)
             .then(userIds => getDataFromUserIds(bot, userIds))
             .then(data => updateDatabase(db, now, data))
