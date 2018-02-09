@@ -38,20 +38,6 @@ function parseBucketDbResult(dbRow, bot) {
     };
 }
 
-function _getFirstParameterFromCommandArgs(commandArgs) {
-    const input = commandArgs.join(' ').trim();
-    if (input.length === 0) {
-        return null;
-    }
-
-    const indexFirstSpace = input.indexOf(' ');
-    if (indexFirstSpace < 0) {
-        return input;
-    }
-
-    return input.substr(0, indexFirstSpace);
-}
-
 function _createMultipleUnspecifiedBucketsError(serverBuckets, commandName) {
     if (serverBuckets.length === 0) {
         return Promise.reject('There are no prompt buckets configured on this server.');
@@ -127,7 +113,7 @@ module.exports = {
     getAllForServer: getAllForServer,
 
     retrieveFromCommandArgs: function(bot, db, commandArgs, server, commandName, allowInvalidServers) {
-        const firstParameter = _getFirstParameterFromCommandArgs(commandArgs);
+        const firstParameter = commandArgs[0];
         if (!firstParameter || firstParameter.length === 0) {
             return getAllForServer(bot, db, server.id)
                 .then(serverBuckets => _getOnlyBucketOnServer(serverBuckets, commandName, allowInvalidServers));
@@ -142,5 +128,17 @@ module.exports = {
 
                 return bucket;
             });
+    },
+
+    setIsPaused: function(db, bucket, isPaused) {
+        return db.query('UPDATE prompt_buckets SET is_paused = $1 WHERE bucket_id = $2', [(isPaused ? 1 : 0), bucket.id])
+            .then(results => {
+                if (results.rowCount === 0) {
+                    return Promise.reject('Unable to update the status of the prompt bucket in the database.');
+                }
+
+                assert(results.rowCount === 1);
+                return bucket;
+            })
     }
 };

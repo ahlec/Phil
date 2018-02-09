@@ -11,7 +11,7 @@ module.exports = class InputMessage {
             return null;
         }
 
-        const words = message.split(' ');
+        const words = message.split(' ').filter(word => word.trim().length > 0);
         if (words.length === 0) {
             return null;
         }
