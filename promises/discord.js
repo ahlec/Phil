@@ -9,7 +9,7 @@ module.exports = (function() {
             if (err) {
                 reject(err);
             } else {
-                resolve(response);
+                resolve(response.id);
             }
         });
     }
@@ -22,7 +22,7 @@ module.exports = (function() {
             if (err) {
                 reject(err);
             } else {
-                resolve(response);
+                resolve(response.id);
             }
         });
     }
@@ -58,6 +58,19 @@ module.exports = (function() {
         bot.deleteRole({
             serverID: serverId,
             roleID: roleId
+        }, (err, response) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(response);
+            }
+        });
+    }
+
+    function _performPinMessagePromise(resolve, reject, bot, channelId, messageId) {
+        bot.pinMessage({
+            channelID: channelId,
+            messageID: messageId
         }, (err, response) => {
             if (err) {
                 reject(err);
@@ -152,7 +165,10 @@ module.exports = (function() {
             }
 
             return new Promise((resolve, reject) => _performDeleteRolePromise(resolve, reject, bot, serverId, roleId));
+        },
 
+        pinMessage: function(bot, channelId, messageId) {
+            return new Promise((resolve, reject) => _performPinMessagePromise(resolve, reject, bot, channelId, messageId));
         }
     };
 })();

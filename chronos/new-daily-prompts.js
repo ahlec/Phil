@@ -12,7 +12,14 @@ function handleHasBeenPostedResults(results, bot, bucket, promptNumber, prompt) 
         return Promise.reject('We found a prompt in the queue, but we couldn\'t update it to mark it as being posted.');
     }
 
-    return prompts.sendPromptToChannel(bot, bucket.channelId, promptNumber, prompt);
+    return prompts.sendPromptToChannel(bot, bucket.channelId, promptNumber, prompt)
+        .then(messageId => {
+            if (!bucket.shouldPinPosts) {
+                return;
+            }
+
+            return discord.pinMessage(bot, bucket.channelId, messageId);
+        });
 }
 
 function postNewPrompt(bot, db, serverId, now, bucket, promptNumber) {

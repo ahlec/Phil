@@ -76,6 +76,12 @@ module.exports = class Phil {
 
     _onMessage(user, userId, channelId, msg, event) {
         const message = discordMessage(event, this._bot);
+
+        if (this._isOwnMessage(message)) {
+            this._handleOwnMessage(msg, event);
+            return;
+        }
+
         if (this._shouldIgnoreMessage(message)) {
             return;
         }
@@ -95,9 +101,14 @@ module.exports = class Phil {
         }
     }
 
+    _isOwnMessage(message) {
+        return (message.userId === this._bot.id);
+    }
+
     _shouldIgnoreMessage(message) {
         const user = this._bot.users[message.userId];
         if (!user) {
+            console.log('yes');
             return true;
         }
 
@@ -106,6 +117,21 @@ module.exports = class Phil {
         }
 
         return false;
+    }
+
+    _handleOwnMessage(msg, event) {
+        const MESSAGE_TYPE_CHANNEL_PINNED_MESSAGE = 6; // https://discordapp.com/developers/docs/resources/channel#message-object-message-types
+        if (event.d.type !== MESSAGE_TYPE_CHANNEL_PINNED_MESSAGE) {
+            return;
+        }
+
+        // I dislike those messages that say 'Phil has pinned a message to this channel.'
+        // So Phil is going to delete his own when he encounters them.
+        console.log('Phil posted an empty message (id %s) to channel %s. deleting.', event.d.id, event.d.channel_id);
+        this._bot.deleteMessage({
+            channelID: event.d.channel_id,
+            messageID: event.d.id
+        });
     }
 
     _onDisconnect(err, code) {
