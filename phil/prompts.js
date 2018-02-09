@@ -94,7 +94,7 @@ module.exports = (function() {
 
     function _confirmRejectPerformDbAction(results, db, channelId, number, dbActionFunc, numSuccessful) {
         if (results.rowCount === 0) {
-            return numRejected;
+            return numSuccessful;
         }
 
         const promptId = results.rows[0].prompt_id;

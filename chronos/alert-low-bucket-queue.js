@@ -8,7 +8,7 @@ const discord = require('../promises/discord');
 const PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD = 5;
 
 function alertQueueDwindling(bot, serverConfig, queueLength) {
-    if (queueLength >= PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD) {
+    if (queueLength > PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD) {
         return;
     }
 
