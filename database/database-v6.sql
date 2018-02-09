@@ -44,6 +44,7 @@ INSERT INTO chronos(chrono_handle, required_feature_id, utc_hour) VALUES('alert-
 INSERT INTO chronos(chrono_handle, utc_hour) VALUES('booty-day', 7);
 INSERT INTO chronos(chrono_handle, utc_hour) VALUES('happy-birthday', 7);
 INSERT INTO chronos(chrono_handle, utc_hour) VALUES('remove-unused-colour-roles', 0);
+INSERT INTO chronos(chrono_handle, required_feature_id, utc_hour) VALUES('alert-low-bucket-queue', 0, 13);
 
 CREATE TABLE server_chronos (
     server_id VARCHAR NOT NULL REFERENCES server_configs(server_id),

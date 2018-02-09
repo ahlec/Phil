@@ -107,8 +107,8 @@ function getFromReferenceHandle(bot, db, server, referenceHandle) {
         });
 }
 
-function getAllForServer(bot, db, server) {
-    return db.query('SELECT * FROM prompt_buckets WHERE server_id = $1', [server.id])
+function getAllForServer(bot, db, serverId) {
+    return db.query('SELECT * FROM prompt_buckets WHERE server_id = $1', [serverId])
         .then(results => {
             const buckets = [];
 
@@ -128,14 +128,14 @@ module.exports = {
     retrieveFromCommandArgs: function(bot, db, commandArgs, server, commandName, allowInvalidServers) {
         const firstParameter = _getFirstParameterFromCommandArgs(commandArgs);
         if (!firstParameter || firstParameter.length === 0) {
-            return getAllForServer(bot, db, server)
+            return getAllForServer(bot, db, server.id)
                 .then(serverBuckets => _getOnlyBucketOnServer(serverBuckets, commandName, allowInvalidServers));
         }
 
         return getFromReferenceHandle(bot, db, server, firstParameter)
             .then(bucket => {
                 if (bucket === null || (!allowInvalidServers && !bucket.isValid)) {
-                    return getAllForServer(bot, db, server)
+                    return getAllForServer(bot, db, server.id)
                         .then(serverBuckets => _createMultipleUnspecifiedBucketsError(serverBuckets, commandName));
                 }
 

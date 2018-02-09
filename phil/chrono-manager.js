@@ -67,7 +67,9 @@ module.exports = class ChronoManager {
                 sc.is_enabled = E'1' AND
                 c.utc_hour <= $1 AND
                 (sf.is_enabled = E'1' OR sf.is_enabled IS NULL) AND
-                (sc.date_last_ran IS NULL OR sc.date_last_ran < $2)`, [utcHour, utcDate])
+                (sc.date_last_ran IS NULL OR sc.date_last_ran < $2)
+            ORDER BY
+                c.utc_hour ASC`, [utcHour, utcDate])
             .then(results => {
                 for (let dbRow of results.rows) {
                     this._processChronoInstance(now, dbRow.chrono_handle, dbRow.chrono_id, dbRow.server_id, utcDate);

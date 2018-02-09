@@ -201,8 +201,8 @@ module.exports = (function() {
                 });
         },
 
-        getPromptQueueLength: function(db) {
-            return db.query('SELECT count(*) FROM prompts WHERE has_been_posted = E\'0\' AND approved_by_admin = E\'1\'')
+        getPromptQueueLength: function(db, bucket) {
+            return db.query('SELECT count(*) FROM prompts WHERE bucket_id = $1 AND has_been_posted = E\'0\' AND approved_by_admin = E\'1\'', [bucket.id])
                 .then(results => parseInt(results.rows[0].count));
         },
 
