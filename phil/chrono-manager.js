@@ -78,6 +78,11 @@ module.exports = class ChronoManager {
     _processChronoInstance(now, chronoHandle, chronoId, serverId, utcDate) {
         console.log('[CHRONOS] %s for serverId %s', chronoHandle, serverId);
 
+        if (!this._bot.servers[serverId]) {
+            console.log('[CHRONOS] Phil is no longer part of server with serverId %s', serverId);
+            return;
+        }
+
         const chronoDefinition = this._chronos[chronoHandle];
         if (!chronoDefinition) {
             console.error('[CHRONOS]     there is no chrono with the handle %s', chronoHandle);

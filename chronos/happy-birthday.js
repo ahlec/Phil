@@ -2,20 +2,6 @@
 
 const botUtils = require('../phil/utils');
 const discord = require('../promises/discord');
-const DATABASE_INFO_KEY = 'happy-birthday-last-wished';
-
-function interpretGetDateLastWished(results) {
-    if (results.rowCount !== 1) {
-        return Promise.reject('There are ' + results.rowCount + ' ' + DATABASE_INFO_KEY + ' info database entries.');
-    }
-
-    const dateLastWished = new Date(results.rows[0].value);
-    if (isNaN(dateLastWished)) {
-        return Promise.reject('Unable to parse database value ' + results.rows[0].value + '.');
-    }
-
-    return dateLastWished;
-}
 
 function getBirthdayUserIds(db, now) {
     const day = now.getUTCDate();
@@ -32,14 +18,17 @@ function getBirthdayUserIds(db, now) {
         });
 }
 
-function getDataFromUserIds(bot, userIds) {
-    const serverId = bot.channels[process.env.NEWS_CHANNEL_ID].guild_id;
+function getDataFromUserIds(bot, serverId, userIds) {
     const server = bot.servers[serverId];
 
     var names = [];
     for (let index = 0; index < userIds.length; ++index) {
         const userId = userIds[index];
         const member = server.members[userId];
+        if (!member) {
+            continue;
+        }
+
         names.push(member.nick);
     }
 
@@ -52,18 +41,6 @@ function getDataFromUserIds(bot, userIds) {
         names: names,
         pronoun: pronoun
     };
-}
-
-function ensureDatabaseUpdated(results) {
-    if (results.rowCount !== 1) {
-        return Promise.reject('The database was not updated despite the fact that the query succeeded.');
-    }
-}
-
-function updateDatabase(db, now, data) {
-    return db.query('UPDATE info SET value = $1 WHERE key = $2', [now, DATABASE_INFO_KEY])
-        .then(ensureDatabaseUpdated)
-        .then(() => data);
 }
 
 function createBirthdayWish(data) {
@@ -102,7 +79,7 @@ function createBirthdayWish(data) {
     return message;
 }
 
-function sendBirthdayWish(bot, birthdayWish) {
+function sendBirthdayWish(bot, serverId, birthdayWish) {
     if (birthdayWish === '') {
         return;
     }
@@ -112,17 +89,13 @@ function sendBirthdayWish(bot, birthdayWish) {
 
 module.exports = {
     canProcess: function(bot, db, serverId, now) {
-        return db.query('SELECT value FROM info WHERE key = $1 LIMIT 1', [DATABASE_INFO_KEY])
-            .then(interpretGetDateLastWished)
-            .then(dateLastWished => ({ ready: !botUtils.isSameDay(now, dateLastWished) }) );
+        return true;
     },
 
     process: function(bot, db, serverId, now) {
         return getBirthdayUserIds(db, now)
-            .then(userIds => getDataFromUserIds(bot, userIds))
-            .then(data => updateDatabase(db, now, data))
+            .then(userIds => getDataFromUserIds(bot, serverId, userIds))
             .then(data => createBirthdayWish(data))
-            .then(birthdayWish => sendBirthdayWish(bot, birthdayWish))
-            .then(() => true);
+            .then(birthdayWish => sendBirthdayWish(bot, serverId, birthdayWish));
     }
 };
