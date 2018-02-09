@@ -7,7 +7,7 @@ const discord = require('../promises/discord');
 
 const PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD = 5;
 
-function alertQueueDwindling(bot, serverConfig, queueLength) {
+function alertQueueDwindling(bot, serverConfig, bucket, queueLength) {
     if (queueLength > PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD) {
         return;
     }
@@ -15,17 +15,17 @@ function alertQueueDwindling(bot, serverConfig, queueLength) {
     var are = (queueLength == 1 ? 'is' : 'are');
     var promptNoun = (queueLength == 1 ? 'prompt' : 'prompts');
 
-    var message = ':warning: The prompt queue is growing short. There ' + are + ' **' + (queueLength > 0 ? queueLength : 'no') + '** more ' + promptNoun + ' in the queue.';
+    var message = ':warning: The queue for **' + bucket.displayName + '** (`' + bucket.handle + '`) is growing short. There ' + are + ' **' + (queueLength > 0 ? queueLength : 'no') + '** more ' + promptNoun + ' in the queue.';
     return discord.sendMessage(bot, serverConfig.botControlChannelId, message);
 }
 
 function processBucket(bot, db, serverConfig, now, bucket) {
-    if (bucket.isPaused || !bucket.isValid) {
+    if (!bucket.isValid || bucket.isPaused || !bucket.alertWhenLow) {
         return;
     }
 
     return prompts.getPromptQueueLength(db, bucket)
-        .then(queueLength => alertQueueDwindling(bot, serverConfig, queueLength));
+        .then(queueLength => alertQueueDwindling(bot, serverConfig, bucket, queueLength));
 }
 
 module.exports = {

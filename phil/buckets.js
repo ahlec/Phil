@@ -33,7 +33,8 @@ function parseBucketDbResult(dbRow, bot) {
         displayName: dbRow.display_name,
         isPaused: (parseInt(dbRow.is_paused) === 1),
         shouldPinPosts: (parseInt(dbRow.should_pin_posts) === 1),
-        requiredRoleId: dbRow.required_role_id
+        requiredRoleId: dbRow.required_role_id,
+        alertWhenLow: (parseInt(dbRow.alert_when_low) === 1)
     };
 }
 
