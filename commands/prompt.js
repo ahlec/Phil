@@ -13,9 +13,9 @@ function _ensureChannelHasBucket(bucket) {
     return bucket;
 }
 
-function _ensureThereIsPromptForToday(prompt) {
+function _ensureThereIsPrompt(prompt) {
     if (prompt === null) {
-        return Promise.reject('There\'s no prompt for today. That probably means that I\'m out of them! Why don\'t you suggest more by sending me `' + process.env.COMMAND_PREFIX + 'suggest` and including your prompt?');
+        return Promise.reject('There\'s no prompt right now. That probably means that I\'m out of them! Why don\'t you suggest more by sending me `' + process.env.COMMAND_PREFIX + 'suggest` and including your prompt?');
     }
 
     return prompt;
@@ -30,11 +30,11 @@ module.exports = {
 
     publicRequiresAdmin: false,
     processPublicMessage: function(bot, message, commandArgs, db) {
-        return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
+        return features.ensureFeatureIsEnabled(features.Features.Prompts, db)
             .then(() => buckets.getFromChannelId(bot, db, message.channelId))
             .then(_ensureChannelHasBucket)
-            .then(bucket => prompts.getTodaysPrompt(bot, db, bucket))
-            .then(_ensureThereIsPromptForToday)
+            .then(bucket => prompts.getCurrentPrompt(bot, db, bucket))
+            .then(_ensureThereIsPrompt)
             .then(prompt => prompts.sendPromptToChannel(bot, message.channelId, prompt.promptNumber, prompt));
     }
 };

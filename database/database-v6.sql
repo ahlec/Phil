@@ -40,7 +40,7 @@ CREATE TABLE chronos (
     utc_hour INTEGER NOT NULL
 );
 
-INSERT INTO chronos(chrono_handle, required_feature_id, utc_hour) VALUES('new-daily-prompts', 0, 12);
+INSERT INTO chronos(chrono_handle, required_feature_id, utc_hour) VALUES('post-new-prompts', 0, 12);
 INSERT INTO chronos(chrono_handle, required_feature_id, utc_hour) VALUES('alert-admins-unconfirmed-prompts', 0, 15);
 INSERT INTO chronos(chrono_handle, utc_hour) VALUES('booty-day', 7);
 INSERT INTO chronos(chrono_handle, utc_hour) VALUES('happy-birthday', 7);

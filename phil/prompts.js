@@ -145,7 +145,7 @@ module.exports = (function() {
     }
 
     return {
-        getTodaysPrompt: function(bot, db, bucket) {
+        getCurrentPrompt: function(bot, db, bucket) {
             const today = new Date();
             return db.query(`SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously
                     FROM prompts

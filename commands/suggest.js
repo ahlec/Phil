@@ -7,7 +7,7 @@ module.exports = {
     aliases: [],
 
     helpGroup: helpGroups.Groups.Prompts,
-    helpDescription: 'Suggests a new daily prompt for Phil to add to his list. (*DIRECT MESSAGE ONLY*)',
+    helpDescription: 'Suggests a new prompt to Phil. (*DIRECT MESSAGE ONLY*)',
     versionAdded: 1,
 
     privateRequiresAdmin: false,

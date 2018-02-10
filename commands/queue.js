@@ -38,7 +38,7 @@ module.exports = {
 
     publicRequiresAdmin: true,
     processPublicMessage: function(bot, message, commandArgs, db) {
-        return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
+        return features.ensureFeatureIsEnabled(features.Features.Prompts, db)
             .then(() => buckets.retrieveFromCommandArgs(bot, db, commandArgs, message.server, 'queue'))
             .then(bucket => prompts.getPromptQueue(db, bot, bucket, MAX_QUEUE_DISPLAY_LENGTH))
             .then(_makeMessageOutOfQueue)

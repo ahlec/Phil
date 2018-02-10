@@ -4,8 +4,8 @@ const botUtils = require('../phil/utils');
 
 const FEATURES = [
     {
-        displayName: 'Daily Prompts',
-        names: ['prompt', 'prompts', 'daily prompts', 'daily', 'daily prompt'],
+        displayName: 'Prompts',
+        names: ['prompt', 'prompts'],
         enabledDbInfoKey: 'prompt_disabled'
     },
     {
@@ -90,7 +90,7 @@ function _ensureDbWasModified(results) {
 
 module.exports = {
     Features: {
-        DailyPrompts: 0,
+        Prompts: 0,
         TimezoneProcessing: 1,
     },
 

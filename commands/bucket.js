@@ -51,7 +51,7 @@ module.exports = {
 
     publicRequiresAdmin: true,
     processPublicMessage: function(bot, message, commandArgs, db) {
-        return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
+        return features.ensureFeatureIsEnabled(features.Features.Prompts, db)
             .then(() => buckets.retrieveFromCommandArgs(bot, db, commandArgs, message.server, 'bucket', true))
             .then(bucket => sendBucketToChannel(bot, message.channelId, bucket));
     }

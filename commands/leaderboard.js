@@ -72,7 +72,7 @@ function sendLeaderboardToChat(bot, channelId, leaderboardMessage) {
         title: 'Hijack Prompt of the Day Leaderboard',
         description: leaderboardMessage,
         footer: {
-            text: 'You can increase your score by submitting daily discussion prompts! Use ' + process.env.COMMAND_PREFIX + 'suggest in a direct message with me!'
+            text: 'You can increase your score by submitting prompts! Use ' + process.env.COMMAND_PREFIX + 'suggest in a direct message with me!'
         }
     });
 }
@@ -86,7 +86,7 @@ module.exports = {
 
     publicRequiresAdmin: false,
     processPublicMessage: function(bot, message, commandArgs, db) {
-        return features.ensureFeatureIsEnabled(features.Features.DailyPrompts, db)
+        return features.ensureFeatureIsEnabled(features.Features.Prompts, db)
             .then(() => prompts.getLeaderboard(bot, db, message.server))
             .then(createLeaderboardMessage)
             .then(leaderboardMessage => sendLeaderboardToChat(bot, message.channelId, leaderboardMessage));
