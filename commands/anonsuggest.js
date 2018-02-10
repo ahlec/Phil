@@ -13,7 +13,7 @@ module.exports = (function() {
 
         privateRequiresAdmin: false,
         processPrivateMessage: function(bot, message, commandArgs, db) {
-            return suggesting.suggestCommand(bot, message, commandArgs, db, true);
+            return suggesting.suggestCommand(bot, message, commandArgs, db, 'anonsuggest', true);
         }
     };
 })();

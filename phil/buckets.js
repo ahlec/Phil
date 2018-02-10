@@ -38,6 +38,16 @@ function parseBucketDbResult(dbRow, bot) {
     };
 }
 
+function parseListBucketDbResults(results, bot) {
+    const buckets = [];
+
+    for (let index = 0; index < results.rowCount; ++index) {
+        buckets.push(parseBucketDbResult(results.rows[index], bot));
+    }
+
+    return buckets;
+}
+
 function _createMultipleUnspecifiedBucketsError(serverBuckets, commandName) {
     if (serverBuckets.length === 0) {
         return Promise.reject('There are no prompt buckets configured on this server.');
@@ -96,21 +106,33 @@ function getFromReferenceHandle(bot, db, server, referenceHandle) {
 
 function getAllForServer(bot, db, serverId) {
     return db.query('SELECT * FROM prompt_buckets WHERE server_id = $1', [serverId])
-        .then(results => {
-            const buckets = [];
+        .then(results => parseListBucketDbResults(results, bot));
+}
 
-            for (let index = 0; index < results.rowCount; ++index) {
-                buckets.push(parseBucketDbResult(results.rows[index], bot));
-            }
+function getAllServersUserIn(bot, userId) {
+    const serverIds = [];
 
-            return buckets;
-        });
+    for (let serverId in bot.servers) {
+        let server = bot.servers[serverId];
+        if (!server.members[userId]) {
+            continue;
+        }
+
+        serverIds.push(serverId);
+    }
+
+    return serverIds;
 }
 
 module.exports = {
     getFromChannelId: getFromChannelId,
     getFromReferenceHandle: getFromReferenceHandle,
     getAllForServer: getAllForServer,
+    getAllForUser: function(bot, db, userId) {
+        const serverIds = getAllServersUserIn(bot, userId);
+        return db.query('SELECT * FROM prompt_buckets WHERE server_id = ANY($1)', [serverIds])
+            .then(results => parseListBucketDbResults(results, bot));
+    },
 
     retrieveFromCommandArgs: function(bot, db, commandArgs, server, commandName, allowInvalidServers) {
         const firstParameter = commandArgs[0];
