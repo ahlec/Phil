@@ -59,7 +59,8 @@ function parseBucketDbResult(dbRow, bot) {
         requiredRoleId: dbRow.required_role_id,
         alertWhenLow: (parseInt(dbRow.alert_when_low) === 1),
         frequency: bucketFrequency,
-        frequencyDisplayName: frequencyDisplayStrings[bucketFrequency]
+        frequencyDisplayName: frequencyDisplayStrings[bucketFrequency],
+        promptTitleFormat: dbRow.prompt_title_format
     };
 }
 

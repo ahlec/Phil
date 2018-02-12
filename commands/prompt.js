@@ -33,8 +33,10 @@ module.exports = {
         return features.ensureFeatureIsEnabled(features.Features.Prompts, db)
             .then(() => buckets.getFromChannelId(bot, db, message.channelId))
             .then(_ensureChannelHasBucket)
-            .then(bucket => prompts.getCurrentPrompt(bot, db, bucket))
-            .then(_ensureThereIsPrompt)
-            .then(prompt => prompts.sendPromptToChannel(bot, message.channelId, prompt.promptNumber, prompt));
+            .then(bucket => {
+                return prompts.getCurrentPrompt(bot, db, bucket)
+                    .then(_ensureThereIsPrompt)
+                    .then(prompt => prompts.sendPromptToChannel(bot, message.channelId, bucket, prompt.promptNumber, prompt));
+            });
     }
 };

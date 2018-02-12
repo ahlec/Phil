@@ -14,7 +14,7 @@ function handleHasBeenPostedResults(results) {
 }
 
 function postPromptToChannel(bot, bucket, promptNumber, prompt) {
-    return prompts.sendPromptToChannel(bot, bucket.channelId, promptNumber, prompt)
+    return prompts.sendPromptToChannel(bot, bucket.channelId, bucket, promptNumber, prompt)
         .then(messageId => {
             if (!bucket.shouldPinPosts) {
                 return;

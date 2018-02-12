@@ -161,12 +161,12 @@ module.exports = (function() {
                 });
         },
 
-        sendPromptToChannel: function(bot, channelId, promptNumber, prompt) {
+        sendPromptToChannel: function(bot, channelId, bucket, promptNumber, prompt) {
             var footer = _getPromptMessageFooter(prompt);
 
             return discord.sendEmbedMessage(bot, channelId, {
                 color: 0xB0E0E6,
-                title: ':snowflake: Hijack Prompt of the Day #' + promptNumber + ' :dragon_face:',
+                title: bucket.promptTitleFormat.replace(/\{0\}/g, promptNumber),
                 description: prompt.text,
                 footer: {
                     text: footer
