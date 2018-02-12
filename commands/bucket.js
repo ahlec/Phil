@@ -37,7 +37,8 @@ function sendBucketToChannel(bot, channelId, bucket) {
             createField(bot, bucket, 'Channel', bucket.channelId, formatChannel),
             createField(bot, bucket, 'Required Member Role', (bucket.requiredRoleId ? '<@' + bucket.requiredRoleId + '>' : 'None')),
             createField(bot, bucket, 'Is Paused', bucket.isPaused, formatBoolean),
-            createField(bot, bucket, 'Should Pin Posts', bucket.shouldPinPosts, formatBoolean)
+            createField(bot, bucket, 'Should Pin Posts', bucket.shouldPinPosts, formatBoolean),
+            createField(bot, bucket, 'Frequency', bucket.frequencyDisplayName)
         ]
     });
 }

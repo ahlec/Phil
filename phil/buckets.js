@@ -2,6 +2,28 @@
 
 const assert = require('assert');
 const botUtils = require('../phil/utils');
+const moment = require('moment');
+
+const FrequencyEnum = {
+    Daily: 0,
+    Weekly: 1,
+    Monthly: 2,
+    Yearly: 3
+};
+
+const frequencyDisplayStrings = {
+    [FrequencyEnum.Daily]: "Daily",
+    [FrequencyEnum.Weekly]: "Weekly",
+    [FrequencyEnum.Monthly]: "Monthly",
+    [FrequencyEnum.Yearly]: "Yearly"
+};
+
+const frequencyFromStrings = {
+    "daily": FrequencyEnum.Daily,
+    "weekly": FrequencyEnum.Weekly,
+    "monthly": FrequencyEnum.Monthly,
+    "yearly": FrequencyEnum.Yearly
+}
 
 function determineIsBucketValid(dbRow, bot) {
     const server = bot.servers[dbRow.server_id];
@@ -24,6 +46,7 @@ function determineIsBucketValid(dbRow, bot) {
 
 function parseBucketDbResult(dbRow, bot) {
     var isValid = determineIsBucketValid(dbRow, bot);
+    var bucketFrequency = frequencyFromStrings[dbRow.frequency];
     return {
         id: parseInt(dbRow.bucket_id),
         serverId: dbRow.server_id,
@@ -34,7 +57,9 @@ function parseBucketDbResult(dbRow, bot) {
         isPaused: (parseInt(dbRow.is_paused) === 1),
         shouldPinPosts: (parseInt(dbRow.should_pin_posts) === 1),
         requiredRoleId: dbRow.required_role_id,
-        alertWhenLow: (parseInt(dbRow.alert_when_low) === 1)
+        alertWhenLow: (parseInt(dbRow.alert_when_low) === 1),
+        frequency: bucketFrequency,
+        frequencyDisplayName: frequencyDisplayStrings[bucketFrequency]
     };
 }
 
@@ -125,6 +150,8 @@ function getAllServersUserIn(bot, userId) {
 }
 
 module.exports = {
+    Frequency: FrequencyEnum,
+
     getFromChannelId: getFromChannelId,
     getFromReferenceHandle: getFromReferenceHandle,
     getAllForServer: getAllForServer,
@@ -162,5 +189,20 @@ module.exports = {
                 assert(results.rowCount === 1);
                 return bucket;
             })
+    },
+
+    isFrequencyMet: function(frequency, lastDate, currentDate) {
+        switch (frequency) {
+            case FrequencyEnum.Daily:
+                return !botUtils.isSameDay(lastDate, currentDate);
+            case FrequencyEnum.Weekly:
+                return (moment(lastDate).format('W') != moment(currentDate).format('W'));
+            case FrequencyEnum.Monthly:
+                return (lastDate.getUTCMonth() !== currentDate.getUTCMonth());
+            case FrequencyEnum.Yearly:
+                return (lastDate.getUTCFullYear() !== currentDate.getUTCFullYear());
+            default:
+                throw 'Unrecognized frequency type: \'' + frequency + '\'';
+        }
     }
 };

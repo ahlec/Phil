@@ -17,6 +17,7 @@ module.exports = (function() {
             displayName: (member == null ? dbRow.suggesting_user : member.nick),
             isStillInServer: (member != null),
             promptId: dbRow.prompt_id,
+            datePosted: (dbRow.prompt_date ? new Date(dbRow.prompt_date) : null),
             promptNumber: dbRow.prompt_number,
             text: dbRow.prompt_text,
             submittedAnonymously: (parseInt(dbRow.submitted_anonymously) === 1)
@@ -146,10 +147,11 @@ module.exports = (function() {
 
     return {
         getCurrentPrompt: function(bot, db, bucket) {
-            const today = new Date();
-            return db.query(`SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously
+            return db.query(`SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_date, prompt_text, submitted_anonymously
                     FROM prompts
-                    WHERE bucket_id = $1 AND has_been_posted = E\'1\' AND prompt_date = $2`, [bucket.id, today])
+                    WHERE bucket_id = $1 AND has_been_posted = E\'1\'
+                    ORDER BY prompt_date DESC
+                    LIMIT 1`, [bucket.id])
                 .then(results => {
                     if (results.rowCount === 0) {
                         return null;
@@ -189,7 +191,7 @@ module.exports = (function() {
         },
 
         getPromptQueue: function(db, bot, bucket, maxNumResults) {
-            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_text, submitted_anonymously FROM prompts WHERE has_been_posted=E\'0\' AND approved_by_admin=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
+            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_date, prompt_text, submitted_anonymously FROM prompts WHERE has_been_posted=E\'0\' AND approved_by_admin=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
                 .then(results => {
                     const queue = [];
 
@@ -207,7 +209,7 @@ module.exports = (function() {
         },
 
         getUnconfirmedPrompts: function(bot, db, bucket, maxNumResults) {
-            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, -1 as "prompt_number", prompt_text, submitted_anonymously FROM prompts WHERE bucket_id = $1 AND approved_by_admin = E\'0\' ORDER BY date_suggested ASC LIMIT $2', [bucket.id, maxNumResults])
+            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, -1 as "prompt_number", NULL as prompt_date, prompt_text, submitted_anonymously FROM prompts WHERE bucket_id = $1 AND approved_by_admin = E\'0\' ORDER BY date_suggested ASC LIMIT $2', [bucket.id, maxNumResults])
                 .then(results => {
                     var list = [];
 

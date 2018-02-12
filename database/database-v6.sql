@@ -11,6 +11,8 @@ CREATE TABLE server_configs (
 
 INSERT INTO server_configs(server_id, bot_control_channel_id) VALUES('240114141031825408', '240767750568542209');
 
+CREATE TYPE PromptFrequency AS ENUM('daily', 'weekly', 'monthly', 'yearly');
+
 CREATE TABLE prompt_buckets (
     bucket_id SERIAL NOT NULL UNIQUE,
     server_id VARCHAR NOT NULL,
@@ -20,7 +22,8 @@ CREATE TABLE prompt_buckets (
     is_paused BIT(1) NOT NULL DEFAULT E'0',
     should_pin_posts BIT(1) NOT NULL DEFAULT E'0',
     required_role_id VARCHAR NULL,
-    alert_when_low BIT(1) NOT NULL DEFAULT E'1'
+    alert_when_low BIT(1) NOT NULL DEFAULT E'1',
+    frequency PromptFrequency NOT NULL DEFAULT 'daily'
 );
 
 INSERT INTO prompt_buckets(server_id, channel_id, reference_handle, display_name) VALUES('240114141031825408', '254309217442332673', 'hijack-daily', 'Hijack Daily Prompts (SFW)');
