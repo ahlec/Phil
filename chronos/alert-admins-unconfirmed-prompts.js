@@ -3,58 +3,57 @@
 const discord = require('../promises/discord');
 const serverConfigs = require('../phil/server-configs');
 const prompts = require('../phil/prompts');
+const botUtils = require('../phil/utils');
+
+function getMessageForBucketCount(bucketCount) {
+    if (bucketCount.numUnconfirmed === 1) {
+        return 'There is **1** unconfirmed prompt waiting in bucket `' + bucketCount.handle + '`.';
+    }
+
+    return 'There are **' + bucketCount.numUnconfirmed + '** prompts waiting in bucket `' + bucketCount.handle + '`.';
+}
 
 function getUnconfimedPromptsMessage(counts) {
-    if (numUnconfirmedPrompts == 0) {
+    if (!counts || counts.length === 0) {
         return '';
     }
 
-    var numberStrPortion;
-    if (numUnconfirmedPrompts == 1) {
-        numberStrPortion = 'is **1** unconfirmed prompt';
-    } else {
-        numberStrPortion = 'are **' + numUnconfirmedPrompts + '** unconfirmed prompts';
+    var message = '';
+    for (let bucketCount of counts) {
+        message += getMessageForBucketCount(bucketCount);
+        message += '\n';
     }
 
-    return ':large_blue_diamond: There ' + numberStrPortion + ' in the queue. Please use `' + process.env.COMMAND_PREFIX + 'unconfirmed` to confirm them.';
+    message += '\n';
+
+    var randomBucketCount = botUtils.getRandomArrayEntry(counts);
+    message += 'You can say `' + process.env.COMMAND_PREFIX + 'unconfirmed ' + randomBucketCount.handle + '` to start the confirmation process.';
+    return message;
 }
 
-function sendAlertMessage(bot, unconfirmedMessage) {
+function sendAlertMessage(bot, serverConfig, unconfirmedMessage) {
     if (unconfirmedMessage.length === 0) {
         return;
     }
 
-    return discord.sendMessage(bot, process.env.BOT_CONTROL_CHANNEL_ID, unconfirmedMessage);
-}
-
-function processServer(chronosManager, now, bot, db, serverId) {
-    return serverConfigs.getFromId(bot, db, serverId)
-        .then(serverConfig => {
-            return prompts.countUnconfirmedPromptsForServer(db, serverId)
-                .then(getUnconfimedPromptsMessage)
-                .then()
-        });
-
-     db.query('SELECT count(*) FROM prompts WHERE approved_by_admin = E\'0\'')
-        .then(results => results.rows[0].count)
-        .then(getUnconfimedPromptsMessage)
-        .then(unconfirmedMessage => sendAlertMessage(bot, unconfirmedMessage))
-        .then(() => true);
+    return discord.sendEmbedMessage(bot, serverConfig.botControlChannelId, {
+        color: 0xB0E0E6,
+        title: ':ballot_box: Unconfirmed Prompt Submissions',
+        description: unconfirmedMessage
+    });
 }
 
 module.exports = {
     canProcess: function(bot, db, serverId, now) {
-        return Promise.resolve({
-            ready: true
-        });
+        return true;
     },
 
     process: function(bot, db, serverId, now) {
-        var returnValue = Promise.resolve();
-        for (let serverId in bot.servers) {
-            returnValue = returnValue.then(() => processServer(chronosManager, now, bot, db,serverId));
-        }
-
-        return returnValue.then(() => true);
+        return serverConfigs.getFromId(bot, db, serverId)
+            .then(serverConfig => {
+                return prompts.countUnconfirmedPromptsForServer(db, serverId)
+                    .then(getUnconfimedPromptsMessage)
+                    .then(unconfirmedMessage => sendAlertMessage(bot, serverConfig, unconfirmedMessage));
+            });
     }
 };

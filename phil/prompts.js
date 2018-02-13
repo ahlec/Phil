@@ -231,6 +231,29 @@ module.exports = (function() {
                     ORDER BY score DESC
                     LIMIT $2`, [server.id, LEADERBOARD_SIZE] )
                 .then(results => _parseLeaderboardDbResults(results, bot, server));
+        },
+
+        countUnconfirmedPromptsForServer: function(db, serverId) {
+            return db.query(`SELECT pb.bucket_id, reference_handle, display_name, count(*) as "total"
+                    FROM prompts p
+                    JOIN prompt_buckets pb
+                        ON p.bucket_id = pb.bucket_id
+                    WHERE pb.server_id = $1 AND approved_by_admin = E'0'
+                    GROUP BY pb.bucket_id, pb.reference_handle, pb.display_name`, [serverId])
+                .then(results => {
+                    var counts = [];
+
+                    for (let dbRow of results.rows) {
+                        counts.push({
+                            bucketId: dbRow.bucket_id,
+                            handle: dbRow.reference_handle,
+                            displayName: dbRow.display_name,
+                            numUnconfirmed: parseInt(dbRow.total)
+                        });
+                    }
+
+                    return counts;
+                });
         }
     };
 })();
