@@ -64,6 +64,21 @@ function resolveBucket(bot, userBuckets, commandName, commandArgs) {
     return Promise.reject(errorList);
 }
 
+function ensureUserCanSubmitToBucket(bot, db, userId, bucket) {
+    if (!bucket.requiredRoleId) {
+        return bucket;
+    }
+
+    const server = bot.servers[bucket.serverId];
+    const member = server.members[userId];
+    if (member.roles.includes(bucket.requiredRoleId)) {
+        return bucket;
+    }
+
+    const role = server.roles[bucket.requiredRoleId];
+    return Promise.reject('In order to be able to submit a prompt to this bucket, you must have the **' + role.name + '** role.');
+}
+
 function getSuggestionFromCommandArgs(commandArgs, bucket, suggestAnonymously) {
     var prompt = commandArgs.slice(1).join(' ').trim();
     prompt = prompt.replace(/`/g, '');
@@ -101,6 +116,7 @@ module.exports = {
         return Promise.resolve()
             .then(() => buckets.getAllForUser(bot, db, message.userId))
             .then(userBuckets => resolveBucket(bot, userBuckets, commandName, commandArgs))
+            .then(bucket => ensureUserCanSubmitToBucket(bot, db, message.userId, bucket))
             .then(bucket => getSuggestionFromCommandArgs(commandArgs, bucket, suggestAnonymously))
             .then(suggestion => addNewPrompt(db, message.user, message.userId, suggestion))
             .then(suggestion => sendConfirmationMessage(bot, message.channelId, suggestion));
