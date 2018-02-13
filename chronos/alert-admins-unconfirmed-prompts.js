@@ -43,17 +43,11 @@ function sendAlertMessage(bot, serverConfig, unconfirmedMessage) {
     });
 }
 
-module.exports = {
-    canProcess: function(bot, db, serverId, now) {
-        return true;
-    },
-
-    process: function(bot, db, serverId, now) {
-        return serverConfigs.getFromId(bot, db, serverId)
-            .then(serverConfig => {
-                return prompts.countUnconfirmedPromptsForServer(db, serverId)
-                    .then(getUnconfimedPromptsMessage)
-                    .then(unconfirmedMessage => sendAlertMessage(bot, serverConfig, unconfirmedMessage));
-            });
-    }
+module.exports = function(bot, db, serverId, now) {
+    return serverConfigs.getFromId(bot, db, serverId)
+        .then(serverConfig => {
+            return prompts.countUnconfirmedPromptsForServer(db, serverId)
+                .then(getUnconfimedPromptsMessage)
+                .then(unconfirmedMessage => sendAlertMessage(bot, serverConfig, unconfirmedMessage));
+        });
 };

@@ -66,20 +66,14 @@ function processBucket(bot, db, serverConfig, now, bucket) {
         });
 }
 
-module.exports = {
-    canProcess: function(bot, db, serverId, now) {
-        return true;
-    },
-
-    process: function(bot, db, serverId, now) {
-        return serverConfigs.getFromId(bot, db, serverId)
-            .then(serverConfig => {
-                return buckets.getAllForServer(bot, db, serverId)
-                    .then(buckets => {
-                        for (let bucket of buckets) {
-                            processBucket(bot, db, serverConfig, now, bucket);
-                        }
-                    });
-            });
-    }
+module.exports = function(bot, db, serverId, now) {
+    return serverConfigs.getFromId(bot, db, serverId)
+        .then(serverConfig => {
+            return buckets.getAllForServer(bot, db, serverId)
+                .then(buckets => {
+                    for (let bucket of buckets) {
+                        processBucket(bot, db, serverConfig, now, bucket);
+                    }
+                });
+        });
 };

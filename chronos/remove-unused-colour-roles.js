@@ -66,17 +66,11 @@ function deleteUnusedRoles(bot, db, server, serverId, colorRoles) {
     return latestPromise.then(() => reportDeletedRoles(bot, db, serverId, deletedRoles));
 }
 
-module.exports = {
-    canProcess: function(bot, db, serverId, now) {
-        return true;
-    },
+module.exports = function(bot, db, serverId, now) {
+    const server = bot.servers[serverId];
 
-    process: function(bot, db, serverId, now) {
-        const server = bot.servers[serverId];
-
-        return Promise.resolve(server)
-            .then(getAllColorRoles)
-            .then(colorRoles => colorRoles.filter(roleId => isRoleUnused(server, roleId)))
-            .then(colorRoles => deleteUnusedRoles(bot, db, server, serverId, colorRoles));
-    }
+    return Promise.resolve(server)
+        .then(getAllColorRoles)
+        .then(colorRoles => colorRoles.filter(roleId => isRoleUnused(server, roleId)))
+        .then(colorRoles => deleteUnusedRoles(bot, db, server, serverId, colorRoles));
 };

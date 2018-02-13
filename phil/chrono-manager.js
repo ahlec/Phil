@@ -91,22 +91,9 @@ module.exports = class ChronoManager {
             return;
         }
 
-        return this._runChrono(now, chronoHandle, serverId, chronoDefinition)
+        return chronoDefinition(this._bot, this._db, serverId, now)
             .catch(err => this._reportChronoError(err, chronoHandle, serverId))
             .then(() => this._markChronoProcessed(chronoId, serverId, utcDate));
-    }
-
-    _runChrono(now, chronoHandle, serverId, chronoDefinition) {
-        return Promise.resolve()
-            .then(() => chronoDefinition.canProcess(this._bot, this._db, serverId, now))
-            .then(canProcess => {
-                if (!canProcess) {
-                    console.log('[CHRONOS]     cannot process %s for server %s', chronoHandle, serverId);
-                    return;
-                }
-
-                return chronoDefinition.process(this._bot, this._db, serverId, now);
-            });
     }
 
     _markChronoProcessed(chronoId, serverId, utcDate) {

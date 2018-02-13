@@ -87,15 +87,9 @@ function sendBirthdayWish(bot, serverId, birthdayWish) {
     return discord.sendMessage(bot, process.env.NEWS_CHANNEL_ID, birthdayWish);
 }
 
-module.exports = {
-    canProcess: function(bot, db, serverId, now) {
-        return true;
-    },
-
-    process: function(bot, db, serverId, now) {
-        return getBirthdayUserIds(db, now)
-            .then(userIds => getDataFromUserIds(bot, serverId, userIds))
-            .then(data => createBirthdayWish(data))
-            .then(birthdayWish => sendBirthdayWish(bot, serverId, birthdayWish));
-    }
+module.exports = function(bot, db, serverId, now) {
+    return getBirthdayUserIds(db, now)
+        .then(userIds => getDataFromUserIds(bot, serverId, userIds))
+        .then(data => createBirthdayWish(data))
+        .then(birthdayWish => sendBirthdayWish(bot, serverId, birthdayWish));
 };
