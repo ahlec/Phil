@@ -8,21 +8,24 @@ const FrequencyEnum = {
     Daily: 0,
     Weekly: 1,
     Monthly: 2,
-    Yearly: 3
+    Yearly: 3,
+    Immediately: 4
 };
 
 const frequencyDisplayStrings = {
     [FrequencyEnum.Daily]: "Daily",
     [FrequencyEnum.Weekly]: "Weekly",
     [FrequencyEnum.Monthly]: "Monthly",
-    [FrequencyEnum.Yearly]: "Yearly"
+    [FrequencyEnum.Yearly]: "Yearly",
+    [FrequencyEnum.Immediately]: "Immediately"
 };
 
 const frequencyFromStrings = {
     "daily": FrequencyEnum.Daily,
     "weekly": FrequencyEnum.Weekly,
     "monthly": FrequencyEnum.Monthly,
-    "yearly": FrequencyEnum.Yearly
+    "yearly": FrequencyEnum.Yearly,
+    "immediately": FrequencyEnum.Immediately
 }
 
 function determineIsBucketValid(dbRow, bot) {
@@ -47,6 +50,7 @@ function determineIsBucketValid(dbRow, bot) {
 function parseBucketDbResult(dbRow, bot) {
     var isValid = determineIsBucketValid(dbRow, bot);
     var bucketFrequency = frequencyFromStrings[dbRow.frequency];
+    assert(bucketFrequency);
     return {
         id: parseInt(dbRow.bucket_id),
         serverId: dbRow.server_id,
@@ -153,6 +157,17 @@ function getAllServersUserIn(bot, userId) {
 module.exports = {
     Frequency: FrequencyEnum,
 
+    getFromId: function(bot, db, bucketId) {
+        return db.query('SELECT * FROM prompt_buckets WHERE bucket_id = $1', [bucketId])
+            .then(results => {
+                if (results.rowCount === 0) {
+                    return null;
+                }
+
+                assert(results.rowCount === 1);
+                return parseBucketDbResult(results.rows[0], bot);
+            });
+    },
     getFromChannelId: getFromChannelId,
     getFromReferenceHandle: getFromReferenceHandle,
     getAllForServer: getAllForServer,

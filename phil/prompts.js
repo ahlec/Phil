@@ -84,31 +84,26 @@ module.exports = (function() {
         return numSuccessful + 1;
     }
 
-    function _processConfirmRejectActionFuncResults(results, db, channelId, number, numSuccessful) {
-        if (results.rowCount === 0) {
-            return Promise.reject('There was a problem performing the SQL action for this command.');
-        }
-
+    function _processConfirmRejectActionFuncResults(db, channelId, number, numSuccessful) {
         return db.query('DELETE FROM prompt_confirmation_queue WHERE channel_id = $1 AND confirm_number = $2', [channelId, number])
             .then(removalResults => _processConfirmationQueueRemoval(removalResults, numSuccessful));
     }
 
-    function _confirmRejectPerformDbAction(results, db, channelId, number, dbActionFunc, numSuccessful) {
+    function _confirmRejectPerformDbAction(results, bot, db, channelId, number, dbActionFunc, numSuccessful) {
         if (results.rowCount === 0) {
             return numSuccessful;
         }
 
         const promptId = results.rows[0].prompt_id;
-        const actionFuncReturn = dbActionFunc(db, promptId);
+        const actionFuncReturn = dbActionFunc(bot, db, promptId);
         assert(botUtils.isPromise(actionFuncReturn));
-        return actionFuncReturn
-                .then(funcResults => _processConfirmRejectActionFuncResults(funcResults, db, channelId, number, numSuccessful));
+        return actionFuncReturn.then(() => _processConfirmRejectActionFuncResults(db, channelId, number, numSuccessful));
     }
 
-    function _confirmRejectNumber(db, channelId, number, dbActionFunc, numSuccessful) {
+    function _confirmRejectNumber(bot, db, channelId, number, dbActionFunc, numSuccessful) {
         number = number - 1; // Public facing, it's 1-based, but in the database it's 0-based
         return db.query('SELECT prompt_id FROM prompt_confirmation_queue WHERE channel_id = $1 and confirm_number = $2', [channelId, number])
-            .then(results => _confirmRejectPerformDbAction(results, db, channelId, number, dbActionFunc, numSuccessful));
+            .then(results => _confirmRejectPerformDbAction(results, bot, db, channelId, number, dbActionFunc, numSuccessful));
     }
 
     function _parseLeaderboardDbResults(results, bot, server) {
@@ -181,10 +176,10 @@ module.exports = (function() {
                 .then(numbers => _ensureAtLeastOneConfirmRejectNumber(numbers));
         },
 
-        confirmRejectNumbers: function(db, channelId, numbers, dbActionFunc) { // Resolves: the number of successfully confirmed/rejected prompts
+        confirmRejectNumbers: function(bot, db, channelId, numbers, dbActionFunc) { // Resolves: the number of successfully confirmed/rejected prompts
             var promise = Promise.resolve(0);
             for (let index = 0; index < numbers.length; ++index) {
-                promise = promise.then(numSuccessful => _confirmRejectNumber(db, channelId, numbers[index], dbActionFunc, numSuccessful));
+                promise = promise.then(numSuccessful => _confirmRejectNumber(bot, db, channelId, numbers[index], dbActionFunc, numSuccessful));
             }
 
             return promise;

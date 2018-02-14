@@ -4,7 +4,7 @@ const botUtils = require('../phil/utils');
 const prompts = require('../phil/prompts');
 const helpGroups = require('../phil/help-groups');
 
-function rejectPrompt(db, promptId) {
+function rejectPrompt(bot, db, promptId) {
     return db.query('DELETE FROM prompts WHERE prompt_id = $1', [promptId]);
 }
 
@@ -34,7 +34,7 @@ module.exports = {
     publicRequiresAdmin: true,
     processPublicMessage: function(bot, message, commandArgs, db) {
         return prompts.getConfirmRejectNumbersFromCommandArgs(commandArgs)
-            .then(numbers => prompts.confirmRejectNumbers(db, message.channelId, numbers, rejectPrompt))
+            .then(numbers => prompts.confirmRejectNumbers(bot, db, message.channelId, numbers, rejectPrompt))
             .then(numRejected => sendCompletionMessage(bot, message.channelId, numRejected));
     }
 };
