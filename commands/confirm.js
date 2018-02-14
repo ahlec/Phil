@@ -10,9 +10,10 @@ const buckets = require('../phil/buckets')
 function confirmPrompt(bot, db, promptId, bucket) {
     return db.query('UPDATE prompts SET approved_by_admin = E\'1\' WHERE prompt_id = $1', [promptId])
         .then(() => {
-/*            if (bucket.frequency == buckets.Frequency.Immediately) {
-                return prompts.sendPromptToChannel(bot, bucket.channelId, bucket,)
-            }*/
+            if (bucket.frequency == buckets.Frequency.Immediately) {
+                return prompts.getFromId(bot, db, promptId)
+                    .then(prompt => prompts.postNewPrompt(bot, db, prompt, new Date()));
+            }
         });
 }
 

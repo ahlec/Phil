@@ -50,7 +50,7 @@ function determineIsBucketValid(dbRow, bot) {
 function parseBucketDbResult(dbRow, bot) {
     var isValid = determineIsBucketValid(dbRow, bot);
     var bucketFrequency = frequencyFromStrings[dbRow.frequency];
-    assert(bucketFrequency);
+    assert(bucketFrequency !== undefined && bucketFrequency !== null);
     return {
         id: parseInt(dbRow.bucket_id),
         serverId: dbRow.server_id,
@@ -217,6 +217,8 @@ module.exports = {
                 return (lastDate.getUTCMonth() !== currentDate.getUTCMonth());
             case FrequencyEnum.Yearly:
                 return (lastDate.getUTCFullYear() !== currentDate.getUTCFullYear());
+            case FrequencyEnum.Immediately:
+                return false;
             default:
                 throw 'Unrecognized frequency type: \'' + frequency + '\'';
         }

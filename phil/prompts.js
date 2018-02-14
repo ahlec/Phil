@@ -4,6 +4,7 @@ module.exports = (function() {
     const botUtils = require('../phil/utils');
     const discord = require('../promises/discord');
     const assert = require('assert');
+    const buckets = require('../phil/buckets');
 
     const LEADERBOARD_SIZE = 10;
 
@@ -20,7 +21,8 @@ module.exports = (function() {
             datePosted: (dbRow.prompt_date ? new Date(dbRow.prompt_date) : null),
             promptNumber: dbRow.prompt_number,
             text: dbRow.prompt_text,
-            submittedAnonymously: (parseInt(dbRow.submitted_anonymously) === 1)
+            submittedAnonymously: (parseInt(dbRow.submitted_anonymously) === 1),
+            bucketId: parseInt(dbRow.bucket_id)
         };
     }
 
@@ -140,9 +142,53 @@ module.exports = (function() {
         return footer;
     }
 
+    function _sendPromptToChannel(bot, channelId, bucket, promptNumber, prompt) {
+        var footer = _getPromptMessageFooter(prompt);
+
+        return discord.sendEmbedMessage(bot, channelId, {
+            color: 0xB0E0E6,
+            title: bucket.promptTitleFormat.replace(/\{0\}/g, promptNumber),
+            description: prompt.text,
+            footer: {
+                text: footer
+            }
+        });
+    }
+
+    function _handleHasBeenPostedResults(results) {
+        if (results.rowCount === 0) {
+            return Promise.reject('We found a prompt in the queue, but we couldn\'t update it to mark it as being posted.');
+        }
+    }
+
+    function _postNewPromptToChannel(bot, bucket, promptNumber, prompt) {
+        return _sendPromptToChannel(bot, bucket.channelId, bucket, promptNumber, prompt)
+            .then(messageId => {
+                if (!bucket.shouldPinPosts) {
+                    return;
+                }
+
+                return discord.pinMessage(bot, bucket.channelId, messageId);
+            });
+    }
+
     return {
+        getFromId: function(bot, db, promptId) {
+            return db.query(`SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_date, prompt_text, submitted_anonymously, bucket_id
+                    FROM prompts
+                    WHERE prompt_id = $1`, [promptId])
+                .then(results => {
+                    if (results.rowCount === 0) {
+                        return null;
+                    }
+
+                    return buckets.getFromId(bot, db, results.rows[0].bucket_id)
+                        .then(bucket => _parsePromptDbResult(results.rows[0], bot, bucket));
+                });
+        },
+
         getCurrentPrompt: function(bot, db, bucket) {
-            return db.query(`SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_date, prompt_text, submitted_anonymously
+            return db.query(`SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_date, prompt_text, submitted_anonymously, bucket_id
                     FROM prompts
                     WHERE bucket_id = $1 AND has_been_posted = E\'1\'
                     ORDER BY prompt_date DESC
@@ -156,18 +202,7 @@ module.exports = (function() {
                 });
         },
 
-        sendPromptToChannel: function(bot, channelId, bucket, promptNumber, prompt) {
-            var footer = _getPromptMessageFooter(prompt);
-
-            return discord.sendEmbedMessage(bot, channelId, {
-                color: 0xB0E0E6,
-                title: bucket.promptTitleFormat.replace(/\{0\}/g, promptNumber),
-                description: prompt.text,
-                footer: {
-                    text: footer
-                }
-            });
-        },
+        sendPromptToChannel: _sendPromptToChannel,
 
         getConfirmRejectNumbersFromCommandArgs: function(commandArgs) { // Resolves: array of integers
             return Promise.resolve()
@@ -186,7 +221,9 @@ module.exports = (function() {
         },
 
         getPromptQueue: function(db, bot, bucket, maxNumResults) {
-            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_date, prompt_text, submitted_anonymously FROM prompts WHERE has_been_posted=E\'0\' AND approved_by_admin=E\'1\' ORDER BY date_suggested ASC LIMIT $1', [maxNumResults])
+            return db.query(`SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_date, prompt_text, submitted_anonymously, bucket_id
+                    FROM prompts
+                    WHERE has_been_posted=E\'0\' AND approved_by_admin=E\'1\' AND bucket_id = $1 ORDER BY date_suggested ASC LIMIT $2`, [bucket.id, maxNumResults])
                 .then(results => {
                     const queue = [];
 
@@ -204,7 +241,7 @@ module.exports = (function() {
         },
 
         getUnconfirmedPrompts: function(bot, db, bucket, maxNumResults) {
-            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, -1 as "prompt_number", NULL as prompt_date, prompt_text, submitted_anonymously FROM prompts WHERE bucket_id = $1 AND approved_by_admin = E\'0\' ORDER BY date_suggested ASC LIMIT $2', [bucket.id, maxNumResults])
+            return db.query('SELECT prompt_id, suggesting_user, suggesting_userid, -1 as "prompt_number", NULL as prompt_date, prompt_text, submitted_anonymously, bucket_id FROM prompts WHERE bucket_id = $1 AND approved_by_admin = E\'0\' ORDER BY date_suggested ASC LIMIT $2', [bucket.id, maxNumResults])
                 .then(results => {
                     var list = [];
 
@@ -248,6 +285,19 @@ module.exports = (function() {
                     }
 
                     return counts;
+                });
+        },
+
+        postNewPrompt: function(bot, db, prompt, now) {
+            return buckets.getFromId(bot, db, prompt.bucketId)
+                .then(bucket => {
+                    return db.query('SELECT prompt_number FROM prompts WHERE has_been_posted = E\'1\' AND bucket_id = $1 ORDER BY prompt_number DESC LIMIT 1', [bucket.id])
+                        .then(results => (results.rowCount > 0 ? results.rows[0].prompt_number + 1 : 1))
+                        .then(promptNumber => {
+                            return db.query('UPDATE prompts SET has_been_posted = E\'1\', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3', [promptNumber, now, prompt.promptId])
+                                .then(_handleHasBeenPostedResults)
+                                .then(() => _postNewPromptToChannel(bot, bucket, promptNumber, prompt));
+                        });
                 });
         }
     };
