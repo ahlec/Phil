@@ -36,18 +36,18 @@ CREATE TABLE server_features (
 );
 
 CREATE TABLE chronos (
-    chrono_id SERIAL NOT NULL UNIQUE,
+    chrono_id INTEGER NOT NULL UNIQUE,
     chrono_handle VARCHAR(100) NOT NULL UNIQUE,
     required_feature_id INTEGER,
     utc_hour INTEGER NOT NULL
 );
 
-INSERT INTO chronos(chrono_handle, required_feature_id, utc_hour) VALUES('post-new-prompts', 0, 12);
-INSERT INTO chronos(chrono_handle, required_feature_id, utc_hour) VALUES('alert-admins-unconfirmed-prompts', 0, 15);
-INSERT INTO chronos(chrono_handle, utc_hour) VALUES('booty-day', 7);
-INSERT INTO chronos(chrono_handle, utc_hour) VALUES('happy-birthday', 7);
-INSERT INTO chronos(chrono_handle, utc_hour) VALUES('remove-unused-colour-roles', 0);
-INSERT INTO chronos(chrono_handle, required_feature_id, utc_hour) VALUES('alert-low-bucket-queue', 0, 13);
+INSERT INTO chronos(chrono_id, chrono_handle, required_feature_id, utc_hour) VALUES(1, 'post-new-prompts', 0, 12);
+INSERT INTO chronos(chrono_id, chrono_handle, required_feature_id, utc_hour) VALUES(2, 'alert-admins-unconfirmed-prompts', 0, 15);
+INSERT INTO chronos(chrono_id, chrono_handle, utc_hour) VALUES(3, 'booty-day', 7);
+INSERT INTO chronos(chrono_id, chrono_handle, utc_hour) VALUES(4, 'happy-birthday', 7);
+INSERT INTO chronos(chrono_id, chrono_handle, utc_hour) VALUES(5, 'remove-unused-colour-roles', 0);
+INSERT INTO chronos(chrono_id, chrono_handle, required_feature_id, utc_hour) VALUES(6, 'alert-low-bucket-queue', 0, 13);
 
 CREATE TABLE server_chronos (
     server_id VARCHAR NOT NULL REFERENCES server_configs(server_id),
