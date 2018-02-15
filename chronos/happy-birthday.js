@@ -19,17 +19,15 @@ function getBirthdayUserIds(db, now) {
 }
 
 function getDataFromUserIds(bot, serverId, userIds) {
-    const server = bot.servers[serverId];
-
     var names = [];
     for (let index = 0; index < userIds.length; ++index) {
         const userId = userIds[index];
-        const member = server.members[userId];
-        if (!member) {
+        const userDisplayName = botUtils.getUserDisplayName(bot, serverId, userId);
+        if (!userDisplayName) {
             continue;
         }
 
-        names.push(member.nick);
+        names.push(userDisplayName);
     }
 
     var pronoun = botUtils.PRONOUNS.THEY;

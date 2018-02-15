@@ -12,10 +12,11 @@ module.exports = (function() {
         const server = bot.servers[bucket.serverId];
         const userId = dbRow.suggesting_userid;
         const member = server.members[userId];
+        const currentUserDisplayName = botUtils.getUserDisplayName(bot, bucket.serverId, userId);
 
         return {
             userId: userId,
-            displayName: (member == null ? dbRow.suggesting_user : member.nick),
+            displayName: (currentUserDisplayName ? currentUserDisplayName : dbRow.suggesting_user),
             isStillInServer: (member != null),
             promptId: dbRow.prompt_id,
             datePosted: (dbRow.prompt_date ? new Date(dbRow.prompt_date) : null),
@@ -114,15 +115,11 @@ module.exports = (function() {
         for (let index = 0; index < results.rowCount; ++index) {
             let userId = results.rows[index].suggesting_userid;
             const member = server.members[userId];
-
-            let displayName = (member == null ? results.rows[index].suggesting_user : member.nick);
-            if (!displayName || displayName.length === 0) {
-                displayName = results.rows[index].suggesting_user;
-            }
+            const currentUserDisplayName = botUtils.getUserDisplayName(bot, server.id, userId);
 
             leaderboard.push({
                 userId: userId,
-                displayName: displayName,
+                displayName: (currentUserDisplayName ? currentUserDisplayName : results.rows[index].suggesting_user),
                 isStillInServer: (member != null),
                 score: parseInt(results.rows[index].score)
             });

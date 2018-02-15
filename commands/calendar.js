@@ -104,26 +104,26 @@ function handleBirthdayDbError(err) {
     return Promise.reject('There was a database error when attempting to get the birthdays for this month. `' + err + '`');
 }
 
-function addBirthdaysDbResults(calendar, results, bot, server) {
+function addBirthdaysDbResults(calendar, results, bot, serverId) {
     for (let index = 0; index < results.rowCount; ++index) {
         const userId = results.rows[index].userid;
-        const member = server.members[userId];
-        if (member === undefined) {
+        const userDisplayName = botUtils.getUserDisplayName(bot, serverId, userId);
+        if (!userDisplayName) {
             continue;
         }
 
         const day = results.rows[index].birthday_day;
-        const message = '**' + member.nick + '**\'s birthday.';
+        const message = '**' + userDisplayName + '**\'s birthday.';
         addEntryToCalendar(calendar, day, message);
     }
 
     return calendar;
 }
 
-function addBirthdaysForMonth(calendar, db, bot, server) {
+function addBirthdaysForMonth(calendar, db, bot, serverId) {
     return db.query('SELECT userid, birthday_day FROM birthdays WHERE birthday_month = $1', [calendar.month])
         .catch(handleBirthdayDbError)
-        .then(results => addBirthdaysDbResults(calendar, results, bot, server));
+        .then(results => addBirthdaysDbResults(calendar, results, bot, serverId));
 }
 
 function addServerEventsForMonth(calendar) {
@@ -131,8 +131,8 @@ function addServerEventsForMonth(calendar) {
     return calendar;
 }
 
-function addDatesToCalendar(calendar, db, bot, server) {
-    return addBirthdaysForMonth(calendar, db, bot, server)
+function addDatesToCalendar(calendar, db, bot, serverId) {
+    return addBirthdaysForMonth(calendar, db, bot, serverId)
         .then(addServerEventsForMonth);
 }
 
@@ -173,7 +173,7 @@ module.exports = {
         return Promise.resolve()
             .then(() => determineMonth(commandArgs))
             .then(createCalendarDataStructureForMonth)
-            .then(calendar => addDatesToCalendar(calendar, db, bot, server))
+            .then(calendar => addDatesToCalendar(calendar, db, bot, serverId))
             .then(calendar => composeMessageFromCalendar(calendar, bot, server))
             .then(calendarMessage => sendCalendarMessage(calendarMessage, bot, message.channelId));
     }

@@ -251,6 +251,24 @@ module.exports = (function() {
             }
 
             return str;
+        },
+
+        getUserDisplayName: function(bot, serverId, userId) {
+            const server = bot.servers[serverId];
+            assert(server);
+
+            const user = bot.users[userId];
+            const member = server.members[userId];
+
+            if (!user || !member) {
+                return null;
+            }
+
+            if (member.nick) {
+                return member.nick;
+            }
+
+            return user.username;
         }
     }
 })();
