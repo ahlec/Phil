@@ -103,7 +103,7 @@ function _createMultipleUnspecifiedBucketsError(serverBuckets, commandName) {
 }
 
 function _getOnlyBucketOnServer(serverBuckets, commandName, allowInvalidServers) {
-    if (serverBuckets.length === 1 && (allowInvalidServers || erverBuckets[0].isValid)) {
+    if (serverBuckets.length === 1 && (allowInvalidServers || serverBuckets[0].isValid)) {
         return serverBuckets[0];
     }
 

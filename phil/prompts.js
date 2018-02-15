@@ -115,9 +115,14 @@ module.exports = (function() {
             let userId = results.rows[index].suggesting_userid;
             const member = server.members[userId];
 
+            let displayName = (member == null ? results.rows[index].suggesting_user : member.nick);
+            if (!displayName || displayName.length === 0) {
+                displayName = results.rows[index].suggesting_user;
+            }
+
             leaderboard.push({
                 userId: userId,
-                displayName: (member == null ? results.rows[index].suggesting_user : member.nick),
+                displayName: displayName,
                 isStillInServer: (member != null),
                 score: parseInt(results.rows[index].score)
             });
