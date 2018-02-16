@@ -80,9 +80,12 @@ function ensureUserCanSubmitToBucket(bot, db, userId, bucket) {
 }
 
 function getSuggestionFromCommandArgs(commandArgs, bucket, suggestAnonymously) {
-    var prompt = commandArgs.slice(1).join(' ').trim();
-    prompt = prompt.replace(/`/g, '');
+    var unusedArgs = commandArgs;
+    if (commandArgs.length > 0 && commandArgs[0].toLowerCase() === bucket.handle.toLowerCase()) {
+        unusedArgs = unusedArgs.slice(1);
+    }
 
+    const prompt = unusedArgs.join(' ').trim().replace(/`/g, '');
     if (prompt.length === 0) {
         return Promise.reject('You must provide a prompt to suggest!');
     }
