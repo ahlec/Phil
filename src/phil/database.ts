@@ -17,7 +17,9 @@ function _handleDbCurrentVersionError(err) {
     return Promise.reject('Encountered a database error when attempting to figure out the current database version. ' + err);
 }
 
-module.exports = class Database {
+export class Database {
+    private _pool: any;
+
     constructor() {
         this._pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
     }
@@ -29,7 +31,7 @@ module.exports = class Database {
             .then(() => this);
     }
 
-    query(text, values) {
+    query(text: string, values?: any[]) {
         return new Promise((resolve, reject) => {
             this._pool.connect(function(error, client, done) {
                 client.query(text, values, function(err, result) {

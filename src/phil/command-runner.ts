@@ -4,19 +4,26 @@ const botUtils = require('../phil/utils');
 const util = require('util');
 const InputMessage = require('./input-message');
 
-module.exports = class CommandRunner {
-    constructor(bot, commands, db) {
+import { Client } from 'discord.io';
+import { Database } from './database';
+import { DiscordMessage } from './discord-message';
+
+export class CommandRunner {
+    private readonly _bot : Client;
+    private readonly _db : Database;
+
+    constructor(bot : Client, commands, db : Database) {
         this._bot = bot;
         this._commands = commands;
         this._db = db;
     }
 
-    isCommand(message) {
+    public isCommand(message : DiscordMessage) : boolean {
         const input = InputMessage.parseFromMessage(message.content);
         return (input !== null);
     }
 
-    runMessage(message) {
+    public runMessage(message : DiscordMessage) {
         const input = InputMessage.parseFromMessage(message.content);
         if (input === null) {
             return;
@@ -43,12 +50,12 @@ module.exports = class CommandRunner {
         this._runCommand(message, commandData, input);
     }
 
-    _logInputReceived(message, input) {
+    private _logInputReceived(message : DiscordMessage, input) {
         const commandName = input.getCommandName();
         console.log('user \'%s\' (%s) used command \'%s\'', message.user, message.userId, commandName);
     }
 
-    _getCommandFromInputMessage(input) {
+    private _getCommandFromInputMessage(input) {
         const commandName = input.getCommandName();
         if (commandName in this._commands) {
             return this._commands[commandName];
@@ -56,7 +63,7 @@ module.exports = class CommandRunner {
         return null;
     }
 
-    _reportInvalidCommand(message, input) {
+    private _reportInvalidCommand(message : DiscordMessage, input) {
         const commandName = input.getCommandName();
         botUtils.sendErrorMessage({
             bot: this._bot,
@@ -65,7 +72,7 @@ module.exports = class CommandRunner {
         });
     }
 
-    _getCommandDataForChannel(command, input, message) {
+    private _getCommandDataForChannel(command, input, message : DiscordMessage) {
         const isDirectMessage = (message.channelId in this._bot.directMessages);
         const commandName = input.getCommandName();
 
@@ -84,7 +91,7 @@ module.exports = class CommandRunner {
         };
     }
 
-    _reportInvalidChannel(message, commandData) {
+    private _reportInvalidChannel(message : DiscordMessage, commandData) {
         botUtils.sendErrorMessage({
             bot: this._bot,
             channelId: message.channelId,
@@ -92,7 +99,7 @@ module.exports = class CommandRunner {
         });
     }
 
-    _canUserUseCommand(commandData, message) {
+    private _canUserUseCommand(commandData, message : DiscordMessage) : boolean {
         if (!commandData.requiresAdmin) {
             return true;
         }
@@ -103,7 +110,7 @@ module.exports = class CommandRunner {
         return botUtils.isMemberAnAdminOnServer(member, server);
     }
 
-    _reportCannotUseCommand(message, commandData, input) {
+    private _reportCannotUseCommand(message : DiscordMessage, commandData, input) {
         const commandName = input.getCommandName();
         botUtils.sendErrorMessage({
             bot: this._bot,
@@ -112,7 +119,7 @@ module.exports = class CommandRunner {
         });
     }
 
-    _runCommand(message, commandData, input) {
+    private _runCommand(message : DiscordMessage, commandData, input) {
         const commandArgs = input.getCommandArgs();
         const commandPromise = commandData.func(this._bot, message, commandArgs, this._db);
         if (!botUtils.isPromise(commandPromise)) {
@@ -122,7 +129,7 @@ module.exports = class CommandRunner {
         }
     }
 
-    _reportCommandError(err, channelId) {
+    private _reportCommandError(err, channelId) {
         console.error(err);
 
         var errorMessage = err;

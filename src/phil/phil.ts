@@ -2,24 +2,28 @@
 
 const botUtils = require('../phil/utils');
 const assert = require('assert');
-const discord = require('discord.io');
-const CommandRunner = require('./command-runner');
+import { Client } from 'discord.io';
+import { CommandRunner } from './command-runner';
 const ChronoManager = require('./chrono-manager');
 const AnalyzerManager = require('./analyzer-manager');
-const discordMessage = require('./discord-message');
 const greeting = require('./greeting');
+import { DiscordMessage } from './discord-message';
+import { Database } from './database';
 
 function ignoreDiscordCode(code) {
     return (code === 1000); // General disconnect code
 }
 
-module.exports = class Phil {
-    constructor(db) {
-        assert(db);
+export class Phil {
+    private readonly _db : Database;
+    private readonly _bot : Client;
+    private _commandRunner : CommandRunner;
+    private _shouldSendDisconnectedMessage : boolean;
 
+    constructor(db: Database) {
         this._db = db;
 
-        this._bot = new discord.Client({ token: process.env.DISCORD_BOT_TOKEN, autorun: true });
+        this._bot = new Client({ token: process.env.DISCORD_BOT_TOKEN, autorun: true });
 
         require('../commands')
             .then(commands => this._createCommandRunner(commands))
@@ -31,7 +35,7 @@ module.exports = class Phil {
             .then(analyzers => this._createAnalyzerManager(analyzers));
     }
 
-    start() {
+    public start() {
         this._shouldSendDisconnectedMessage = false;
 
         this._bot.on('ready', this._onReady.bind(this));
@@ -40,25 +44,25 @@ module.exports = class Phil {
         this._bot.on('guildMemberAdd', this._onMemberAdd.bind(this));
     }
 
-    _createCommandRunner(commands) {
+    private _createCommandRunner(commands) {
         this._commandRunner = new CommandRunner(this._bot, commands, this._db);
     }
 
-    _createChronoManager(chronos) {
+    private _createChronoManager(chronos) {
         this._chronoManager = new ChronoManager(this._bot, chronos, this._db);
     }
 
-    _reportStartupError(err) {
+    private _reportStartupError(err) {
         console.error('[STARTUP ERROR] %s', err);
         console.error(err);
         process.exit(1);
     }
 
-    _createAnalyzerManager(analyzers) {
+    private _createAnalyzerManager(analyzers) {
         this._analyzerManager = new AnalyzerManager(this._bot, analyzers, this._db);
     }
 
-    _onReady() {
+    private _onReady() {
         console.log('Logged in as %s - %s\n', this._bot.username, this._bot.id);
 
         this._chronoManager.start();
@@ -73,8 +77,8 @@ module.exports = class Phil {
         }
     }
 
-    _onMessage(user, userId, channelId, msg, event) {
-        const message = discordMessage(event, this._bot);
+    private _onMessage(user : string, userId : string, channelId, msg, event) {
+        const message = new DiscordMessage(event, this._bot);
 
         if (this._isOwnMessage(message)) {
             this._handleOwnMessage(msg, event);
@@ -100,11 +104,11 @@ module.exports = class Phil {
         }
     }
 
-    _isOwnMessage(message) {
+    private _isOwnMessage(message : DiscordMessage) : boolean {
         return (message.userId === this._bot.id);
     }
 
-    _shouldIgnoreMessage(message) {
+    private _shouldIgnoreMessage(message : DiscordMessage) : boolean {
         const user = this._bot.users[message.userId];
         if (!user) {
             console.log('yes');
@@ -118,7 +122,7 @@ module.exports = class Phil {
         return false;
     }
 
-    _handleOwnMessage(msg, event) {
+    private _handleOwnMessage(msg, event) {
         const MESSAGE_TYPE_CHANNEL_PINNED_MESSAGE = 6; // https://discordapp.com/developers/docs/resources/channel#message-object-message-types
         if (event.d.type !== MESSAGE_TYPE_CHANNEL_PINNED_MESSAGE) {
             return;
@@ -133,7 +137,7 @@ module.exports = class Phil {
         });
     }
 
-    _onDisconnect(err, code) {
+    private _onDisconnect(err, code) {
         console.error('Discord.io disconnected of its own accord.');
         console.error('Code: ' + code);
         if (err) {
@@ -144,7 +148,7 @@ module.exports = class Phil {
         this._bot.connect();
     }
 
-    _onMemberAdd(member) {
+    private _onMemberAdd(member) {
         console.log('A new member has joined the server.');
         greeting(this._bot, member);
     }

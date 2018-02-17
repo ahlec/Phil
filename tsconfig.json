@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "outDir": "build",
+        "types": ["node", "discord.io"],
+        "typeRoots": ["node_modules/@types", "./types"]
+    },
+    "include": [
+        "src/**/*"
+    ]
+}

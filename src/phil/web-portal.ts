@@ -3,7 +3,9 @@
 const botUtils = require('../phil/utils');
 const express = require('express');
 
-module.exports = class WebPortal {
+export class WebPortal {
+    private _app: any;
+
     constructor() {
         this._app = express();
         this._app.set('view engine', 'ejs');
@@ -25,7 +27,7 @@ module.exports = class WebPortal {
         console.log('Web portal is running on port ' + process.env.PORT);
     }
 
-    _receiveWebRequest(request, response) {
+    _receiveWebRequest(request: any, response: any) {
         response.render('index');
     }
 
