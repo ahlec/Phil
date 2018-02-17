@@ -1,6 +1,5 @@
 'use strict';
 
-const botUtils = require('../phil/utils');
 const helpGroups = require('../phil/help-groups');
 const buckets = require('../phil/buckets');
 const prompts = require('../phil/prompts');
@@ -30,7 +29,6 @@ function outputNoUnconfirmedPrompts(bot, channelId) {
         message: ':large_blue_diamond: There are no unconfirmed prompts in the queue right now.'
     });
 }
-
 
 function outputList(bot, channelId, list) {
     const existenceVerb = (list.length === 1 ? 'is' : 'are');

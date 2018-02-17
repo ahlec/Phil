@@ -2,7 +2,7 @@ module.exports = (function() {
     'use strict';
 
     const fs = require('../promises/fs');
-    const assert = require('assert');
+    const path = require('path');
 
     function shouldSkipLoadingChrono(filename) {
         if (filename === 'index.js' || !filename.endsWith('.js')) {
@@ -20,7 +20,7 @@ module.exports = (function() {
                 continue;
             }
 
-            let chronoDefinition = require(__dirname + '/' + filename);
+            let chronoDefinition = require(path.join(__dirname, filename));
             const chronoHandle = filename.slice(0, -3).toLowerCase();
             chronos[chronoHandle] = chronoDefinition;
             console.log('chrono \'%s\' registered', chronoHandle);

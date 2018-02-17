@@ -1,6 +1,5 @@
 'use strict';
 
-const botUtils = require('../phil/utils');
 const helpGroups = require('../phil/help-groups');
 const discord = require('../promises/discord');
 

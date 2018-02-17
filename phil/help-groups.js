@@ -17,14 +17,14 @@ module.exports = {
         Roles: 2,
         Prompts: 3,
         Time: 4,
-        Admin: ADMIN_GROUP,
+        Admin: ADMIN_GROUP
     },
 
     getHeaderForGroup: function(groupNumber) {
-        if (groupNumber == ADMIN_GROUP) {
+        if (groupNumber === ADMIN_GROUP) {
             return ':star2: ADMIN';
         }
 
         return groupHeaders[groupNumber];
-    },
+    }
 };

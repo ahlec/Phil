@@ -2,7 +2,7 @@ module.exports = (function() {
     'use strict';
 
     const fs = require('../promises/fs');
-    const botUtils = require('../phil/utils');
+    const path = require('path');
 
     function shouldSkipLoadingCommand(filename) {
         if (filename === 'index.js' || !filename.endsWith('.js')) {
@@ -21,7 +21,7 @@ module.exports = (function() {
             }
 
             const command = filename.slice(0, -3).toLowerCase();
-            commands[command] = require(__dirname + '/' + filename);
+            commands[command] = require(path.join(__dirname, filename));
             console.log('command \'%s\' registered', command);
         }
 

@@ -8,7 +8,6 @@ const ChronoManager = require('./chrono-manager');
 const AnalyzerManager = require('./analyzer-manager');
 const discordMessage = require('./discord-message');
 const greeting = require('./greeting');
-const util = require('util');
 
 function ignoreDiscordCode(code) {
     return (code === 1000); // General disconnect code
@@ -20,7 +19,7 @@ module.exports = class Phil {
 
         this._db = db;
 
-        this._bot = new discord.Client( { token: process.env.DISCORD_BOT_TOKEN, autorun: true } );
+        this._bot = new discord.Client({ token: process.env.DISCORD_BOT_TOKEN, autorun: true });
 
         require('../commands')
             .then(commands => this._createCommandRunner(commands))

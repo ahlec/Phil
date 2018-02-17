@@ -12,8 +12,8 @@ function alertQueueDwindling(bot, serverConfig, bucket, queueLength) {
         return;
     }
 
-    var are = (queueLength == 1 ? 'is' : 'are');
-    var promptNoun = (queueLength == 1 ? 'prompt' : 'prompts');
+    var are = (queueLength === 1 ? 'is' : 'are');
+    var promptNoun = (queueLength === 1 ? 'prompt' : 'prompts');
 
     var message = ':warning: The queue for **' + bucket.displayName + '** (`' + bucket.handle + '`) is growing short. There ' + are + ' **' + (queueLength > 0 ? queueLength : 'no') + '** more ' + promptNoun + ' in the queue.';
     return discord.sendMessage(bot, serverConfig.botControlChannelId, message);

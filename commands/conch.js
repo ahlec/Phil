@@ -18,7 +18,7 @@ const conchReplies = [
 
 function _createMessage() {
     const reply = botUtils.getRandomArrayEntry(conchReplies);
-    return ':shell: The Magic Conch Shell says: **' + reply + '**.'
+    return ':shell: The Magic Conch Shell says: **' + reply + '**.';
 }
 
 function _sendMessage(bot, channelId, message) {

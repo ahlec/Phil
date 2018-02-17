@@ -12,7 +12,7 @@ const FEATURES = [
         displayName: 'Timezone Processing',
         names: ['timezone', 'timezones', 'tz', 'timezone processing', 'timezones processing'],
         enabledDbInfoKey: 'timezone-processing-enabled'
-    },
+    }
 ];
 
 function _getInvalidFeatureNameInputMessage() {
@@ -58,7 +58,7 @@ function _getFeatureDisplayName(featureNumber) {
 function _getIsFeatureEnabled(featureNumber, db) {
     return _getFeatureByNumber(featureNumber)
         .then(feature => db.query('SELECT count(*) FROM info WHERE key = $1 AND value =\'1\'', [feature.enabledDbInfoKey]))
-        .then(results => (results.rows[0].count == 0));
+        .then(results => (results.rows[0].count === 0));
 }
 
 function _ensureFeatureIsEnabled(featureNumber, isEnabled) {
@@ -91,7 +91,7 @@ function _ensureDbWasModified(results) {
 module.exports = {
     Features: {
         Prompts: 0,
-        TimezoneProcessing: 1,
+        TimezoneProcessing: 1
     },
 
     getFeatureNumberFromCommandArgs: function(commandArgs) {

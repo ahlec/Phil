@@ -1,6 +1,5 @@
 const countryjs = require('countryjs');
 const countriesAndTimezones = require('countries-and-timezones');
-const assert = require('assert');
 const fs = require('fs');
 
 const countryTimezones = {};
@@ -32,7 +31,7 @@ const usaData = {
             displayName: 'Hawaii Standard Time (HST)'
         }
     ]
-}
+};
 
 function formatTimezoneDisplayNamePiece(piece) {
     return piece.replace('_', ' ');

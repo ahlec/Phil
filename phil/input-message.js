@@ -7,7 +7,7 @@ module.exports = class InputMessage {
     }
 
     static parseFromMessage(message) {
-        if (message === undefined || message === "") {
+        if (message === undefined || message === '') {
             return null;
         }
 

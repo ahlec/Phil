@@ -28,7 +28,7 @@ function processDeclinedProvidingResults(results) {
         return false;
     }
 
-    if (results.rows[0].will_provide == 0) {
+    if (parseInt(results.rows[0].will_provide) === 0) {
         return true;
     }
 
@@ -161,7 +161,7 @@ function processIsCurrentlyDoingQuestionnaireResults(results) {
     }
 
     const currentStage = results.rows[0].stage;
-    return (currentStage != QUESTIONNAIRE_STAGES.None && currentStage != QUESTIONNAIRE_STAGES.Finished && currentStage != QUESTIONNAIRE_STAGES.Declined);
+    return (currentStage !== QUESTIONNAIRE_STAGES.None && currentStage !== QUESTIONNAIRE_STAGES.Finished && currentStage !== QUESTIONNAIRE_STAGES.Declined);
 }
 
 function ensureRowWasModified(results) {

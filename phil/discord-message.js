@@ -1,7 +1,6 @@
 'use strict';
 
 const assert = require('assert');
-const util = require('util');
 
 function getServer(bot, channelId) {
     if (!bot.channels[channelId]) {
@@ -36,7 +35,7 @@ module.exports = function(event, bot) {
         user: event.d.author.username,
         userId: event.d.author.id,
         content: event.d.content,
-        isDirectMessage: ( event.d.channel_id in bot.directMessages ? true : false ),
+        isDirectMessage: (event.d.channel_id in bot.directMessages),
         mentions: mentions,
         server: getServer(bot, event.d.channel_id)
     };

@@ -95,14 +95,11 @@ function _sortGroups(groups) {
     return groups;
 }
 
-
-
-
 function _formatHelpInformationForDisplay(helpInformation) {
     var message = (helpInformation.isAdminFunction ? ':small_orange_diamond:' : ':small_blue_diamond:');
 
     if (helpInformation.isNew) {
-        message += ':new:'
+        message += ':new:';
     }
 
     message += ' [`' + helpInformation.name + '`';
@@ -138,7 +135,7 @@ function _getGroupItems(group, isUserAnAdmin, isAdminChannel) {
     for (let item of group) {
         let canDisplayItem = true;
         if (item.isAdminFunction) {
-            canDisplayItem = (isUserAnAdmin && isAdminChannel)
+            canDisplayItem = (isUserAnAdmin && isAdminChannel);
         }
 
         if (canDisplayItem) {

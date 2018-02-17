@@ -31,7 +31,7 @@ module.exports = (function() {
             let requestableInfo = requestables[index];
             fullMessage += _composeRequestableListEntry(requestableInfo);
 
-            if (randomRequestableIndex == index) {
+            if (randomRequestableIndex === index) {
                 randomRequestableString = botUtils.getRandomArrayEntry(requestableInfo.requestStrings);
             }
         }

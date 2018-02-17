@@ -5,8 +5,7 @@ const util = require('util');
 const InputMessage = require('./input-message');
 
 module.exports = class CommandRunner {
-    constructor(bot, commands, db)
-    {
+    constructor(bot, commands, db) {
         this._bot = bot;
         this._commands = commands;
         this._db = db;
@@ -67,7 +66,7 @@ module.exports = class CommandRunner {
     }
 
     _getCommandDataForChannel(command, input, message) {
-        const isDirectMessage = ( message.channelId in this._bot.directMessages ? true : false );
+        const isDirectMessage = (message.channelId in this._bot.directMessages);
         const commandName = input.getCommandName();
 
         if (isDirectMessage) {

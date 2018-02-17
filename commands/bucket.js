@@ -14,7 +14,7 @@ function createField(bot, bucket, header, value, valueTransformFunc) {
         name: header,
         value: value,
         inline: true
-    }
+    };
 }
 
 function formatBoolean(bot, bucket, value) {

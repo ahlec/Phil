@@ -8,7 +8,7 @@ function _assertVariableExists(variableName) {
 }
 
 function _assertCustomEmoji(variableName) {
-	_assertVariableExists(variableName);
+    _assertVariableExists(variableName);
 
     const envVariable = process.env[variableName];
     assert.ok(/<:[a-zA-Z0-9_]{2,}:[0-9]{10,}>/.test(envVariable), 'The environment variable `' + variableName + '` is not in the proper custom emoji format. Type \\ before the custom emoji and copy in everything, including the < and >');

@@ -1,12 +1,10 @@
 'use strict';
 
-const botUtils = require('../phil/utils');
 const util = require('util');
 const discord = require('../promises/discord');
 
 module.exports = class ChronoManager {
-    constructor(bot, chronos, db)
-    {
+    constructor(bot, chronos, db) {
         this._bot = bot;
         this._chronos = chronos;
         this._db = db;

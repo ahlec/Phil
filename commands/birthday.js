@@ -4,8 +4,6 @@ const botUtils = require('../phil/utils');
 const chronoNode = require('chrono-node');
 const helpGroups = require('../phil/help-groups');
 
-const util = require('util');
-
 const monthNames = [
     'January',
     'February',

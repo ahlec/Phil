@@ -5,8 +5,7 @@ const util = require('util');
 const discord = require('../promises/discord');
 
 module.exports = class AnalyzerManager {
-    constructor(bot, analyzers, db)
-    {
+    constructor(bot, analyzers, db) {
         this._bot = bot;
         this._analyzers = analyzers;
         this._db = db;

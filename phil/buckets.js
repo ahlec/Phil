@@ -13,20 +13,20 @@ const FrequencyEnum = {
 };
 
 const frequencyDisplayStrings = {
-    [FrequencyEnum.Daily]: "Daily",
-    [FrequencyEnum.Weekly]: "Weekly",
-    [FrequencyEnum.Monthly]: "Monthly",
-    [FrequencyEnum.Yearly]: "Yearly",
-    [FrequencyEnum.Immediately]: "Immediately"
+    [FrequencyEnum.Daily]: 'Daily',
+    [FrequencyEnum.Weekly]: 'Weekly',
+    [FrequencyEnum.Monthly]: 'Monthly',
+    [FrequencyEnum.Yearly]: 'Yearly',
+    [FrequencyEnum.Immediately]: 'Immediately'
 };
 
 const frequencyFromStrings = {
-    "daily": FrequencyEnum.Daily,
-    "weekly": FrequencyEnum.Weekly,
-    "monthly": FrequencyEnum.Monthly,
-    "yearly": FrequencyEnum.Yearly,
-    "immediately": FrequencyEnum.Immediately
-}
+    'daily': FrequencyEnum.Daily,
+    'weekly': FrequencyEnum.Weekly,
+    'monthly': FrequencyEnum.Monthly,
+    'yearly': FrequencyEnum.Yearly,
+    'immediately': FrequencyEnum.Immediately
+};
 
 function determineIsBucketValid(dbRow, bot) {
     const server = bot.servers[dbRow.server_id];
@@ -91,7 +91,7 @@ function _createMultipleUnspecifiedBucketsError(serverBuckets, commandName) {
         if (bucket.isValid) {
             message += 'posts to <#' + bucket.channelId + '>';
         } else {
-            message += 'configuration invalid'
+            message += 'configuration invalid';
         }
 
         message += ')\n';
@@ -204,7 +204,7 @@ module.exports = {
 
                 assert(results.rowCount === 1);
                 return bucket;
-            })
+            });
     },
 
     isFrequencyMet: function(frequency, lastDate, currentDate) {
@@ -212,7 +212,7 @@ module.exports = {
             case FrequencyEnum.Daily:
                 return !botUtils.isSameDay(lastDate, currentDate);
             case FrequencyEnum.Weekly:
-                return (moment(lastDate).format('W') != moment(currentDate).format('W'));
+                return (moment(lastDate).format('W') !== moment(currentDate).format('W'));
             case FrequencyEnum.Monthly:
                 return (lastDate.getUTCMonth() !== currentDate.getUTCMonth());
             case FrequencyEnum.Yearly:

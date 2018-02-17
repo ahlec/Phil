@@ -30,7 +30,7 @@ function createLeaderboardMessageEntry(ranking, entry) {
     var rankText = RANKING_TEXT[ranking];
     assert(rankText);
 
-    var message = (emoji ? emoji : process.env.CUSTOM_EMOJI_TRANSPARENT);
+    var message = (emoji || process.env.CUSTOM_EMOJI_TRANSPARENT);
     message += ' ';
     message += rankText;
     message += ': **';
@@ -41,7 +41,7 @@ function createLeaderboardMessageEntry(ranking, entry) {
         message += ' (no longer in server)';
     }
 
-    message += ' has submitted **'
+    message += ' has submitted **';
     message += entry.score;
     message += '** prompt';
     if (entry.score !== 1) {
