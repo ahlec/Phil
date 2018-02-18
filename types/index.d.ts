@@ -1,1 +1,1 @@
-/// <reference path="discord.io/index.d.ts" />
+/// <reference path="official-discord/index.d.ts" />

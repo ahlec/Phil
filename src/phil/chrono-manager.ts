@@ -3,8 +3,19 @@
 const util = require('util');
 const discord = require('../promises/discord');
 
-module.exports = class ChronoManager {
-    constructor(bot, chronos, db) {
+import { Client as DiscordIOClient } from 'discord.io';
+import { Database } from './database';
+import { QueryResult } from 'pg';
+import { Chrono, ChronoLookup } from '../chronos/@types';
+
+export class ChronoManager {
+    private readonly _bot : DiscordIOClient;
+    private readonly _chronos : ChronoLookup;
+    private readonly _db : Database;
+    private readonly _channelsLastMessageTable : { [channelId: string] : Date };
+    private _hasBeenStarted : boolean;
+
+    constructor(bot : DiscordIOClient, chronos : ChronoLookup, db : Database) {
         this._bot = bot;
         this._chronos = chronos;
         this._db = db;
@@ -27,14 +38,14 @@ module.exports = class ChronoManager {
         this._processChronos(); // Also run at startup to make sure you get anything that ran earlier that day
     }
 
-    getMinutesSinceLastMessageInChannel(channelId, now) {
+    getMinutesSinceLastMessageInChannel(channelId : string, now : Date) {
         const minutesSinceLast = this._channelsLastMessageTable[channelId];
         if (minutesSinceLast === undefined) {
             this._channelsLastMessageTable[channelId] = new Date(); // We'll set it here since we don't have a baseline but it helps us move past this section if the bot started out with the channel dead
             return 0;
         }
 
-        const millisecondsDiff = (now - minutesSinceLast);
+        const millisecondsDiff = (Number(now) - Number(minutesSinceLast));
         if (millisecondsDiff <= 0) {
             return 0;
         }
@@ -42,11 +53,11 @@ module.exports = class ChronoManager {
         return Math.floor((millisecondsDiff / 1000) / 60);
     }
 
-    recordNewMessageInChannel(channelId) {
+    recordNewMessageInChannel(channelId : string) {
         this._channelsLastMessageTable[channelId] = new Date();
     }
 
-    _processChronos() {
+    private _processChronos() {
         const now = new Date();
         const utcHour = now.getUTCHours();
         const utcDate = now.getUTCFullYear() + '-' + (now.getUTCMonth() + 1) + '-' + now.getUTCDate();
@@ -68,14 +79,14 @@ module.exports = class ChronoManager {
                 (sc.date_last_ran IS NULL OR sc.date_last_ran < $2)
             ORDER BY
                 c.utc_hour ASC`, [utcHour, utcDate])
-            .then(results => {
+            .then((results : QueryResult) => {
                 for (let dbRow of results.rows) {
                     this._processChronoInstance(now, dbRow.chrono_handle, dbRow.chrono_id, dbRow.server_id, utcDate);
                 }
             });
     }
 
-    _processChronoInstance(now, chronoHandle, chronoId, serverId, utcDate) {
+    private _processChronoInstance(now : Date, chronoHandle : string, chronoId : number, serverId : string, utcDate : string) {
         console.log('[CHRONOS] %s for serverId %s', chronoHandle, serverId);
 
         if (!this._bot.servers[serverId]) {
@@ -94,13 +105,13 @@ module.exports = class ChronoManager {
             .then(() => this._markChronoProcessed(chronoId, serverId, utcDate));
     }
 
-    _markChronoProcessed(chronoId, serverId, utcDate) {
+    private _markChronoProcessed(chronoId : number, serverId : string, utcDate : string) {
         return this._db.query(`UPDATE server_chronos
             SET date_last_ran = $1
             WHERE server_id = $2 AND chrono_id = $3`, [utcDate, serverId, chronoId]);
     }
 
-    _reportChronoError(err, chronoHandle, serverId) {
+    private _reportChronoError(err : Error | string, chronoHandle : string, serverId : string) {
         console.error('[CHRONOS]     error running %s for server %s', chronoHandle, serverId);
         console.error(err);
 

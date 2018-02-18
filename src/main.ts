@@ -5,7 +5,7 @@ import { Database } from './phil/database';
 import { Phil } from './phil/phil';
 import { WebPortal } from './phil/web-portal';
 
-function handleStartupError(err) {
+function handleStartupError(err : Error) {
     console.error(err);
     process.exit(1);
 }

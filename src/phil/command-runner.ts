@@ -2,17 +2,25 @@
 
 const botUtils = require('../phil/utils');
 const util = require('util');
-const InputMessage = require('./input-message');
 
 import { Client } from 'discord.io';
 import { Database } from './database';
 import { DiscordMessage } from './discord-message';
+import { InputMessage } from './input-message';
+import { Command, CommandLookup, CommandProcessFunction } from '../commands/@types';
+
+class CommandRunData {
+    requiresAdmin : boolean;
+    func : CommandProcessFunction;
+    incorrectChannelMessage : string;
+}
 
 export class CommandRunner {
     private readonly _bot : Client;
+    private readonly _commands : CommandLookup;
     private readonly _db : Database;
 
-    constructor(bot : Client, commands, db : Database) {
+    constructor(bot : Client, commands : CommandLookup, db : Database) {
         this._bot = bot;
         this._commands = commands;
         this._db = db;
@@ -43,19 +51,19 @@ export class CommandRunner {
         }
 
         if (!this._canUserUseCommand(commandData, message)) {
-            this._reportCannotUseCommand(message, commandData);
+            this._reportCannotUseCommand(message, commandData, input);
             return;
         }
 
         this._runCommand(message, commandData, input);
     }
 
-    private _logInputReceived(message : DiscordMessage, input) {
+    private _logInputReceived(message : DiscordMessage, input : InputMessage) {
         const commandName = input.getCommandName();
         console.log('user \'%s\' (%s) used command \'%s\'', message.user, message.userId, commandName);
     }
 
-    private _getCommandFromInputMessage(input) {
+    private _getCommandFromInputMessage(input : InputMessage) {
         const commandName = input.getCommandName();
         if (commandName in this._commands) {
             return this._commands[commandName];
@@ -63,7 +71,7 @@ export class CommandRunner {
         return null;
     }
 
-    private _reportInvalidCommand(message : DiscordMessage, input) {
+    private _reportInvalidCommand(message : DiscordMessage, input : InputMessage) {
         const commandName = input.getCommandName();
         botUtils.sendErrorMessage({
             bot: this._bot,
@@ -72,7 +80,7 @@ export class CommandRunner {
         });
     }
 
-    private _getCommandDataForChannel(command, input, message : DiscordMessage) {
+    private _getCommandDataForChannel(command :Command, input : InputMessage, message : DiscordMessage) : CommandRunData {
         const isDirectMessage = (message.channelId in this._bot.directMessages);
         const commandName = input.getCommandName();
 
@@ -91,7 +99,7 @@ export class CommandRunner {
         };
     }
 
-    private _reportInvalidChannel(message : DiscordMessage, commandData) {
+    private _reportInvalidChannel(message : DiscordMessage, commandData : CommandRunData) {
         botUtils.sendErrorMessage({
             bot: this._bot,
             channelId: message.channelId,
@@ -99,7 +107,7 @@ export class CommandRunner {
         });
     }
 
-    private _canUserUseCommand(commandData, message : DiscordMessage) : boolean {
+    private _canUserUseCommand(commandData : CommandRunData, message : DiscordMessage) : boolean {
         if (!commandData.requiresAdmin) {
             return true;
         }
@@ -110,7 +118,7 @@ export class CommandRunner {
         return botUtils.isMemberAnAdminOnServer(member, server);
     }
 
-    private _reportCannotUseCommand(message : DiscordMessage, commandData, input) {
+    private _reportCannotUseCommand(message : DiscordMessage, commandData : CommandRunData, input : InputMessage) {
         const commandName = input.getCommandName();
         botUtils.sendErrorMessage({
             bot: this._bot,
@@ -119,7 +127,7 @@ export class CommandRunner {
         });
     }
 
-    private _runCommand(message : DiscordMessage, commandData, input) {
+    private _runCommand(message : DiscordMessage, commandData : CommandRunData, input : InputMessage) {
         const commandArgs = input.getCommandArgs();
         const commandPromise = commandData.func(this._bot, message, commandArgs, this._db);
         if (!botUtils.isPromise(commandPromise)) {
@@ -129,7 +137,7 @@ export class CommandRunner {
         }
     }
 
-    private _reportCommandError(err, channelId) {
+    private _reportCommandError(err : Error | string, channelId : string) {
         console.error(err);
 
         var errorMessage = err;

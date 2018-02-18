@@ -2,6 +2,8 @@
 
 const assert = require('assert');
 
+import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
+
 function getServer(bot : any, channelId : string) {
     if (!bot.channels[channelId]) {
         return null;
@@ -30,7 +32,7 @@ export class DiscordMessage {
     public readonly mentions : DiscordMessageMention[];
     public readonly server : any;
 
-    constructor(event : any, bot : any) {
+    constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>, bot : any) {
         this.mentions = [];
         for (let mention of event.d.mentions) {
             this.mentions.push({

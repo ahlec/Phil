@@ -1,12 +1,15 @@
 'use strict';
 
-module.exports = class InputMessage {
-    constructor(commandName, commandArgs) {
+export class InputMessage {
+    private readonly _commandName : string;
+    private readonly _commandArgs : string[];
+
+    constructor(commandName : string, commandArgs : string[]) {
         this._commandName = commandName;
         this._commandArgs = commandArgs;
     }
 
-    static parseFromMessage(message) {
+    static parseFromMessage(message : string) : InputMessage {
         if (message === undefined || message === '') {
             return null;
         }
@@ -25,11 +28,11 @@ module.exports = class InputMessage {
         return new InputMessage(commandName, words.slice(1));
     }
 
-    getCommandName() {
+    getCommandName() : string {
         return this._commandName;
     }
 
-    getCommandArgs() {
+    getCommandArgs() : string[] {
         return this._commandArgs;
     }
 };

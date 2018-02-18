@@ -1,9 +1,9 @@
 'use strict';
 
-const pg = require('pg');
+import { Pool, QueryResult } from 'pg';
 const versions = require('./versions');
 
-function _interpretDbCurrentVersion(results) {
+function _interpretDbCurrentVersion(results : QueryResult) {
     if (results.rowCount === 0) {
         return Promise.reject('There is no database entry for the current database version number.');
     }
@@ -13,15 +13,15 @@ function _interpretDbCurrentVersion(results) {
     }
 }
 
-function _handleDbCurrentVersionError(err) {
+function _handleDbCurrentVersionError(err : Error) {
     return Promise.reject('Encountered a database error when attempting to figure out the current database version. ' + err);
 }
 
 export class Database {
-    private _pool: any;
+    private _pool : Pool;
 
     constructor() {
-        this._pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+        this._pool = new Pool({ connectionString: process.env.DATABASE_URL });
     }
 
     checkIsCurrentVersion() {

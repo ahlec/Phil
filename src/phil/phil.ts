@@ -2,37 +2,43 @@
 
 const botUtils = require('../phil/utils');
 const assert = require('assert');
-import { Client } from 'discord.io';
+import { Client as DiscordIOClient, Member as DiscordIOMember } from 'discord.io';
 import { CommandRunner } from './command-runner';
-const ChronoManager = require('./chrono-manager');
-const AnalyzerManager = require('./analyzer-manager');
+import { CommandLookup } from '../commands/@types';
+import { ChronoManager } from './chrono-manager';
+import { ChronoLookup } from '../chronos/@types';
+import { AnalyzerManager } from './analyzer-manager';
+import { AnalyzerLookup } from '../analyzers/@types';
 const greeting = require('./greeting');
 import { DiscordMessage } from './discord-message';
 import { Database } from './database';
+import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
 
-function ignoreDiscordCode(code) {
+function ignoreDiscordCode(code : number) {
     return (code === 1000); // General disconnect code
 }
 
 export class Phil {
     private readonly _db : Database;
-    private readonly _bot : Client;
+    private readonly _bot : DiscordIOClient;
     private _commandRunner : CommandRunner;
+    private _chronoManager : ChronoManager;
+    private _analyzerManager : AnalyzerManager;
     private _shouldSendDisconnectedMessage : boolean;
 
     constructor(db: Database) {
         this._db = db;
 
-        this._bot = new Client({ token: process.env.DISCORD_BOT_TOKEN, autorun: true });
+        this._bot = new DiscordIOClient({ token: process.env.DISCORD_BOT_TOKEN, autorun: true });
 
         require('../commands')
-            .then(commands => this._createCommandRunner(commands))
-            .catch(err => this._reportStartupError(err));
+            .then((commands : CommandLookup) => this._createCommandRunner(commands))
+            .catch((err : Error) => this._reportStartupError(err));
         require('../chronos')
-            .then(chronos => this._createChronoManager(chronos))
-            .catch(err => this._reportStartupError(err));
+            .then((chronos : ChronoLookup) => this._createChronoManager(chronos))
+            .catch((err : Error) => this._reportStartupError(err));
         require('../analyzers')
-            .then(analyzers => this._createAnalyzerManager(analyzers));
+            .then((analyzers : AnalyzerLookup) => this._createAnalyzerManager(analyzers));
     }
 
     public start() {
@@ -44,21 +50,21 @@ export class Phil {
         this._bot.on('guildMemberAdd', this._onMemberAdd.bind(this));
     }
 
-    private _createCommandRunner(commands) {
+    private _createCommandRunner(commands : CommandLookup) {
         this._commandRunner = new CommandRunner(this._bot, commands, this._db);
     }
 
-    private _createChronoManager(chronos) {
+    private _createChronoManager(chronos : ChronoLookup) {
         this._chronoManager = new ChronoManager(this._bot, chronos, this._db);
     }
 
-    private _reportStartupError(err) {
+    private _reportStartupError(err : Error) {
         console.error('[STARTUP ERROR] %s', err);
         console.error(err);
         process.exit(1);
     }
 
-    private _createAnalyzerManager(analyzers) {
+    private _createAnalyzerManager(analyzers : AnalyzerLookup) {
         this._analyzerManager = new AnalyzerManager(this._bot, analyzers, this._db);
     }
 
@@ -77,11 +83,11 @@ export class Phil {
         }
     }
 
-    private _onMessage(user : string, userId : string, channelId, msg, event) {
+    private _onMessage(user : string, userId : string, channelId : string, msg : string, event : OfficialDiscordPayload<OfficialDiscordMessage>) {
         const message = new DiscordMessage(event, this._bot);
 
         if (this._isOwnMessage(message)) {
-            this._handleOwnMessage(msg, event);
+            this._handleOwnMessage(event);
             return;
         }
 
@@ -122,7 +128,7 @@ export class Phil {
         return false;
     }
 
-    private _handleOwnMessage(msg, event) {
+    private _handleOwnMessage(event : OfficialDiscordPayload<OfficialDiscordMessage>) {
         const MESSAGE_TYPE_CHANNEL_PINNED_MESSAGE = 6; // https://discordapp.com/developers/docs/resources/channel#message-object-message-types
         if (event.d.type !== MESSAGE_TYPE_CHANNEL_PINNED_MESSAGE) {
             return;
@@ -137,7 +143,7 @@ export class Phil {
         });
     }
 
-    private _onDisconnect(err, code) {
+    private _onDisconnect(err : Error, code : number) {
         console.error('Discord.io disconnected of its own accord.');
         console.error('Code: ' + code);
         if (err) {
@@ -148,7 +154,7 @@ export class Phil {
         this._bot.connect();
     }
 
-    private _onMemberAdd(member) {
+    private _onMemberAdd(member : DiscordIOMember) {
         console.log('A new member has joined the server.');
         greeting(this._bot, member);
     }

@@ -1,15 +1,19 @@
 {
     "compilerOptions": {
         "module": "commonjs",
+        "target": "es6",
         "noImplicitAny": true,
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": true,
         "outDir": "build",
-        "types": ["node", "discord.io"],
+        "types": ["node", "pg", "discord.io", "official-discord"],
         "typeRoots": ["node_modules/@types", "./types"]
     },
     "include": [
         "src/**/*"
+    ],
+    "exclude": [
+        "**/@types.ts"
     ]
 }
