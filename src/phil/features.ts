@@ -2,6 +2,11 @@
 
 const botUtils = require('../phil/utils');
 
+export enum Features {
+    Prompts = 0,
+    TimezoneProcessing = 1
+}
+
 const FEATURES = [
     {
         displayName: 'Prompts',
@@ -89,11 +94,6 @@ function _ensureDbWasModified(results) {
 }
 
 module.exports = {
-    Features: {
-        Prompts: 0,
-        TimezoneProcessing: 1
-    },
-
     getFeatureNumberFromCommandArgs: function(commandArgs) {
         if (!commandArgs || commandArgs.length === 0) {
             return Promise.reject(_getInvalidFeatureNameInputMessage());
