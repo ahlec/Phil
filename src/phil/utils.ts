@@ -4,47 +4,50 @@ const url = require('url');
 const http = require('http');
 const https = require('https');
 
+import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer } from 'discord.io';
+import { instance as DiscordPromises } from '../promises/discord';
+
 // -------------------------------- PRONOUNS
-const PRONOUNS = {
-    HE: 0,
-    SHE: 1,
-    THEY: 2
+export enum Pronoun {
+    He = 0,
+    She = 1,
+    They = 2
 };
 
-const PRONOUN_CASES = {
-    HE: 0,
-    HIM: 1,
-    HIS: 2
+export enum PronounCase {
+    He = 0,
+    Him = 1,
+    His = 2
 };
 
 const HE_PRONOUNS = {
-    [PRONOUN_CASES.HE]: 'he',
-    [PRONOUN_CASES.HIM]: 'him',
-    [PRONOUN_CASES.HIS]: 'his'
+    [PronounCase.He]: 'he',
+    [PronounCase.Him]: 'him',
+    [PronounCase.His]: 'his'
 };
 
 const SHE_PRONOUNS = {
-    [PRONOUN_CASES.HE]: 'she',
-    [PRONOUN_CASES.HIM]: 'her',
-    [PRONOUN_CASES.HIS]: 'hers'
+    [PronounCase.He]: 'she',
+    [PronounCase.Him]: 'her',
+    [PronounCase.His]: 'hers'
 };
 
 const THEY_PRONOUNS = {
-    [PRONOUN_CASES.HE]: 'they',
-    [PRONOUN_CASES.HIM]: 'them',
-    [PRONOUN_CASES.HIS]: 'theirs'
+    [PronounCase.He]: 'they',
+    [PronounCase.Him]: 'them',
+    [PronounCase.His]: 'theirs'
 };
 
 const PRONOUN_ARRAYS = {
-    [PRONOUNS.HE]: HE_PRONOUNS,
-    [PRONOUNS.SHE]: SHE_PRONOUNS,
-    [PRONOUNS.THEY]: THEY_PRONOUNS
+    [Pronoun.He]: HE_PRONOUNS,
+    [Pronoun.She]: SHE_PRONOUNS,
+    [Pronoun.They]: THEY_PRONOUNS
 };
 
 const PRONOUNS_FROM_ROLE_ID = {
-    [process.env.HE_PRONOUNS_ROLE_ID]: PRONOUNS.HE,
-    [process.env.SHE_PRONOUNS_ROLE_ID]: PRONOUNS.SHE,
-    [process.env.THEY_PRONOUNS_ROLE_ID]: PRONOUNS.THEY
+    [process.env.HE_PRONOUNS_ROLE_ID]: Pronoun.He,
+    [process.env.SHE_PRONOUNS_ROLE_ID]: Pronoun.She,
+    [process.env.THEY_PRONOUNS_ROLE_ID]: Pronoun.They
 };
 
 // ------------------------------------------ INTERNAL FUNCTIONS
@@ -60,43 +63,38 @@ function doesRoleHavePermission(role, permission) {
     return false;
 }
 
-function _doesMemberUseRole(member, roleId) {
-    for (let index = 0; index < member.roles.length; ++index) {
-        if (member.roles[index] === roleId) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-function _isValidHexColor(input) {
-    return /^#[0-9A-F]{6}$/i.test(input);
-}
-
-function _resolveMultiplePronounsToSinglePronoun(pronouns) {
+function _resolveMultiplePronounsToSinglePronoun(pronouns : Pronoun[]) : Pronoun {
     if (pronouns.length === 0) {
-        return PRONOUNS.THEY;
+        return Pronoun.They;
     }
 
     if (pronouns.length === 1) {
         return PRONOUNS_FROM_ROLE_ID[pronouns[0]];
     }
 
-    if (pronouns.indexOf(PRONOUNS.THEY) >= 0) {
-        return PRONOUNS.THEY;
+    if (pronouns.indexOf(Pronoun.They) >= 0) {
+        return Pronoun.They;
     }
 
     // Hmmm... What do I do in the case where the user has HE and SHE but not THEY?
     // For right now, we'll go with 'They' until someone clarifies.
-    return PRONOUNS.THEY;
+    return Pronoun.They;
 }
 
-module.exports = {
-    PRONOUNS: PRONOUNS,
-    PRONOUN_CASES, PRONOUN_CASES,
+interface SendErrorMessageOpts {
+    readonly bot : DiscordIOClient;
+    readonly channelId : string;
+    readonly message : string;
+}
 
-    getUrl: function(inputUrl) {
+interface SendSuccessMessageOpts {
+    readonly bot : DiscordIOClient;
+    readonly channelId : string;
+    readonly message : string;
+}
+
+export class BotUtils {
+    static getUrl(inputUrl : string) : string {
         const protocol = url.parse(inputUrl).protocol;
         if (protocol === 'http:') {
             return http.get(inputUrl);
@@ -106,43 +104,36 @@ module.exports = {
             return https.get(inputUrl);
         }
 
-        console.error('Unknown protocol \'' + protocol + '\'');
-        assert(false);
-    },
+        throw new Error('Unknown protocol \'' + protocol + '\'');
+    }
 
-    sendErrorMessage: function(options) {
-        assert(typeof(options) === 'object');
-        assert(options.bot !== undefined);
-        assert(options.channelId !== undefined);
-        assert(typeof(options.message) === 'string');
+    static sendErrorMessage(options : SendErrorMessageOpts) : Promise<string> {
+        let message = ':no_entry: **ERROR.** ' + options.message;
+        return DiscordPromises.sendMessage(options.bot, options.channelId, message);
+    }
 
-        options.bot.sendMessage({
-            to: options.channelId,
-            message: ':no_entry: **ERROR.** ' + options.message
-        });
-    },
+    static sendSuccessMessage(options : SendSuccessMessageOpts) : Promise<string> {
+        let message = ':white_check_mark: **SUCCESS.** ' + options.message;
+        return DiscordPromises.sendMessage(options.bot, options.channelId, message);
+    }
 
-    sendSuccessMessage: function(options) {
-        assert(typeof(options) === 'object');
-        assert(options.bot !== undefined);
-        assert(options.channelId !== undefined);
-        assert(typeof(options.message) === 'string');
+    static doesMemberUseRole(member : DiscordIOMember, roleId : string) : boolean {
+        for (let memberRoleId of member.roles) {
+            if (memberRoleId === roleId) {
+                return true;
+            }
+        }
 
-        options.bot.sendMessage({
-            to: options.channelId,
-            message: ':white_check_mark: **SUCCESS.** ' + options.message
-        });
-    },
+        return false;
+    }
 
-    doesMemberUseRole: _doesMemberUseRole,
-
-    isMemberAnAdminOnServer: function(member, server) {
-        for (let index = 0; index < member.roles.length; ++index) {
-            if (member.roles[index] === process.env.ADMIN_ROLE_ID) {
+    static isMemberAnAdminOnServer(member : DiscordIOMember, server : DiscordIOServer) : boolean {
+        for (let memberRoleId of member.roles) {
+            if (memberRoleId === process.env.ADMIN_ROLE_ID) {
                 return true;
             }
 
-            let role = server.roles[member.roles[index]];
+            let role = server.roles[memberRoleId];
             if (doesRoleHavePermission(role, discord.Permissions.GENERAL_ADMINISTRATOR)) {
                 return true;
             }
@@ -155,55 +146,52 @@ module.exports = {
 
         // The owner of the server is also an admin
         return (server.owner_id === member.id);
-    },
+    }
 
-    toStringDiscordError: function(err) {
+    static toStringDiscordError(err) {
         if (err.response) {
             return '[Code ' + err.response.code + ': ' + err.response.message + ']';
         }
         return err.toString();
-    },
+    }
 
-    getRandomArrayEntry: function(arr) {
-        assert(typeof(arr) === 'object');
-        assert(Array.isArray(arr));
+    static getRandomArrayEntry(arr : any[]) : any {
         const randomIndex = Math.floor(Math.random() * arr.length);
         return arr[randomIndex];
-    },
+    }
 
-    isValidHexColor: _isValidHexColor,
+    static isValidHexColor(input : string) : boolean {
+        return /^#[0-9A-F]{6}$/i.test(input);
+    }
 
-    isHexColorRole: function(server, roleId) {
+    static isHexColorRole(server : DiscordIOServer, roleId : string) : boolean {
         const role = server.roles[roleId];
-        const isHex = _isValidHexColor(role.name);
+        const isHex = BotUtils.isValidHexColor(role.name);
         return isHex;
-    },
+    }
 
-    getPronounForUser: function(bot, userId) {
+    static getPronounForUser(bot : DiscordIOClient, userId : string) : Pronoun {
         const serverId = bot.channels[process.env.HIJACK_CHANNEL_ID].guild_id;
         const server = bot.servers[serverId];
         const member = server.members[userId];
-        const pronounsOfUser = [];
+        const pronounsOfUser : Pronoun[] = [];
 
-        for (let index = 0; index < member.roles.length; ++index) {
-            const roleId = member.roles[index];
-            if (roleId in PRONOUNS_FROM_ROLE_ID) {
-                pronounsOfUser.push(roleId);
+        for (let memberRoleId of member.roles) {
+            if (memberRoleId in PRONOUNS_FROM_ROLE_ID) {
+                pronounsOfUser.push(memberRoleId);
             }
         }
 
         return _resolveMultiplePronounsToSinglePronoun(pronounsOfUser);
-    },
+    }
 
-    getPronounOfCase: function(pronoun, pronounCase) {
+    static getPronounOfCase(pronoun : Pronoun, pronounCase : PronounCase) : string {
         const pronounArray = PRONOUN_ARRAYS[pronoun];
-        assert(typeof(pronounArray) === 'object');
         const pronounStr = pronounArray[pronounCase];
-        assert(typeof(pronounStr) === 'string');
         return pronounStr;
-    },
+    }
 
-    isPromise: function(obj) {
+    static isPromise(obj : any) : boolean {
         if (typeof(obj) !== 'object') {
             return false;
         }
@@ -213,17 +201,17 @@ module.exports = {
         }
 
         return true;
-    },
+    }
 
-    isNumeric: function(input) {
+    static isNumeric(input : string) : boolean {
         return (!isNaN(parseInt(input)) && isFinite(input));
-    },
+    }
 
-    isAdminChannel: function(channelId) {
+    static isAdminChannel(channelId : string) : boolean {
         return (channelId === process.env.BOT_CONTROL_CHANNEL_ID || channelId === process.env.ADMIN_CHANNEL_ID);
-    },
+    }
 
-    isSameDay: function(dateA, dateB) {
+    static isSameDay(dateA : Date, dateB : Date) : boolean {
         if (dateA.getUTCFullYear() !== dateB.getUTCFullYear()) {
             return false;
         }
@@ -233,9 +221,9 @@ module.exports = {
         }
 
         return (dateA.getUTCDate() === dateB.getUTCDate());
-    },
+    }
 
-    stitchTogetherArray: function(values) {
+    static stitchTogetherArray(values) {
         var str = '';
         for (let index = 0; index < values.length; ++index) {
             if (index > 0) {
@@ -250,9 +238,9 @@ module.exports = {
         }
 
         return str;
-    },
+    }
 
-    getUserDisplayName: function(bot, serverId, userId) {
+    static getUserDisplayName(bot : DiscordIOClient, serverId : string, userId : string) : string {
         const server = bot.servers[serverId];
         assert(server);
 

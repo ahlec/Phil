@@ -1,6 +1,5 @@
 'use strict';
 
-const botUtils = require('../phil/utils');
 const assert = require('assert');
 import { Client as DiscordIOClient, Member as DiscordIOMember } from 'discord.io';
 import { CommandRunner } from './command-runner';
@@ -9,10 +8,11 @@ import { ChronoManager } from './chrono-manager';
 import { ChronoLookup } from '../chronos/@types';
 import { AnalyzerManager } from './analyzer-manager';
 import { AnalyzerLookup } from '../analyzers/@types';
-const greeting = require('./greeting');
+import { greetNewMember } from './greeting';
 import { DiscordMessage } from './discord-message';
 import { Database } from './database';
 import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
+import { BotUtils } from './utils';
 
 function ignoreDiscordCode(code : number) {
     return (code === 1000); // General disconnect code
@@ -74,7 +74,7 @@ export class Phil {
         this._chronoManager.start();
 
         if (this._shouldSendDisconnectedMessage) {
-            botUtils.sendErrorMessage({
+            BotUtils.sendErrorMessage({
                 bot: this._bot,
                 channelId: process.env.BOT_COMMAND_CHANNEL_ID,
                 message: 'Encountered an unexpected shutdown, @' + process.env.BOT_MANAGER_USERNAME + '. The logs should be in Heroku. I\'ve recovered though and connected again.'
@@ -156,6 +156,6 @@ export class Phil {
 
     private _onMemberAdd(member : DiscordIOMember) {
         console.log('A new member has joined the server.');
-        greeting(this._bot, member);
+        greetNewMember(this._bot, member);
     }
 };

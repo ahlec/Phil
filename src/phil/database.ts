@@ -1,15 +1,15 @@
 'use strict';
 
 import { Pool, QueryResult } from 'pg';
-const versions = require('./versions');
+import { Versions } from './versions';
 
 function _interpretDbCurrentVersion(results : QueryResult) {
     if (results.rowCount === 0) {
         return Promise.reject('There is no database entry for the current database version number.');
     }
 
-    if (results.rows[0].value != versions.DATABASE) {
-        return Promise.reject('The required database version is ' + versions.DATABASE + ' but the current database is version ' + results.rows[0].value);
+    if (results.rows[0].value != Versions.DATABASE) {
+        return Promise.reject('The required database version is ' + Versions.DATABASE + ' but the current database is version ' + results.rows[0].value);
     }
 }
 
