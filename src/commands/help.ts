@@ -1,15 +1,14 @@
 'use strict';
 
-import { Command, CommandLookup } from './@types';
+import { Command, ICommandLookup } from './@types';
 import { HelpGroup, getHeaderForGroup } from '../phil/help-groups';
 import { Client as DiscordIOClient } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
 import { Database } from '../phil/database';
 import { MessageBuilder } from '../phil/message-builder';
 import { instance as DiscordPromises } from '../promises/discord';
-
-const botUtils = require('../phil/utils');
-const versions = require('../phil/versions');
+import { BotUtils } from '../phil/utils';
+import { Versions } from '../phil/versions';
 
 class CommandHelpInfo {
     public readonly name : string;
@@ -75,7 +74,7 @@ class CommandHelpInfo {
     }
 
     private static isVersionNew(version : number) : boolean {
-        return (version >= versions.CODE - 1);
+        return (version >= Versions.CODE - 1);
     }
 }
 
@@ -157,7 +156,7 @@ export class HelpCommand implements Command {
 
     public publicRequiresAdmin = false;
     public processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        const isAdminChannel : boolean = botUtils.isAdminChannel(message.channelId);
+        const isAdminChannel : boolean = BotUtils.isAdminChannel(message.channelId);
         const builder : MessageBuilder = new MessageBuilder();
 
         for (let helpGroup of this._helpGroups) {
@@ -172,7 +171,7 @@ export class HelpCommand implements Command {
         return sendPromise;
     }
 
-    public saveCommandDefinitions(commands : CommandLookup) {
+    public saveCommandDefinitions(commands : ICommandLookup) {
         const commandInfo = this.getAllCommandHelpInfo(commands);
         const groupLookup : { [groupNum : number ] : HelpGroupInfo } = {};
 
@@ -193,7 +192,7 @@ export class HelpCommand implements Command {
         this._helpGroups.sort(HelpGroupInfo.sort);
     }
 
-    private getAllCommandHelpInfo(commands : CommandLookup) : CommandHelpInfo[] {
+    private getAllCommandHelpInfo(commands : ICommandLookup) : CommandHelpInfo[] {
         const commandInfo : CommandHelpInfo[] = [];
         for (let commandName in commands) {
             let command = commands[commandName];

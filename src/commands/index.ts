@@ -1,25 +1,23 @@
 'use strict';
 
-import { Command, CommandLookup } from './@types';
+import { Command, ICommandLookup } from './@types';
 import { AnonSuggestCommand } from './anonsuggest';
 import { ApologiseCommand } from './apologise';
 import { HelpCommand } from './help';
 
-const lookup : CommandLookup = {};
+export const CommandLookup : ICommandLookup = {};
 
 function registerCommand(command : Command) {
-    lookup[name] = command;
-    for (let name of command.aliases) {
-        lookup[name] = command;
+    CommandLookup[command.name] = command;
+    for (let alias of command.aliases) {
+        CommandLookup[alias] = command;
     }
 }
 
 let helpCommand = new HelpCommand();
 
-registerCommand( new AnonSuggestCommand() );
-registerCommand( new ApologiseCommand() );
-registerCommand( helpCommand );
+registerCommand(new AnonSuggestCommand());
+registerCommand(new ApologiseCommand());
+registerCommand(helpCommand);
 
-helpCommand.saveCommandDefinitions(lookup);
-
-export = lookup;
+helpCommand.saveCommandDefinitions(CommandLookup);

@@ -5,6 +5,6 @@ export interface Chrono {
     (bot : DiscordIOClient, db : Database, serverId : string, now : Date) : Promise<void>;
 }
 
-export interface ChronoLookup {
+export interface IChronoLookup {
     [chronoHandle : string] : Chrono;
 }

@@ -3,11 +3,8 @@
 const assert = require('assert');
 import { Client as DiscordIOClient, Member as DiscordIOMember } from 'discord.io';
 import { CommandRunner } from './command-runner';
-import { CommandLookup } from '../commands/@types';
 import { ChronoManager } from './chrono-manager';
-import { ChronoLookup } from '../chronos/@types';
 import { AnalyzerManager } from './analyzer-manager';
-import { AnalyzerLookup } from '../analyzers/@types';
 import { greetNewMember } from './greeting';
 import { DiscordMessage } from './discord-message';
 import { Database } from './database';
@@ -21,24 +18,18 @@ function ignoreDiscordCode(code : number) {
 export class Phil {
     private readonly _db : Database;
     private readonly _bot : DiscordIOClient;
-    private _commandRunner : CommandRunner;
-    private _chronoManager : ChronoManager;
-    private _analyzerManager : AnalyzerManager;
+    private readonly _commandRunner : CommandRunner;
+    private readonly _chronoManager : ChronoManager;
+    private readonly _analyzerManager : AnalyzerManager;
     private _shouldSendDisconnectedMessage : boolean;
 
     constructor(db: Database) {
         this._db = db;
 
         this._bot = new DiscordIOClient({ token: process.env.DISCORD_BOT_TOKEN, autorun: true });
-
-        require('../commands')
-            .then((commands : CommandLookup) => this._createCommandRunner(commands))
-            .catch((err : Error) => this._reportStartupError(err));
-        require('../chronos')
-            .then((chronos : ChronoLookup) => this._createChronoManager(chronos))
-            .catch((err : Error) => this._reportStartupError(err));
-        require('../analyzers')
-            .then((analyzers : AnalyzerLookup) => this._createAnalyzerManager(analyzers));
+        this._commandRunner = new CommandRunner(this._bot, this._db);
+        this._chronoManager = new ChronoManager(this._bot, this._db);
+        this._analyzerManager = new AnalyzerManager(this._bot, this._db);
     }
 
     public start() {
@@ -50,22 +41,10 @@ export class Phil {
         this._bot.on('guildMemberAdd', this._onMemberAdd.bind(this));
     }
 
-    private _createCommandRunner(commands : CommandLookup) {
-        this._commandRunner = new CommandRunner(this._bot, commands, this._db);
-    }
-
-    private _createChronoManager(chronos : ChronoLookup) {
-        this._chronoManager = new ChronoManager(this._bot, chronos, this._db);
-    }
-
     private _reportStartupError(err : Error) {
         console.error('[STARTUP ERROR] %s', err);
         console.error(err);
         process.exit(1);
-    }
-
-    private _createAnalyzerManager(analyzers : AnalyzerLookup) {
-        this._analyzerManager = new AnalyzerManager(this._bot, analyzers, this._db);
     }
 
     private _onReady() {

@@ -1,23 +1,22 @@
 'use strict';
 
 const util = require('util');
-const discord = require('../promises/discord');
 
 import { Client as DiscordIOClient } from 'discord.io';
 import { Database } from './database';
 import { QueryResult } from 'pg';
-import { Chrono, ChronoLookup } from '../chronos/@types';
+import { Chrono } from '../chronos/@types';
+import { ChronoLookup } from '../chronos/index';
+import { instance as DiscordPromises } from '../promises/discord';
 
 export class ChronoManager {
     private readonly _bot : DiscordIOClient;
-    private readonly _chronos : ChronoLookup;
     private readonly _db : Database;
     private readonly _channelsLastMessageTable : { [channelId: string] : Date };
     private _hasBeenStarted : boolean;
 
-    constructor(bot : DiscordIOClient, chronos : ChronoLookup, db : Database) {
+    constructor(bot : DiscordIOClient, db : Database) {
         this._bot = bot;
-        this._chronos = chronos;
         this._db = db;
         this._channelsLastMessageTable = {};
         this._hasBeenStarted = false;
@@ -94,7 +93,7 @@ export class ChronoManager {
             return;
         }
 
-        const chronoDefinition = this._chronos[chronoHandle];
+        const chronoDefinition = ChronoLookup[chronoHandle];
         if (!chronoDefinition) {
             console.error('[CHRONOS]     there is no chrono with the handle %s', chronoHandle);
             return;
@@ -119,7 +118,7 @@ export class ChronoManager {
             err = util.inspect(err);
         }
 
-        return discord.sendEmbedMessage(this._bot, process.env.BOT_CONTROL_CHANNEL_ID, {
+        return DiscordPromises.sendEmbedMessage(this._bot, process.env.BOT_CONTROL_CHANNEL_ID, {
             color: 0xCD5555,
             title: ':no_entry: Chrono Error',
             description: err,

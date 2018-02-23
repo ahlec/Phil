@@ -31,7 +31,7 @@ export class Database {
             .then(() => this);
     }
 
-    query(text: string, values?: any[]) {
+    query(text: string, values?: any[]) : Promise<QueryResult> {
         return new Promise((resolve, reject) => {
             this._pool.connect(function(error, client, done) {
                 client.query(text, values, function(err, result) {

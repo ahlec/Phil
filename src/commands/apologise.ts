@@ -5,9 +5,8 @@ import { HelpGroup } from '../phil/help-groups';
 import { Client as DiscordIOClient } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
 import { Database } from '../phil/database';
-
-const botUtils = require('../phil/utils');
-const discord = require('../promises/discord');
+import { BotUtils } from '../phil/utils';
+import { instance as DiscordPromises } from '../promises/discord';
 
 const apologies = [
     'I am incredibly sorry for my mistake.',
@@ -32,7 +31,7 @@ export class ApologiseCommand implements Command {
 
     public readonly publicRequiresAdmin = false;
     public processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        const apology = botUtils.getRandomArrayEntry(apologies);
-        return discord.sendMessage(bot, message.channelId, apology);
+        const apology = BotUtils.getRandomArrayEntry(apologies);
+        return DiscordPromises.sendMessage(bot, message.channelId, apology);
     }
 };

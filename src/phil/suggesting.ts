@@ -1,9 +1,22 @@
 'use strict';
 
-const buckets = require('../phil/buckets');
-const discord = require('../promises/discord');
+import { Client as DiscordIOClient, Member as DiscordIOMember, User as DiscordIOUser } from 'discord.io';
+import { DiscordMessage } from './discord-message';
+import { Database } from './database';
+import { instance as DiscordPromises } from '../promises/discord';
+import { Bucket } from './buckets';
 
-function createBucketErrorList(bot, serverLookup, commandName) {
+interface Suggestion {
+    readonly bucket : Bucket;
+    readonly prompt : string;
+    readonly suggestAnonymously : boolean;
+}
+
+interface ServerBucketLookup {
+    [serverId : string] : Bucket[];
+}
+
+function createBucketErrorList(bot : DiscordIOClient, serverLookup : ServerBucketLookup, commandName : string) : string {
     var message = 'In order to use this command, you must specify the name of a bucket. Within the following servers that we\'re both in, here are the buckets you can submit to:';
 
     var firstBucket;
@@ -33,9 +46,9 @@ function createBucketErrorList(bot, serverLookup, commandName) {
     return message;
 }
 
-function resolveBucket(bot, userBuckets, commandName, commandArgs) {
+function resolveBucket(bot : DiscordIOClient, userBuckets : Bucket[], commandName : string, commandArgs : string[]) : Bucket {
     if (!userBuckets || userBuckets.length === 0) {
-        return Promise.reject('There are no prompt buckets that you are able to submit to. This most likely means that you are not part of any servers with configured prompt buckets. However, if you do know that there are prompt buckets on one (or more) servers, reach out to your admin(s); it could be that you are lacking the appropriate roles, or that prompts are temporarily disabled on that server.');
+        throw new Error('There are no prompt buckets that you are able to submit to. This most likely means that you are not part of any servers with configured prompt buckets. However, if you do know that there are prompt buckets on one (or more) servers, reach out to your admin(s); it could be that you are lacking the appropriate roles, or that prompts are temporarily disabled on that server.');
     }
 
     if (userBuckets.length === 1) {
@@ -43,11 +56,11 @@ function resolveBucket(bot, userBuckets, commandName, commandArgs) {
     }
 
     if (commandArgs.length === 0) {
-        return Promise.reject('You did not specify a prompt bucket to suggest something to (nor did you suggest anything at all!). Please try again, but specify both the bucket you\'d like to submit to as well as the prompt that you would like to submit.');
+        throw new Error('You did not specify a prompt bucket to suggest something to (nor did you suggest anything at all!). Please try again, but specify both the bucket you\'d like to submit to as well as the prompt that you would like to submit.');
     }
 
     const bucketHandle = commandArgs[0];
-    const serverLookup = {};
+    const serverLookup : ServerBucketLookup = {};
     for (let bucket of userBuckets) {
         if (bucket.handle.toLowerCase() === bucketHandle.toLowerCase()) {
             return bucket;
@@ -61,10 +74,10 @@ function resolveBucket(bot, userBuckets, commandName, commandArgs) {
     }
 
     const errorList = createBucketErrorList(bot, serverLookup, commandName);
-    return Promise.reject(errorList);
+    throw new Error(errorList);
 }
 
-function ensureUserCanSubmitToBucket(bot, db, userId, bucket) {
+function ensureUserCanSubmitToBucket(bot : DiscordIOClient, db : Database, userId : string, bucket : Bucket) : Bucket {
     if (!bucket.requiredRoleId) {
         return bucket;
     }
@@ -76,10 +89,10 @@ function ensureUserCanSubmitToBucket(bot, db, userId, bucket) {
     }
 
     const role = server.roles[bucket.requiredRoleId];
-    return Promise.reject('In order to be able to submit a prompt to this bucket, you must have the **' + role.name + '** role.');
+    throw new Error('In order to be able to submit a prompt to this bucket, you must have the **' + role.name + '** role.');
 }
 
-function getSuggestionFromCommandArgs(commandArgs, bucket, suggestAnonymously) {
+function getSuggestionFromCommandArgs(commandArgs : string[], bucket : Bucket, suggestAnonymously : boolean) : Suggestion {
     var unusedArgs = commandArgs;
     if (commandArgs.length > 0 && commandArgs[0].toLowerCase() === bucket.handle.toLowerCase()) {
         unusedArgs = unusedArgs.slice(1);
@@ -87,7 +100,7 @@ function getSuggestionFromCommandArgs(commandArgs, bucket, suggestAnonymously) {
 
     const prompt = unusedArgs.join(' ').trim().replace(/`/g, '');
     if (prompt.length === 0) {
-        return Promise.reject('You must provide a prompt to suggest!');
+        throw new Error('You must provide a prompt to suggest!');
     }
 
     return {
@@ -97,7 +110,7 @@ function getSuggestionFromCommandArgs(commandArgs, bucket, suggestAnonymously) {
     };
 }
 
-function addNewPrompt(db, user, userId, suggestion) {
+function addNewPrompt(db : Database, user : string, userId : string, suggestion : Suggestion) : Promise<Suggestion> {
     var suggestBit = (suggestion.suggestAnonymously ? 1 : 0);
     return db.query(`INSERT INTO
             prompts(suggesting_user, suggesting_userid, date_suggested, prompt_text, submitted_anonymously, bucket_id)
@@ -106,18 +119,18 @@ function addNewPrompt(db, user, userId, suggestion) {
         .then(() => suggestion);
 }
 
-function sendConfirmationMessage(bot, channelId, suggestion) {
-    return discord.sendEmbedMessage(bot, channelId, {
+function sendConfirmationMessage(bot : DiscordIOClient, channelId : string, suggestion : Suggestion) : Promise<string> {
+    return DiscordPromises.sendEmbedMessage(bot, channelId, {
         color: 0xB0E0E6,
         title: ':envelope_with_arrow: Submission Received',
         description: 'The following prompt has been sent to the admins for approval:\n\n**' + suggestion.prompt + '**\n\nIf it\'s approved, you\'ll see it in chat shortly and you\'ll receive a point for the leaderboard!'
     });
 }
 
-module.exports = {
-    suggestCommand: function(bot, message, commandArgs, db, commandName, suggestAnonymously) {
+export class SuggestingUtils {
+    static suggestCommand(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database, commandName : string, suggestAnonymously : boolean) : Promise<any> {
         return Promise.resolve()
-            .then(() => buckets.getAllForUser(bot, db, message.userId))
+            .then(() => Bucket.getAllForUser(bot, db, message.userId))
             .then(userBuckets => resolveBucket(bot, userBuckets, commandName, commandArgs))
             .then(bucket => ensureUserCanSubmitToBucket(bot, db, message.userId, bucket))
             .then(bucket => getSuggestionFromCommandArgs(commandArgs, bucket, suggestAnonymously))

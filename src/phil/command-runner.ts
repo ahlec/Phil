@@ -1,13 +1,14 @@
 'use strict';
 
-const botUtils = require('../phil/utils');
 const util = require('util');
 
 import { Client } from 'discord.io';
 import { Database } from './database';
 import { DiscordMessage } from './discord-message';
 import { InputMessage } from './input-message';
-import { Command, CommandLookup, CommandProcessFunction } from '../commands/@types';
+import { Command, CommandProcessFunction } from '../commands/@types';
+import { CommandLookup } from '../commands/index';
+import { BotUtils } from './utils';
 
 class CommandRunData {
     requiresAdmin : boolean;
@@ -17,12 +18,10 @@ class CommandRunData {
 
 export class CommandRunner {
     private readonly _bot : Client;
-    private readonly _commands : CommandLookup;
     private readonly _db : Database;
 
-    constructor(bot : Client, commands : CommandLookup, db : Database) {
+    constructor(bot : Client, db : Database) {
         this._bot = bot;
-        this._commands = commands;
         this._db = db;
     }
 
@@ -65,15 +64,15 @@ export class CommandRunner {
 
     private _getCommandFromInputMessage(input : InputMessage) {
         const commandName = input.getCommandName();
-        if (commandName in this._commands) {
-            return this._commands[commandName];
+        if (commandName in CommandLookup) {
+            return CommandLookup[commandName];
         }
         return null;
     }
 
     private _reportInvalidCommand(message : DiscordMessage, input : InputMessage) {
         const commandName = input.getCommandName();
-        botUtils.sendErrorMessage({
+        BotUtils.sendErrorMessage({
             bot: this._bot,
             channelId: message.channelId,
             message: 'There is no `' + process.env.COMMAND_PREFIX + commandName + '` command.'
@@ -100,7 +99,7 @@ export class CommandRunner {
     }
 
     private _reportInvalidChannel(message : DiscordMessage, commandData : CommandRunData) {
-        botUtils.sendErrorMessage({
+        BotUtils.sendErrorMessage({
             bot: this._bot,
             channelId: message.channelId,
             message: commandData.incorrectChannelMessage
@@ -115,12 +114,12 @@ export class CommandRunner {
         const serverId = this._bot.channels[message.channelId].guild_id;
         const server = this._bot.servers[serverId];
         const member = server.members[message.userId];
-        return botUtils.isMemberAnAdminOnServer(member, server);
+        return BotUtils.isMemberAnAdminOnServer(member, server);
     }
 
     private _reportCannotUseCommand(message : DiscordMessage, commandData : CommandRunData, input : InputMessage) {
         const commandName = input.getCommandName();
-        botUtils.sendErrorMessage({
+        BotUtils.sendErrorMessage({
             bot: this._bot,
             channelId: message.channelId,
             message: 'The `' + process.env.COMMAND_PREFIX + commandName + '` command requires admin privileges to use here.'
@@ -130,7 +129,7 @@ export class CommandRunner {
     private _runCommand(message : DiscordMessage, commandData : CommandRunData, input : InputMessage) {
         const commandArgs = input.getCommandArgs();
         const commandPromise = commandData.func(this._bot, message, commandArgs, this._db);
-        if (!botUtils.isPromise(commandPromise)) {
+        if (!BotUtils.isPromise(commandPromise)) {
             console.error('Command \'%s\' did not return a promise with command args \'%s\'.', input.getCommandName(), util.inspect(commandArgs));
         } else {
             commandPromise.catch(err => this._reportCommandError(err, message.channelId));
@@ -145,7 +144,7 @@ export class CommandRunner {
             errorMessage = 'Uh oh. An elf just broke something. Hey @' + process.env.BOT_MANAGER_USERNAME + ', could you take a look for me?';
         }
 
-        botUtils.sendErrorMessage({
+        BotUtils.sendErrorMessage({
             bot: this._bot,
             channelId: channelId,
             message: errorMessage

@@ -22,6 +22,6 @@ export interface Command {
     processPrivateMessage? : CommandProcessFunction;
 }
 
-export interface CommandLookup {
-    [commandName : string] : Command;
+export interface ICommandLookup {
+    [name : string] : Command;
 }

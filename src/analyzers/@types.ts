@@ -6,6 +6,6 @@ export interface Analyzer {
     (bot : DiscordIOClient, message : DiscordMessage, db : Database) : Promise<void>;
 }
 
-export interface AnalyzerLookup {
+export interface IAnalyzerLookup {
     [analyzerName : string] : Analyzer;
 }
