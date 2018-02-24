@@ -18,7 +18,7 @@ export class MessageBuilder {
             return;
         }
 
-        this.messages[this.messages.length] += text;
+        this.messages[this.messages.length - 1] += text;
     }
 
     private countCurrentLine() : number {

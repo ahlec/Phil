@@ -7,6 +7,7 @@ import { DiscordMessage } from '../phil/discord-message';
 import { Database } from '../phil/database';
 import { BotUtils } from '../phil/utils';
 import { instance as DiscordPromises } from '../promises/discord';
+import { Feature } from '../phil/features';
 
 const apologies = [
     'I am incredibly sorry for my mistake.',
@@ -21,16 +22,17 @@ const apologies = [
 ];
 
 export class ApologiseCommand implements Command {
-    public readonly name = 'apologise';
-    public readonly aliases = ['apologize'];
+    readonly name = 'apologise';
+    readonly aliases = ['apologize'];
+    readonly feature : Feature = null;
 
-    public readonly helpGroup = HelpGroup.None;
-    public readonly helpDescription = 'Makes Phil apologise for making a mistake.';
+    readonly helpGroup = HelpGroup.None;
+    readonly helpDescription = 'Makes Phil apologise for making a mistake.';
 
-    public readonly versionAdded = 3;
+    readonly versionAdded = 3;
 
-    public readonly publicRequiresAdmin = false;
-    public processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    readonly publicRequiresAdmin = false;
+    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
         const apology = BotUtils.getRandomArrayEntry(apologies);
         return DiscordPromises.sendMessage(bot, message.channelId, apology);
     }

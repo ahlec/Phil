@@ -86,14 +86,14 @@ export class CommandRunner {
         if (isDirectMessage) {
             return {
                 requiresAdmin: command.privateRequiresAdmin,
-                func: command.processPrivateMessage,
+                func: command.processPrivateMessage.bind(command), // TODO: Return to this whole structure
                 incorrectChannelMessage: 'The `' + process.env.COMMAND_PREFIX + commandName + '` command can only be used in the public server itself.'
             };
         }
 
         return {
             requiresAdmin: command.publicRequiresAdmin,
-            func: command.processPublicMessage,
+            func: command.processPublicMessage.bind(command), // TODO: Return to this whole structure
             incorrectChannelMessage: 'The `' + process.env.COMMAND_PREFIX + commandName + '` command can only be used in a direct message with me.'
         };
     }

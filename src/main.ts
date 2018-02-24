@@ -5,21 +5,23 @@ import { Database } from './phil/database';
 import { Phil } from './phil/phil';
 import { WebPortal } from './phil/web-portal';
 
-function handleStartupError(err : Error) {
-    console.error(err);
-    process.exit(1);
+async function main() {
+    try {
+        ensureNecessaryEnvironmentVariables();
+
+        const db = new Database();
+        await db.checkIsCurrentVersion();
+
+        const phil = new Phil(db);
+        phil.start();
+
+        const webPortal = new WebPortal();
+        webPortal.start();
+        webPortal.beginKeepAliveHeartbeat();
+    } catch (err) {
+        console.error(err);
+        process.exit(1);
+    }
 }
 
-try {
-    ensureNecessaryEnvironmentVariables();
-    const db = new Database();
-    db.checkIsCurrentVersion()
-        .then((db: Database) => new Phil(db))
-        .then((phil: Phil) => phil.start())
-        .then(() => new WebPortal())
-        .then((webPortal: WebPortal) => webPortal.start())
-        .then((webPortal: WebPortal) => webPortal.beginKeepAliveHeartbeat())
-        .catch(handleStartupError);
-} catch (err) {
-    handleStartupError(err);
-}
+main();

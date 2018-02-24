@@ -204,7 +204,8 @@ export class BotUtils {
     }
 
     static isNumeric(input : string) : boolean {
-        return (!isNaN(parseInt(input)) && isFinite(input));
+        const numInput = parseInt(input);
+        return (!isNaN(numInput) && isFinite(numInput));
     }
 
     static isAdminChannel(channelId : string) : boolean {
@@ -223,7 +224,7 @@ export class BotUtils {
         return (dateA.getUTCDate() === dateB.getUTCDate());
     }
 
-    static stitchTogetherArray(values) {
+    static stitchTogetherArray(values : string[]) : string {
         var str = '';
         for (let index = 0; index < values.length; ++index) {
             if (index > 0) {

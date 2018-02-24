@@ -5,7 +5,7 @@
   "main": "main.js",
   "author": "ahlec",
   "engines": {
-    "node": "6.11.1",
+    "node": "^7.6",
     "npm": "3.10.10"
   },
   "scripts": {

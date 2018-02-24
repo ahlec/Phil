@@ -3,6 +3,7 @@
 import { Command, ICommandLookup } from './@types';
 import { AnonSuggestCommand } from './anonsuggest';
 import { ApologiseCommand } from './apologise';
+import { BucketCommand } from './bucket';
 import { HelpCommand } from './help';
 
 export const CommandLookup : ICommandLookup = {};
@@ -18,6 +19,7 @@ let helpCommand = new HelpCommand();
 
 registerCommand(new AnonSuggestCommand());
 registerCommand(new ApologiseCommand());
+registerCommand(new BucketCommand());
 registerCommand(helpCommand);
 
 helpCommand.saveCommandDefinitions(CommandLookup);

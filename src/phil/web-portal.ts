@@ -15,7 +15,6 @@ export class WebPortal {
 
     start() {
         this._app.listen(process.env.PORT, this._onListen.bind(this));
-        return this;
     }
 
     beginKeepAliveHeartbeat() {

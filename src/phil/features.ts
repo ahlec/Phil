@@ -1,120 +1,58 @@
 'use strict';
 
-const botUtils = require('../phil/utils');
+import { Database } from './database';
 
-export enum Features {
-    Prompts = 0,
-    TimezoneProcessing = 1
-}
-
-const FEATURES = [
-    {
-        displayName: 'Prompts',
-        names: ['prompt', 'prompts'],
-        enabledDbInfoKey: 'prompt_disabled'
-    },
-    {
-        displayName: 'Timezone Processing',
-        names: ['timezone', 'timezones', 'tz', 'timezone processing', 'timezones processing'],
-        enabledDbInfoKey: 'timezone-processing-enabled'
-    }
-];
-
-function _getInvalidFeatureNameInputMessage() {
-    var message = 'This function requires a valid name of a feature. Currently, the valid feature names are:\n';
-
-    for (let feature of FEATURES) {
-        message += feature.displayName + ': ' + botUtils.stitchTogetherArray(feature.names) + '\n';
+export class Feature {
+    constructor(public readonly id : number, public readonly displayName : string, public readonly names : string[]) {
     }
 
-    return message.trim();
-}
-
-function _getFeatureNumberByName(name) { // Resolves to feature number if found, null otherwise.
-    if (!name || name.length === 0) {
-        return Promise.reject(_getInvalidFeatureNameInputMessage());
-    }
-    name = name.toLowerCase();
-
-    for (let index = 0; index < FEATURES.length; ++index) {
-        const feature = FEATURES[index];
-        if (feature.names.indexOf(name) >= 0) {
-            return Promise.resolve(index);
-        }
-    }
-
-    return Promise.reject(_getInvalidFeatureNameInputMessage());
-}
-
-function _getFeatureByNumber(featureNumber) {
-    const feature = FEATURES[featureNumber];
-    if (!feature) {
-        return Promise.reject('Unknown feature (featureNumber of ' + featureNumber + ')');
-    }
-
-    return Promise.resolve(feature);
-}
-
-function _getFeatureDisplayName(featureNumber) {
-    return _getFeatureByNumber(featureNumber)
-        .then(feature => feature.displayName);
-}
-
-function _getIsFeatureEnabled(featureNumber, db) {
-    return _getFeatureByNumber(featureNumber)
-        .then(feature => db.query('SELECT count(*) FROM info WHERE key = $1 AND value =\'1\'', [feature.enabledDbInfoKey]))
-        .then(results => (results.rows[0].count === 0));
-}
-
-function _ensureFeatureIsEnabled(featureNumber, isEnabled) {
-    if (isEnabled) {
-        return;
-    }
-
-    return _getFeatureDisplayName(featureNumber)
-        .then(displayName => Promise.reject('The **' + displayName + '** feature is currently disabled. Feel free to ping an admin and ask why and/or when the feature will be back online.'));
-}
-
-function _setFeatureEnabledDb(feature, db, enabled) {
-    if (enabled === true) {
-        return db.query('DELETE FROM info WHERE key = $1', [feature.enabledDbInfoKey]);
-    }
-
-    if (enabled === false) {
-        return db.query('INSERT INTO info(key, value) VALUES($1, \'1\')', [feature.enabledDbInfoKey]);
-    }
-
-    return Promise.reject('Provided a non-boolean value for whether timezone processing is enabled or not.');
-}
-
-function _ensureDbWasModified(results) {
-    if (results.rowCount === 0) {
-        return Promise.reject('There was no change in the database when performing this action.');
-    }
-}
-
-module.exports = {
-    getFeatureNumberFromCommandArgs: function(commandArgs) {
-        if (!commandArgs || commandArgs.length === 0) {
-            return Promise.reject(_getInvalidFeatureNameInputMessage());
+    is(name : string) : boolean {
+        if (!name || name.length === 0) {
+            return false;
         }
 
-        const stitchedInput = commandArgs.join(' ').trim();
-        return _getFeatureNumberByName(stitchedInput);
-    },
-
-    getFeatureDisplayName: _getFeatureDisplayName,
-
-    getIsFeatureEnabled: _getIsFeatureEnabled,
-
-    ensureFeatureIsEnabled: function(featureNumber, db) {
-        return _getIsFeatureEnabled(featureNumber, db)
-            .then(isEnabled => _ensureFeatureIsEnabled(featureNumber, isEnabled));
-    },
-
-    setIsFeatureEnabled: function(featureNumber, db, enabled) {
-        return _getFeatureByNumber(featureNumber)
-            .then(feature => _setFeatureEnabledDb(feature, db, enabled))
-            .then(_ensureDbWasModified);
+        name = name.toLowerCase();
+        return (this.names.indexOf(name) >= 0);
     }
+
+    getIsEnabled(db : Database, serverId : string) : Promise<boolean> {
+        return db.query('SELECT is_enabled FROM server_features WHERE server_id = $1 AND feature_id = $2 LIMIT 1', [serverId, this.id])
+            .then(results => {
+                if (results.rowCount === 0) {
+                    return true;
+                }
+
+                return (parseInt(results.rows[0].is_enabled) === 1);
+            });
+    }
+
+    setIsEnabled(db : Database, serverId : string, enabled : boolean) : Promise<void> {
+        const enabledBit = (enabled ? 1 : 0);
+        return db.query(`UPDATE server_features
+                SET is_enabled = $1
+                WHERE server_id = $2 AND feature_id = $3`, [enabledBit, serverId, this.id])
+            .then(results => {
+                if (results.rowCount > 0) {
+                    return;
+                }
+
+                return this.insertNewDatabaseRow(db, serverId, enabledBit);
+            });
+    }
+
+    private insertNewDatabaseRow(db : Database, serverId : string, enabledBit : number) : Promise<void> {
+        return db.query(`INSERT INTO
+                server_features(server_id, feature_id, is_enabled)
+                VALUES($1, $2, $3)`, [serverId, this.id, enabledBit])
+            .then(results => {
+                if (results.rowCount !== 1) {
+                    throw new Error('Unable to insert a new record into the `server_features` database.');
+                }
+            });
+    }
+}
+
+export const Features = {
+    Prompts: new Feature(1, 'Prompts', ['prompt', 'prompts']),
+    TimezoneProcessing: new Feature(2, 'Timezone Processing', ['timezone', 'timezones', 'tz'])
 };

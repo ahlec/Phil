@@ -32,9 +32,9 @@ const frequencyFromStrings : { [name : string] : BucketFrequency } = {
     'immediately': BucketFrequency.Immediately
 };
 
-function _createMultipleUnspecifiedBucketsError(serverBuckets, commandName) {
+function throwMultipleUnspecifiedBucketsError(serverBuckets : Bucket[], commandName : string) {
     if (serverBuckets.length === 0) {
-        return Promise.reject('There are no prompt buckets configured on this server.');
+        throw new Error('There are no prompt buckets configured on this server.');
     }
 
     var message = 'This command must be provided the valid reference handle of one of the buckets configured on this server:\n\n';
@@ -53,15 +53,15 @@ function _createMultipleUnspecifiedBucketsError(serverBuckets, commandName) {
 
     const randomBucket = BotUtils.getRandomArrayEntry(serverBuckets);
     message += '\nPlease try the command once more, specifying which bucket, like `' + process.env.COMMAND_PREFIX + commandName + ' ' + randomBucket.handle + '`.';
-    return Promise.reject(message);
+    throw new Error(message);
 }
 
-function _getOnlyBucketOnServer(serverBuckets, commandName, allowInvalidServers) {
+function _getOnlyBucketOnServer(serverBuckets : Bucket[], commandName : string, allowInvalidServers : boolean) : Bucket {
     if (serverBuckets.length === 1 && (allowInvalidServers || serverBuckets[0].isValid)) {
         return serverBuckets[0];
     }
 
-    return _createMultipleUnspecifiedBucketsError(serverBuckets, commandName);
+    throwMultipleUnspecifiedBucketsError(serverBuckets, commandName);
 }
 
 function getAllServersUserIn(bot : DiscordIOClient, userId : string) : string[] {
@@ -114,40 +114,34 @@ export class Bucket {
         this.promptTitleFormat = dbRow.prompt_title_format;
     }
 
-    static getFromId(bot : DiscordIOClient, db : Database, bucketId : number) : Promise<Bucket> {
-        return db.query('SELECT * FROM prompt_buckets WHERE bucket_id = $1', [bucketId])
-            .then(results => {
-                if (results.rowCount === 0) {
-                    return null;
-                }
+    static async getFromId(bot : DiscordIOClient, db : Database, bucketId : number) : Promise<Bucket> {
+        const results = await db.query('SELECT * FROM prompt_buckets WHERE bucket_id = $1', [bucketId]);
+        if (results.rowCount === 0) {
+            return null;
+        }
 
-                assert(results.rowCount === 1);
-                return new Bucket(bot, results.rows[0]);
-            });
+        assert(results.rowCount === 1);
+        return new Bucket(bot, results.rows[0]);
     }
 
-    static getFromChannelId(bot : DiscordIOClient, db : Database, channelId : string) : Promise<Bucket> {
-        return db.query('SELECT * FROM prompt_buckets WHERE channel_id = $1', [channelId])
-            .then(results => {
-                if (results.rowCount === 0) {
-                    return null;
-                }
+    static async getFromChannelId(bot : DiscordIOClient, db : Database, channelId : string) : Promise<Bucket> {
+        const results = await db.query('SELECT * FROM prompt_buckets WHERE channel_id = $1', [channelId]);
+        if (results.rowCount === 0) {
+            return null;
+        }
 
-                assert(results.rowCount === 1);
-                return new Bucket(bot, results.rows[0]);
-            });
+        assert(results.rowCount === 1);
+        return new Bucket(bot, results.rows[0]);
     }
 
-    static getFromReferenceHandle(bot : DiscordIOClient, db : Database, server : DiscordIOServer, referenceHandle : string) : Promise<Bucket> {
-        return db.query('SELECT * FROM prompt_buckets WHERE server_id = $1 AND reference_handle = $2', [server.id, referenceHandle])
-            .then(results => {
-                if (results.rowCount === 0) {
-                    return null;
-                }
+    static async getFromReferenceHandle(bot : DiscordIOClient, db : Database, server : DiscordIOServer, referenceHandle : string) : Promise<Bucket> {
+        const results = await db.query('SELECT * FROM prompt_buckets WHERE server_id = $1 AND reference_handle = $2', [server.id, referenceHandle]);
+        if (results.rowCount === 0) {
+            return null;
+        }
 
-                assert(results.rowCount === 1);
-                return new Bucket(bot, results.rows[0]);
-            });
+        assert(results.rowCount === 1);
+        return new Bucket(bot, results.rows[0]);
     }
 
     static getAllForServer(bot : DiscordIOClient, db : Database, serverId : string) : Promise<Bucket[]> {
@@ -172,7 +166,7 @@ export class Bucket {
             .then(bucket => {
                 if (bucket === null || (!allowInvalidServers && !bucket.isValid)) {
                     return Bucket.getAllForServer(bot, db, server.id)
-                        .then(serverBuckets => _createMultipleUnspecifiedBucketsError(serverBuckets, commandName));
+                        .then(serverBuckets => throwMultipleUnspecifiedBucketsError(serverBuckets, commandName));
                 }
 
                 return bucket;
@@ -216,7 +210,6 @@ export class Bucket {
                 }
 
                 assert(results.rowCount === 1);
-                return bucket;
             });
     }
 

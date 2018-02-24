@@ -9,6 +9,7 @@ import { MessageBuilder } from '../phil/message-builder';
 import { instance as DiscordPromises } from '../promises/discord';
 import { BotUtils } from '../phil/utils';
 import { Versions } from '../phil/versions';
+import { Feature } from '../phil/features';
 
 class CommandHelpInfo {
     public readonly name : string;
@@ -68,8 +69,7 @@ class CommandHelpInfo {
             message += ')';
         }
 
-        message += '] ' + this._helpDescription + '\n';
-
+        message += '] ' + this._helpDescription;
         return message;
     }
 
@@ -84,7 +84,7 @@ class HelpGroupInfo {
     private readonly _header : string;
 
     constructor(public helpGroup : HelpGroup) {
-        this._header += '\n\n**' + getHeaderForGroup(helpGroup) + '**\n';
+        this._header = '\n\n**' + getHeaderForGroup(helpGroup) + '**\n';
     }
 
     public static sort(a : HelpGroupInfo, b : HelpGroupInfo) : number {
@@ -114,7 +114,7 @@ class HelpGroupInfo {
                 continue;
             }
 
-            builder.append(command.message);
+            builder.append(command.message + '\n');
         }
     }
 
@@ -148,6 +148,7 @@ export class HelpCommand implements Command {
 
     public readonly name = 'help';
     public readonly aliases : string[] = [];
+    public readonly feature : Feature = null;
 
     public readonly helpGroup = HelpGroup.General;
     public readonly helpDescription = 'Find out about all of the commands that Phil has available.';
@@ -156,14 +157,14 @@ export class HelpCommand implements Command {
 
     public publicRequiresAdmin = false;
     public processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        const isAdminChannel : boolean = BotUtils.isAdminChannel(message.channelId);
-        const builder : MessageBuilder = new MessageBuilder();
+        const isAdminChannel = BotUtils.isAdminChannel(message.channelId);
+        const builder = new MessageBuilder();
 
         for (let helpGroup of this._helpGroups) {
             helpGroup.append(builder, isAdminChannel);
         }
 
-        let sendPromise : Promise<string> = Promise.resolve('');
+        let sendPromise = Promise.resolve('');
         for (let helpMessage of builder.messages) {
             sendPromise = sendPromise.then(() => DiscordPromises.sendMessage(bot, message.channelId, helpMessage));
         }
