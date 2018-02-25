@@ -78,10 +78,6 @@ export class Phil {
             this._chronoManager.recordNewMessageInChannel(channelId);
         }
 
-        if (!this._commandRunner || !this._analyzerManager) {
-            return;
-        }
-
         if (this._commandRunner.isCommand(message)) {
             this._commandRunner.runMessage(message);
         } else {

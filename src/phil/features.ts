@@ -40,6 +40,23 @@ export class Feature {
             });
     }
 
+    getInformationalDisplayLine() : string {
+        let displayLine = this.displayName + ': ';
+
+        var isFirstName = true;
+        for (let name of this.names) {
+            if (isFirstName) {
+                isFirstName = false;
+            } else {
+                displayLine += ', ';
+            }
+
+            displayLine += '`' + name + '`';
+        }
+
+        return displayLine;
+    }
+
     private insertNewDatabaseRow(db : Database, serverId : string, enabledBit : number) : Promise<void> {
         return db.query(`INSERT INTO
                 server_features(server_id, feature_id, is_enabled)
@@ -52,7 +69,32 @@ export class Feature {
     }
 }
 
-export const Features = {
+export const Features : { [key : string] : Feature } = {
     Prompts: new Feature(1, 'Prompts', ['prompt', 'prompts']),
     TimezoneProcessing: new Feature(2, 'Timezone Processing', ['timezone', 'timezones', 'tz'])
 };
+
+export class FeatureUtils {
+    static getByName(name : string) : Feature {
+        for (let key in Features) {
+            const feature = Features[key];
+            if (feature.is(name)) {
+                return feature;
+            }
+        }
+
+        return null;
+    }
+
+    static getUnknownFeatureNameErrorMessage(providedName : string) : string {
+        let message = 'There is no feature with the name `' + providedName + '`. The features that I know about are as follows:\n\n';
+
+        for (let key in Features) {
+            const feature = Features[key];
+            message += feature.getInformationalDisplayLine();
+            message += '\n';
+        }
+
+        return message.trimRight();
+    }
+}

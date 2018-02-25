@@ -155,7 +155,7 @@ export class BotUtils {
         return err.toString();
     }
 
-    static getRandomArrayEntry(arr : any[]) : any {
+    static getRandomArrayEntry<T>(arr : T[]) : T {
         const randomIndex = Math.floor(Math.random() * arr.length);
         return arr[randomIndex];
     }

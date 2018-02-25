@@ -144,33 +144,31 @@ export class Bucket {
         return new Bucket(bot, results.rows[0]);
     }
 
-    static getAllForServer(bot : DiscordIOClient, db : Database, serverId : string) : Promise<Bucket[]> {
-        return db.query('SELECT * FROM prompt_buckets WHERE server_id = $1', [serverId])
-            .then(results => Bucket.parseListOfDbBuckets(bot, results));
+    static async getAllForServer(bot : DiscordIOClient, db : Database, serverId : string) : Promise<Bucket[]> {
+        const results = await db.query('SELECT * FROM prompt_buckets WHERE server_id = $1', [serverId]);
+        return Bucket.parseListOfDbBuckets(bot, results);
     }
 
-    static getAllForUser(bot : DiscordIOClient, db : Database, userId : string) : Promise<Bucket[]> {
+    static async getAllForUser(bot : DiscordIOClient, db : Database, userId : string) : Promise<Bucket[]> {
         const serverIds = getAllServersUserIn(bot, userId);
-        return db.query('SELECT * FROM prompt_buckets WHERE server_id = ANY($1)', [serverIds])
-            .then(results => Bucket.parseListOfDbBuckets(bot, results));
+        const results = await db.query('SELECT * FROM prompt_buckets WHERE server_id = ANY($1)', [serverIds]);
+        return Bucket.parseListOfDbBuckets(bot, results);
     }
 
-    static retrieveFromCommandArgs(bot : DiscordIOClient, db : Database, commandArgs : string[], server : DiscordIOServer, commandName : string, allowInvalidServers : boolean) : Promise<Bucket> {
+    static async retrieveFromCommandArgs(bot : DiscordIOClient, db : Database, commandArgs : string[], server : DiscordIOServer, commandName : string, allowInvalidServers : boolean) : Promise<Bucket> {
         const firstParameter = commandArgs[0];
         if (!firstParameter || firstParameter.length === 0) {
-            return Bucket.getAllForServer(bot, db, server.id)
-                .then(serverBuckets => _getOnlyBucketOnServer(serverBuckets, commandName, allowInvalidServers));
+            const serverBuckets = await Bucket.getAllForServer(bot, db, server.id);
+            return _getOnlyBucketOnServer(serverBuckets, commandName, allowInvalidServers);
         }
 
-        return Bucket.getFromReferenceHandle(bot, db, server, firstParameter)
-            .then(bucket => {
-                if (bucket === null || (!allowInvalidServers && !bucket.isValid)) {
-                    return Bucket.getAllForServer(bot, db, server.id)
-                        .then(serverBuckets => throwMultipleUnspecifiedBucketsError(serverBuckets, commandName));
-                }
+        const bucket = await Bucket.getFromReferenceHandle(bot, db, server, firstParameter);
+        if (bucket === null || (!allowInvalidServers && !bucket.isValid)) {
+            const serverBuckets = await Bucket.getAllForServer(bot, db, server.id);
+            throwMultipleUnspecifiedBucketsError(serverBuckets, commandName);
+        }
 
-                return bucket;
-            });
+        return bucket;
     }
 
     private static parseListOfDbBuckets(bot : DiscordIOClient, results : QueryResult) : Bucket[] {
@@ -202,15 +200,13 @@ export class Bucket {
         return true;
     }
 
-    setIsPaused(db : Database, isPaused : boolean) {
-        return db.query('UPDATE prompt_buckets SET is_paused = $1 WHERE bucket_id = $2', [(isPaused ? 1 : 0), this.id])
-            .then(results => {
-                if (results.rowCount === 0) {
-                    throw new Error('Unable to update the status of the prompt bucket in the database.');
-                }
+    async setIsPaused(db : Database, isPaused : boolean) {
+        const results = await db.query('UPDATE prompt_buckets SET is_paused = $1 WHERE bucket_id = $2', [(isPaused ? 1 : 0), this.id]);
+        if (results.rowCount === 0) {
+            throw new Error('Unable to update the status of the prompt bucket in the database.');
+        }
 
-                assert(results.rowCount === 1);
-            });
+        assert(results.rowCount === 1);
     }
 
     isFrequencyMet(lastDate : Date, currentDate : Date) : boolean {

@@ -1,7 +1,5 @@
 'use strict';
 
-const util = require('util');
-
 import { Client } from 'discord.io';
 import { Database } from './database';
 import { DiscordMessage } from './discord-message';
@@ -9,6 +7,8 @@ import { InputMessage } from './input-message';
 import { Command, CommandProcessFunction } from '../commands/@types';
 import { CommandLookup } from '../commands/index';
 import { BotUtils } from './utils';
+
+const util = require('util');
 
 class CommandRunData {
     requiresAdmin : boolean;
@@ -30,7 +30,7 @@ export class CommandRunner {
         return (input !== null);
     }
 
-    public runMessage(message : DiscordMessage) {
+    public async runMessage(message : DiscordMessage) {
         const input = InputMessage.parseFromMessage(message.content);
         if (input === null) {
             return;
@@ -54,7 +54,7 @@ export class CommandRunner {
             return;
         }
 
-        this._runCommand(message, commandData, input);
+        await this.runCommand(message, commandData, input);
     }
 
     private _logInputReceived(message : DiscordMessage, input : InputMessage) {
@@ -126,28 +126,22 @@ export class CommandRunner {
         });
     }
 
-    private _runCommand(message : DiscordMessage, commandData : CommandRunData, input : InputMessage) {
+    private async runCommand(message : DiscordMessage, commandData : CommandRunData, input : InputMessage) {
         const commandArgs = input.getCommandArgs();
-        const commandPromise = commandData.func(this._bot, message, commandArgs, this._db);
-        if (!BotUtils.isPromise(commandPromise)) {
-            console.error('Command \'%s\' did not return a promise with command args \'%s\'.', input.getCommandName(), util.inspect(commandArgs));
-        } else {
-            commandPromise.catch(err => this._reportCommandError(err, message.channelId));
+
+        try {
+            await commandData.func(this._bot, message, commandArgs, this._db);
+        } catch(err) {
+            await this.reportCommandError(err, message.channelId);
         }
     }
 
-    private _reportCommandError(err : Error | string, channelId : string) {
-        console.error(err);
-
-        var errorMessage = err;
-        if (typeof(errorMessage) !== 'string') {
-            errorMessage = 'Uh oh. An elf just broke something. Hey @' + process.env.BOT_MANAGER_USERNAME + ', could you take a look for me?';
-        }
-
+    private async reportCommandError(err : Error, channelId : string) {
+        console.error(util.inspect(err));
         BotUtils.sendErrorMessage({
             bot: this._bot,
             channelId: channelId,
-            message: errorMessage
+            message: err.message
         });
     }
 };
