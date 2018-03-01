@@ -10,6 +10,8 @@ import { EnableCommand } from './enable';
 import { HelpCommand } from './help';
 import { LeaderboardCommand } from './leaderboard';
 import { MapCommand } from './map';
+import { RemoveCommand } from './remove';
+import { RequestCommand } from './request';
 import { VersionCommand } from './version';
 
 export const CommandLookup : ICommandLookup = {};
@@ -32,6 +34,8 @@ registerCommand(new EnableCommand());
 registerCommand(helpCommand);
 registerCommand(new LeaderboardCommand());
 registerCommand(new MapCommand());
+registerCommand(new RemoveCommand());
+registerCommand(new RequestCommand());
 registerCommand(new VersionCommand());
 
 helpCommand.saveCommandDefinitions(CommandLookup);

@@ -71,7 +71,8 @@ export class Feature {
 
 export const Features : { [key : string] : Feature } = {
     Prompts: new Feature(1, 'Prompts', ['prompt', 'prompts']),
-    TimezoneProcessing: new Feature(2, 'Timezone Processing', ['timezone', 'timezones', 'tz'])
+    TimezoneProcessing: new Feature(2, 'Timezone Processing', ['timezone', 'timezones', 'tz']),
+    Requestables: new Feature(3, 'Requestable Roles', ['role', 'roles', 'requestable', 'requestables'])
 };
 
 export class FeatureUtils {

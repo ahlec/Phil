@@ -1,6 +1,7 @@
 'use strict';
 
-import { Client as DiscordIOClient } from 'discord.io';
+import { Client as DiscordIOClient, Role as DiscordIORole } from 'discord.io';
+import { MessageBuilder } from '../phil/message-builder';
 
 class DiscordPromises {
     sendMessage(bot : DiscordIOClient, channelId : string, message : string) : Promise<string> {
@@ -17,6 +18,16 @@ class DiscordPromises {
                 resolve(response.id);
             });
         });
+    }
+
+    async sendMessageBuilder(bot : DiscordIOClient, channelId : string, messageBuilder : MessageBuilder) : Promise<string[]> {
+        const messageIds = [];
+        for (let message of messageBuilder.messages) {
+            let messageId = await this.sendMessage(bot, channelId, message);
+            messageIds.push(messageId);
+        }
+
+        return messageIds;
     }
 
     sendEmbedMessage(bot : DiscordIOClient, channelId : string, embedData : any) : Promise<string> {
@@ -57,6 +68,40 @@ class DiscordPromises {
             bot.deleteMessage({
                 channelID: channelId,
                 messageID: messageId
+            }, (err, response) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(response); // TODO: What does this return?
+            });
+        });
+    }
+
+    giveRoleToUser(bot : DiscordIOClient, serverId : string, userId : string, role : DiscordIORole) : Promise<any> {
+        return new Promise((resolve, reject) => {
+            bot.addToRole({
+                serverID: serverId,
+                userID: userId,
+                roleID: role.id
+            }, (err, response) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(response); // TODO: What does this return?
+            });
+        });
+    }
+
+    takeRoleFromUser(bot : DiscordIOClient, serverId : string, userId : string, role : DiscordIORole) : Promise<any> {
+        return new Promise((resolve, reject) => {
+            bot.removeFromRole({
+                serverID: serverId,
+                userID: userId,
+                roleID: role.id
             }, (err, response) => {
                 if (err) {
                     reject(err);
