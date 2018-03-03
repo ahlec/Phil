@@ -84,7 +84,7 @@ export class Prompt {
     sendToChannel(bot : DiscordIOClient, channelId : string, bucket : Bucket, promptNumber : number) : Promise<string> {
         return DiscordPromises.sendEmbedMessage(bot, channelId, {
             color: 0xB0E0E6,
-            title: bucket.promptTitleFormat.replace(/\{0\}/g, promptNumber),
+            title: bucket.promptTitleFormat.replace(/\{0\}/g, promptNumber.toString()),
             description: this.text,
             footer: {
                 text: this.getPromptMessageFooter()

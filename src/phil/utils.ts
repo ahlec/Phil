@@ -4,7 +4,7 @@ const url = require('url');
 const http = require('http');
 const https = require('https');
 
-import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer } from 'discord.io';
+import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer, Role as DiscordIORole } from 'discord.io';
 import { instance as DiscordPromises } from '../promises/discord';
 
 // -------------------------------- PRONOUNS
@@ -52,10 +52,11 @@ const PRONOUNS_FROM_ROLE_ID = {
 
 // ------------------------------------------ INTERNAL FUNCTIONS
 
-function doesRoleHavePermission(role, permission) {
+function doesRoleHavePermission(role : DiscordIORole, permission : number) : boolean {
+    // TODO: Return to this function and determine if it's actually working?
     var binary = (role.permissions >>> 0).toString(2).split('');
-    for (let index = 0; index < binary.length; ++index) {
-        let bit = binary[index];
+    for (let strBit of binary) {
+        let bit = parseInt(strBit);
         if (bit === permission) {
             return true;
         }
@@ -148,10 +149,11 @@ export class BotUtils {
         return (server.owner_id === member.id);
     }
 
-    static toStringDiscordError(err) {
+    static toStringDiscordError(err : any) : string {
         if (err.response) {
             return '[Code ' + err.response.code + ': ' + err.response.message + ']';
         }
+
         return err.toString();
     }
 
@@ -177,8 +179,9 @@ export class BotUtils {
         const pronounsOfUser : Pronoun[] = [];
 
         for (let memberRoleId of member.roles) {
-            if (memberRoleId in PRONOUNS_FROM_ROLE_ID) {
-                pronounsOfUser.push(memberRoleId);
+            let pronoun = PRONOUNS_FROM_ROLE_ID[memberRoleId];
+            if (pronoun) {
+                pronounsOfUser.push(pronoun);
             }
         }
 
