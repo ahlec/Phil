@@ -95,7 +95,7 @@ export class Bucket {
     readonly promptTitleFormat : string;
 
     constructor(bot : DiscordIOClient, dbRow : any) {
-        var isValid = Bucket.determineIsBucketValid(dbRow, bot);
+        var isValid = Bucket.determineIsBucketValid(bot, dbRow);
         var bucketFrequency = frequencyFromStrings[dbRow.frequency];
         assert(bucketFrequency !== undefined && bucketFrequency !== null);
 

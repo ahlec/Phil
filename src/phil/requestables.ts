@@ -4,6 +4,11 @@ import { Database } from './database';
 import { QueryResult } from 'pg';
 import { Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
 
+export interface RequestableCreationDefinition {
+    name : string;
+    role : DiscordIORole;
+}
+
 export class Requestable {
     constructor(public readonly role : DiscordIORole, public readonly requestStrings : string[]) {
     }
@@ -46,8 +51,8 @@ export class Requestable {
         return new Requestable(role, []); // TODO: We need to get the list of request strings here!!
     }
 
-    static async createRequestable(db : Database, role : DiscordIORole, requestString : string) : Promise<void> {
-        await db.query('INSERT INTO requestable_roles VALUES($1, $2)', [requestString, role.id]);
+    static async createRequestable(db : Database, server : DiscordIOServer, info : RequestableCreationDefinition) : Promise<void> {
+        await db.query('INSERT INTO requestable_roles VALUES($1, $2)', [info.name, info.role.id]);
     }
 
     private static groupRequestStrings(results : QueryResult) : { [roleId : string] : string[] } {
