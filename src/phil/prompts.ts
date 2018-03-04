@@ -140,8 +140,10 @@ export class Prompt {
 
 export class PromptQueue {
     readonly entries : Prompt[] = [];
+    readonly length : number;
 
     constructor(bot : DiscordIOClient, bucket : Bucket, results : QueryResult) {
+        this.length = results.rowCount;
         for (let index = 0; index < results.rowCount; ++index) {
             this.entries.push(new Prompt(bot, bucket, results.rows[index]));
         }
@@ -228,105 +230,6 @@ export class UnconfirmedPromptTally {
                 }
 
                 return counts;
-            });
-    }
-}
-
-interface ConfirmRejectNumberFunc {
-    (bot : DiscordIOClient, db : Database, promptId : number) : Promise<any>;
-}
-
-interface ConfirmRejectResults {
-    numSuccessful : number;
-    numFailed : number;
-}
-
-export class ConfirmRejectNumberSpan {
-    private readonly numbers : number[];
-
-    constructor(numbers : number[]) {
-        this.numbers = numbers;
-    }
-
-    static getFromCommandArgs(commandArgs : string[]) : ConfirmRejectNumberSpan {
-        if (commandArgs.length !== 1) {
-            throw new Error('You must provide a single parameter. This can be either an individual number, or a range of numbers.');
-        }
-
-        if (BotUtils.isNumeric(commandArgs[0])) {
-            const singleNumber = parseInt(commandArgs[0]);
-            return new ConfirmRejectNumberSpan([singleNumber]);
-        }
-
-        const numberSpan = ConfirmRejectNumberSpan.parseNumberSpan(commandArgs[0]);
-        if (numberSpan.length === 0) {
-            throw new Error('You must specify at least one number as an argument in order to use this command.');
-        }
-
-        return new ConfirmRejectNumberSpan(numberSpan);
-    }
-
-    performAction(bot : DiscordIOClient, db : Database, channelId : string, dbActionFunc : ConfirmRejectNumberFunc) : Promise<ConfirmRejectResults> {
-        const results = {
-            numSuccessful: 0,
-            numFailed: 0
-        };
-
-        var promise = Promise.resolve(results);
-        for (let number of this.numbers) {
-            number = number - 1; // Public facing, it's 1-based, but in the database it's 0-based
-            promise = promise.then(r => this.confirmOrRejectNumber(r, bot, db, channelId, number, dbActionFunc));
-        }
-
-        return promise;
-    }
-
-    private static parseNumberSpan(arg : string) : number[] {
-        const separatedPieces = arg.split('-');
-        if (separatedPieces.length !== 2) {
-            throw new Error('You must use the format of `1-9` or `3-5` to indicate a range of numbers.');
-        }
-
-        if (!BotUtils.isNumeric(separatedPieces[0]) || !BotUtils.isNumeric(separatedPieces[1])) {
-            throw new Error('One or both of the arguments you provided in the range were not actually numbers.');
-        }
-
-        const lowerBound = parseInt(separatedPieces[0]);
-        const upperBound = parseInt(separatedPieces[1]);
-        if (upperBound < lowerBound) {
-            throw new Error('The range you indicated was a negative range (the second number came before the first number)!');
-        }
-
-        var includedNumbers = [];
-        for (let num = lowerBound; num <= upperBound; ++num) {
-            includedNumbers.push(num);
-        }
-
-        return includedNumbers;
-    }
-
-    private confirmOrRejectNumber(crResults : ConfirmRejectResults, bot : DiscordIOClient, db : Database, channelId : string, number : number, dbActionFunc : ConfirmRejectNumberFunc) : Promise<ConfirmRejectResults> {
-        return db.query('SELECT prompt_id FROM prompt_confirmation_queue WHERE channel_id = $1 and confirm_number = $2', [channelId, number])
-            .then(results => {
-                if (results.rowCount === 0) {
-                    return crResults;
-                }
-
-                const promptId = results.rows[0].prompt_id;
-                return dbActionFunc(bot, db, promptId)
-                    .then(() => this.removeNumberFromConfirmationQueue(db, channelId, number, crResults));
-            });
-    }
-
-    private removeNumberFromConfirmationQueue(db : Database, channelId : string, number : number, crResults : ConfirmRejectResults) : Promise<ConfirmRejectResults> {
-        return db.query('DELETE FROM prompt_confirmation_queue WHERE channel_id = $1 AND confirm_number = $2', [channelId, number])
-            .then(results => {
-                if (results.rowCount === 0) {
-                    throw new Error('Could not remove a prompt from the unconfirmed confirmation queue.');
-                }
-
-                crResults.numSuccessful++;
-                return crResults;
             });
     }
 }

@@ -207,8 +207,12 @@ export class BotUtils {
     }
 
     static isNumeric(input : string) : boolean {
-        const numInput = parseInt(input);
-        return (!isNaN(numInput) && isFinite(numInput));
+        const numInput = parseInt(input, 10);
+        if (isNaN(numInput) || !isFinite(numInput)) {
+            return false;
+        }
+
+        return (numInput.toString(10) === input);
     }
 
     static isAdminChannel(channelId : string) : boolean {

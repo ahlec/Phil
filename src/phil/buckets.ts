@@ -225,4 +225,18 @@ export class Bucket {
                 throw 'Unrecognized frequency type: \'' + this.frequency + '\'';
         }
     }
+
+    canUserSubmitTo(bot : DiscordIOClient, userId : string) : boolean {
+        if (!this.requiredRoleId) {
+            return true;
+        }
+
+        const server = bot.servers[this.serverId];
+        const member = server.members[userId];
+        if (member.roles.includes(this.requiredRoleId)) {
+            return true;
+        }
+
+        return false;
+    }
 }

@@ -2,9 +2,10 @@
 
 const assert = require('assert');
 
+import { Server as DiscordIOServer } from 'discord.io';
 import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
 
-function getServer(bot : any, channelId : string) {
+function getServer(bot : any, channelId : string) : DiscordIOServer {
     if (!bot.channels[channelId]) {
         return null;
     }
@@ -30,7 +31,7 @@ export class DiscordMessage {
     public readonly content : string;
     public readonly isDirectMessage : boolean;
     public readonly mentions : DiscordMessageMention[];
-    public readonly server : any;
+    public readonly server : DiscordIOServer;
 
     constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>, bot : any) {
         this.mentions = [];

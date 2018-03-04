@@ -3,6 +3,11 @@
 import { Client as DiscordIOClient, Role as DiscordIORole } from 'discord.io';
 import { MessageBuilder } from '../phil/message-builder';
 
+export interface EditRoleOptions {
+    name : string;
+    color : string;
+}
+
 class DiscordPromises {
     sendMessage(bot : DiscordIOClient, channelId : string, message : string) : Promise<string> {
         return new Promise((resolve, reject) => {
@@ -79,12 +84,29 @@ class DiscordPromises {
         });
     }
 
-    giveRoleToUser(bot : DiscordIOClient, serverId : string, userId : string, role : DiscordIORole) : Promise<any> {
+    giveRoleToUser(bot : DiscordIOClient, serverId : string, userId : string, roleId : string) : Promise<void> {
         return new Promise((resolve, reject) => {
             bot.addToRole({
                 serverID: serverId,
                 userID: userId,
-                roleID: role.id
+                roleID: roleId
+            }, (err, response) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve();
+            });
+        });
+    }
+
+    takeRoleFromUser(bot : DiscordIOClient, serverId : string, userId : string, roleId : string) : Promise<any> {
+        return new Promise((resolve, reject) => {
+            bot.removeFromRole({
+                serverID: serverId,
+                userID: userId,
+                roleID: roleId
             }, (err, response) => {
                 if (err) {
                     reject(err);
@@ -96,19 +118,37 @@ class DiscordPromises {
         });
     }
 
-    takeRoleFromUser(bot : DiscordIOClient, serverId : string, userId : string, role : DiscordIORole) : Promise<any> {
+    createRole(bot : DiscordIOClient, serverId : string) : Promise<DiscordIORole> {
         return new Promise((resolve, reject) => {
-            bot.removeFromRole({
+            bot.createRole(serverId, (err, response) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(response);
+            });
+        });
+    }
+
+    editRole(bot : DiscordIOClient, serverId : string, roleId : string, changes : EditRoleOptions) : Promise<void> {
+        return new Promise((resolve, reject) => {
+            bot.editRole({
                 serverID: serverId,
-                userID: userId,
-                roleID: role.id
+                roleID: roleId,
+                name: changes.name,
+                color: changes.color,
+                hoist: undefined,
+                permissions: undefined,
+                mentionable: undefined,
+                position: undefined
             }, (err, response) => {
                 if (err) {
                     reject(err);
                     return;
                 }
 
-                resolve(response); // TODO: What does this return?
+                resolve();
             });
         });
     }

@@ -34,7 +34,7 @@ export class RemoveCommand implements Command {
 
         this.ensureUserHasRole(message.server, message.userId, requestable);
 
-        const result = await DiscordPromises.takeRoleFromUser(bot, message.server.id, message.userId, requestable.role);
+        const result = await DiscordPromises.takeRoleFromUser(bot, message.server.id, message.userId, requestable.role.id);
         BotUtils.sendSuccessMessage({
             bot: bot,
             channelId: message.channelId,
