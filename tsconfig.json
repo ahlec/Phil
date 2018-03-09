@@ -7,7 +7,16 @@
         "preserveConstEnums": true,
         "sourceMap": true,
         "outDir": "build",
-        "types": ["node", "pg", "discord.io", "official-discord"],
+        "types": [
+            "node",
+            "pg",
+            "discord.io",
+            "official-discord",
+            "chrono-node",
+            "moment",
+            "moment-timezone",
+            "youtube-node"
+        ],
         "typeRoots": ["node_modules/@types", "./types"]
     },
     "include": [

@@ -25,7 +25,9 @@ import { RequestCommand } from './request';
 import { SuggestCommand } from './suggest';
 import { UnconfirmedCommand } from './unconfirmed';
 import { UnpauseCommand } from './unpause';
+import { UtcCommand } from './utc';
 import { VersionCommand } from './version';
+import { YoutubeCommand } from './youtube';
 
 export const CommandLookup : ICommandLookup = {};
 
@@ -62,6 +64,8 @@ registerCommand(new RequestCommand());
 registerCommand(new SuggestCommand());
 registerCommand(new UnconfirmedCommand());
 registerCommand(new UnpauseCommand());
+registerCommand(new UtcCommand());
 registerCommand(new VersionCommand());
+registerCommand(new YoutubeCommand());
 
 helpCommand.saveCommandDefinitions(CommandLookup);

@@ -39,6 +39,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@types/moment-timezone": "^0.5.4",
     "@types/node": "^9.4.6",
     "@types/pg": "^7.4.4",
     "countries-and-timezones": "1.0.0",
