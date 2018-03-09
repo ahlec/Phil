@@ -7,7 +7,7 @@ import { Database } from './database';
 import { QueryResult } from 'pg';
 import { Chrono } from '../chronos/@types';
 import { ChronoLookup } from '../chronos/index';
-import { instance as DiscordPromises } from '../promises/discord';
+import { DiscordPromises } from '../promises/discord';
 
 export class ChronoManager {
     private readonly _bot : DiscordIOClient;

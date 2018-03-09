@@ -4,8 +4,8 @@
 import { YtResult } from 'youtube-node';
 const YouTube = require('youtube-node');
 
-export class YouTubePromises {
-    static search(query : string) : Promise<YtResult> {
+export namespace YouTubePromises {
+    export function search(query : string) : Promise<YtResult> {
          // Their typing definition for search is wrong, and the repo seems dead.
          // Unlikely that I can submit a fix and have it get pushed live.
 

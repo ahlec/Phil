@@ -6,7 +6,7 @@ import { Client as DiscordIOClient } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
 import { Database } from '../phil/database';
 import { MessageBuilder } from '../phil/message-builder';
-import { instance as DiscordPromises } from '../promises/discord';
+import { DiscordPromises } from '../promises/discord';
 import { BotUtils } from '../phil/utils';
 import { Versions } from '../phil/versions';
 import { Feature } from '../phil/features';

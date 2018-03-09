@@ -2,7 +2,7 @@
 
 import { Database } from './database';
 import { QueryResult } from 'pg';
-import { QuestionnaireStage } from './timezone-questionnaire';
+import { QuestionnaireStage, TimezoneQuestionnaire } from './timezone-questionnaire';
 
 export class UserTimezone {
     public readonly hasProvided : boolean;
@@ -14,7 +14,7 @@ export class UserTimezone {
         const stage = UserTimezone.determineStage(results);
         this.hasProvided = (stage === QuestionnaireStage.Finished);
         this.hasDeclined = (stage === QuestionnaireStage.Declined);
-        this.isCurrentlyDoingQuestionnaire = (stage > QuestionnaireStage.None && stage < QuestionnaireStage.Finished);
+        this.isCurrentlyDoingQuestionnaire = TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(stage);
 
         if (this.hasProvided) {
             this.timezoneName = results.rows[0].timezone_name;

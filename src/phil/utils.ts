@@ -5,7 +5,7 @@ const http = require('http');
 const https = require('https');
 
 import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer, Role as DiscordIORole } from 'discord.io';
-import { instance as DiscordPromises } from '../promises/discord';
+import { DiscordPromises } from '../promises/discord';
 
 // -------------------------------- PRONOUNS
 export enum Pronoun {

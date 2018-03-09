@@ -5,7 +5,7 @@ import { HelpGroup } from '../phil/help-groups';
 import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
 import { Database } from '../phil/database';
-import { instance as DiscordPromises } from '../promises/discord';
+import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { BotUtils } from '../phil/utils';
 import { Requestable } from '../phil/requestables';

@@ -4,7 +4,7 @@ import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io
 import { Database } from './database';
 import { QueryResult } from 'pg';
 import { Bucket } from './buckets';
-import { instance as DiscordPromises } from '../promises/discord';
+import { DiscordPromises } from '../promises/discord';
 import { BotUtils } from './utils';
 
 const assert = require('assert');

@@ -6,7 +6,7 @@ import { Client as DiscordIOClient } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
 import { Database } from '../phil/database';
 import { BotUtils } from '../phil/utils';
-import { instance as DiscordPromises } from '../promises/discord';
+import { DiscordPromises } from '../promises/discord';
 import { Feature } from '../phil/features';
 
 const apologies = [

@@ -8,7 +8,7 @@ import { DiscordMessage } from './discord-message';
 import { Analyzer } from '../analyzers/@types';
 import { AnalyzerLookup } from '../analyzers/index';
 import { BotUtils } from './utils';
-import { instance as DiscordPromises } from '../promises/discord';
+import { DiscordPromises } from '../promises/discord';
 
 export class AnalyzerManager {
     private readonly _bot : DiscordIOClient;

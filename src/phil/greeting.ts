@@ -1,7 +1,7 @@
 'use strict';
 
 import { Client as DiscordIOClient, Member as DiscordIOMember, User as DiscordIOUser } from 'discord.io';
-import { instance as DiscordPromises } from '../promises/discord';
+import { DiscordPromises } from '../promises/discord';
 import { BotUtils } from './utils';
 const util = require('util');
 

@@ -6,7 +6,7 @@ import { Client as DiscordIOClient } from 'discord.io';
 import { DiscordMessage } from '../../phil/discord-message';
 import { Database } from '../../phil/database';
 import { Features } from '../../phil/features';
-import { instance as DiscordPromises } from '../../promises/discord';
+import { DiscordPromises } from '../../promises/discord';
 import { BotUtils } from '../../phil/utils';
 
 interface ConfirmRejectResults {
