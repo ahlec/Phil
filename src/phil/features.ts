@@ -69,7 +69,7 @@ export class Feature {
     }
 }
 
-export const Features : { [key : string] : Feature } = {
+export const Features = {
     Prompts: new Feature(1, 'Prompts', ['prompt', 'prompts']),
     TimezoneProcessing: new Feature(2, 'Timezone Processing', ['timezone', 'timezones', 'tz']),
     Requestables: new Feature(3, 'Requestable Roles', ['role', 'roles', 'requestable', 'requestables']),
@@ -77,10 +77,20 @@ export const Features : { [key : string] : Feature } = {
     Calendar: new Feature(5, 'Calendar', ['calendar'])
 };
 
-export class FeatureUtils {
-    static getByName(name : string) : Feature {
-        for (let key in Features) {
-            const feature = Features[key];
+interface FeaturesLookup {
+    [key : string] : Feature;
+}
+
+let featuresLookup = Features as FeaturesLookup;
+
+export interface BatchFeaturesEnabledLookup {
+    [featureId : number] : boolean;
+}
+
+export namespace FeatureUtils {
+    export function getByName(name : string) : Feature {
+        for (let key in featuresLookup) {
+            const feature = featuresLookup[key];
             if (feature.is(name)) {
                 return feature;
             }
@@ -89,15 +99,34 @@ export class FeatureUtils {
         return null;
     }
 
-    static getUnknownFeatureNameErrorMessage(providedName : string) : string {
+    export function getUnknownFeatureNameErrorMessage(providedName : string) : string {
         let message = 'There is no feature with the name `' + providedName + '`. The features that I know about are as follows:\n\n';
 
-        for (let key in Features) {
-            const feature = Features[key];
+        for (let key in featuresLookup) {
+            const feature = featuresLookup[key];
             message += feature.getInformationalDisplayLine();
             message += '\n';
         }
 
         return message.trimRight();
+    }
+
+    export async function getServerFeaturesStatus(db : Database, serverId : string) : Promise<BatchFeaturesEnabledLookup> {
+        const results = await db.query('SELECT feature_id, is_enabled FROM server_features WHERE server_id = $1', [serverId]);
+        const lookup : BatchFeaturesEnabledLookup = {};
+
+        for (let key in featuresLookup) {
+            let featureId = featuresLookup[key].id;
+            lookup[featureId] = true;
+        }
+
+        for (let row of results.rows) {
+            let featureId = parseInt(row.feature_id);
+            let isEnabled = parseInt(row.is_enabled);
+
+            lookup[featureId] = (isEnabled !== 0);
+        }
+
+        return lookup;
     }
 }

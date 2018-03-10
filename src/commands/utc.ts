@@ -19,7 +19,7 @@ function formatTimeToString(time : moment.Moment) : string {
 export class UtcCommand implements Command {
     readonly name = 'utc';
     readonly aliases = [ 'gmt' ];
-    readonly feature = Features.Timezone;
+    readonly feature = Features.TimezoneProcessing;
 
     readonly helpGroup = HelpGroup.Time;
     readonly helpDescription = 'Converts a time from your local timezone to UTC.';

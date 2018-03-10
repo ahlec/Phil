@@ -9,7 +9,7 @@ import { MessageBuilder } from '../phil/message-builder';
 import { DiscordPromises } from '../promises/discord';
 import { BotUtils } from '../phil/utils';
 import { Versions } from '../phil/versions';
-import { Feature } from '../phil/features';
+import { Feature, BatchFeaturesEnabledLookup, FeatureUtils } from '../phil/features';
 
 class CommandHelpInfo {
     public readonly name : string;
@@ -19,6 +19,7 @@ class CommandHelpInfo {
     private readonly _isNew : boolean;
     private readonly _aliases : string[];
     private readonly _helpDescription : string;
+    private readonly _feature : Feature;
 
     constructor(command : Command) {
         this.name = command.name;
@@ -27,6 +28,7 @@ class CommandHelpInfo {
         this._helpDescription = command.helpDescription;
         this._isNew = CommandHelpInfo.isVersionNew(command.versionAdded);
         this._aliases = command.aliases;
+        this._feature = command.feature;
 
         this.message = this.createHelpMessage();
     }
@@ -41,6 +43,18 @@ class CommandHelpInfo {
         }
 
         return (a.name < b.name ? -1 : 1);
+    }
+
+    shouldDisplay(isAdminChannel : boolean, featuresEnabledLookup : BatchFeaturesEnabledLookup) : boolean {
+        if (!isAdminChannel && this.isAdminFunction) {
+            return false;
+        }
+
+        if (this._feature && !featuresEnabledLookup[this._feature.id]) {
+            return false;
+        }
+
+        return true;
     }
 
     private createHelpMessage() : string {
@@ -80,7 +94,6 @@ class CommandHelpInfo {
 
 class HelpGroupInfo {
     private readonly _commands : CommandHelpInfo[] = [];
-    private _hasNonAdminCommands : boolean;
     private readonly _header : string;
 
     constructor(public helpGroup : HelpGroup) {
@@ -93,41 +106,32 @@ class HelpGroupInfo {
 
     addCommandInfo(commandInfo : CommandHelpInfo) {
         this._commands.push(commandInfo);
-        if (!commandInfo.isAdminFunction) {
-            this._hasNonAdminCommands = true;
-        }
     }
 
     finish() {
         this._commands.sort(CommandHelpInfo.sort);
     }
 
-    append(builder : MessageBuilder, isAdminChannel : boolean) {
-        if (!this.canAppearInChannel(isAdminChannel)) {
-            return;
+    shouldDisplay(isAdminChannel : boolean, featuresEnabledLookup : BatchFeaturesEnabledLookup) : boolean {
+        for (let command of this._commands) {
+            if (command.shouldDisplay(isAdminChannel, featuresEnabledLookup)) {
+                return true;
+            }
         }
 
+        return false;
+    }
+
+    append(builder : MessageBuilder, isAdminChannel : boolean, featuresEnabledLookup : BatchFeaturesEnabledLookup) {
         builder.append(this._header);
 
         for (let command of this._commands) {
-            if (!isAdminChannel && command.isAdminFunction) {
+            if (!command.shouldDisplay(isAdminChannel, featuresEnabledLookup)) {
                 continue;
             }
 
             builder.append(command.message + '\n');
         }
-    }
-
-    private canAppearInChannel(isAdminChannel : boolean) : boolean {
-        if (this._commands.length === 0) {
-            return false;
-        }
-
-        if (isAdminChannel) {
-            return true;
-        }
-
-        return (this.helpGroup !== HelpGroup.Admin && this._hasNonAdminCommands);
     }
 }
 
@@ -146,22 +150,27 @@ function isVisibleCommand(commandName : string, command : Command) : boolean {
 export class HelpCommand implements Command {
     private _helpGroups : HelpGroupInfo[] = [];
 
-    public readonly name = 'help';
-    public readonly aliases : string[] = [];
-    public readonly feature : Feature = null;
+    readonly name = 'help';
+    readonly aliases : string[] = [];
+    readonly feature : Feature = null;
 
-    public readonly helpGroup = HelpGroup.General;
-    public readonly helpDescription = 'Find out about all of the commands that Phil has available.';
+    readonly helpGroup = HelpGroup.General;
+    readonly helpDescription = 'Find out about all of the commands that Phil has available.';
 
-    public readonly versionAdded = 3;
+    readonly versionAdded = 3;
 
-    public publicRequiresAdmin = false;
-    public processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    readonly publicRequiresAdmin = false;
+    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
         const isAdminChannel = BotUtils.isAdminChannel(message.channelId);
+        const featuresEnabledLookup = await FeatureUtils.getServerFeaturesStatus(db, message.server.id);
         const builder = new MessageBuilder();
 
         for (let helpGroup of this._helpGroups) {
-            helpGroup.append(builder, isAdminChannel);
+            if (!helpGroup.shouldDisplay(isAdminChannel, featuresEnabledLookup)) {
+                continue;
+            }
+
+            helpGroup.append(builder, isAdminChannel, featuresEnabledLookup);
         }
 
         let sendPromise = Promise.resolve('');
@@ -172,7 +181,7 @@ export class HelpCommand implements Command {
         return sendPromise;
     }
 
-    public saveCommandDefinitions(commands : ICommandLookup) {
+    saveCommandDefinitions(commands : ICommandLookup) {
         const commandInfo = this.getAllCommandHelpInfo(commands);
         const groupLookup : { [groupNum : number ] : HelpGroupInfo } = {};
 

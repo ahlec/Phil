@@ -7,6 +7,7 @@ import { InputMessage } from './input-message';
 import { Command, CommandProcessFunction } from '../commands/@types';
 import { CommandLookup } from '../commands/index';
 import { BotUtils } from './utils';
+import { Feature } from './features';
 
 const util = require('util');
 
@@ -41,6 +42,14 @@ export class CommandRunner {
         if (command === null) {
             this._reportInvalidCommand(message, input);
             return;
+        }
+
+        if (command.feature) {
+            let isFeatureEnabled = await command.feature.getIsEnabled(this._db, message.server.id);
+            if (!isFeatureEnabled) {
+                this._reportInvalidCommand(message, input);
+                return;
+            }
         }
 
         const commandData = this._getCommandDataForChannel(command, input, message);

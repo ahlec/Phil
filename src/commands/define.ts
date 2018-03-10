@@ -14,7 +14,7 @@ import { MessageBuilder } from '../phil/message-builder';
 export class DefineCommand implements Command {
     readonly name = 'define';
     readonly aliases : string[] = [];
-    readonly feature = Features.Requestable;
+    readonly feature = Features.Requestables;
 
     readonly helpGroup = HelpGroup.Roles;
     readonly helpDescription = 'Creates a new requestable role that users can use with `' + process.env.COMMAND_PREFIX + 'request`';
