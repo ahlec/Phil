@@ -57,6 +57,24 @@ export namespace TimezoneQuestionnaire {
         setStage(bot, db, userId, Stages.Confirmation);
     }
 
+    async function canStartQuestionnaire(db : Database, userId : string, manuallyStartedQuestionnaire : boolean) : Promise<boolean> {
+        if (manuallyStartedQuestionnaire) {
+            // Even if they've previously rejected the questionnaire, if they're manually starting it now, go ahead.
+            return true;
+        }
+
+        const results = await db.query('SELECT will_provide FROM timezones WHERE userid = $1', [userId]);
+        if (results.rowCount === 0) {
+            return true;
+        }
+
+        if (!results.rows[0].will_provide) {
+            return false;
+        }
+
+        return true;
+    }
+
     // =================================================
     // Stages
     // =================================================
@@ -236,7 +254,7 @@ export namespace TimezoneQuestionnaire {
         }
     }
 
-    export const Stages = {
+    export const Stages : { [name : string] : Stage } = {
         LetsBegin: new LetsBeginStage(),
         Country: new CountryStage(),
         Specification: new SpecificationStage(),
@@ -245,90 +263,44 @@ export namespace TimezoneQuestionnaire {
         Declined: new DeclinedStage()
     };
 
+    // =================================================
+    // Public API
+    // =================================================
+
     export function isCurrentlyDoingQuestionnaire(stage : QuestionnaireStage) : boolean {
         return (stage > QuestionnaireStage.None && stage < QuestionnaireStage.Finished);
     }
 
-}
+    export async function startQuestionnaire(bot : DiscordIOClient, db : Database, userId : string, manuallyStartedQuestionnaire : boolean) : Promise<boolean> {
+        const canStart = await canStartQuestionnaire(db, userId, manuallyStartedQuestionnaire);
+        if (!canStart) {
+            return false;
+        }
 
-/*
-function clearPreviousData(db, userId) {
-    return db.query('DELETE FROM timezones WHERE userid = $1', [userId]);
-}
+        await db.query('DELETE FROM timezones WHERE userid = $1', [userId]);
 
-function insertNewTimezoneRow(bot, db, userId, initialStage) {
-    const username = bot.users[userId].username;
-    return db.query('INSERT INTO timezones(username, userid, stage) VALUES($1, $2, $3)', [username, userId, initialStage]);
-}
+        const initialStage = (manuallyStartedQuestionnaire ? Stages.Country : Stages.LetsBegin);
+        const username = bot.users[userId].username;
+        await db.query('INSERT INTO timezones(username, userid, stage) VALUES($1, $2, $3)', [username, userId, initialStage.stage]);
 
-
-function interpretCanStartDbResult(result) {
-    if (result.rowCount === 0) {
+        await sendStageMessage(bot, db, userId, initialStage);
         return true;
     }
 
-    if (!result.rows[0].will_provide) {
-        return false;
-    }
+    export async function getStageForUser(db : Database, userId : string) : Promise<Stage> {
+        const results = await db.query('SELECT stage FROM timezones WHERE userid = $1 LIMIT 1', [userId]);
+        if (results.rowCount !== 1) {
+            throw new Error('This user does not appear to have questionnaire data.');
+        }
 
-    return true;
-}
+        const stageNo = parseInt(results.rows[0].stage);
+        for (let stageName in Stages) {
+            let stage = Stages[stageName];
+            if (stage.stage === stageNo) {
+                return stage;
+            }
+        }
 
-function canStartQuestionnaire(db, userId, manuallyStartedQuestionnaire) {
-    if (manuallyStartedQuestionnaire) {
-        // Even if they've previously rejected the questionnaire, if they're manually starting it now, go ahead.
-        return true;
-    }
-
-    return db.query('SELECT will_provide FROM timezones WHERE userid = $1', [userId])
-        .then(interpretCanStartDbResult);
-}
-
-
-
-function processQuestionnaireStage(bot, db, message, results) {
-    if (!processIsCurrentlyDoingQuestionnaireResults(results)) {
-        return Promise.reject('Not currently in the middle of a timezone questionnaire!');
-    }
-
-    const currentStage = results.rows[0].stage;
-    const processFunc = ProcessQuestionnaireStageFuncs[currentStage];
-
-    if (!processFunc) {
-        return Promise.reject('Unknown questionnaire stage \'' + currentStage + '\'');
-    }
-
-    return processFunc(bot, db, message);
-}
-
-
-
-
-
-function branchStartQuestionnaire(bot, db, userId, manuallyStartedQuestionnaire, canStart) {
-    if (!canStart) {
-        return false;
-    }
-
-    const initialStage = (manuallyStartedQuestionnaire ? QUESTIONNAIRE_STAGES.Country : QUESTIONNAIRE_STAGES.LetsBegin);
-
-    return Promise.resolve()
-        .then(() => clearPreviousData(db, userId))
-        .then(() => insertNewTimezoneRow(bot, db, userId, initialStage))
-        .then(() => sendStageMessage(bot, db, userId, initialStage))
-        .then(() => true);
-}
-
-module.exports = {
-    startQuestionnaire: function(bot, db, userId, manuallyStartedQuestionnaire) { // resolves [true/false] for if it started or not
-        return Promise.resolve()
-            .then(() => canStartQuestionnaire(db, userId, manuallyStartedQuestionnaire))
-            .then(canStart => branchStartQuestionnaire(bot, db, userId, manuallyStartedQuestionnaire, canStart));
-    },
-
-    processQuestionnaireMessage: function(bot, db, message) {
-        return db.query('SELECT stage FROM timezones WHERE userid = $1 LIMIT 1', [message.userId])
-            .then(results => processQuestionnaireStage(bot, db, message, results));
+        throw new Error('This user appears to be on an invalid stage: ' + stageNo);
     }
 }
-*/

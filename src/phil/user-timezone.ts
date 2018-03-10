@@ -3,6 +3,7 @@
 import { Database } from './database';
 import { QueryResult } from 'pg';
 import { QuestionnaireStage, TimezoneQuestionnaire } from './timezone-questionnaire';
+import moment = require('moment-timezone');
 
 export class UserTimezone {
     public readonly hasProvided : boolean;
@@ -39,5 +40,12 @@ export class UserTimezone {
 
         const stage = parseInt(results.rows[0].stage);
         return stage;
+    }
+
+    getHoursApart(otherTimezone : UserTimezone) : number {
+        const now = moment.utc().valueOf();
+        const yourOffset = moment.tz.zone(this.timezoneName).utcOffset(now);
+        const theirOffset = moment.tz.zone(otherTimezone.timezoneName).utcOffset(now);
+        return (yourOffset - theirOffset) / 60;
     }
 }
