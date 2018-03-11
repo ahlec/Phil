@@ -1,6 +1,6 @@
 'use strict';
 
-const botUtils = require('../phil/utils');
+import { BotUtils } from './utils';
 const express = require('express');
 
 export class WebPortal {
@@ -31,6 +31,6 @@ export class WebPortal {
     }
 
     _onKeepAliveHeartbeat() {
-        botUtils.getUrl(process.env.PUBLIC_APP_URL);
+        BotUtils.getUrl(process.env.PUBLIC_APP_URL);
     }
 };

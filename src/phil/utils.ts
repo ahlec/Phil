@@ -64,24 +64,6 @@ function doesRoleHavePermission(role : DiscordIORole, permission : number) : boo
     return false;
 }
 
-function _resolveMultiplePronounsToSinglePronoun(pronouns : Pronoun[]) : Pronoun {
-    if (pronouns.length === 0) {
-        return Pronoun.They;
-    }
-
-    if (pronouns.length === 1) {
-        return PRONOUNS_FROM_ROLE_ID[pronouns[0]];
-    }
-
-    if (pronouns.indexOf(Pronoun.They) >= 0) {
-        return Pronoun.They;
-    }
-
-    // Hmmm... What do I do in the case where the user has HE and SHE but not THEY?
-    // For right now, we'll go with 'They' until someone clarifies.
-    return Pronoun.They;
-}
-
 interface SendErrorMessageOpts {
     readonly bot : DiscordIOClient;
     readonly channelId : string;
@@ -172,9 +154,7 @@ export class BotUtils {
         return isHex;
     }
 
-    static getPronounForUser(bot : DiscordIOClient, userId : string) : Pronoun {
-        const serverId = bot.channels[process.env.HIJACK_CHANNEL_ID].guild_id;
-        const server = bot.servers[serverId];
+    static getPronounForUser(bot : DiscordIOClient, server : DiscordIOServer, userId : string) : Pronoun {
         const member = server.members[userId];
         const pronounsOfUser : Pronoun[] = [];
 
@@ -185,7 +165,16 @@ export class BotUtils {
             }
         }
 
-        return _resolveMultiplePronounsToSinglePronoun(pronounsOfUser);
+        if (pronounsOfUser.length === 0) {
+            return Pronoun.They;
+        }
+
+        if (pronounsOfUser.length === 1) {
+            return pronounsOfUser[0];
+        }
+
+        // For right now, we'll go with 'They'.
+        return Pronoun.They;
     }
 
     static getPronounOfCase(pronoun : Pronoun, pronounCase : PronounCase) : string {
