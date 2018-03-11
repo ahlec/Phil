@@ -85,10 +85,11 @@ export class ChronoManager {
             });
     }
 
-    private _processChronoInstance(now : Date, chronoHandle : string, chronoId : number, serverId : string, utcDate : string) {
+    private async _processChronoInstance(now : Date, chronoHandle : string, chronoId : number, serverId : string, utcDate : string) {
         console.log('[CHRONOS] %s for serverId %s', chronoHandle, serverId);
 
-        if (!this._bot.servers[serverId]) {
+        const server = this._bot.servers[serverId];
+        if (!server) {
             console.log('[CHRONOS] Phil is no longer part of server with serverId %s', serverId);
             return;
         }
@@ -99,9 +100,12 @@ export class ChronoManager {
             return;
         }
 
-        return chronoDefinition(this._bot, this._db, serverId, now)
-            .catch(err => this._reportChronoError(err, chronoHandle, serverId))
-            .then(() => this._markChronoProcessed(chronoId, serverId, utcDate));
+        try {
+            await chronoDefinition.process(this._bot, this._db, server, now);
+            this._markChronoProcessed(chronoId, serverId, utcDate);
+        } catch(err) {
+            this._reportChronoError(err, chronoHandle, serverId);
+        }
     }
 
     private _markChronoProcessed(chronoId : number, serverId : string, utcDate : string) {

@@ -1,8 +1,10 @@
-import { Client as DiscordIOClient } from 'discord.io';
+import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
 import { Database } from '../phil/database';
 
 export interface Chrono {
-    (bot : DiscordIOClient, db : Database, serverId : string, now : Date) : Promise<void>;
+    readonly handle : string;
+
+    process(bot : DiscordIOClient, db : Database, server : DiscordIOServer, now : Date) : Promise<void>;
 }
 
 export interface IChronoLookup {
