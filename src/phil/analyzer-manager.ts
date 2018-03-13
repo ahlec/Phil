@@ -26,12 +26,11 @@ export class AnalyzerManager {
         }
     }
 
-    private _runAnalyzer(analyzerName : string, analyzer : Analyzer, message : DiscordMessage) {
-        const promise = analyzer(this._bot, message, this._db);
-        if (!BotUtils.isPromise(promise)) {
-            console.error('Analyzer \'%s\' did not return a promise', analyzerName);
-        } else {
-            promise.catch(err => this._reportAnalyzerError(err, analyzerName));
+    private async _runAnalyzer(analyzerName : string, analyzer : Analyzer, message : DiscordMessage) {
+        try {
+            await analyzer.process(this._bot, message, this._db);
+        } catch (err) {
+            this._reportAnalyzerError(err, analyzerName);
         }
     }
 

@@ -88,10 +88,11 @@ export class ColourCommand implements Command {
             }
         }
 
+        const hexColorNumber = parseInt(hexColor.replace('#', '0x'), 16);
         const newRole = await DiscordPromises.createRole(bot, server.id);
         await DiscordPromises.editRole(bot, server.id, newRole.id, {
             name: hexColor,
-            color: hexColor
+            color: hexColorNumber
         });
         return newRole;
     }

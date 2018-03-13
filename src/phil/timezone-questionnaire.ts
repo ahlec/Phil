@@ -287,10 +287,10 @@ export namespace TimezoneQuestionnaire {
         return true;
     }
 
-    export async function getStageForUser(db : Database, userId : string) : Promise<Stage> {
+    export async function getStageForUser(db : Database, userId : string) : Promise<Stage | null> {
         const results = await db.query('SELECT stage FROM timezones WHERE userid = $1 LIMIT 1', [userId]);
         if (results.rowCount !== 1) {
-            throw new Error('This user does not appear to have questionnaire data.');
+            return null;
         }
 
         const stageNo = parseInt(results.rows[0].stage);

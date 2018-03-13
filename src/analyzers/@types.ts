@@ -3,7 +3,8 @@ import { DiscordMessage } from '../phil/discord-message';
 import { Database } from '../phil/database';
 
 export interface Analyzer {
-    (bot : DiscordIOClient, message : DiscordMessage, db : Database) : Promise<void>;
+    readonly handle : string;
+    process(bot : DiscordIOClient, message : DiscordMessage, db : Database) : Promise<void>;
 }
 
 export interface IAnalyzerLookup {
