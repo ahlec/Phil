@@ -88,8 +88,8 @@ export namespace TimezoneQuestionnaire {
     class LetsBeginStage implements Stage {
         readonly stage = QuestionnaireStage.LetsBegin;
 
-        getMessage(db : Database, userId : string) : Promise<string> {
-            return Promise.resolve('Hey! You mentioned some times in your recent message on the server. Would you be willing to tell me what timezone you\'re in so that I can convert them to UTC in the future? Just say `yes` or `no`.');
+        async getMessage(db : Database, userId : string) : Promise<string> {
+            return 'Hey! You mentioned some times in your recent message on the server. Would you be willing to tell me what timezone you\'re in so that I can convert them to UTC in the future? Just say `yes` or `no`.';
         }
 
         async processInput(bot : DiscordIOClient, db : Database, message : DiscordMessage) : Promise<any> {
@@ -116,8 +116,8 @@ export namespace TimezoneQuestionnaire {
     class CountryStage implements Stage {
         readonly stage = QuestionnaireStage.Country;
 
-        getMessage(db : Database, userId : string) : Promise<string> {
-            return Promise.resolve('Alright! Let\'s get started! Can you start by telling me the name of the country you\'re in? I\'ll never display this information publicly in the chat.');
+        async getMessage(db : Database, userId : string) : Promise<string> {
+            return 'Alright! Let\'s get started! Can you start by telling me the name of the country you\'re in? I\'ll never display this information publicly in the chat.';
         }
 
         async processInput(bot : DiscordIOClient, db : Database, message : DiscordMessage) : Promise<any> {
@@ -233,8 +233,8 @@ export namespace TimezoneQuestionnaire {
     class FinishedStage implements Stage {
         readonly stage = QuestionnaireStage.Finished;
 
-        getMessage(db : Database, userId : string) : Promise<string> {
-            return Promise.resolve('All done! I\'ve recorded your timezone information! When you mention a date or time in the server again, I\'ll convert it for you! If you ever need to change it, just use `' + process.env.COMMAND_PREFIX + 'timezone` to do so!');
+        async getMessage(db : Database, userId : string) : Promise<string> {
+            return 'All done! I\'ve recorded your timezone information! When you mention a date or time in the server again, I\'ll convert it for you! If you ever need to change it, just use `' + process.env.COMMAND_PREFIX + 'timezone` to do so!';
         }
 
         async processInput(bot : DiscordIOClient, db : Database, message : DiscordMessage) : Promise<any> {
@@ -245,8 +245,8 @@ export namespace TimezoneQuestionnaire {
     class DeclinedStage implements Stage {
         readonly stage = QuestionnaireStage.Declined;
 
-        getMessage(db : Database, userId : string) : Promise<string> {
-            return Promise.resolve('Understood. I\'ve made a note that you don\'t want to provide this information at this time. I won\'t bother you again. If you ever change your mind, feel free to say `' + process.env.COMMAND_PREFIX + 'timezone` to start up again.');
+        async getMessage(db : Database, userId : string) : Promise<string> {
+            return 'Understood. I\'ve made a note that you don\'t want to provide this information at this time. I won\'t bother you again. If you ever change your mind, feel free to say `' + process.env.COMMAND_PREFIX + 'timezone` to start up again.';
         }
 
         async processInput(bot : DiscordIOClient, db : Database, message : DiscordMessage) : Promise<any> {

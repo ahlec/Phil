@@ -173,12 +173,9 @@ export class HelpCommand implements Command {
             helpGroup.append(builder, isAdminChannel, featuresEnabledLookup);
         }
 
-        let sendPromise = Promise.resolve('');
         for (let helpMessage of builder.messages) {
-            sendPromise = sendPromise.then(() => DiscordPromises.sendMessage(bot, message.channelId, helpMessage));
+            await DiscordPromises.sendMessage(bot, message.channelId, helpMessage);
         }
-
-        return sendPromise;
     }
 
     saveCommandDefinitions(commands : ICommandLookup) {
