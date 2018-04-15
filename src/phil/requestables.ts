@@ -19,7 +19,7 @@ export class Requestable {
     }
 
     static async getAllRequestables(db : Database, server : DiscordIOServer) : Promise<Requestable[]> {
-        const results = await db.query('SELECT request_string, role_id FROM requestable_roles');
+        const results = await db.query('SELECT request_string, role_id FROM requestable_roles WHERE server_id = $1', [server.id]);
         const groupedRequestStrings = this.groupRequestStrings(results);
         const requestables = [];
         for (let roleId in groupedRequestStrings) {
@@ -36,7 +36,7 @@ export class Requestable {
 
     static async getFromRequestString(db : Database, server : DiscordIOServer, requestString : string) : Promise<Requestable> {
         requestString = requestString.toLowerCase();
-        const results = await db.query('SELECT role_id FROM requestable_roles WHERE request_string = $1', [requestString]);
+        const results = await db.query('SELECT role_id FROM requestable_roles WHERE request_string = $1 AND server_id = $2', [requestString, server.id]);
 
         if (results.rowCount === 0) {
             return null;
@@ -52,7 +52,7 @@ export class Requestable {
     }
 
     static async createRequestable(db : Database, server : DiscordIOServer, info : RequestableCreationDefinition) : Promise<void> {
-        await db.query('INSERT INTO requestable_roles VALUES($1, $2)', [info.name, info.role.id]);
+        await db.query('INSERT INTO requestable_roles VALUES($1, $2, $3)', [info.name, info.role.id, server.id]);
     }
 
     private static groupRequestStrings(results : QueryResult) : { [roleId : string] : string[] } {
