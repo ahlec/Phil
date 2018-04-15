@@ -1,11 +1,11 @@
-// This file half exists to wrap things in promises.
-// The other half of this file is because they clearly didn't know how to use TypeScript.
-
-import { YtResult } from 'youtube-node';
 const YouTube = require('youtube-node');
 
+export interface YoutubeVideo {
+    id : string;
+}
+
 export namespace YouTubePromises {
-    export function search(query : string) : Promise<YtResult> {
+    export function search(query : string) : Promise<YoutubeVideo[]> {
          // Their typing definition for search is wrong, and the repo seems dead.
          // Unlikely that I can submit a fix and have it get pushed live.
 
@@ -13,13 +13,20 @@ export namespace YouTubePromises {
         youtubeApi.setKey(process.env.YOUTUBE_API_KEY);
 
         return new Promise((resolve, reject) => {
-            youtubeApi.search(query, 1, (err : Error, result : YtResult) => {
+            youtubeApi.search(query, 1, (err : Error, result : any) => {
                 if (err) {
                     reject(err);
                     return;
                 }
 
-                resolve(result);
+                const videos : YoutubeVideo[] = [];
+                for (let ytItem of result.items) {
+                    videos.push({
+                        id: ytItem.id.videoId
+                    });
+                }
+
+                resolve(videos);
             });
         });
     }

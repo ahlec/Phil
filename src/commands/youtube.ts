@@ -27,11 +27,11 @@ export class YoutubeCommand implements Command {
         }
 
         const results = await YouTubePromises.search(query);
-        if (results.items.length === 0 || !results.items[0].id.videoId) {
+        if (results.length === 0 || !results[0].id) {
             throw new Error('There were no results on YouTube for you search.');
         }
 
-        const link = 'https://youtu.be/' + results.items[0].id.videoId;
+        const link = 'https://youtu.be/' + results[0].id;
         DiscordPromises.sendMessage(bot, message.channelId, link);
     }
 };

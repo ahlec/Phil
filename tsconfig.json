@@ -14,8 +14,7 @@
             "official-discord",
             "chrono-node",
             "moment",
-            "moment-timezone",
-            "youtube-node"
+            "moment-timezone"
         ],
         "typeRoots": ["node_modules/@types", "./types"]
     },
