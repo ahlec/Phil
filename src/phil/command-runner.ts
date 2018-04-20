@@ -44,7 +44,7 @@ export class CommandRunner {
             return;
         }
 
-        if (command.feature) {
+        if (command.feature && message.server) {
             let isFeatureEnabled = await command.feature.getIsEnabled(this._db, message.server.id);
             if (!isFeatureEnabled) {
                 this._reportInvalidCommand(message, input);
