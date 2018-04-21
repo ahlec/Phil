@@ -185,7 +185,7 @@ export class Leaderboard {
 
     constructor(bot : DiscordIOClient, server : DiscordIOServer, results : QueryResult) {
         for (let index = 0; index < results.rowCount; ++index) {
-            this.entries.push(new LeaderboardEntry(bot, server, results.rows[0]));
+            this.entries.push(new LeaderboardEntry(bot, server, results.rows[index]));
         }
     }
 
