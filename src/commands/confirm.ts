@@ -4,7 +4,7 @@ import { ConfirmRejectCommandBase } from './bases/confirm-reject-base';
 import { Client as DiscordIOClient } from 'discord.io';
 import { Database } from '../phil/database';
 import { Bucket, BucketFrequency } from '../phil/buckets';
-import { Prompt } from '../phil/prompts';
+import { Prompt } from '../phil/prompts/prompt';
 
 const successMessageEnd = ' confirmed. You may continue using `' + process.env.COMMAND_PREFIX + 'confirm` or start over by using `' + process.env.COMMAND_PREFIX + 'unconfirmed`.';
 

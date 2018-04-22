@@ -6,7 +6,7 @@ import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
 import { ServerConfig } from '../phil/server-configs';
 import { BotUtils } from '../phil/utils';
-import { UnconfirmedPromptTally } from '../phil/prompts';
+import { UnconfirmedPromptTally } from '../phil/prompts/unconfirmed-prompt-tally';
 
 export class AlertAdminsUnconfirmedPromptsChrono implements Chrono {
     readonly handle = 'alert-admins-unconfirmed-prompts';

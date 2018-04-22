@@ -6,7 +6,8 @@ import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
 import { ServerConfig } from '../phil/server-configs';
 import { Bucket } from '../phil/buckets';
-import { Prompt, PromptQueue } from '../phil/prompts';
+import { Prompt } from '../phil/prompts/prompt';
+import { PromptQueue } from '../phil/prompts/queue'
 
 export class PostNewPromptsChrono implements Chrono {
     readonly handle = 'post-new-prompts';

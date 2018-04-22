@@ -9,7 +9,7 @@ import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { Bucket } from '../phil/buckets';
-import { PromptQueue } from '../phil/prompts';
+import { PromptQueue } from '../phil/prompts/queue';
 import { MessageBuilder } from '../phil/message-builder';
 
 const MAX_QUEUE_DISPLAY_LENGTH = 10;

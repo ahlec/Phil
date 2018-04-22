@@ -8,7 +8,7 @@ import { Database } from '../phil/database';
 import { BotUtils } from '../phil/utils';
 import { Features } from '../phil/features';
 import { Bucket } from '../phil/buckets';
-import { Prompt } from '../phil/prompts';
+import { Prompt } from '../phil/prompts/prompt';
 
 export class PromptCommand implements Command {
     readonly name = 'prompt';

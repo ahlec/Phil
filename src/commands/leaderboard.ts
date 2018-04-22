@@ -7,7 +7,7 @@ import { DiscordMessage } from '../phil/discord-message';
 import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
-import { LeaderboardEntry, Leaderboard } from '../phil/prompts';
+import { LeaderboardEntry, Leaderboard } from '../phil/prompts/leaderboard';
 
 const RANKING_EMOJI : { [rank : number] : string } = {
     1: ':first_place:',

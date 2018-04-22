@@ -8,7 +8,7 @@ import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { Bucket } from '../phil/buckets';
-import { Prompt } from '../phil/prompts';
+import { Prompt } from '../phil/prompts/prompt';
 
 const MAX_LIST_LENGTH = 10;
 
