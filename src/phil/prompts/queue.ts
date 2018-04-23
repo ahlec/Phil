@@ -17,7 +17,7 @@ export class PromptQueue {
     readonly count : number = 0;
     readonly unconfirmedCount : number = 0;
 
-    private constructor(bot : DiscordIOClient, bucket : Bucket, promptResults : QueryResult, countResults : QueryResult, pageNum : number, pageSize : number) {
+    private constructor(bot : DiscordIOClient, readonly bucket : Bucket, promptResults : QueryResult, countResults : QueryResult, pageNum : number, readonly pageSize : number) {
         this.pageNumber = pageNum;
 
         var currentQueuePosition = ( pageNum - 1 ) * pageSize + 1;

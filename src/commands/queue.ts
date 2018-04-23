@@ -11,6 +11,7 @@ import { Features } from '../phil/features';
 import { Bucket } from '../phil/buckets';
 import { PromptQueue } from '../phil/prompts/queue';
 import { MessageBuilder } from '../phil/message-builder';
+import { ReactableFactory } from '../phil/reactables/factory';
 
 const MAX_QUEUE_DISPLAY_LENGTH = 10;
 
@@ -37,13 +38,7 @@ export class QueueCommand implements Command {
         });
 
         if (queue.hasMultiplePages) {
-            if (queue.pageNumber > 1) {
-                await DiscordPromises.addReaction(bot, message.channelId, queueMessageId, '◀');
-            }
-
-            if (queue.pageNumber < queue.totalPages) {
-                await DiscordPromises.addReaction(bot, message.channelId, queueMessageId, '▶');
-            }
+            await this.setupReactable(bot, db, message, queue, queueMessageId);
         }
     }
 
@@ -77,5 +72,30 @@ export class QueueCommand implements Command {
         return {
             text: message
         };
+    }
+
+    private async setupReactable(bot : DiscordIOClient, db : Database, originalMessage : DiscordMessage, queue : PromptQueue, responseMessageId : string) {
+        if (queue.pageNumber > 1) {
+            await DiscordPromises.addReaction(bot, originalMessage.channelId, responseMessageId, '◀');
+        }
+
+        if (queue.pageNumber < queue.totalPages) {
+            await DiscordPromises.addReaction(bot, originalMessage.channelId, responseMessageId, '▶');
+        }
+
+        const factory = new ReactableFactory(bot, db);
+        factory.messageId = responseMessageId;
+        factory.server = originalMessage.server;
+        factory.channelId = originalMessage.channelId;
+        factory.user = bot.users[originalMessage.userId];
+        factory.timeLimit = 10;
+        factory.reactableHandle = 'prompt-queue';
+        factory.jsonData = {
+            currentPage: queue.pageNumber,
+            pageSize: queue.pageSize,
+            bucket: queue.bucket.id
+        };
+
+        await factory.create();
     }
 };

@@ -5,10 +5,11 @@ import { Client as DiscordIOClient, Member as DiscordIOMember } from 'discord.io
 import { CommandRunner } from './command-runner';
 import { ChronoManager } from './chrono-manager';
 import { AnalyzerManager } from './analyzer-manager';
+import { ReactionProcessor } from './reaction-processor';
 import { greetNewMember } from './greeting';
 import { DiscordMessage } from './discord-message';
 import { Database } from './database';
-import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
+import { OfficialDiscordMessage, OfficialDiscordPayload, OfficialDiscordReactionEvent } from 'official-discord';
 import { BotUtils } from './utils';
 
 function ignoreDiscordCode(code : number) {
@@ -21,6 +22,7 @@ export class Phil {
     private readonly _commandRunner : CommandRunner;
     private readonly _chronoManager : ChronoManager;
     private readonly _analyzerManager : AnalyzerManager;
+    private readonly _reactionProcessor : ReactionProcessor;
     private _shouldSendDisconnectedMessage : boolean;
 
     constructor(db: Database) {
@@ -30,6 +32,7 @@ export class Phil {
         this._commandRunner = new CommandRunner(this._bot, this._db);
         this._chronoManager = new ChronoManager(this._bot, this._db);
         this._analyzerManager = new AnalyzerManager(this._bot, this._db);
+        this._reactionProcessor = new ReactionProcessor(this._bot, this._db);
     }
 
     public start() {
@@ -39,6 +42,7 @@ export class Phil {
         this._bot.on('message', this._onMessage.bind(this));
         this._bot.on('disconnect', this._onDisconnect.bind(this));
         this._bot.on('guildMemberAdd', this._onMemberAdd.bind(this));
+        this._bot.on('any', this._onRawWebSocketEvent.bind(this));
     }
 
     private _reportStartupError(err : Error) {
@@ -132,5 +136,11 @@ export class Phil {
     private _onMemberAdd(member : DiscordIOMember) {
         console.log('A new member has joined the server.');
         greetNewMember(this._bot, member);
+    }
+
+    private _onRawWebSocketEvent(event : OfficialDiscordPayload<any>) {
+        if (event.t === 'MESSAGE_REACTION_ADD') {
+            this._reactionProcessor.processReactionAdded(event.d as OfficialDiscordReactionEvent);
+        }
     }
 };

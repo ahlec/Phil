@@ -36,6 +36,20 @@ declare module 'official-discord' {
         readonly type : OfficialDiscordMessageType;
     }
 
+    export class OfficialDiscordEmoji {
+        readonly name : string;
+        readonly id : string | null;
+        readonly animated : boolean;
+    }
+
+    export class OfficialDiscordReactionEvent {
+        readonly user_id : string;
+        readonly message_id : string;
+        readonly emoji : OfficialDiscordEmoji;
+        readonly channel_id : string;
+        readonly guild_id : string;
+    }
+
     export class OfficialDiscordPayload<TEventData> {
         readonly op : number;
         readonly d : TEventData;
