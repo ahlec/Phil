@@ -27,14 +27,24 @@ export class QueueCommand implements Command {
     readonly publicRequiresAdmin = true;
     async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
         const bucket = await Bucket.retrieveFromCommandArgs(bot, db, commandArgs, message.server, 'queue', false);
-        const queue = await PromptQueue.getPromptQueue(bot, db, bucket, MAX_QUEUE_DISPLAY_LENGTH);
+        const queue = await PromptQueue.getPromptQueue(bot, db, bucket, 1, MAX_QUEUE_DISPLAY_LENGTH);
 
-        return DiscordPromises.sendEmbedMessage(bot, message.channelId, {
+        const queueMessageId = await DiscordPromises.sendEmbedMessage(bot, message.channelId, {
             color: 0xB0E0E6,
             title: "Prompt Queue for " + bucket.displayName,
             description: this.makeBodyFromQueue(queue),
             footer: this.makeFooterFromQueue(queue)
         });
+
+        if (queue.hasMultiplePages) {
+            if (queue.pageNumber > 1) {
+                await DiscordPromises.addReaction(bot, message.channelId, queueMessageId, '◀');
+            }
+
+            if (queue.pageNumber < queue.totalPages) {
+                await DiscordPromises.addReaction(bot, message.channelId, queueMessageId, '▶');
+            }
+        }
     }
 
     private makeBodyFromQueue(queue : PromptQueue) : string {
@@ -51,20 +61,21 @@ export class QueueCommand implements Command {
 
         message += '**.\n\n';
 
-        for (let index = 0; index < queue.entries.length; ++index) {
-            message += (index + 1) + '. ' + queue.entries[index].text + '\n';
+        for (let entry of queue.entries) {
+            message += '**' + (entry.position) + '.** ' + entry.prompt.text + '\n';
         }
 
         return message;
     }
 
     private makeFooterFromQueue(queue : PromptQueue) : any {
-        if (queue.count <= MAX_QUEUE_DISPLAY_LENGTH) {
+        if (!queue.hasMultiplePages) {
             return;
         }
 
+        var message = 'Viewing page ' + queue.pageNumber + ' / ' + queue.totalPages + '. Navigate using the arrows below.';
         return {
-            text: '**Confirmed Prompts:** ' + queue.count + ' | **Unconfirmed Prompts:** ' + queue.unconfirmedCount
+            text: message
         };
     }
 };

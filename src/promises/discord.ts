@@ -185,4 +185,21 @@ export namespace DiscordPromises {
             });
         });
     }
+
+    export function addReaction(bot : any, channelId : string, messageId : string, reaction : string) : Promise<void> {
+        return new Promise((resolve, reject) => {
+            bot.addReaction({
+                channelID: channelId,
+                messageID: messageId,
+                reaction: reaction
+            }, (err : Error, response : any) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(response); // TODO: What does this return?
+            });
+        })
+    }
 }
