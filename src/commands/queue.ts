@@ -38,16 +38,14 @@ export class QueueCommand implements Command {
         }
 
         var message = ':calendar_spiral: The queue currently contains **';
-        if (queue.length === 1) {
+        if (queue.count === 1) {
             message += '1 prompt';
-        } else if (queue.length === MAX_QUEUE_DISPLAY_LENGTH) {
-            message += queue.length + ' (or more) prompts';
         } else {
-            message += queue.length + ' prompts';
+            message += queue.count + ' prompts';
         }
         message += '**. Here\'s what to expect:\n\n';
 
-        for (let index = 0; index < queue.length; ++index) {
+        for (let index = 0; index < queue.entries.length; ++index) {
             message += (index + 1) + '. ' + queue.entries[index].text + '\n';
         }
 

@@ -33,7 +33,7 @@ export class PostNewPromptsChrono implements Chrono {
         }
 
         const promptQueue = await PromptQueue.getPromptQueue(bot, db, bucket, 1);
-        if (promptQueue.length === 0) {
+        if (promptQueue.count === 0) {
             return;
         }
 
