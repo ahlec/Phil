@@ -28,13 +28,18 @@ export class QueueCommand implements Command {
     async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
         const bucket = await Bucket.retrieveFromCommandArgs(bot, db, commandArgs, message.server, 'queue', false);
         const queue = await PromptQueue.getPromptQueue(bot, db, bucket, MAX_QUEUE_DISPLAY_LENGTH);
-        const reply = this.makeMessageOutOfQueue(queue);
-        DiscordPromises.sendMessage(bot, message.channelId, reply);
+
+        return DiscordPromises.sendEmbedMessage(bot, message.channelId, {
+            color: 0xB0E0E6,
+            title: "Prompt Queue for " + bucket.displayName,
+            description: this.makeBodyFromQueue(queue),
+            footer: this.makeFooterFromQueue(queue)
+        });
     }
 
-    private makeMessageOutOfQueue(queue : PromptQueue) : string {
+    private makeBodyFromQueue(queue : PromptQueue) : string {
         if (queue.entries.length === 0) {
-            return ':large_blue_diamond: There are no prompts in the queue right now.';
+            return 'There are no prompts in the queue right now.';
         }
 
         var message = ':calendar_spiral: The queue currently contains **';
@@ -43,12 +48,23 @@ export class QueueCommand implements Command {
         } else {
             message += queue.count + ' prompts';
         }
-        message += '**. Here\'s what to expect:\n\n';
+
+        message += '**.\n\n';
 
         for (let index = 0; index < queue.entries.length; ++index) {
             message += (index + 1) + '. ' + queue.entries[index].text + '\n';
         }
 
         return message;
+    }
+
+    private makeFooterFromQueue(queue : PromptQueue) : any {
+        if (queue.count <= MAX_QUEUE_DISPLAY_LENGTH) {
+            return;
+        }
+
+        return {
+            text: '**Confirmed Prompts:** ' + queue.count + ' | **Unconfirmed Prompts:** ' + queue.unconfirmedCount
+        };
     }
 };
