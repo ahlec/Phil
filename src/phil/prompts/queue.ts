@@ -1,12 +1,22 @@
-import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
+import { Client as DiscordIOClient, Server as DiscordIOServer, User as DiscordIOUser } from 'discord.io';
 import { Bucket } from '../buckets';
 import { Database } from '../database';
 import { QueryResult } from 'pg';
 import { Prompt } from './prompt';
+import { DiscordPromises } from '../../promises/discord';
+import { OfficialDiscordEmbed } from 'official-discord';
+import { ReactableFactory } from '../reactables/factory';
+import { Data as PromptQueueReactableData, PromptQueueReactable } from '../reactables/types/prompt-queue';
 
 export class PromptQueueEntry {
     constructor(readonly position : number, readonly prompt : Prompt) {
     }
+}
+
+interface PromptQueuePostData {
+    readonly server : DiscordIOServer;
+    readonly channelId : string;
+    readonly user : DiscordIOUser;
 }
 
 export class PromptQueue {
@@ -69,5 +79,83 @@ export class PromptQueue {
             WHERE has_been_posted = E'0' AND bucket_id = $1
             GROUP BY approved_by_admin`, [bucket.id]);
         return new PromptQueue(bot, bucket, promptResults, countResults, pageNum, pageSize);
+    }
+
+    async postToChannel(bot : DiscordIOClient, db : Database, postData : PromptQueuePostData) : Promise<string> {
+        const messageId = await DiscordPromises.sendEmbedMessage(bot, postData.channelId, this.asEmbedObject());
+        if (this.hasMultiplePages) {
+            await this.setupReactable(bot, db, postData, messageId);
+        }
+
+        return messageId;
+    }
+
+    private asEmbedObject() : OfficialDiscordEmbed {
+        return {
+            color: 0xB0E0E6,
+            title: "Prompt Queue for " + this.bucket.displayName,
+            description: this.makeBodyFromQueue(),
+            footer: this.makeFooterFromQueue()
+        };
+    }
+
+    private makeBodyFromQueue() : string {
+        if (this.entries.length === 0) {
+            return 'There are no prompts in the queue right now.';
+        }
+
+        var message = ':calendar_spiral: The queue currently contains **';
+        if (this.count === 1) {
+            message += '1 prompt';
+        } else {
+            message += this.count + ' prompts';
+        }
+
+        message += '**.\n\n';
+
+        for (let entry of this.entries) {
+            message += '**' + (entry.position) + '.** ' + entry.prompt.text + '\n';
+        }
+
+        return message;
+    }
+
+    private makeFooterFromQueue() : any {
+        if (!this.hasMultiplePages) {
+            return;
+        }
+
+        var message = 'Viewing page ' + this.pageNumber + ' / ' + this.totalPages + '. Navigate using the arrows below.';
+        return {
+            text: message
+        };
+    }
+
+    private async setupReactable(bot : DiscordIOClient, db : Database, postData : PromptQueuePostData, messageId : string) {
+        if (this.pageNumber > 1) {
+            await DiscordPromises.addReaction(bot, postData.channelId, messageId, PromptQueueReactable.PREVIOUS_EMOJI);
+        }
+
+        if (this.pageNumber < this.totalPages) {
+            await DiscordPromises.addReaction(bot, postData.channelId, messageId, PromptQueueReactable.NEXT_EMOJI);
+        }
+
+        const factory = new ReactableFactory(bot, db);
+        factory.messageId = messageId;
+        factory.server = postData.server;
+        factory.channelId = postData.channelId;
+        factory.user = bot.users[postData.user.id];
+        factory.timeLimit = 10;
+        factory.reactableHandle = 'prompt-queue';
+
+        const data : PromptQueueReactableData = {
+            currentPage: this.pageNumber,
+            totalNumberPages: this.totalPages,
+            pageSize: this.pageSize,
+            bucket: this.bucket.id
+        };
+        factory.jsonData = data;
+
+        await factory.create();
     }
 }

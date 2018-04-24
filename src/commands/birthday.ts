@@ -26,7 +26,7 @@ export class BirthdayCommand implements Command {
     async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
         const birthday = this.getInputFromCommandArgs(commandArgs);
 
-        await this.setBirthdayInDatabase(db, message.user, message.userId, birthday);
+        await this.setBirthdayInDatabase(db, message.user.username, message.userId, birthday);
 
         const reply = 'I\'ve updated your birthday to be ' + birthday.format('D MMMM') + '! Thank you! If I made a mistake, however, feel free to tell me your birthday again!';
         BotUtils.sendSuccessMessage({
@@ -55,7 +55,7 @@ export class BirthdayCommand implements Command {
         return momentModuleFunc(birthday);
     }
 
-    async setBirthdayInDatabase(db : Database, user : string, userId : string, birthday : Moment) {
+    async setBirthdayInDatabase(db : Database, username : string, userId : string, birthday : Moment) {
         const day = birthday.date();
         const month = birthday.month() + 1;
 
@@ -68,7 +68,7 @@ export class BirthdayCommand implements Command {
 
         const insertResults = await db.query(`INSERT INTO
             birthdays(username, userid, birthday_day, birthday_month)
-            VALUES($1, $2, $3, $4)`, [user, userId, day, month]);
+            VALUES($1, $2, $3, $4)`, [username, userId, day, month]);
         if (insertResults.rowCount >= 1) {
             return;
         }

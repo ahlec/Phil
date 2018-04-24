@@ -40,7 +40,7 @@ export abstract class SuggestCommandBase implements Command {
         }
 
         const suggestion = this.getSuggestionFromCommandArgs(commandArgs, bucket);
-        await this.addNewPrompt(db, message.user, message.userId, suggestion);
+        await this.addNewPrompt(db, message.user.username, message.userId, suggestion);
 
         return this.sendConfirmationMessage(bot, message.channelId, suggestion);
     }
@@ -123,12 +123,12 @@ export abstract class SuggestCommandBase implements Command {
         };
     }
 
-    private addNewPrompt(db : Database, user : string, userId : string, suggestion : Suggestion) : Promise<any> {
+    private addNewPrompt(db : Database, username : string, userId : string, suggestion : Suggestion) : Promise<any> {
         var suggestBit = (this.suggestAnonymously ? 1 : 0);
         return db.query(`INSERT INTO
                 prompts(suggesting_user, suggesting_userid, date_suggested, prompt_text, submitted_anonymously, bucket_id)
                 VALUES($1, $2, CURRENT_TIMESTAMP, $3, $4, $5)`,
-                [user, userId, suggestion.prompt, suggestBit, suggestion.bucket.id]);
+                [username, userId, suggestion.prompt, suggestBit, suggestion.bucket.id]);
     }
 
     private sendConfirmationMessage(bot : DiscordIOClient, channelId : string, suggestion : Suggestion) : Promise<string> {
