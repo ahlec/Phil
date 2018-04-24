@@ -49,7 +49,9 @@ export class PromptQueueReactable extends ReactableType {
 
         const queue = await PromptQueue.getPromptQueue(bot, db, bucket, newPageNumber, data.pageSize);
 
+        await post.removeFromDatabase(db);
         await DiscordPromises.deleteMessage(bot, post.channelId, post.messageId);
+
         await queue.postToChannel(bot, db, post);
 
         console.log('moving to page ' + newPageNumber);

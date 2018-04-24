@@ -41,4 +41,8 @@ export class ReactablePost {
             return false;
         }
     }
+
+    async removeFromDatabase(db : Database) : Promise<void> {
+        await db.query('DELETE FROM reactable_posts WHERE message_id = $1', [this.messageId]);
+    }
 }
