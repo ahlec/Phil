@@ -1,7 +1,6 @@
 import { Client as DiscordIOClient, Server as DiscordIOServer, User as DiscordIOUser } from 'discord.io';
 import { Database } from '../database';
 import { QueryResult } from 'pg';
-import { Reactable } from './reactable';
 
 export class ReactableFactory {
     messageId : string;
@@ -49,7 +48,7 @@ export class ReactableFactory {
         }
 
         const results = await this.db.query(`INSERT INTO
-            reactables(message_id, server_id, channel_id, user_id, created, timelimit, reactable_type, jsondata)
+            reactable_posts(message_id, server_id, channel_id, user_id, created, timelimit, reactable_type, jsondata)
             VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
             [
                 this.messageId,

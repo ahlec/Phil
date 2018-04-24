@@ -2,7 +2,7 @@ import { Client as DiscordIOClient, Server as DiscordIOServer, User as DiscordIO
 import { Database } from '../database';
 import { QueryResult } from 'pg';
 
-export class Reactable {
+export class ReactablePost {
     readonly messageId : string;
     readonly server : DiscordIOServer;
     readonly channelId : string;
@@ -23,13 +23,13 @@ export class Reactable {
         this.jsonData = JSON.parse(dbRow.jsondata);
     }
 
-    static async getFromMessageId(bot : DiscordIOClient, db : Database, messageId : string) : Promise<Reactable> {
-        const results = await db.query('SELECT * FROM reactables WHERE message_id = $1 LIMIT 1', [messageId]);
+    static async getFromMessageId(bot : DiscordIOClient, db : Database, messageId : string) : Promise<ReactablePost> {
+        const results = await db.query('SELECT * FROM reactable_posts WHERE message_id = $1 LIMIT 1', [messageId]);
         if (results.rowCount === 0) {
             return null;
         }
 
-        return new Reactable(bot, results.rows[0]);
+        return new ReactablePost(bot, results.rows[0]);
     }
 
     isValid() : boolean {

@@ -12,6 +12,7 @@ import { Bucket } from '../phil/buckets';
 import { PromptQueue } from '../phil/prompts/queue';
 import { MessageBuilder } from '../phil/message-builder';
 import { ReactableFactory } from '../phil/reactables/factory';
+import { Data as PromptQueueReactableData, PromptQueueReactable } from '../phil/reactables/types/prompt-queue';
 
 const MAX_QUEUE_DISPLAY_LENGTH = 10;
 
@@ -76,11 +77,11 @@ export class QueueCommand implements Command {
 
     private async setupReactable(bot : DiscordIOClient, db : Database, originalMessage : DiscordMessage, queue : PromptQueue, responseMessageId : string) {
         if (queue.pageNumber > 1) {
-            await DiscordPromises.addReaction(bot, originalMessage.channelId, responseMessageId, '◀');
+            await DiscordPromises.addReaction(bot, originalMessage.channelId, responseMessageId, PromptQueueReactable.PREVIOUS_EMOJI);
         }
 
         if (queue.pageNumber < queue.totalPages) {
-            await DiscordPromises.addReaction(bot, originalMessage.channelId, responseMessageId, '▶');
+            await DiscordPromises.addReaction(bot, originalMessage.channelId, responseMessageId, PromptQueueReactable.NEXT_EMOJI);
         }
 
         const factory = new ReactableFactory(bot, db);
@@ -90,11 +91,14 @@ export class QueueCommand implements Command {
         factory.user = bot.users[originalMessage.userId];
         factory.timeLimit = 10;
         factory.reactableHandle = 'prompt-queue';
-        factory.jsonData = {
+
+        const data : PromptQueueReactableData = {
             currentPage: queue.pageNumber,
+            totalNumberPages: queue.totalPages,
             pageSize: queue.pageSize,
             bucket: queue.bucket.id
         };
+        factory.jsonData = data;
 
         await factory.create();
     }

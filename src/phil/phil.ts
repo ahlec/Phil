@@ -5,7 +5,7 @@ import { Client as DiscordIOClient, Member as DiscordIOMember } from 'discord.io
 import { CommandRunner } from './command-runner';
 import { ChronoManager } from './chrono-manager';
 import { AnalyzerManager } from './analyzer-manager';
-import { ReactionProcessor } from './reaction-processor';
+import { ReactableProcessor } from './reactables/processor';
 import { greetNewMember } from './greeting';
 import { DiscordMessage } from './discord-message';
 import { Database } from './database';
@@ -22,7 +22,7 @@ export class Phil {
     private readonly _commandRunner : CommandRunner;
     private readonly _chronoManager : ChronoManager;
     private readonly _analyzerManager : AnalyzerManager;
-    private readonly _reactionProcessor : ReactionProcessor;
+    private readonly _reactableProcessor : ReactableProcessor;
     private _shouldSendDisconnectedMessage : boolean;
 
     constructor(db: Database) {
@@ -32,7 +32,7 @@ export class Phil {
         this._commandRunner = new CommandRunner(this._bot, this._db);
         this._chronoManager = new ChronoManager(this._bot, this._db);
         this._analyzerManager = new AnalyzerManager(this._bot, this._db);
-        this._reactionProcessor = new ReactionProcessor(this._bot, this._db);
+        this._reactableProcessor = new ReactableProcessor(this._bot, this._db);
     }
 
     public start() {
@@ -140,7 +140,7 @@ export class Phil {
 
     private _onRawWebSocketEvent(event : OfficialDiscordPayload<any>) {
         if (event.t === 'MESSAGE_REACTION_ADD') {
-            this._reactionProcessor.processReactionAdded(event.d as OfficialDiscordReactionEvent);
+            this._reactableProcessor.processReactionAdded(event.d as OfficialDiscordReactionEvent);
         }
     }
 };
