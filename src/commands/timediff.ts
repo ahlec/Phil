@@ -37,7 +37,7 @@ export class TimediffCommand implements Command {
         }
 
         const theirTimezone = await UserTimezone.getForUser(db, mention.userId);
-        if (!ownTimezone || !ownTimezone.hasProvided) {
+        if (!theirTimezone || !theirTimezone.hasProvided) {
             throw new Error('The user you mentioned has not provided their timezone yet. They can do so by using `' + process.env.COMMAND_PREFIX + 'timezone`, but if they\'re unwilling to do so, you can always just ask them privately!');
         }
 
