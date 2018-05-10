@@ -1,10 +1,11 @@
 'use strict';
 
 import { Command } from './@types';
-import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
+import { Phil } from '../phil/phil';
 import { Database } from '../phil/database';
+import { HelpGroup } from '../phil/help-groups';
+import { Server as DiscordIOServer } from 'discord.io';
+import { DiscordMessage } from '../phil/discord-message';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { BotUtils } from '../phil/utils';
@@ -22,21 +23,21 @@ export class RemoveCommand implements Command {
     readonly versionAdded = 7;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
         if (commandArgs.length === 0) {
-            return this.processNoCommandArgs(bot, message, db);
+            return this.processNoCommandArgs(phil, message);
         }
 
-        const requestable = await Requestable.getFromRequestString(db, message.server, commandArgs[0]);
+        const requestable = await Requestable.getFromRequestString(phil.db, message.server, commandArgs[0]);
         if (!requestable) {
             throw new Error('There is no requestable by the name of `' + commandArgs[0] + '`.');
         }
 
         this.ensureUserHasRole(message.server, message.userId, requestable);
 
-        const result = await DiscordPromises.takeRoleFromUser(bot, message.server.id, message.userId, requestable.role.id);
+        const result = await DiscordPromises.takeRoleFromUser(phil.bot, message.server.id, message.userId, requestable.role.id);
         BotUtils.sendSuccessMessage({
-            bot: bot,
+            bot: phil.bot,
             channelId: message.channelId,
             message: 'I\'ve removed the "' + requestable.role.name + '" role from you.'
         });
@@ -52,14 +53,14 @@ export class RemoveCommand implements Command {
         return requestable.role;
     }
 
-    private async processNoCommandArgs(bot : DiscordIOClient, message : DiscordMessage, db : Database) : Promise<any> {
-        const userRequestables = await this.getAllRequestablesUserHas(db, message.server, message.userId);
+    private async processNoCommandArgs(phil : Phil, message : DiscordMessage) : Promise<any> {
+        const userRequestables = await this.getAllRequestablesUserHas(phil.db, message.server, message.userId);
         if (userRequestables.length === 0) {
             throw new Error('I haven\'t given you any requestable roles yet. You use `' + process.env.COMMAND_PREFIX + 'request` in order to obtain these roles.');
         }
 
         const reply = this.composeAllRequestablesList(userRequestables);
-        return DiscordPromises.sendMessageBuilder(bot, message.channelId, reply);
+        return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, reply);
     }
 
     private async getAllRequestablesUserHas(db : Database, server : DiscordIOServer, userId : string) : Promise<Requestable[]> {

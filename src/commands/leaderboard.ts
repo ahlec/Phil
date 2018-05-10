@@ -1,10 +1,9 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { LeaderboardEntry, Leaderboard } from '../phil/prompts/leaderboard';
@@ -79,11 +78,11 @@ export class LeaderboardCommand implements Command {
     readonly versionAdded = 11;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        const leaderboard = await Leaderboard.getLeaderboard(bot, db, message.server);
+    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+        const leaderboard = await Leaderboard.getLeaderboard(phil.bot, phil.db, message.server);
         const reply = createLeaderboardMessage(leaderboard);
 
-        DiscordPromises.sendEmbedMessage(bot, message.channelId, {
+        DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
             color: 0xB0E0E6,
             title: 'Hijack Prompt of the Day Leaderboard',
             description: reply,

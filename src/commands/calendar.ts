@@ -1,8 +1,9 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
+import { Server as DiscordIOServer } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
 import { Database } from '../phil/database';
 import { BotUtils } from '../phil/utils';
@@ -24,11 +25,11 @@ export class CalendarCommand implements Command {
     readonly versionAdded = 6;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
         const month = this.determineMonth(commandArgs);
-        const calendar = await CalendarMonth.getForMonth(bot, db, message.server, month);
+        const calendar = await CalendarMonth.getForMonth(phil.bot, phil.db, message.server, month);
         const builder = this.composeMessageFromCalendar(message.server, calendar);
-        return DiscordPromises.sendMessageBuilder(bot, message.channelId, builder);
+        return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, builder);
     }
 
     private determineMonth(commandArgs : string[]) : number {

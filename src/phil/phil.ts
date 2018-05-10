@@ -17,32 +17,29 @@ function ignoreDiscordCode(code : number) {
 }
 
 export class Phil {
-    private readonly _db : Database;
-    private readonly _bot : DiscordIOClient;
+    readonly bot : DiscordIOClient;
     private readonly _commandRunner : CommandRunner;
     private readonly _chronoManager : ChronoManager;
     private readonly _analyzerManager : AnalyzerManager;
     private readonly _reactableProcessor : ReactableProcessor;
     private _shouldSendDisconnectedMessage : boolean;
 
-    constructor(db: Database) {
-        this._db = db;
-
-        this._bot = new DiscordIOClient({ token: process.env.DISCORD_BOT_TOKEN, autorun: true });
-        this._commandRunner = new CommandRunner(this._bot, this._db);
-        this._chronoManager = new ChronoManager(this._bot, this._db);
-        this._analyzerManager = new AnalyzerManager(this._bot, this._db);
-        this._reactableProcessor = new ReactableProcessor(this._bot, this._db);
+    constructor(public readonly db: Database) {
+        this.bot = new DiscordIOClient({ token: process.env.DISCORD_BOT_TOKEN, autorun: true });
+        this._commandRunner = new CommandRunner(this, this.bot, this.db);
+        this._chronoManager = new ChronoManager(this.bot, this.db);
+        this._analyzerManager = new AnalyzerManager(this.bot, this.db);
+        this._reactableProcessor = new ReactableProcessor(this.bot, this.db);
     }
 
     public start() {
         this._shouldSendDisconnectedMessage = false;
 
-        this._bot.on('ready', this._onReady.bind(this));
-        this._bot.on('message', this._onMessage.bind(this));
-        this._bot.on('disconnect', this._onDisconnect.bind(this));
-        this._bot.on('guildMemberAdd', this._onMemberAdd.bind(this));
-        this._bot.on('any', this._onRawWebSocketEvent.bind(this));
+        this.bot.on('ready', this._onReady.bind(this));
+        this.bot.on('message', this._onMessage.bind(this));
+        this.bot.on('disconnect', this._onDisconnect.bind(this));
+        this.bot.on('guildMemberAdd', this._onMemberAdd.bind(this));
+        this.bot.on('any', this._onRawWebSocketEvent.bind(this));
     }
 
     private _reportStartupError(err : Error) {
@@ -52,13 +49,13 @@ export class Phil {
     }
 
     private _onReady() {
-        console.log('Logged in as %s - %s\n', this._bot.username, this._bot.id);
+        console.log('Logged in as %s - %s\n', this.bot.username, this.bot.id);
 
         this._chronoManager.start();
 
         if (this._shouldSendDisconnectedMessage) {
             BotUtils.sendErrorMessage({
-                bot: this._bot,
+                bot: this.bot,
                 channelId: process.env.BOT_COMMAND_CHANNEL_ID,
                 message: 'Encountered an unexpected shutdown, @' + process.env.BOT_MANAGER_USERNAME + '. The logs should be in Heroku. I\'ve recovered though and connected again.'
             });
@@ -67,7 +64,7 @@ export class Phil {
     }
 
     private _onMessage(user : string, userId : string, channelId : string, msg : string, event : OfficialDiscordPayload<OfficialDiscordMessage>) {
-        const message = new DiscordMessage(event, this._bot);
+        const message = new DiscordMessage(event, this.bot);
 
         if (this._isOwnMessage(message)) {
             this._handleOwnMessage(event);
@@ -90,11 +87,11 @@ export class Phil {
     }
 
     private _isOwnMessage(message : DiscordMessage) : boolean {
-        return (message.userId === this._bot.id);
+        return (message.userId === this.bot.id);
     }
 
     private _shouldIgnoreMessage(message : DiscordMessage) : boolean {
-        const user = this._bot.users[message.userId];
+        const user = this.bot.users[message.userId];
         if (!user) {
             console.log('yes');
             return true;
@@ -116,7 +113,7 @@ export class Phil {
         // I dislike those messages that say 'Phil has pinned a message to this channel.'
         // So Phil is going to delete his own when he encounters them.
         console.log('Phil posted an empty message (id %s) to channel %s. deleting.', event.d.id, event.d.channel_id);
-        this._bot.deleteMessage({
+        this.bot.deleteMessage({
             channelID: event.d.channel_id,
             messageID: event.d.id
         });
@@ -130,12 +127,12 @@ export class Phil {
         }
         console.error('Reconnecting now...');
         this._shouldSendDisconnectedMessage = !ignoreDiscordCode(code);
-        this._bot.connect();
+        this.bot.connect();
     }
 
     private _onMemberAdd(member : DiscordIOMember) {
         console.log('A new member has joined the server.');
-        greetNewMember(this._bot, member);
+        greetNewMember(this.bot, member);
     }
 
     private _onRawWebSocketEvent(event : OfficialDiscordPayload<any>) {

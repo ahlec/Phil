@@ -1,10 +1,10 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
+import { Server as DiscordIOServer } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { BotUtils } from '../phil/utils';
@@ -22,21 +22,21 @@ export class RequestCommand implements Command {
     readonly versionAdded = 1;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
         if (commandArgs.length === 0) {
-            return this.processNoCommandArgs(bot, message, db);
+            return this.processNoCommandArgs(phil, message);
         }
 
-        const requestable = await Requestable.getFromRequestString(db, message.server, commandArgs[0]);
+        const requestable = await Requestable.getFromRequestString(phil.db, message.server, commandArgs[0]);
         if (!requestable) {
             throw new Error('There is no requestable by the name of `' + commandArgs[0] + '`.');
         }
 
         this.ensureUserCanRequestRole(message.server, message.userId, requestable);
 
-        const result = await DiscordPromises.giveRoleToUser(bot, message.server.id, message.userId, requestable.role.id);
+        const result = await DiscordPromises.giveRoleToUser(phil.bot, message.server.id, message.userId, requestable.role.id);
         BotUtils.sendSuccessMessage({
-            bot: bot,
+            bot: phil.bot,
             channelId: message.channelId,
             message: 'You have been granted the "' + requestable.role.name + '" role!'
         });
@@ -49,14 +49,14 @@ export class RequestCommand implements Command {
         }
     }
 
-    private async processNoCommandArgs(bot : DiscordIOClient, message : DiscordMessage, db : Database) : Promise<any> {
-        const requestables = await Requestable.getAllRequestables(db, message.server);
+    private async processNoCommandArgs(phil : Phil, message : DiscordMessage) : Promise<any> {
+        const requestables = await Requestable.getAllRequestables(phil.db, message.server);
         if (requestables.length === 0) {
             throw new Error('There are no requestable roles defined. An admin should use `' + process.env.COMMAND_PREFIX + 'define` to create some roles.');
         }
 
         const reply = this.composeAllRequestablesList(requestables);
-        return DiscordPromises.sendMessageBuilder(bot, message.channelId, reply);
+        return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, reply);
     }
 
     private composeAllRequestablesList(requestables : Requestable[]) : MessageBuilder {

@@ -1,6 +1,7 @@
 'use strict';
 
 import { Command } from '../@types';
+import { Phil } from '../../phil/phil';
 import { HelpGroup } from '../../phil/help-groups';
 import { Client as DiscordIOClient } from 'discord.io';
 import { DiscordMessage } from '../../phil/discord-message';
@@ -35,7 +36,7 @@ export abstract class ConfirmRejectCommandBase implements Command {
     abstract readonly versionAdded : number;
 
     readonly publicRequiresAdmin = true;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
         const numbers = this.getNumbersFromCommandArgs(commandArgs);
         console.log(require('util').inspect(numbers));
 
@@ -46,7 +47,7 @@ export abstract class ConfirmRejectCommandBase implements Command {
 
         for (let number of numbers) {
             number = number - 1; // Public facing, it's 1-based, but in the database it's 0-based
-            let result = await this.performAction(bot, db, message.channelId, number);
+            let result = await this.performAction(phil, message.channelId, number);
             console.log('result of number %d: %d', number, result);
             if (result === PerformResult.Success) {
                 results.numSuccessful++;
@@ -55,10 +56,10 @@ export abstract class ConfirmRejectCommandBase implements Command {
             }
         }
 
-        this.sendCompletionMessage(bot, message.channelId, results);
+        this.sendCompletionMessage(phil, message.channelId, results);
     }
 
-    protected abstract performActionOnPrompt(bot : DiscordIOClient, db : Database, promptId : number) : Promise<boolean>;
+    protected abstract performActionOnPrompt(phil : Phil, promptId : number) : Promise<boolean>;
 
     private getNumbersFromCommandArgs(commandArgs : string[]) : number[] {
         if (commandArgs.length !== 1) {
@@ -102,20 +103,20 @@ export abstract class ConfirmRejectCommandBase implements Command {
         return includedNumbers;
     }
 
-    private async performAction(bot : DiscordIOClient, db : Database, channelId : string, number : number) : Promise<PerformResult> {
+    private async performAction(phil : Phil, channelId : string, number : number) : Promise<PerformResult> {
         try {
-            const results = await db.query('SELECT prompt_id FROM prompt_confirmation_queue WHERE channel_id = $1 and confirm_number = $2', [channelId, number]);
+            const results = await phil.db.query('SELECT prompt_id FROM prompt_confirmation_queue WHERE channel_id = $1 and confirm_number = $2', [channelId, number]);
             if (results.rowCount === 0) {
                 return PerformResult.Skipped;
             }
 
             const promptId = results.rows[0].prompt_id;
-            const actionResult = this.performActionOnPrompt(bot, db, promptId);
+            const actionResult = this.performActionOnPrompt(phil, promptId);
             if (!actionResult) {
                 return PerformResult.Error;
             }
 
-            await this.removeNumberFromConfirmationQueue(db, channelId, number);
+            await this.removeNumberFromConfirmationQueue(phil.db, channelId, number);
             return PerformResult.Success;
         } catch {
             return PerformResult.Error;
@@ -129,10 +130,10 @@ export abstract class ConfirmRejectCommandBase implements Command {
         }
     }
 
-    private sendCompletionMessage(bot : DiscordIOClient, channelId : string, results : ConfirmRejectResults) {
+    private sendCompletionMessage(phil : Phil, channelId : string, results : ConfirmRejectResults) {
         if (results.numSuccessful === 0) {
             BotUtils.sendErrorMessage({
-                bot: bot,
+                bot: phil.bot,
                 channelId: channelId,
                 message: this.noPromptsConfirmedMessage
             });
@@ -140,7 +141,7 @@ export abstract class ConfirmRejectCommandBase implements Command {
         }
 
         BotUtils.sendSuccessMessage({
-            bot: bot,
+            bot: phil.bot,
             channelId: channelId,
             message: (results.numSuccessful === 1 ? this.onePromptConfirmedMessage : this.multiplePromptsConfirmedMessage)
         });

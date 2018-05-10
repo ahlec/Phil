@@ -1,11 +1,11 @@
-import { Client as DiscordIOClient } from 'discord.io';
+import { Phil } from '../phil/phil';
 import { DiscordMessage } from '../phil/discord-message';
 import { Database } from '../phil/database';
 import { HelpGroup } from '../phil/help-groups';
 import { Feature } from '../phil/features';
 
 export interface CommandProcessFunction {
-    (bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db: Database ) : Promise<any>;
+    (phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any>;
 }
 
 export interface Command {

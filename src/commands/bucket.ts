@@ -1,8 +1,8 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
 import { Database } from '../phil/database';
 import { BotUtils } from '../phil/utils';
@@ -11,13 +11,13 @@ import { Features } from '../phil/features';
 import { Bucket } from '../phil/buckets';
 
 interface FieldTransformFunc<T> {
-    (bot : DiscordIOClient, bucket : Bucket, value : T) : string;
+    (bucket : Bucket, value : T) : string;
 }
 
-function createField<T>(bot : DiscordIOClient, bucket : Bucket, header : string, value : T, valueTransformFunc? : FieldTransformFunc<T>) {
+function createField<T>(bucket : Bucket, header : string, value : T, valueTransformFunc? : FieldTransformFunc<T>) {
     var displayValue : any = value;
     if (valueTransformFunc) {
-        displayValue = valueTransformFunc(bot, bucket, value);
+        displayValue = valueTransformFunc(bucket, value);
     }
 
     return {
@@ -27,28 +27,28 @@ function createField<T>(bot : DiscordIOClient, bucket : Bucket, header : string,
     };
 }
 
-function formatBoolean(bot : DiscordIOClient, bucket : Bucket, value : boolean) : string {
+function formatBoolean(bucket : Bucket, value : boolean) : string {
     return (value ? 'Yes' : 'No');
 }
 
-function formatChannel(bot : DiscordIOClient, bucket : Bucket, value : string) : string {
+function formatChannel(bucket : Bucket, value : string) : string {
     return '<#' + value + '>';
 }
 
-function sendBucketToChannel(bot : DiscordIOClient, channelId : string, bucket : Bucket) : Promise<string> {
-    return DiscordPromises.sendEmbedMessage(bot, channelId, {
+function sendBucketToChannel(phil : Phil, channelId : string, bucket : Bucket) : Promise<string> {
+    return DiscordPromises.sendEmbedMessage(phil.bot, channelId, {
         color: 0xB0E0E6,
         title: ':writing_hand: Prompt Bucket: ' + bucket.handle,
         fields: [
-            createField(bot, bucket, 'Reference Handle', bucket.handle),
-            createField(bot, bucket, 'Display Name', bucket.displayName),
-            createField(bot, bucket, 'Database ID', bucket.id),
-            createField(bot, bucket, 'Is Valid', bucket.isValid, formatBoolean),
-            createField(bot, bucket, 'Channel', bucket.channelId, formatChannel),
-            createField(bot, bucket, 'Required Member Role', (bucket.requiredRoleId ? '<@' + bucket.requiredRoleId + '>' : 'None')),
-            createField(bot, bucket, 'Is Paused', bucket.isPaused, formatBoolean),
-            createField(bot, bucket, 'Should Pin Posts', bucket.shouldPinPosts, formatBoolean),
-            createField(bot, bucket, 'Frequency', bucket.frequencyDisplayName)
+            createField(bucket, 'Reference Handle', bucket.handle),
+            createField(bucket, 'Display Name', bucket.displayName),
+            createField(bucket, 'Database ID', bucket.id),
+            createField(bucket, 'Is Valid', bucket.isValid, formatBoolean),
+            createField(bucket, 'Channel', bucket.channelId, formatChannel),
+            createField(bucket, 'Required Member Role', (bucket.requiredRoleId ? '<@' + bucket.requiredRoleId + '>' : 'None')),
+            createField(bucket, 'Is Paused', bucket.isPaused, formatBoolean),
+            createField(bucket, 'Should Pin Posts', bucket.shouldPinPosts, formatBoolean),
+            createField(bucket, 'Frequency', bucket.frequencyDisplayName)
         ]
     });
 }
@@ -64,8 +64,8 @@ export class BucketCommand implements Command {
     readonly versionAdded = 11;
 
     readonly publicRequiresAdmin = true;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        const bucket = await Bucket.retrieveFromCommandArgs(bot, db, commandArgs, message.server, 'bucket', true);
-        return sendBucketToChannel(bot, message.channelId, bucket);
+    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+        const bucket = await Bucket.retrieveFromCommandArgs(phil.bot, phil.db, commandArgs, message.server, 'bucket', true);
+        return sendBucketToChannel(phil, message.channelId, bucket);
     }
 };

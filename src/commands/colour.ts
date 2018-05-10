@@ -1,8 +1,9 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient, Server as DiscordIOServer, Role as DiscordIORole } from 'discord.io';
+import { Server as DiscordIOServer, Role as DiscordIORole } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
 import { Database } from '../phil/database';
 import { BotUtils } from '../phil/utils';
@@ -37,16 +38,16 @@ export class ColourCommand implements Command {
     readonly versionAdded = 3;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
         const hexColor = this.getHexColorFromCommandArgs(commandArgs);
-        const colorRole = await this.getRoleFromHexColor(bot, message.server, hexColor);
+        const colorRole = await this.getRoleFromHexColor(phil, message.server, hexColor);
 
-        await this.removeColorRolesFromUser(bot, message.server, message.userId);
-        await DiscordPromises.giveRoleToUser(bot, message.server.id, message.userId, colorRole.id);
+        await this.removeColorRolesFromUser(phil, message.server, message.userId);
+        await DiscordPromises.giveRoleToUser(phil.bot, message.server.id, message.userId, colorRole.id);
 
         const compliment = BotUtils.getRandomArrayEntry(compliments);
         BotUtils.sendSuccessMessage({
-            bot: bot,
+            bot: phil.bot,
             channelId: message.channelId,
             message: 'Your colour has been changed to **' + hexColor + '**. ' + compliment
         });
@@ -68,7 +69,7 @@ export class ColourCommand implements Command {
         return hexColor;
     }
 
-    private async removeColorRolesFromUser(bot : DiscordIOClient, server : DiscordIOServer, userId : string) : Promise<void> {
+    private async removeColorRolesFromUser(phil : Phil, server : DiscordIOServer, userId : string) : Promise<void> {
         const member = server.members[userId];
 
         for (let roleId of member.roles) {
@@ -76,11 +77,11 @@ export class ColourCommand implements Command {
                 continue;
             }
 
-            await DiscordPromises.takeRoleFromUser(bot, server.id, userId, roleId);
+            await DiscordPromises.takeRoleFromUser(phil.bot, server.id, userId, roleId);
         }
     }
 
-    private async getRoleFromHexColor(bot : DiscordIOClient, server : DiscordIOServer, hexColor : string) : Promise<DiscordIORole> {
+    private async getRoleFromHexColor(phil : Phil, server : DiscordIOServer, hexColor : string) : Promise<DiscordIORole> {
         for (let roleId in server.roles) {
             let role = server.roles[roleId];
             if (role.name === hexColor) {
@@ -89,8 +90,8 @@ export class ColourCommand implements Command {
         }
 
         const hexColorNumber = parseInt(hexColor.replace('#', '0x'), 16);
-        const newRole = await DiscordPromises.createRole(bot, server.id);
-        await DiscordPromises.editRole(bot, server.id, newRole.id, {
+        const newRole = await DiscordPromises.createRole(phil.bot, server.id);
+        await DiscordPromises.editRole(phil.bot, server.id, newRole.id, {
             name: hexColor,
             color: hexColorNumber
         });

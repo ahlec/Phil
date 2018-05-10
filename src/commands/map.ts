@@ -1,10 +1,9 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
 import { Feature } from '../phil/features';
 
@@ -19,7 +18,7 @@ export class MapCommand implements Command {
     readonly versionAdded = 8;
 
     readonly publicRequiresAdmin = false;
-    processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        return DiscordPromises.sendMessage(bot, message.channelId, process.env.HIJACK_FANDOM_GOOGLE_MAP_LINK);
+    processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+        return DiscordPromises.sendMessage(phil.bot, message.channelId, process.env.HIJACK_FANDOM_GOOGLE_MAP_LINK);
     }
 };

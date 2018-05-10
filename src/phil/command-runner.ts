@@ -6,6 +6,7 @@ import { DiscordMessage } from './discord-message';
 import { InputMessage } from './input-message';
 import { Command, CommandProcessFunction } from '../commands/@types';
 import { CommandLookup } from '../commands/index';
+import { Phil } from './phil';
 import { BotUtils } from './utils';
 import { Feature } from './features';
 
@@ -18,12 +19,9 @@ class CommandRunData {
 }
 
 export class CommandRunner {
-    private readonly _bot : Client;
-    private readonly _db : Database;
-
-    constructor(bot : Client, db : Database) {
-        this._bot = bot;
-        this._db = db;
+    constructor(private readonly phil : Phil,
+        private readonly bot : Client,
+        private readonly db : Database) {
     }
 
     public isCommand(message : DiscordMessage) : boolean {
@@ -45,7 +43,7 @@ export class CommandRunner {
         }
 
         if (command.feature && message.server) {
-            let isFeatureEnabled = await command.feature.getIsEnabled(this._db, message.server.id);
+            let isFeatureEnabled = await command.feature.getIsEnabled(this.db, message.server.id);
             if (!isFeatureEnabled) {
                 this._reportInvalidCommand(message, input);
                 return;
@@ -82,17 +80,16 @@ export class CommandRunner {
     private _reportInvalidCommand(message : DiscordMessage, input : InputMessage) {
         const commandName = input.getCommandName();
         BotUtils.sendErrorMessage({
-            bot: this._bot,
+            bot: this.bot,
             channelId: message.channelId,
             message: 'There is no `' + process.env.COMMAND_PREFIX + commandName + '` command.'
         });
     }
 
     private _getCommandDataForChannel(command :Command, input : InputMessage, message : DiscordMessage) : CommandRunData {
-        const isDirectMessage = (message.channelId in this._bot.directMessages);
         const commandName = input.getCommandName();
 
-        if (isDirectMessage) {
+        if (message.isDirectMessage) {
             return {
                 requiresAdmin: command.privateRequiresAdmin,
                 func: command.processPrivateMessage.bind(command), // TODO: Return to this whole structure
@@ -109,7 +106,7 @@ export class CommandRunner {
 
     private _reportInvalidChannel(message : DiscordMessage, commandData : CommandRunData) {
         BotUtils.sendErrorMessage({
-            bot: this._bot,
+            bot: this.bot,
             channelId: message.channelId,
             message: commandData.incorrectChannelMessage
         });
@@ -120,8 +117,8 @@ export class CommandRunner {
             return true;
         }
 
-        const serverId = this._bot.channels[message.channelId].guild_id;
-        const server = this._bot.servers[serverId];
+        const serverId = this.bot.channels[message.channelId].guild_id;
+        const server = this.bot.servers[serverId];
         const member = server.members[message.userId];
         return BotUtils.isMemberAnAdminOnServer(member, server);
     }
@@ -129,7 +126,7 @@ export class CommandRunner {
     private _reportCannotUseCommand(message : DiscordMessage, commandData : CommandRunData, input : InputMessage) {
         const commandName = input.getCommandName();
         BotUtils.sendErrorMessage({
-            bot: this._bot,
+            bot: this.bot,
             channelId: message.channelId,
             message: 'The `' + process.env.COMMAND_PREFIX + commandName + '` command requires admin privileges to use here.'
         });
@@ -139,7 +136,7 @@ export class CommandRunner {
         const commandArgs = input.getCommandArgs();
 
         try {
-            await commandData.func(this._bot, message, commandArgs, this._db);
+            await commandData.func(this.phil, message, commandArgs);
         } catch(err) {
             await this.reportCommandError(err, message.channelId);
         }
@@ -148,7 +145,7 @@ export class CommandRunner {
     private async reportCommandError(err : Error, channelId : string) {
         console.error(util.inspect(err));
         BotUtils.sendErrorMessage({
-            bot: this._bot,
+            bot: this.bot,
             channelId: channelId,
             message: err.message
         });

@@ -1,10 +1,10 @@
 'use strict';
 
 import { Command } from '../@types';
-import { HelpGroup } from '../../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../../phil/discord-message';
+import { Phil } from '../../phil/phil';
 import { Database } from '../../phil/database';
+import { HelpGroup } from '../../phil/help-groups';
+import { DiscordMessage } from '../../phil/discord-message';
 import { Features } from '../../phil/features';
 import { DiscordPromises } from '../../promises/discord';
 import { Bucket } from '../../phil/buckets';
@@ -31,21 +31,21 @@ export abstract class SuggestCommandBase implements Command {
     abstract readonly versionAdded : number;
 
     readonly privateRequiresAdmin = false;
-    async processPrivateMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        const userBuckets = await Bucket.getAllForUser(bot, db, message.userId);
-        const bucket = this.resolveBucket(bot, userBuckets, commandArgs);
-        if (!bucket.canUserSubmitTo(bot, message.userId)) {
+    async processPrivateMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+        const userBuckets = await Bucket.getAllForUser(phil.bot, phil.db, message.userId);
+        const bucket = this.resolveBucket(phil, userBuckets, commandArgs);
+        if (!bucket.canUserSubmitTo(phil.bot, message.userId)) {
             const role = message.server.roles[bucket.requiredRoleId];
             throw new Error('In order to be able to submit a prompt to this bucket, you must have the **' + role.name + '** role.');
         }
 
         const suggestion = this.getSuggestionFromCommandArgs(commandArgs, bucket);
-        await this.addNewPrompt(db, message.user.username, message.userId, suggestion);
+        await this.addNewPrompt(phil.db, message.user.username, message.userId, suggestion);
 
-        return this.sendConfirmationMessage(bot, message.channelId, suggestion);
+        return this.sendConfirmationMessage(phil, message.channelId, suggestion);
     }
 
-    private resolveBucket(bot : DiscordIOClient, userBuckets : Bucket[], commandArgs : string[]) : Bucket {
+    private resolveBucket(phil : Phil, userBuckets : Bucket[], commandArgs : string[]) : Bucket {
         if (!userBuckets || userBuckets.length === 0) {
             throw new Error('There are no prompt buckets that you are able to submit to. This most likely means that you are not part of any servers with configured prompt buckets. However, if you do know that there are prompt buckets on one (or more) servers, reach out to your admin(s); it could be that you are lacking the appropriate roles, or that prompts are temporarily disabled on that server.');
         }
@@ -72,16 +72,16 @@ export abstract class SuggestCommandBase implements Command {
             serverLookup[bucket.serverId].push(bucket);
         }
 
-        const errorList = this.createBucketErrorList(bot, serverLookup);
+        const errorList = this.createBucketErrorList(phil, serverLookup);
         throw new Error(errorList);
     }
 
-    private createBucketErrorList(bot : DiscordIOClient, serverLookup : ServerBucketLookup) : string {
+    private createBucketErrorList(phil : Phil, serverLookup : ServerBucketLookup) : string {
         var message = 'In order to use this command, you must specify the name of a bucket. Within the following servers that we\'re both in, here are the buckets you can submit to:';
 
         var firstBucket;
         for (let serverId in serverLookup) {
-            let server = bot.servers[serverId];
+            let server = phil.bot.servers[serverId];
             if (!server) {
                 continue;
             }
@@ -131,8 +131,8 @@ export abstract class SuggestCommandBase implements Command {
                 [username, userId, suggestion.prompt, suggestBit, suggestion.bucket.id]);
     }
 
-    private sendConfirmationMessage(bot : DiscordIOClient, channelId : string, suggestion : Suggestion) : Promise<string> {
-        return DiscordPromises.sendEmbedMessage(bot, channelId, {
+    private sendConfirmationMessage(phil : Phil, channelId : string, suggestion : Suggestion) : Promise<string> {
+        return DiscordPromises.sendEmbedMessage(phil.bot, channelId, {
             color: 0xB0E0E6,
             title: ':envelope_with_arrow: Submission Received',
             description: 'The following prompt has been sent to the admins for approval:\n\n**' + suggestion.prompt + '**\n\nIf it\'s approved, you\'ll see it in chat shortly and you\'ll receive a point for the leaderboard!'

@@ -1,10 +1,10 @@
 'use strict';
 
 import { Command } from './@types';
-import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
+import { Phil } from '../phil/phil';
 import { Database } from '../phil/database';
+import { HelpGroup } from '../phil/help-groups';
+import { DiscordMessage } from '../phil/discord-message';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import { Feature } from '../phil/features';
@@ -23,22 +23,22 @@ export class BirthdayCommand implements Command {
     readonly versionAdded = 5;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
         const birthday = this.getInputFromCommandArgs(commandArgs);
 
-        await this.setBirthdayInDatabase(db, message.user.username, message.userId, birthday);
+        await this.setBirthdayInDatabase(phil.db, message.user.username, message.userId, birthday);
 
         const reply = 'I\'ve updated your birthday to be ' + birthday.format('D MMMM') + '! Thank you! If I made a mistake, however, feel free to tell me your birthday again!';
         BotUtils.sendSuccessMessage({
-            bot: bot,
+            bot: phil.bot,
             channelId: message.channelId,
             message: reply
         });
     }
 
     readonly privateRequiresAdmin = false;
-    processPrivateMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        return this.processPublicMessage(bot, message, commandArgs, db);
+    processPrivateMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+        return this.processPublicMessage(phil, message, commandArgs);
     }
 
     getInputFromCommandArgs(commandArgs : string[]) : Moment {

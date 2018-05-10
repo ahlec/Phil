@@ -1,10 +1,9 @@
 'use strict';
 
 import { Command, ICommandLookup } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup, getHeaderForGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
 import { MessageBuilder } from '../phil/message-builder';
 import { DiscordPromises } from '../promises/discord';
 import { BotUtils } from '../phil/utils';
@@ -160,9 +159,9 @@ export class HelpCommand implements Command {
     readonly versionAdded = 3;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
         const isAdminChannel = BotUtils.isAdminChannel(message.channelId);
-        const featuresEnabledLookup = await FeatureUtils.getServerFeaturesStatus(db, message.server.id);
+        const featuresEnabledLookup = await FeatureUtils.getServerFeaturesStatus(phil.db, message.server.id);
         const builder = new MessageBuilder();
 
         for (let helpGroup of this._helpGroups) {
@@ -174,7 +173,7 @@ export class HelpCommand implements Command {
         }
 
         for (let helpMessage of builder.messages) {
-            await DiscordPromises.sendMessage(bot, message.channelId, helpMessage);
+            await DiscordPromises.sendMessage(phil.bot, message.channelId, helpMessage);
         }
     }
 

@@ -1,10 +1,9 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
 import { Feature } from '../phil/features';
 import { YouTubePromises } from '../promises/youtube';
@@ -20,7 +19,7 @@ export class YoutubeCommand implements Command {
     readonly versionAdded = 4;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
         const query = commandArgs.join(' ').trim();
         if (query.length === 0) {
             throw new Error('You must provide some text to tell me what to search for.');
@@ -32,6 +31,6 @@ export class YoutubeCommand implements Command {
         }
 
         const link = 'https://youtu.be/' + results[0].id;
-        DiscordPromises.sendMessage(bot, message.channelId, link);
+        DiscordPromises.sendMessage(phil.bot, message.channelId, link);
     }
 };

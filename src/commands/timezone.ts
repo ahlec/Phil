@@ -1,12 +1,10 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
 import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
 import { BotUtils } from '../phil/utils';
-import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { TimezoneQuestionnaire } from '../phil/timezone-questionnaire';
 
@@ -21,12 +19,12 @@ export class TimezoneCommand implements Command {
     readonly versionAdded = 8;
 
     readonly publicRequiresAdmin = false;
-    processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        return TimezoneQuestionnaire.startQuestionnaire(bot, db, message.userId, true);
+    processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+        return TimezoneQuestionnaire.startQuestionnaire(phil.bot, phil.db, message.userId, true);
     }
 
     readonly privateRequiresAdmin = false;
-    processPrivateMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        return TimezoneQuestionnaire.startQuestionnaire(bot, db, message.userId, true);
+    processPrivateMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+        return TimezoneQuestionnaire.startQuestionnaire(phil.bot, phil.db, message.userId, true);
     }
 };

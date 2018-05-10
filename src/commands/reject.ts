@@ -1,8 +1,7 @@
 'use strict';
 
 import { ConfirmRejectCommandBase } from './bases/confirm-reject-base';
-import { Client as DiscordIOClient } from 'discord.io';
-import { Database } from '../phil/database';
+import { Phil } from '../phil/phil';
 import { Prompt } from '../phil/prompts/prompt';
 
 const successMessageEnd = ' rejected. You may continue using `' + process.env.COMMAND_PREFIX + 'reject` or start over by using `' + process.env.COMMAND_PREFIX + 'unconfirmed`.';
@@ -17,8 +16,8 @@ export class RejectCommand extends ConfirmRejectCommandBase {
 
     readonly versionAdded = 1;
 
-    protected async performActionOnPrompt(bot : DiscordIOClient, db : Database, promptId : number) : Promise<boolean> {
-        await db.query('DELETE FROM prompts WHERE prompt_id = $1', [promptId]);
+    protected async performActionOnPrompt(phil : Phil, promptId : number) : Promise<boolean> {
+        await phil.db.query('DELETE FROM prompts WHERE prompt_id = $1', [promptId]);
         return true;
     }
 };
