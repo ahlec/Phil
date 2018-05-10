@@ -11,6 +11,7 @@ import { DiscordMessage } from './discord-message';
 import { Database } from './database';
 import { OfficialDiscordMessage, OfficialDiscordPayload, OfficialDiscordReactionEvent } from 'official-discord';
 import { BotUtils } from './utils';
+import { ServerDirectory } from './server-directory';
 import { GlobalConfig } from './global-config';
 
 function ignoreDiscordCode(code : number) {
@@ -23,10 +24,12 @@ export class Phil {
     private readonly _chronoManager : ChronoManager;
     private readonly _analyzerManager : AnalyzerManager;
     private readonly _reactableProcessor : ReactableProcessor;
+    private readonly _serverDirectory : ServerDirectory;
     private _shouldSendDisconnectedMessage : boolean;
 
     constructor(public readonly db: Database, public readonly globalConfig : GlobalConfig) {
         this.bot = new DiscordIOClient({ token: globalConfig.discordBotToken, autorun: true });
+        this._serverDirectory = new ServerDirectory(this.bot, this.db);
         this._commandRunner = new CommandRunner(this, this.bot, this.db);
         this._chronoManager = new ChronoManager(this.bot, this.db);
         this._analyzerManager = new AnalyzerManager(this.bot, this.db);
@@ -64,8 +67,13 @@ export class Phil {
         }
     }
 
-    private _onMessage(user : string, userId : string, channelId : string, msg : string, event : OfficialDiscordPayload<OfficialDiscordMessage>) {
-        const message = new DiscordMessage(event, this.bot);
+    private async _onMessage(user : string, userId : string, channelId : string, msg : string, event : OfficialDiscordPayload<OfficialDiscordMessage>) {
+        const serverConfig = await this._serverDirectory.getFromChannelId(channelId);
+        if (!serverConfig) {
+            return;
+        }
+
+        const message = new DiscordMessage(event, this.bot, serverConfig);
 
         if (this._isOwnMessage(message)) {
             this._handleOwnMessage(event);

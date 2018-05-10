@@ -4,7 +4,7 @@ import { Chrono } from './@types';
 import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
 import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
-import { ServerConfig } from '../phil/server-configs';
+import { ServerConfig } from '../phil/server-config';
 import { Bucket } from '../phil/buckets';
 import { PromptQueue } from '../phil/prompts/queue';
 

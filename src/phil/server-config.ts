@@ -1,15 +1,17 @@
 'use strict';
 
-import { Client as DiscordIOClient, Server as DiscordIOServer, Channel as DiscordIOChannel } from 'discord.io';
+import { Server as DiscordIOServer, Channel as DiscordIOChannel } from 'discord.io';
 import { Database } from './database';
 import { QueryResult } from 'pg';
 
 export class ServerConfig {
     readonly serverId : string;
     readonly botControlChannel? : DiscordIOChannel;
+    readonly commandPrefix : string;
 
-    private constructor(server : DiscordIOServer, dbRow : any) {
+    private constructor(public readonly server : DiscordIOServer, dbRow : any) {
         this.serverId = dbRow.server_id;
+        this.commandPrefix = dbRow.command_prefix;
 
         if (dbRow.bot_control_channel_id) {
             this.botControlChannel = server.channels[dbRow.bot_control_channel_id];

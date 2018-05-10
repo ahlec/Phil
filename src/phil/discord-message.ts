@@ -1,22 +1,8 @@
 'use strict';
 
-const assert = require('assert');
-
 import { Client as DiscordIOClient, Server as DiscordIOServer, User as DiscordIOUser } from 'discord.io';
 import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
-
-function getServer(bot : DiscordIOClient, channelId : string) : DiscordIOServer {
-    if (!bot.channels[channelId]) {
-        return null;
-    }
-
-    const serverId = bot.channels[channelId].guild_id;
-    if (!bot.servers[serverId]) {
-        return null;
-    }
-
-    return bot.servers[serverId];
-}
+import { ServerConfig } from './server-config';
 
 export class DiscordMessageMention {
     constructor(public userId : string, public user : string, public userDiscriminator : string) {
@@ -30,10 +16,13 @@ export class DiscordMessage {
     public readonly userId : string;
     public readonly content : string;
     public readonly isDirectMessage : boolean;
-    public readonly mentions : DiscordMessageMention[];
     public readonly server : DiscordIOServer;
+    public readonly mentions : DiscordMessageMention[];
 
-    constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>, bot : DiscordIOClient) {
+    constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>,
+        bot : DiscordIOClient,
+        public readonly serverConfig : ServerConfig) {
+
         this.mentions = [];
         for (let mention of event.d.mentions) {
             this.mentions.push({
@@ -48,7 +37,7 @@ export class DiscordMessage {
         this.userId = event.d.author.id;
         this.user = bot.users[this.userId];
         this.content = event.d.content;
+        this.server = this.serverConfig.server;
         this.isDirectMessage = (event.d.channel_id in bot.directMessages);
-        this.server = getServer(bot, event.d.channel_id);
     }
 };

@@ -10,3 +10,5 @@ CREATE TABLE reactable_posts (
     reactable_type VARCHAR NOT NULL,
     jsonData TEXT
 );
+
+ALTER TABLE server_configs ADD COLUMN command_prefix VARCHAR NOT NULL DEFAULT E'p!';

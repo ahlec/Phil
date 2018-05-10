@@ -25,12 +25,12 @@ export class CommandRunner {
     }
 
     public isCommand(message : DiscordMessage) : boolean {
-        const input = InputMessage.parseFromMessage(message.content);
+        const input = InputMessage.parseFromMessage(message.serverConfig, message.content);
         return (input !== null);
     }
 
     public async runMessage(message : DiscordMessage) {
-        const input = InputMessage.parseFromMessage(message.content);
+        const input = InputMessage.parseFromMessage(message.serverConfig, message.content);
         if (input === null) {
             return;
         }
