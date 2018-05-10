@@ -15,11 +15,8 @@ function assertCustomEmoji(variableName : string) {
 }
 
 export function ensureNecessaryEnvironmentVariables() {
-    assertVariableExists('DISCORD_BOT_TOKEN');
-    assertVariableExists('PORT');
     assertVariableExists('COMMAND_PREFIX');
     assert.ok(process.env.COMMAND_PREFIX.toLowerCase() === process.env.COMMAND_PREFIX); // Prefix must be lowercase!!
-    assertVariableExists('DATABASE_URL');
     assertVariableExists('INTRODUCTIONS_CHANNEL_ID');
     assertVariableExists('ADMIN_CHANNEL_ID');
     assertVariableExists('HIJACK_CHANNEL_ID');

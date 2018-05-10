@@ -2,12 +2,13 @@
 
 import { Pool, QueryResult } from 'pg';
 import { Versions } from './versions';
+import { GlobalConfig } from './global-config';
 
 export class Database {
     private readonly _pool : Pool;
 
-    constructor() {
-        this._pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    constructor(globalConfig : GlobalConfig) {
+        this._pool = new Pool({ connectionString: globalConfig.databaseUrl });
     }
 
     async checkIsCurrentVersion() {

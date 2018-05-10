@@ -11,6 +11,7 @@ import { DiscordMessage } from './discord-message';
 import { Database } from './database';
 import { OfficialDiscordMessage, OfficialDiscordPayload, OfficialDiscordReactionEvent } from 'official-discord';
 import { BotUtils } from './utils';
+import { GlobalConfig } from './global-config';
 
 function ignoreDiscordCode(code : number) {
     return (code === 1000); // General disconnect code
@@ -24,8 +25,8 @@ export class Phil {
     private readonly _reactableProcessor : ReactableProcessor;
     private _shouldSendDisconnectedMessage : boolean;
 
-    constructor(public readonly db: Database) {
-        this.bot = new DiscordIOClient({ token: process.env.DISCORD_BOT_TOKEN, autorun: true });
+    constructor(public readonly db: Database, public readonly globalConfig : GlobalConfig) {
+        this.bot = new DiscordIOClient({ token: globalConfig.discordBotToken, autorun: true });
         this._commandRunner = new CommandRunner(this, this.bot, this.db);
         this._chronoManager = new ChronoManager(this.bot, this.db);
         this._analyzerManager = new AnalyzerManager(this.bot, this.db);

@@ -25,7 +25,7 @@ export class YoutubeCommand implements Command {
             throw new Error('You must provide some text to tell me what to search for.');
         }
 
-        const results = await YouTubePromises.search(query);
+        const results = await YouTubePromises.search(phil.globalConfig, query);
         if (results.length === 0 || !results[0].id) {
             throw new Error('There were no results on YouTube for you search.');
         }
