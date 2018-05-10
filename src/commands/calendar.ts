@@ -11,6 +11,7 @@ import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { CalendarMonth } from '../phil/calendar';
 import { MessageBuilder } from '../phil/message-builder';
+import { ServerConfig } from '../phil/server-config';
 
 const chronoNode = require('chrono-node');
 
@@ -26,13 +27,13 @@ export class CalendarCommand implements Command {
 
     readonly publicRequiresAdmin = false;
     async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        const month = this.determineMonth(commandArgs);
+        const month = this.determineMonth(message.serverConfig, commandArgs);
         const calendar = await CalendarMonth.getForMonth(phil.bot, phil.db, message.server, month);
         const builder = this.composeMessageFromCalendar(message.server, calendar);
         return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, builder);
     }
 
-    private determineMonth(commandArgs : string[]) : number {
+    private determineMonth(serverConfig : ServerConfig, commandArgs : string[]) : number {
         const input = commandArgs.join(' ').trim();
         if (input === '') {
             const now = new Date();
@@ -41,7 +42,7 @@ export class CalendarCommand implements Command {
 
         const inputDate = chronoNode.parseDate(input);
         if (inputDate === null) {
-            throw new Error('I couldn\'t understand what month you were trying to get the calendar for. Please try requesting `' + process.env.COMMAND_PREFIX + 'calendar` or `' + process.env.COMMAND_PREFIX + 'calendar december` to target a month that isn\'t this month.');
+            throw new Error('I couldn\'t understand what month you were trying to get the calendar for. Please try requesting `' + serverConfig.commandPrefix + 'calendar` or `' + serverConfig.commandPrefix + 'calendar december` to target a month that isn\'t this month.');
         }
 
         return inputDate.getUTCMonth() + 1;

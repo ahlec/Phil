@@ -1,7 +1,8 @@
 'use strict';
 
 import { Chrono } from './@types';
-import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
+import { Phil } from '../phil/phil';
+import { ServerConfig } from '../phil/server-config';
 import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
 import { BotUtils, Pronoun, PronounCase } from '../phil/utils';
@@ -14,15 +15,15 @@ interface HappyBirthdayInfo {
 export class HappyBirthdayChrono implements Chrono {
     readonly handle = 'happy-birthday';
 
-    async process(bot : DiscordIOClient, db : Database, server : DiscordIOServer, now : Date) {
-        const userIds = await this.getBirthdayUserIds(db, now);
-        const info = this.getInfo(bot, server, userIds);
+    async process(phil : Phil, serverConfig : ServerConfig, now : Date) {
+        const userIds = await this.getBirthdayUserIds(phil.db, now);
+        const info = this.getInfo(phil, serverConfig, userIds);
         const birthdayWish = this.createBirthdayWish(info);
         if (birthdayWish === '') {
             return;
         }
 
-        DiscordPromises.sendMessage(bot, process.env.NEWS_CHANNEL_ID, birthdayWish);
+        DiscordPromises.sendMessage(phil.bot, process.env.NEWS_CHANNEL_ID, birthdayWish);
     }
 
     private async getBirthdayUserIds(db : Database, now : Date) : Promise<string[]> {
@@ -38,11 +39,11 @@ export class HappyBirthdayChrono implements Chrono {
         return userIds;
     }
 
-    private getInfo(bot : DiscordIOClient, server : DiscordIOServer, userIds : string[]) : HappyBirthdayInfo {
+    private getInfo(phil : Phil, serverConfig : ServerConfig, userIds : string[]) : HappyBirthdayInfo {
         var names = [];
         for (let index = 0; index < userIds.length; ++index) {
             const userId = userIds[index];
-            const userDisplayName = BotUtils.getUserDisplayName(bot, server.id, userId);
+            const userDisplayName = BotUtils.getUserDisplayName(phil.bot, serverConfig.server.id, userId);
             if (!userDisplayName) {
                 continue;
             }
@@ -52,7 +53,7 @@ export class HappyBirthdayChrono implements Chrono {
 
         var pronoun = Pronoun.They;
         if (userIds.length === 1) {
-            pronoun = BotUtils.getPronounForUser(bot, server, userIds[0]);
+            pronoun = BotUtils.getPronounForUser(phil.bot, serverConfig.server, userIds[0]);
         }
 
         return {

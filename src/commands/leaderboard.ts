@@ -87,7 +87,7 @@ export class LeaderboardCommand implements Command {
             title: 'Hijack Prompt of the Day Leaderboard',
             description: reply,
             footer: {
-                text: 'You can increase your score by submitting prompts! Use ' + process.env.COMMAND_PREFIX + 'suggest in a direct message with me!'
+                text: 'You can increase your score by submitting prompts! Use ' + message.serverConfig.commandPrefix + 'suggest in a direct message with me!'
             }
         });
     }

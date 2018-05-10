@@ -9,6 +9,7 @@ import { Database } from '../phil/database';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
+import { ServerConfig } from '../phil/server-config';
 
 const decemberLinks = [
     'http://www.december.com/html/spec/color0.html',
@@ -39,7 +40,7 @@ export class ColourCommand implements Command {
 
     readonly publicRequiresAdmin = false;
     async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        const hexColor = this.getHexColorFromCommandArgs(commandArgs);
+        const hexColor = this.getHexColorFromCommandArgs(message.serverConfig, commandArgs);
         const colorRole = await this.getRoleFromHexColor(phil, message.server, hexColor);
 
         await this.removeColorRolesFromUser(phil, message.server, message.userId);
@@ -53,10 +54,10 @@ export class ColourCommand implements Command {
         });
     }
 
-    private getHexColorFromCommandArgs(commandArgs : string[]) : string {
+    private getHexColorFromCommandArgs(serverConfig : ServerConfig, commandArgs : string[]) : string {
         if (commandArgs.length === 0) {
             const decemberLink = BotUtils.getRandomArrayEntry(decemberLinks);
-            throw new Error('You must provide a hex code to this function of the colour that you\'d like to use. For example, `' + process.env.COMMAND_PREFIX + 'color #FFFFFF`. You could try checking out ' + decemberLink + ' for some codes.');
+            throw new Error('You must provide a hex code to this function of the colour that you\'d like to use. For example, `' + serverConfig.commandPrefix + 'color #FFFFFF`. You could try checking out ' + decemberLink + ' for some codes.');
         }
 
         var hexColor = commandArgs[0];

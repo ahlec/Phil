@@ -2,22 +2,18 @@
 
 const util = require('util');
 
-import { Client as DiscordIOClient } from 'discord.io';
-import { Database } from './database';
+import { Phil } from './phil';
 import { QueryResult } from 'pg';
 import { Chrono } from '../chronos/@types';
 import { ChronoLookup } from '../chronos/index';
 import { DiscordPromises } from '../promises/discord';
+import { ServerDirectory } from './server-directory';
 
 export class ChronoManager {
-    private readonly _bot : DiscordIOClient;
-    private readonly _db : Database;
     private readonly _channelsLastMessageTable : { [channelId: string] : Date };
     private _hasBeenStarted : boolean;
 
-    constructor(bot : DiscordIOClient, db : Database) {
-        this._bot = bot;
-        this._db = db;
+    constructor(private readonly phil : Phil, private readonly serverDirectory : ServerDirectory) {
         this._channelsLastMessageTable = {};
         this._hasBeenStarted = false;
     }
@@ -62,7 +58,7 @@ export class ChronoManager {
         const utcDate = now.getUTCFullYear() + '-' + (now.getUTCMonth() + 1) + '-' + now.getUTCDate();
         console.log('[CHRONOS] processing chronos with UTC hour = %d on UTC %s', utcHour, utcDate);
 
-        this._db.query(`SELECT
+        this.phil.db.query(`SELECT
                 sc.server_id,
                 c.chrono_id,
                 c.chrono_handle
@@ -88,8 +84,9 @@ export class ChronoManager {
     private async _processChronoInstance(now : Date, chronoHandle : string, chronoId : number, serverId : string, utcDate : string) {
         console.log('[CHRONOS] %s for serverId %s', chronoHandle, serverId);
 
-        const server = this._bot.servers[serverId];
-        if (!server) {
+        const server = this.phil.bot.servers[serverId];
+        const serverConfig = await this.serverDirectory.getServerConfig(server);
+        if (!serverConfig) {
             console.log('[CHRONOS] Phil is no longer part of server with serverId %s', serverId);
             return;
         }
@@ -101,7 +98,7 @@ export class ChronoManager {
         }
 
         try {
-            await chronoDefinition.process(this._bot, this._db, server, now);
+            await chronoDefinition.process(this.phil, serverConfig, now);
             this._markChronoProcessed(chronoId, serverId, utcDate);
         } catch(err) {
             this._reportChronoError(err, chronoHandle, serverId);
@@ -109,7 +106,7 @@ export class ChronoManager {
     }
 
     private _markChronoProcessed(chronoId : number, serverId : string, utcDate : string) {
-        return this._db.query(`UPDATE server_chronos
+        return this.phil.db.query(`UPDATE server_chronos
             SET date_last_ran = $1
             WHERE server_id = $2 AND chrono_id = $3`, [utcDate, serverId, chronoId]);
     }
@@ -122,7 +119,7 @@ export class ChronoManager {
             err = util.inspect(err);
         }
 
-        return DiscordPromises.sendEmbedMessage(this._bot, process.env.BOT_CONTROL_CHANNEL_ID, {
+        return DiscordPromises.sendEmbedMessage(this.phil.bot, process.env.BOT_CONTROL_CHANNEL_ID, {
             color: 0xCD5555,
             title: ':no_entry: Chrono Error',
             description: err,

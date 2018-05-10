@@ -1,8 +1,8 @@
 'use strict';
 
 import { Chrono } from './@types';
-import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
-import { Database } from '../phil/database';
+import { Phil } from '../phil/phil';
+import { Server as DiscordIOServer } from 'discord.io';
 import { DiscordPromises } from '../promises/discord';
 import { ServerConfig } from '../phil/server-config';
 import { BotUtils } from '../phil/utils';
@@ -15,20 +15,19 @@ interface RoleInfo {
 export class RemoveUnusedColorRolesChrono implements Chrono {
     readonly handle = 'remove-unused-colour-roles';
 
-    async process(bot : DiscordIOClient, db : Database, server : DiscordIOServer, now : Date) {
-        let unusedColorRoles = this.getAllUnusedColorRoleIds(server);
+    async process(phil : Phil, serverConfig : ServerConfig, now : Date) {
+        let unusedColorRoles = this.getAllUnusedColorRoleIds(serverConfig.server);
         if (unusedColorRoles.length === 0) {
             return;
         }
 
         var message = 'The follow colour role(s) have been removed automatically because I could not find any users on your server who were still using them:\n';
         for (let role of unusedColorRoles) {
-            await DiscordPromises.deleteRole(bot, server.id, role.id);
+            await DiscordPromises.deleteRole(phil.bot, serverConfig.server.id, role.id);
             message += '\n\t' + role.name + ' (ID: ' + role.id + ')';
         }
 
-        const serverConfig = await ServerConfig.getFromId(db, server);
-        DiscordPromises.sendEmbedMessage(bot, serverConfig.botControlChannel.id, {
+        DiscordPromises.sendEmbedMessage(phil.bot, serverConfig.botControlChannel.id, {
             color: 0xB0E0E6,
             title: ':scroll: Unused Colour Roles Removed',
             description: message

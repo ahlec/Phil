@@ -24,7 +24,7 @@ export class UnpauseCommand implements Command {
         const bucket = await Bucket.retrieveFromCommandArgs(phil.bot, phil.db, commandArgs, message.server, 'bucket', true);
         await bucket.setIsPaused(phil.db, false);
 
-        const reply = '**' + bucket.displayName + '** (' + bucket.handle + ') has been unpaused. You can pause it once more by using `' + process.env.COMMAND_PREFIX + 'pause ' + bucket.handle + '`.';
+        const reply = '**' + bucket.displayName + '** (' + bucket.handle + ') has been unpaused. You can pause it once more by using `' + message.serverConfig.commandPrefix + 'pause ' + bucket.handle + '`.';
         DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
     }
 };

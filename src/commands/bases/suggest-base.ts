@@ -8,6 +8,7 @@ import { DiscordMessage } from '../../phil/discord-message';
 import { Features } from '../../phil/features';
 import { DiscordPromises } from '../../promises/discord';
 import { Bucket } from '../../phil/buckets';
+import { ServerConfig } from '../../phil/server-config';
 
 interface Suggestion {
     readonly bucket : Bucket;
@@ -33,7 +34,7 @@ export abstract class SuggestCommandBase implements Command {
     readonly privateRequiresAdmin = false;
     async processPrivateMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
         const userBuckets = await Bucket.getAllForUser(phil.bot, phil.db, message.userId);
-        const bucket = this.resolveBucket(phil, userBuckets, commandArgs);
+        const bucket = this.resolveBucket(phil, message.serverConfig, userBuckets, commandArgs);
         if (!bucket.canUserSubmitTo(phil.bot, message.userId)) {
             const role = message.server.roles[bucket.requiredRoleId];
             throw new Error('In order to be able to submit a prompt to this bucket, you must have the **' + role.name + '** role.');
@@ -45,7 +46,7 @@ export abstract class SuggestCommandBase implements Command {
         return this.sendConfirmationMessage(phil, message.channelId, suggestion);
     }
 
-    private resolveBucket(phil : Phil, userBuckets : Bucket[], commandArgs : string[]) : Bucket {
+    private resolveBucket(phil : Phil, serverConfig : ServerConfig, userBuckets : Bucket[], commandArgs : string[]) : Bucket {
         if (!userBuckets || userBuckets.length === 0) {
             throw new Error('There are no prompt buckets that you are able to submit to. This most likely means that you are not part of any servers with configured prompt buckets. However, if you do know that there are prompt buckets on one (or more) servers, reach out to your admin(s); it could be that you are lacking the appropriate roles, or that prompts are temporarily disabled on that server.');
         }
@@ -72,11 +73,11 @@ export abstract class SuggestCommandBase implements Command {
             serverLookup[bucket.serverId].push(bucket);
         }
 
-        const errorList = this.createBucketErrorList(phil, serverLookup);
+        const errorList = this.createBucketErrorList(phil, serverConfig, serverLookup);
         throw new Error(errorList);
     }
 
-    private createBucketErrorList(phil : Phil, serverLookup : ServerBucketLookup) : string {
+    private createBucketErrorList(phil : Phil, serverConfig : ServerConfig, serverLookup : ServerBucketLookup) : string {
         var message = 'In order to use this command, you must specify the name of a bucket. Within the following servers that we\'re both in, here are the buckets you can submit to:';
 
         var firstBucket;
@@ -102,7 +103,7 @@ export abstract class SuggestCommandBase implements Command {
             }
         }
 
-        message += '\n\nIn order to specify a bucket, the reference handle should be the first thing you type after the command. For example, `' + process.env.COMMAND_PREFIX + this.name + ' ' + firstBucket.handle + '`.';
+        message += '\n\nIn order to specify a bucket, the reference handle should be the first thing you type after the command. For example, `' + serverConfig.commandPrefix + this.name + ' ' + firstBucket.handle + '`.';
         return message;
     }
 

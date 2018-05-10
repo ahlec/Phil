@@ -82,7 +82,7 @@ export class CommandRunner {
         BotUtils.sendErrorMessage({
             bot: this.bot,
             channelId: message.channelId,
-            message: 'There is no `' + process.env.COMMAND_PREFIX + commandName + '` command.'
+            message: 'There is no `' + message.serverConfig.commandPrefix + commandName + '` command.'
         });
     }
 
@@ -93,14 +93,14 @@ export class CommandRunner {
             return {
                 requiresAdmin: command.privateRequiresAdmin,
                 func: command.processPrivateMessage.bind(command), // TODO: Return to this whole structure
-                incorrectChannelMessage: 'The `' + process.env.COMMAND_PREFIX + commandName + '` command can only be used in the public server itself.'
+                incorrectChannelMessage: 'The `' + message.serverConfig.commandPrefix + commandName + '` command can only be used in the public server itself.'
             };
         }
 
         return {
             requiresAdmin: command.publicRequiresAdmin,
             func: command.processPublicMessage.bind(command), // TODO: Return to this whole structure
-            incorrectChannelMessage: 'The `' + process.env.COMMAND_PREFIX + commandName + '` command can only be used in a direct message with me.'
+            incorrectChannelMessage: 'The `' + message.serverConfig.commandPrefix + commandName + '` command can only be used in a direct message with me.'
         };
     }
 
@@ -128,7 +128,7 @@ export class CommandRunner {
         BotUtils.sendErrorMessage({
             bot: this.bot,
             channelId: message.channelId,
-            message: 'The `' + process.env.COMMAND_PREFIX + commandName + '` command requires admin privileges to use here.'
+            message: 'The `' + message.serverConfig.commandPrefix + commandName + '` command requires admin privileges to use here.'
         });
     }
 

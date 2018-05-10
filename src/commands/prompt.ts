@@ -26,11 +26,11 @@ export class PromptCommand implements Command {
             throw new Error('This channel is not configured to work with prompts.');
         }
 
-        const prompt = await Prompt.getCurrentPrompt(phil.bot, phil.db, bucket);
+        const prompt = await Prompt.getCurrentPrompt(phil, bucket);
         if (!prompt) {
-            throw new Error('There\'s no prompt right now. That probably means that I\'m out of them! Why don\'t you suggest more by sending me `' + process.env.COMMAND_PREFIX + 'suggest` and including your prompt?');
+            throw new Error('There\'s no prompt right now. That probably means that I\'m out of them! Why don\'t you suggest more by sending me `' + message.serverConfig.commandPrefix + 'suggest` and including your prompt?');
         }
 
-        prompt.sendToChannel(phil.bot, message.channelId, bucket, prompt.promptNumber);
+        prompt.sendToChannel(phil, message.serverConfig, message.channelId, bucket, prompt.promptNumber);
     }
 };

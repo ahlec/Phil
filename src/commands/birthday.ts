@@ -9,6 +9,7 @@ import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import { Feature } from '../phil/features';
 import { Moment } from 'moment';
+import { ServerConfig } from '../phil/server-config';
 import chronoNode = require('chrono-node');
 import momentModuleFunc = require('moment');
 
@@ -24,7 +25,7 @@ export class BirthdayCommand implements Command {
 
     readonly publicRequiresAdmin = false;
     async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        const birthday = this.getInputFromCommandArgs(commandArgs);
+        const birthday = this.getInputFromCommandArgs(message.serverConfig, commandArgs);
 
         await this.setBirthdayInDatabase(phil.db, message.user.username, message.userId, birthday);
 
@@ -41,10 +42,10 @@ export class BirthdayCommand implements Command {
         return this.processPublicMessage(phil, message, commandArgs);
     }
 
-    getInputFromCommandArgs(commandArgs : string[]) : Moment {
+    getInputFromCommandArgs(serverConfig : ServerConfig, commandArgs : string[]) : Moment {
         const birthdayInput = commandArgs.join(' ').trim();
         if (birthdayInput.length === 0) {
-            throw new Error('Please tell me what your birthday is, like `' + process.env.COMMAND_PREFIX + 'birthday 05 December`.');
+            throw new Error('Please tell me what your birthday is, like `' + serverConfig.commandPrefix + 'birthday 05 December`.');
         }
 
         const birthday = chronoNode.parseDate(birthdayInput);

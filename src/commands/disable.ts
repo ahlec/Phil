@@ -35,7 +35,7 @@ export class DisableCommand implements Command {
         await BotUtils.sendSuccessMessage({
             bot: phil.bot,
             channelId: message.channelId,
-            message: 'The **' + feature.displayName + '** feature is now disabled. You can enable this feature by using `' + process.env.COMMAND_PREFIX + 'enable`.'
+            message: 'The **' + feature.displayName + '** feature is now disabled. You can enable this feature by using `' + message.serverConfig.commandPrefix + 'enable`.'
         });
     }
 };

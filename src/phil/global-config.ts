@@ -5,6 +5,7 @@ export class GlobalConfig {
     public readonly port : number;
     public readonly databaseUrl : string;
     public readonly youtubeApiKey : string;
+    public readonly maxCommandPrefixLength = 5;
 
     private constructor() {
         this.discordBotToken = GlobalConfig.getRequiredString('DISCORD_BOT_TOKEN');

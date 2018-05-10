@@ -11,6 +11,7 @@ import { Features } from '../phil/features';
 import { BotUtils } from '../phil/utils';
 import { Requestable } from '../phil/requestables';
 import { MessageBuilder } from '../phil/message-builder';
+import { ServerConfig } from '../phil/server-config';
 
 export class RemoveCommand implements Command {
     readonly name = 'remove';
@@ -54,22 +55,22 @@ export class RemoveCommand implements Command {
     }
 
     private async processNoCommandArgs(phil : Phil, message : DiscordMessage) : Promise<any> {
-        const userRequestables = await this.getAllRequestablesUserHas(phil.db, message.server, message.userId);
+        const userRequestables = await this.getAllRequestablesUserHas(phil.db, message.serverConfig, message.userId);
         if (userRequestables.length === 0) {
-            throw new Error('I haven\'t given you any requestable roles yet. You use `' + process.env.COMMAND_PREFIX + 'request` in order to obtain these roles.');
+            throw new Error('I haven\'t given you any requestable roles yet. You use `' + message.serverConfig.commandPrefix + 'request` in order to obtain these roles.');
         }
 
-        const reply = this.composeAllRequestablesList(userRequestables);
+        const reply = this.composeAllRequestablesList(message.serverConfig, userRequestables);
         return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, reply);
     }
 
-    private async getAllRequestablesUserHas(db : Database, server : DiscordIOServer, userId : string) : Promise<Requestable[]> {
-        const requestables = await Requestable.getAllRequestables(db, server);
+    private async getAllRequestablesUserHas(db : Database, serverConfig : ServerConfig, userId : string) : Promise<Requestable[]> {
+        const requestables = await Requestable.getAllRequestables(db, serverConfig.server);
         if (requestables.length === 0) {
-            throw new Error('There are no requestable roles defined. An admin should use `' + process.env.COMMAND_PREFIX + 'define` to create some roles.');
+            throw new Error('There are no requestable roles defined. An admin should use `' + serverConfig.commandPrefix + 'define` to create some roles.');
         }
 
-        const member = server.members[userId];
+        const member = serverConfig.server.members[userId];
         const requestablesUserHas = [];
         for (let requestable of requestables) {
             if (member.roles.indexOf(requestable.role.id) >= 0) {
@@ -80,9 +81,9 @@ export class RemoveCommand implements Command {
         return requestablesUserHas;
     }
 
-    private composeAllRequestablesList(requestables : Requestable[]) : MessageBuilder {
+    private composeAllRequestablesList(serverConfig : ServerConfig, requestables : Requestable[]) : MessageBuilder {
         const builder = new MessageBuilder();
-        builder.append(':snowflake: These are the roles you can remove using `' + process.env.COMMAND_PREFIX + 'remove`:\n');
+        builder.append(':snowflake: These are the roles you can remove using `' + serverConfig.commandPrefix + 'remove`:\n');
 
         for (let requestable of requestables) {
             builder.append(this.composeRequestableListEntry(requestable));
@@ -91,7 +92,7 @@ export class RemoveCommand implements Command {
         const randomRequestable = BotUtils.getRandomArrayEntry(requestables);
         const randomRequestableString = BotUtils.getRandomArrayEntry(randomRequestable.requestStrings);
 
-        builder.append('\nJust use one of the above requestable names, like `' + process.env.COMMAND_PREFIX + 'remove ' + randomRequestableString + '`.');
+        builder.append('\nJust use one of the above requestable names, like `' + serverConfig.commandPrefix + 'remove ' + randomRequestableString + '`.');
         return builder;
     }
 

@@ -1,6 +1,6 @@
 
-import { Database } from './database';
-import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
+import { Phil } from './phil';
+import { Server as DiscordIOServer } from 'discord.io';
 import { ServerConfig } from './server-config';
 
 interface IConfigCache {
@@ -8,22 +8,18 @@ interface IConfigCache {
 }
 
 export class ServerDirectory {
-    private readonly _bot : DiscordIOClient;
-    private readonly _db : Database;
     private readonly _configCache : IConfigCache = {};
 
-    constructor(bot : DiscordIOClient, db : Database) {
-        this._bot = bot;
-        this._db = db;
+    constructor(private readonly phil : Phil) {
     }
 
     async getFromChannelId(channelId : string) : Promise<ServerConfig> {
-        if (!this._bot.channels[channelId]) {
+        if (!this.phil.bot.channels[channelId]) {
             throw new Error('Attempted to retrieve server config from unrecognized channel');
         }
 
-        const serverId = this._bot.channels[channelId].guild_id;
-        const server = this._bot.servers[serverId];
+        const serverId = this.phil.bot.channels[channelId].guild_id;
+        const server = this.phil.bot.servers[serverId];
         if (!server) {
             throw new Error('Could not find the server corresponding to this channel.'); // TODO: DIRECT MESSAGES WILL FAIL HERE.
         }
@@ -41,7 +37,7 @@ export class ServerDirectory {
             return cached;
         }
 
-        const serverConfig = await ServerConfig.getFromId(this._db, server);
+        const serverConfig = await ServerConfig.getFromId(this.phil.db, server, this.phil.globalConfig);
         this._configCache[server.id] = serverConfig;
         return serverConfig;
     }

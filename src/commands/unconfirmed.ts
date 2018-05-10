@@ -8,6 +8,7 @@ import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { Bucket } from '../phil/buckets';
 import { Prompt } from '../phil/prompts/prompt';
+import { ServerConfig } from '../phil/server-config';
 
 const MAX_LIST_LENGTH = 10;
 
@@ -26,7 +27,7 @@ export class UnconfirmedCommand implements Command {
         await phil.db.query('DELETE FROM prompt_confirmation_queue WHERE channel_id = $1', [message.channelId]);
         const bucket = await Bucket.retrieveFromCommandArgs(phil.bot, phil.db, commandArgs, message.server, 'unconfirmed', false);
 
-        const prompts = await Prompt.getUnconfirmedPrompts(phil.bot, phil.db, bucket, MAX_LIST_LENGTH);
+        const prompts = await Prompt.getUnconfirmedPrompts(phil, bucket, MAX_LIST_LENGTH);
         if (prompts.length === 0) {
             return this.outputNoUnconfirmedPrompts(phil, message.channelId);
         }
@@ -36,14 +37,14 @@ export class UnconfirmedCommand implements Command {
             await phil.db.query('INSERT INTO prompt_confirmation_queue VALUES($1, $2, $3)', [message.channelId, prompt.promptId, index]);
         }
 
-        return this.outputList(phil, message.channelId, prompts);
+        return this.outputList(phil, message.serverConfig, message.channelId, prompts);
     }
 
     private outputNoUnconfirmedPrompts(phil : Phil, channelId : string) : Promise<string> {
         return DiscordPromises.sendMessage(phil.bot, channelId, ':large_blue_diamond: There are no unconfirmed prompts in the queue right now.');
     }
 
-    private outputList(phil : Phil, channelId : string, prompts : Prompt[]) : Promise<string> {
+    private outputList(phil : Phil, serverConfig : ServerConfig, channelId : string, prompts : Prompt[]) : Promise<string> {
         const existenceVerb = (prompts.length === 1 ? 'is' : 'are');
         const noun = (prompts.length === 1 ? 'prompt' : 'prompts');
         var message = ':pencil: Here ' + existenceVerb + ' ' + prompts.length + ' unconfirmed ' + noun + '.';
@@ -52,8 +53,8 @@ export class UnconfirmedCommand implements Command {
             message += '\n        `' + (index + 1) + '`: "' + prompts[index].text + '"';
         }
 
-        message += '\nConfirm prompts with `' + process.env.COMMAND_PREFIX + 'confirm`. You can specify a single prompt by using its number (`';
-        message += process.env.COMMAND_PREFIX + 'confirm 3`) or a range of prompts using a hyphen (`' + process.env.COMMAND_PREFIX + 'confirm 2-7`)';
+        message += '\nConfirm prompts with `' + serverConfig.commandPrefix + 'confirm`. You can specify a single prompt by using its number (`';
+        message += serverConfig.commandPrefix + 'confirm 3`) or a range of prompts using a hyphen (`' + serverConfig.commandPrefix + 'confirm 2-7`)';
 
         return DiscordPromises.sendMessage(phil.bot, channelId, message);
     }

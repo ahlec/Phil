@@ -20,16 +20,16 @@ export class NewsCommand implements Command {
 
     readonly publicRequiresAdmin = true;
     async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        const echoedMessage = this.getEchoedStatementFromCommandArgs(commandArgs);
+        const echoedMessage = this.getEchoedStatementFromCommandArgs(message, commandArgs);
         DiscordPromises.sendMessage(phil.bot, process.env.NEWS_CHANNEL_ID, echoedMessage);
     }
 
-    private getEchoedStatementFromCommandArgs(commandArgs : string[]) {
+    private getEchoedStatementFromCommandArgs(message : DiscordMessage, commandArgs : string[]) {
         var echoedMessage = commandArgs.join(' ').trim();
         echoedMessage = echoedMessage.replace(/`/g, '');
 
         if (echoedMessage.length === 0) {
-            throw new Error('You must provide a message to this function that you would like Phil to repeat in #news. For instance, `' + process.env.COMMAND_PREFIX + 'news A New Guardian has been Chosen!`');
+            throw new Error('You must provide a message to this function that you would like Phil to repeat in #news. For instance, `' + message.serverConfig.commandPrefix + 'news A New Guardian has been Chosen!`');
         }
 
         return echoedMessage;

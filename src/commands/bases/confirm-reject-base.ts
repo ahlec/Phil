@@ -9,6 +9,7 @@ import { Database } from '../../phil/database';
 import { Features } from '../../phil/features';
 import { DiscordPromises } from '../../promises/discord';
 import { BotUtils } from '../../phil/utils';
+import { ServerConfig } from '../../phil/server-config';
 
 interface ConfirmRejectResults {
     numSuccessful : number;
@@ -47,7 +48,7 @@ export abstract class ConfirmRejectCommandBase implements Command {
 
         for (let number of numbers) {
             number = number - 1; // Public facing, it's 1-based, but in the database it's 0-based
-            let result = await this.performAction(phil, message.channelId, number);
+            let result = await this.performAction(phil, message.serverConfig, message.channelId, number);
             console.log('result of number %d: %d', number, result);
             if (result === PerformResult.Success) {
                 results.numSuccessful++;
@@ -56,10 +57,10 @@ export abstract class ConfirmRejectCommandBase implements Command {
             }
         }
 
-        this.sendCompletionMessage(phil, message.channelId, results);
+        this.sendCompletionMessage(phil, message.serverConfig, message.channelId, results);
     }
 
-    protected abstract performActionOnPrompt(phil : Phil, promptId : number) : Promise<boolean>;
+    protected abstract performActionOnPrompt(phil : Phil, serverConfig : ServerConfig, promptId : number) : Promise<boolean>;
 
     private getNumbersFromCommandArgs(commandArgs : string[]) : number[] {
         if (commandArgs.length !== 1) {
@@ -103,7 +104,7 @@ export abstract class ConfirmRejectCommandBase implements Command {
         return includedNumbers;
     }
 
-    private async performAction(phil : Phil, channelId : string, number : number) : Promise<PerformResult> {
+    private async performAction(phil : Phil, serverConfig : ServerConfig, channelId : string, number : number) : Promise<PerformResult> {
         try {
             const results = await phil.db.query('SELECT prompt_id FROM prompt_confirmation_queue WHERE channel_id = $1 and confirm_number = $2', [channelId, number]);
             if (results.rowCount === 0) {
@@ -111,7 +112,7 @@ export abstract class ConfirmRejectCommandBase implements Command {
             }
 
             const promptId = results.rows[0].prompt_id;
-            const actionResult = this.performActionOnPrompt(phil, promptId);
+            const actionResult = this.performActionOnPrompt(phil, serverConfig, promptId);
             if (!actionResult) {
                 return PerformResult.Error;
             }
@@ -130,12 +131,12 @@ export abstract class ConfirmRejectCommandBase implements Command {
         }
     }
 
-    private sendCompletionMessage(phil : Phil, channelId : string, results : ConfirmRejectResults) {
+    private sendCompletionMessage(phil : Phil, serverConfig : ServerConfig, channelId : string, results : ConfirmRejectResults) {
         if (results.numSuccessful === 0) {
             BotUtils.sendErrorMessage({
                 bot: phil.bot,
                 channelId: channelId,
-                message: this.noPromptsConfirmedMessage
+                message: this.noPromptsConfirmedMessage.replace(/\{commandPrefix\}/g, serverConfig.commandPrefix)
             });
             return;
         }
@@ -143,7 +144,7 @@ export abstract class ConfirmRejectCommandBase implements Command {
         BotUtils.sendSuccessMessage({
             bot: phil.bot,
             channelId: channelId,
-            message: (results.numSuccessful === 1 ? this.onePromptConfirmedMessage : this.multiplePromptsConfirmedMessage)
+            message: (results.numSuccessful === 1 ? this.onePromptConfirmedMessage : this.multiplePromptsConfirmedMessage).replace(/\{commandPrefix\}/g, serverConfig.commandPrefix)
         });
     }
 }

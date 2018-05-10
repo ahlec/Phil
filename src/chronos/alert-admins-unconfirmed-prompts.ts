@@ -1,8 +1,7 @@
 'use strict';
 
 import { Chrono } from './@types';
-import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
-import { Database } from '../phil/database';
+import { Phil } from '../phil/phil';
 import { DiscordPromises } from '../promises/discord';
 import { ServerConfig } from '../phil/server-config';
 import { BotUtils } from '../phil/utils';
@@ -11,22 +10,21 @@ import { UnconfirmedPromptTally } from '../phil/prompts/unconfirmed-prompt-tally
 export class AlertAdminsUnconfirmedPromptsChrono implements Chrono {
     readonly handle = 'alert-admins-unconfirmed-prompts';
 
-    async process(bot : DiscordIOClient, db : Database, server : DiscordIOServer, now : Date) {
-        const serverConfig = await ServerConfig.getFromId(db, server);
-        const unconfirmedTally = await UnconfirmedPromptTally.collectForServer(db, server.id);
-        const reply = this.getUnconfimedPromptsMessage(unconfirmedTally).trim();
+    async process(phil : Phil, serverConfig : ServerConfig, now : Date) {
+        const unconfirmedTally = await UnconfirmedPromptTally.collectForServer(phil.db, serverConfig.server.id);
+        const reply = this.getUnconfimedPromptsMessage(serverConfig, unconfirmedTally).trim();
         if (reply.length === 0) {
             return;
         }
 
-        DiscordPromises.sendEmbedMessage(bot, serverConfig.botControlChannel.id, {
+        DiscordPromises.sendEmbedMessage(phil.bot, serverConfig.botControlChannel.id, {
             color: 0xB0E0E6,
             title: ':ballot_box: Unconfirmed Prompt Submissions',
             description: reply
         });
     }
 
-    private getUnconfimedPromptsMessage(unconfirmedTallies : UnconfirmedPromptTally[]) : string {
+    private getUnconfimedPromptsMessage(serverConfig : ServerConfig, unconfirmedTallies : UnconfirmedPromptTally[]) : string {
         if (!unconfirmedTallies || unconfirmedTallies.length === 0) {
             return '';
         }
@@ -39,7 +37,7 @@ export class AlertAdminsUnconfirmedPromptsChrono implements Chrono {
         message += '\n';
 
         var randomTally = BotUtils.getRandomArrayEntry(unconfirmedTallies);
-        message += 'You can say `' + process.env.COMMAND_PREFIX + 'unconfirmed ' + randomTally.bucketHandle + '` to start the confirmation process.';
+        message += 'You can say `' + serverConfig.commandPrefix + 'unconfirmed ' + randomTally.bucketHandle + '` to start the confirmation process.';
         return message;
     }
 

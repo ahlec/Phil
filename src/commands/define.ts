@@ -11,6 +11,7 @@ import { Features } from '../phil/features';
 import { BotUtils } from '../phil/utils';
 import { Requestable, RequestableCreationDefinition } from '../phil/requestables';
 import { MessageBuilder } from '../phil/message-builder';
+import { ServerConfig } from '../phil/server-config';
 
 export class DefineCommand implements Command {
     readonly name = 'define';
@@ -18,13 +19,13 @@ export class DefineCommand implements Command {
     readonly feature = Features.Requestables;
 
     readonly helpGroup = HelpGroup.Roles;
-    readonly helpDescription = 'Creates a new requestable role that users can use with `' + process.env.COMMAND_PREFIX + 'request`';
+    readonly helpDescription = 'Creates a new requestable role that users can use with the request command.';
 
     readonly versionAdded = 1;
 
     readonly publicRequiresAdmin = true;
     async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        const definition = this.getDefinitionData(commandArgs, message.server);
+        const definition = this.getDefinitionData(commandArgs, message.serverConfig);
         if (!Requestable.checkIsValidRequestableName(definition.name)) {
             throw new Error('The name you provided isn\'t valid to use as a requestable. It must be at least two characters in length and made up only of alphanumeric characters and dashes.');
         }
@@ -35,7 +36,7 @@ export class DefineCommand implements Command {
         }
 
         await Requestable.createRequestable(phil.db, message.server, definition);
-        const reply = '`' + definition.name + '` has been set up for use with `' + process.env.COMMAND_PREFIX + 'request` to grant the ' + definition.role.name + ' role.';
+        const reply = '`' + definition.name + '` has been set up for use with `' + message.serverConfig.commandPrefix + 'request` to grant the ' + definition.role.name + ' role.';
         BotUtils.sendSuccessMessage({
             bot: phil.bot,
             channelId: message.channelId,
@@ -43,10 +44,10 @@ export class DefineCommand implements Command {
         });
     }
 
-    private getDefinitionData(commandArgs : string[], server : DiscordIOServer) : RequestableCreationDefinition {
+    private getDefinitionData(commandArgs : string[], serverConfig : ServerConfig) : RequestableCreationDefinition {
         if (commandArgs.length < 2) {
-            throw new Error('`' + process.env.COMMAND_PREFIX + 'define` requires two parameters, separated by a space:\n' +
-                '[1] the text to be used by users with `' + process.env.COMMAND_PREFIX + 'request` (cannot contain any spaces)\n' +
+            throw new Error('`' + serverConfig.commandPrefix + 'define` requires two parameters, separated by a space:\n' +
+                '[1] the text to be used by users with `' + serverConfig.commandPrefix + 'request` (cannot contain any spaces)\n' +
                 '[2] the full name of the Discord role (as it currently is spelled)');
         }
 
@@ -56,8 +57,8 @@ export class DefineCommand implements Command {
         }
 
         const roleName = commandArgs.slice(1).join(' ').trim().toLowerCase();
-        for (let roleId in server.roles) {
-            const role = server.roles[roleId];
+        for (let roleId in serverConfig.server.roles) {
+            const role = serverConfig.server.roles[roleId];
             if (role.name.toLowerCase() === roleName) {
                 return {
                     name: requestString,
