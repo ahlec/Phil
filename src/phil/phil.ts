@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('assert');
-import { Client as DiscordIOClient, Member as DiscordIOMember } from 'discord.io';
+import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer } from 'discord.io';
 import { CommandRunner } from './command-runner';
 import { ChronoManager } from './chrono-manager';
 import { AnalyzerManager } from './analyzer-manager';
@@ -36,7 +36,7 @@ export class Phil {
         this._reactableProcessor = new ReactableProcessor(this.bot, this.db);
     }
 
-    public start() {
+    start() {
         this._shouldSendDisconnectedMessage = false;
 
         this.bot.on('ready', this._onReady.bind(this));
@@ -44,6 +44,20 @@ export class Phil {
         this.bot.on('disconnect', this._onDisconnect.bind(this));
         this.bot.on('guildMemberAdd', this._onMemberAdd.bind(this));
         this.bot.on('any', this._onRawWebSocketEvent.bind(this));
+    }
+
+    getServerFromChannelId(channelId : string) : DiscordIOServer | null {
+        if (!this.bot.channels[channelId]) {
+            return null;
+        }
+
+        const serverId = this.bot.channels[channelId].guild_id;
+        const server = this.bot.servers[serverId];
+        if (!server) {
+            return null;
+        }
+
+        return server;
     }
 
     private _reportStartupError(err : Error) {
@@ -68,14 +82,9 @@ export class Phil {
     }
 
     private async _onMessage(user : string, userId : string, channelId : string, msg : string, event : OfficialDiscordPayload<OfficialDiscordMessage>) {
-        const serverConfig = await this._serverDirectory.getFromChannelId(channelId);
-        if (!serverConfig) {
-            return;
-        }
+        const message = await this.getDiscordMessage(event);
 
-        const message = new DiscordMessage(event, this.bot, serverConfig);
-
-        if (this._isOwnMessage(message)) {
+        if (this.isMessageFromPhil(message)) {
             this._handleOwnMessage(event);
             return;
         }
@@ -95,7 +104,21 @@ export class Phil {
         }
     }
 
-    private _isOwnMessage(message : DiscordMessage) : boolean {
+    private async getDiscordMessage(event : OfficialDiscordPayload<OfficialDiscordMessage>) : Promise<DiscordMessage> {
+        var server = this.getServerFromChannelId(event.d.channel_id);
+        if (!server) {
+            server = this.getServerFromChannelId(process.env.HIJACK_CHANNEL_ID); // TODO: Temp for v13 to allow direct messaging. v14 we remove direct messaging altogether.
+        }
+
+        const serverConfig = await this._serverDirectory.getServerConfig(server);
+        if (!serverConfig) {
+            return;
+        }
+
+        return new DiscordMessage(event, this.bot, serverConfig);
+    }
+
+    private isMessageFromPhil(message : DiscordMessage) : boolean {
         return (message.userId === this.bot.id);
     }
 

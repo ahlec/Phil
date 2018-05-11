@@ -13,20 +13,6 @@ export class ServerDirectory {
     constructor(private readonly phil : Phil) {
     }
 
-    async getFromChannelId(channelId : string) : Promise<ServerConfig> {
-        if (!this.phil.bot.channels[channelId]) {
-            throw new Error('Attempted to retrieve server config from unrecognized channel');
-        }
-
-        const serverId = this.phil.bot.channels[channelId].guild_id;
-        const server = this.phil.bot.servers[serverId];
-        if (!server) {
-            throw new Error('Could not find the server corresponding to this channel.'); // TODO: DIRECT MESSAGES WILL FAIL HERE.
-        }
-
-        return await this.getServerConfig(server);
-    }
-
     async getServerConfig(server : DiscordIOServer) : Promise<ServerConfig> {
         if (!server) {
             throw new Error('Unknown how we\'ll handle DMs. Also, need to support new servers that aren\'t configured yet.');
