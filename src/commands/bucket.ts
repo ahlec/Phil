@@ -65,7 +65,7 @@ export class BucketCommand implements Command {
 
     readonly publicRequiresAdmin = true;
     async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        const bucket = await Bucket.retrieveFromCommandArgs(phil.bot, phil.db, commandArgs, message.server, 'bucket', true);
+        const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'bucket', true);
         return sendBucketToChannel(phil, message.channelId, bucket);
     }
 };

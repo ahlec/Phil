@@ -1,9 +1,11 @@
 'use strict';
 
+import { Phil } from './phil';
 import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
 import { Database } from './database';
 import { QueryResult } from 'pg';
 import { BotUtils } from './utils';
+import { ServerConfig } from './server-config';
 
 const assert = require('assert');
 const moment = require('moment');
@@ -32,7 +34,7 @@ const frequencyFromStrings : { [name : string] : BucketFrequency } = {
     'immediately': BucketFrequency.Immediately
 };
 
-function throwMultipleUnspecifiedBucketsError(serverBuckets : Bucket[], commandName : string) {
+function throwMultipleUnspecifiedBucketsError(serverConfig : ServerConfig, serverBuckets : Bucket[], commandName : string) {
     if (serverBuckets.length === 0) {
         throw new Error('There are no prompt buckets configured on this server.');
     }
@@ -52,16 +54,16 @@ function throwMultipleUnspecifiedBucketsError(serverBuckets : Bucket[], commandN
     }
 
     const randomBucket = BotUtils.getRandomArrayEntry(serverBuckets);
-    message += '\nPlease try the command once more, specifying which bucket, like `' + process.env.COMMAND_PREFIX + commandName + ' ' + randomBucket.handle + '`.';
+    message += '\nPlease try the command once more, specifying which bucket, like `' + serverConfig.commandPrefix + commandName + ' ' + randomBucket.handle + '`.';
     throw new Error(message);
 }
 
-function _getOnlyBucketOnServer(serverBuckets : Bucket[], commandName : string, allowInvalidServers : boolean) : Bucket {
+function _getOnlyBucketOnServer(serverConfig : ServerConfig, serverBuckets : Bucket[], commandName : string, allowInvalidServers : boolean) : Bucket {
     if (serverBuckets.length === 1 && (allowInvalidServers || serverBuckets[0].isValid)) {
         return serverBuckets[0];
     }
 
-    throwMultipleUnspecifiedBucketsError(serverBuckets, commandName);
+    throwMultipleUnspecifiedBucketsError(serverConfig, serverBuckets, commandName);
 }
 
 function getAllServersUserIn(bot : DiscordIOClient, userId : string) : string[] {
@@ -155,17 +157,17 @@ export class Bucket {
         return Bucket.parseListOfDbBuckets(bot, results);
     }
 
-    static async retrieveFromCommandArgs(bot : DiscordIOClient, db : Database, commandArgs : string[], server : DiscordIOServer, commandName : string, allowInvalidServers : boolean) : Promise<Bucket> {
+    static async retrieveFromCommandArgs(phil : Phil, commandArgs : string[], serverConfig : ServerConfig, commandName : string, allowInvalidServers : boolean) : Promise<Bucket> {
         const firstParameter = commandArgs[0];
         if (!firstParameter || firstParameter.length === 0) {
-            const serverBuckets = await Bucket.getAllForServer(bot, db, server.id);
-            return _getOnlyBucketOnServer(serverBuckets, commandName, allowInvalidServers);
+            const serverBuckets = await Bucket.getAllForServer(phil.bot, phil.db, serverConfig.server.id);
+            return _getOnlyBucketOnServer(serverConfig, serverBuckets, commandName, allowInvalidServers);
         }
 
-        const bucket = await Bucket.getFromReferenceHandle(bot, db, server, firstParameter);
+        const bucket = await Bucket.getFromReferenceHandle(phil.bot, phil.db, serverConfig.server, firstParameter);
         if (bucket === null || (!allowInvalidServers && !bucket.isValid)) {
-            const serverBuckets = await Bucket.getAllForServer(bot, db, server.id);
-            throwMultipleUnspecifiedBucketsError(serverBuckets, commandName);
+            const serverBuckets = await Bucket.getAllForServer(phil.bot, phil.db, serverConfig.server.id);
+            throwMultipleUnspecifiedBucketsError(serverConfig, serverBuckets, commandName);
         }
 
         return bucket;

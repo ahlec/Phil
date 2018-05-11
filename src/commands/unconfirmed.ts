@@ -25,7 +25,7 @@ export class UnconfirmedCommand implements Command {
     readonly publicRequiresAdmin = true;
     async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
         await phil.db.query('DELETE FROM prompt_confirmation_queue WHERE channel_id = $1', [message.channelId]);
-        const bucket = await Bucket.retrieveFromCommandArgs(phil.bot, phil.db, commandArgs, message.server, 'unconfirmed', false);
+        const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'unconfirmed', false);
 
         const prompts = await Prompt.getUnconfirmedPrompts(phil, bucket, MAX_LIST_LENGTH);
         if (prompts.length === 0) {

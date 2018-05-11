@@ -2,8 +2,7 @@
 
 const util = require('util');
 
-import { Client as DiscordIOClient } from 'discord.io';
-import { Database } from './database';
+import { Phil } from './phil';
 import { DiscordMessage } from './discord-message';
 import { Analyzer } from '../analyzers/@types';
 import { AnalyzerLookup } from '../analyzers/index';
@@ -11,12 +10,7 @@ import { BotUtils } from './utils';
 import { DiscordPromises } from '../promises/discord';
 
 export class AnalyzerManager {
-    private readonly _bot : DiscordIOClient;
-    private readonly _db : Database;
-
-    constructor(bot : DiscordIOClient, db : Database) {
-        this._bot = bot;
-        this._db = db;
+    constructor(private readonly phil : Phil) {
     }
 
     analyzeMessage(message : DiscordMessage) {
@@ -28,7 +22,7 @@ export class AnalyzerManager {
 
     private async _runAnalyzer(analyzerName : string, analyzer : Analyzer, message : DiscordMessage) {
         try {
-            await analyzer.process(this._bot, message, this._db);
+            await analyzer.process(this.phil, message);
         } catch (err) {
             this._reportAnalyzerError(err, analyzerName);
         }
@@ -41,7 +35,7 @@ export class AnalyzerManager {
             err = util.inspect(err);
         }
 
-        DiscordPromises.sendEmbedMessage(this._bot, process.env.BOT_CONTROL_CHANNEL_ID, {
+        DiscordPromises.sendEmbedMessage(this.phil.bot, process.env.BOT_CONTROL_CHANNEL_ID, {
             color: 0xCD5555,
             title: ':no_entry: Analyzer Error',
             description: err,

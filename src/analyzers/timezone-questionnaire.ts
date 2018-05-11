@@ -1,21 +1,20 @@
 'use strict';
 
 import { Analyzer } from './@types';
-import { Client as DiscordIOClient } from 'discord.io';
+import { Phil } from '../phil/phil';
 import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
 import { TimezoneQuestionnaire } from '../phil/timezone-questionnaire';
 
 export class TimezoneQuestionnaireAnalyzer implements Analyzer {
     readonly handle = 'timezone-questionnaire';
 
-    async process(bot : DiscordIOClient, message : DiscordMessage, db : Database) {
+    async process(phil : Phil, message : DiscordMessage) {
         if (!message.isDirectMessage) {
             return;
         }
 
-        const currentStage = await TimezoneQuestionnaire.getStageForUser(db, message.userId);
+        const currentStage = await TimezoneQuestionnaire.getStageForUser(phil.db, message.userId);
         if (!currentStage) {
             return;
         }
@@ -24,6 +23,6 @@ export class TimezoneQuestionnaireAnalyzer implements Analyzer {
             return;
         }
 
-        currentStage.processInput(bot, db, message);
+        currentStage.processInput(phil, message);
     }
 }

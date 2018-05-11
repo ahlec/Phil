@@ -21,7 +21,7 @@ export class UnpauseCommand implements Command {
 
     readonly publicRequiresAdmin = true;
     async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        const bucket = await Bucket.retrieveFromCommandArgs(phil.bot, phil.db, commandArgs, message.server, 'bucket', true);
+        const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'bucket', true);
         await bucket.setIsPaused(phil.db, false);
 
         const reply = '**' + bucket.displayName + '** (' + bucket.handle + ') has been unpaused. You can pause it once more by using `' + message.serverConfig.commandPrefix + 'pause ' + bucket.handle + '`.';

@@ -21,7 +21,7 @@ export class PauseCommand implements Command {
 
     readonly publicRequiresAdmin = true;
     async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        const bucket = await Bucket.retrieveFromCommandArgs(phil.bot, phil.db, commandArgs, message.server, 'bucket', true);
+        const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'bucket', true);
         await bucket.setIsPaused(phil.db, true);
 
         const reply = '**' + bucket.displayName + '** (' + bucket.handle + ') has been paused. You can resume it by using `' + message.serverConfig.commandPrefix + 'unpause ' + bucket.handle + '`.';

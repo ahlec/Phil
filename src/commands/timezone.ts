@@ -20,11 +20,11 @@ export class TimezoneCommand implements Command {
 
     readonly publicRequiresAdmin = false;
     processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        return TimezoneQuestionnaire.startQuestionnaire(phil.bot, phil.db, message.userId, true);
+        return TimezoneQuestionnaire.startQuestionnaire(phil, message.serverConfig, message.userId, true);
     }
 
     readonly privateRequiresAdmin = false;
     processPrivateMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        return TimezoneQuestionnaire.startQuestionnaire(phil.bot, phil.db, message.userId, true);
+        return TimezoneQuestionnaire.startQuestionnaire(phil, message.serverConfig, message.userId, true);
     }
 };

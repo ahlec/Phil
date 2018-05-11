@@ -22,7 +22,7 @@ export class QueueCommand implements Command {
 
     readonly publicRequiresAdmin = true;
     async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        const bucket = await Bucket.retrieveFromCommandArgs(phil.bot, phil.db, commandArgs, message.server, 'queue', false);
+        const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'queue', false);
         const queue = await PromptQueue.getPromptQueue(phil.bot, phil.db, bucket, 1, MAX_QUEUE_DISPLAY_LENGTH);
 
         await queue.postToChannel(phil.bot, phil.db, message);

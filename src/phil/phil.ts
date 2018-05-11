@@ -32,7 +32,7 @@ export class Phil {
         this._serverDirectory = new ServerDirectory(this);
         this._commandRunner = new CommandRunner(this, this.bot, this.db);
         this._chronoManager = new ChronoManager(this, this._serverDirectory);
-        this._analyzerManager = new AnalyzerManager(this.bot, this.db);
+        this._analyzerManager = new AnalyzerManager(this);
         this._reactableProcessor = new ReactableProcessor(this.bot, this.db);
     }
 
