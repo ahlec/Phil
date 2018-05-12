@@ -52,18 +52,6 @@ const PRONOUNS_FROM_ROLE_ID = {
 
 // ------------------------------------------ INTERNAL FUNCTIONS
 
-function doesRoleHavePermission(role : DiscordIORole, permission : number) : boolean {
-    // TODO: Return to this function and determine if it's actually working?
-    var binary = (role.permissions >>> 0).toString(2).split('');
-    for (let strBit of binary) {
-        let bit = parseInt(strBit);
-        if (bit === permission) {
-            return true;
-        }
-    }
-    return false;
-}
-
 interface SendErrorMessageOpts {
     readonly bot : DiscordIOClient;
     readonly channelId : string;
@@ -108,27 +96,6 @@ export class BotUtils {
         }
 
         return false;
-    }
-
-    static isMemberAnAdminOnServer(member : DiscordIOMember, server : DiscordIOServer) : boolean {
-        for (let memberRoleId of member.roles) {
-            if (memberRoleId === process.env.ADMIN_ROLE_ID) {
-                return true;
-            }
-
-            let role = server.roles[memberRoleId];
-            if (doesRoleHavePermission(role, discord.Permissions.GENERAL_ADMINISTRATOR)) {
-                return true;
-            }
-        }
-
-        // Check @everyone role
-        if (doesRoleHavePermission(server.roles[server.id], discord.Permissions.GENERAL_ADMINISTRATOR)) {
-            return true;
-        }
-
-        // The owner of the server is also an admin
-        return (server.owner_id === member.id);
     }
 
     static toStringDiscordError(err : any) : string {

@@ -12,3 +12,7 @@ CREATE TABLE reactable_posts (
 );
 
 ALTER TABLE server_configs ADD COLUMN command_prefix VARCHAR NOT NULL DEFAULT E'p!';
+ALTER TABLE server_configs ADD COLUMN admin_channel_id VARCHAR;
+ALTER TABLE server_configs ADD COLUMN introductions_channel_id VARCHAR;
+ALTER TABLE server_configs ADD COLUMN news_channel_id VARCHAR;
+ALTER TABLE server_configs ADD COLUMN admin_role_id VARCHAR;

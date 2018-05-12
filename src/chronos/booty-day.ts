@@ -14,6 +14,6 @@ export class BootyDayChrono implements Chrono {
             return;
         }
 
-        DiscordPromises.sendMessage(phil.bot, process.env.NEWS_CHANNEL_ID, process.env.CUSTOM_EMOJI_PEEK + ' It\'s booty day! Post your Hijack booties!');
+        DiscordPromises.sendMessage(phil.bot, serverConfig.newsChannel.id, process.env.CUSTOM_EMOJI_PEEK + ' It\'s booty day! Post your Hijack booties!');
     }
 }

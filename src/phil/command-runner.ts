@@ -34,7 +34,7 @@ export class CommandRunner {
         if (input === null) {
             return;
         }
-        this._logInputReceived(message, input);
+        this.logInputReceived(message, input);
 
         const command = this._getCommandFromInputMessage(input);
         if (command === null) {
@@ -64,9 +64,13 @@ export class CommandRunner {
         await this.runCommand(message, commandData, input);
     }
 
-    private _logInputReceived(message : DiscordMessage, input : InputMessage) {
+    private logInputReceived(message : DiscordMessage, input : InputMessage) {
         const commandName = input.getCommandName();
-        console.log('user \'%s\' (%s) used command \'%s\'', message.user, message.userId, commandName);
+        console.log('user \'%s#%d\' used command \'%s%s\'',
+            message.user.username,
+            message.user.discriminator,
+            message.serverConfig.commandPrefix,
+            commandName);
     }
 
     private _getCommandFromInputMessage(input : InputMessage) {
@@ -117,10 +121,8 @@ export class CommandRunner {
             return true;
         }
 
-        const serverId = this.bot.channels[message.channelId].guild_id;
-        const server = this.bot.servers[serverId];
-        const member = server.members[message.userId];
-        return BotUtils.isMemberAnAdminOnServer(member, server);
+        const member = message.server.members[message.userId];
+        return message.serverConfig.isAdmin(member);
     }
 
     private _reportCannotUseCommand(message : DiscordMessage, commandData : CommandRunData, input : InputMessage) {

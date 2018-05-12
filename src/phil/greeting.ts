@@ -42,7 +42,7 @@ export async function greetNewMember(bot : DiscordIOClient, serverConfig : Serve
         }
 
         const welcomeMessage = makeGreetingMessage(user);
-        DiscordPromises.sendMessage(bot, process.env.INTRODUCTIONS_CHANNEL_ID, welcomeMessage);
+        DiscordPromises.sendMessage(bot, serverConfig.introductionsChannel.id, welcomeMessage);
     } catch(err) {
         onError(bot, serverConfig, member, err);
     }

@@ -23,7 +23,7 @@ export class HappyBirthdayChrono implements Chrono {
             return;
         }
 
-        DiscordPromises.sendMessage(phil.bot, process.env.NEWS_CHANNEL_ID, birthdayWish);
+        DiscordPromises.sendMessage(phil.bot, serverConfig.newsChannel.id, birthdayWish);
     }
 
     private async getBirthdayUserIds(db : Database, now : Date) : Promise<string[]> {
