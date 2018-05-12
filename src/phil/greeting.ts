@@ -3,6 +3,7 @@
 import { Client as DiscordIOClient, Member as DiscordIOMember, User as DiscordIOUser } from 'discord.io';
 import { DiscordPromises } from '../promises/discord';
 import { BotUtils } from './utils';
+import { ServerConfig } from './server-config';
 const util = require('util');
 
 function getUser(bot : DiscordIOClient, member : DiscordIOMember) : DiscordIOUser {
@@ -23,15 +24,15 @@ function makeGreetingMessage(user : DiscordIOUser) : string {
     return message;
 }
 
-function onError(bot : DiscordIOClient, member : DiscordIOMember, err : Error) : Promise<string> {
+async function onError(bot : DiscordIOClient, serverConfig : ServerConfig, member : DiscordIOMember, err : Error) : Promise<void> {
     console.error(err);
 
     let displayError = util.inspect(err);
-    return DiscordPromises.sendMessage(bot, process.env.BOT_CONTROL_CHANNEL_ID, 'There was an error sending a greeting message for new member ' + member.id + '.')
-        .then(() => DiscordPromises.sendMessage(bot, process.env.BOT_CONTROL_CHANNEL_ID, displayError));
+    await DiscordPromises.sendMessage(bot, serverConfig.botControlChannel.id, 'There was an error sending a greeting message for new member ' + member.id + '.');
+    await DiscordPromises.sendMessage(bot, serverConfig.botControlChannel.id, displayError);
 }
 
-export function greetNewMember(bot : DiscordIOClient, member : DiscordIOMember) : Promise<string> {
+export async function greetNewMember(bot : DiscordIOClient, serverConfig : ServerConfig, member : DiscordIOMember) : Promise<void> {
     try {
         const user = getUser(bot, member);
 
@@ -41,8 +42,8 @@ export function greetNewMember(bot : DiscordIOClient, member : DiscordIOMember) 
         }
 
         const welcomeMessage = makeGreetingMessage(user);
-        return DiscordPromises.sendMessage(bot, process.env.INTRODUCTIONS_CHANNEL_ID, welcomeMessage);
+        DiscordPromises.sendMessage(bot, process.env.INTRODUCTIONS_CHANNEL_ID, welcomeMessage);
     } catch(err) {
-        return onError(bot, member, err);
+        onError(bot, serverConfig, member, err);
     }
 };

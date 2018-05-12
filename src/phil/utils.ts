@@ -204,10 +204,6 @@ export class BotUtils {
         return (numInput.toString(10) === input);
     }
 
-    static isAdminChannel(channelId : string) : boolean {
-        return (channelId === process.env.BOT_CONTROL_CHANNEL_ID || channelId === process.env.ADMIN_CHANNEL_ID);
-    }
-
     static isSameDay(dateA : Date, dateB : Date) : boolean {
         if (dateA.getUTCFullYear() !== dateB.getUTCFullYear()) {
             return false;

@@ -42,7 +42,7 @@ export class Phil {
         this.bot.on('ready', this._onReady.bind(this));
         this.bot.on('message', this._onMessage.bind(this));
         this.bot.on('disconnect', this._onDisconnect.bind(this));
-        this.bot.on('guildMemberAdd', this._onMemberAdd.bind(this));
+        this.bot.on('guildMemberAdd', this.onMemberAdd.bind(this));
         this.bot.on('any', this._onRawWebSocketEvent.bind(this));
     }
 
@@ -162,9 +162,14 @@ export class Phil {
         this.bot.connect();
     }
 
-    private _onMemberAdd(member : DiscordIOMember) {
+    private async onMemberAdd(member : DiscordIOMember, event : any) {
         console.log('A new member has joined the server.');
-        greetNewMember(this.bot, member);
+        const serverId = (member as any).guild_id; // special field for this event
+        const server = this.bot.servers[serverId];
+        assert(server);
+
+        const serverConfig = await this._serverDirectory.getServerConfig(server);
+        greetNewMember(this.bot, serverConfig, member);
     }
 
     private _onRawWebSocketEvent(event : OfficialDiscordPayload<any>) {

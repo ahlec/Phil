@@ -19,7 +19,6 @@ export function ensureNecessaryEnvironmentVariables() {
     assertVariableExists('ADMIN_CHANNEL_ID');
     assertVariableExists('HIJACK_CHANNEL_ID');
     assertVariableExists('NEWS_CHANNEL_ID');
-    assertVariableExists('BOT_CONTROL_CHANNEL_ID');
     assertVariableExists('WELCOME_RULES_CHANNEL_ID');
     assertVariableExists('ADMIN_ROLE_ID');
     assertVariableExists('YOUTUBE_API_KEY');

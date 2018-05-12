@@ -12,18 +12,15 @@ interface IValidateResult {
 
 export class ServerConfig {
     readonly serverId : string;
-    readonly botControlChannel? : DiscordIOChannel;
+    readonly botControlChannel : DiscordIOChannel;
     readonly commandPrefix : string;
 
     private constructor(public readonly server : DiscordIOServer,
         private readonly globalConfig : GlobalConfig,
         dbRow : any) {
         this.serverId = dbRow.server_id;
+        this.botControlChannel = this.getChannel(dbRow.bot_control_channel_id);
         this.commandPrefix = dbRow.command_prefix;
-
-        if (dbRow.bot_control_channel_id) {
-            this.botControlChannel = server.channels[dbRow.bot_control_channel_id];
-        }
     }
 
     static async getFromId(db : Database, server : DiscordIOServer, globalConfig : GlobalConfig) : Promise<ServerConfig> {
@@ -33,6 +30,15 @@ export class ServerConfig {
         }
 
         return new ServerConfig(server, globalConfig, results.rows[0]);
+    }
+
+    isAdminChannel(channelId : string) : boolean {
+        // Check for #admin
+        if (!channelId) {
+        return false;
+        }
+
+        return (this.botControlChannel.id === channelId);
     }
 
     validateCommandPrefix(commandPrefix : string) : IValidateResult {
@@ -54,5 +60,13 @@ export class ServerConfig {
             isValid: true,
             invalidReason: null
         };
+    }
+
+    private getChannel(channelId : string) : DiscordIOChannel {
+        if (!channelId) {
+            channelId = this.server.id;
+        }
+
+        return this.server.channels[channelId];
     }
 }

@@ -8,6 +8,7 @@ import { Chrono } from '../chronos/@types';
 import { ChronoLookup } from '../chronos/index';
 import { DiscordPromises } from '../promises/discord';
 import { ServerDirectory } from './server-directory';
+import { ServerConfig } from './server-config';
 
 export class ChronoManager {
     private readonly _channelsLastMessageTable : { [channelId: string] : Date };
@@ -99,27 +100,27 @@ export class ChronoManager {
 
         try {
             await chronoDefinition.process(this.phil, serverConfig, now);
-            this._markChronoProcessed(chronoId, serverId, utcDate);
+            this.markChronoProcessed(chronoId, serverId, utcDate);
         } catch(err) {
-            this._reportChronoError(err, chronoHandle, serverId);
+            this.reportChronoError(err, serverConfig, chronoHandle);
         }
     }
 
-    private _markChronoProcessed(chronoId : number, serverId : string, utcDate : string) {
+    private markChronoProcessed(chronoId : number, serverId : string, utcDate : string) {
         return this.phil.db.query(`UPDATE server_chronos
             SET date_last_ran = $1
             WHERE server_id = $2 AND chrono_id = $3`, [utcDate, serverId, chronoId]);
     }
 
-    private _reportChronoError(err : Error | string, chronoHandle : string, serverId : string) {
-        console.error('[CHRONOS]     error running %s for server %s', chronoHandle, serverId);
+    private reportChronoError(err : Error | string, serverConfig : ServerConfig, chronoHandle : string) {
+        console.error('[CHRONOS]     error running %s for server %s', chronoHandle, serverConfig.server.id);
         console.error(err);
 
         if (typeof(err) !== 'string') {
             err = util.inspect(err);
         }
 
-        return DiscordPromises.sendEmbedMessage(this.phil.bot, process.env.BOT_CONTROL_CHANNEL_ID, {
+        return DiscordPromises.sendEmbedMessage(this.phil.bot, serverConfig.botControlChannel.id, {
             color: 0xCD5555,
             title: ':no_entry: Chrono Error',
             description: err,

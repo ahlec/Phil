@@ -160,7 +160,7 @@ export class HelpCommand implements Command {
 
     readonly publicRequiresAdmin = false;
     async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        const isAdminChannel = BotUtils.isAdminChannel(message.channelId);
+        const isAdminChannel = message.serverConfig.isAdminChannel(message.channelId);
         const featuresEnabledLookup = await FeatureUtils.getServerFeaturesStatus(phil.db, message.server.id);
         const builder = new MessageBuilder();
 
