@@ -71,7 +71,7 @@ export class ColourCommand extends MemberUniqueRoleCommandBase<string> {
         };
     }
 
-    protected getSuccessMessage(data : string) : string {
+    protected getSuccessMessage(serverConfig : ServerConfig, data : string) : string {
         const compliment = BotUtils.getRandomArrayEntry(compliments);
         return 'Your colour has been changed to **' + data + '**. ' + compliment;
     }

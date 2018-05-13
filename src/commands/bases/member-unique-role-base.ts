@@ -32,7 +32,7 @@ export abstract class MemberUniqueRoleCommandBase<TData> implements Command {
         BotUtils.sendSuccessMessage({
             bot: phil.bot,
             channelId: message.channelId,
-            message: this.getSuccessMessage(data)
+            message: this.getSuccessMessage(message.serverConfig, data)
         });
     }
 
@@ -42,7 +42,7 @@ export abstract class MemberUniqueRoleCommandBase<TData> implements Command {
     protected abstract isRolePartOfUniquePool(role : DiscordIORole) : boolean;
     protected abstract doesRoleMatchData(role : DiscordIORole, data : TData) : boolean;
     protected abstract getRoleConfig(data : TData) : DiscordPromises.EditRoleOptions;
-    protected abstract getSuccessMessage(data : TData) : string;
+    protected abstract getSuccessMessage(serverConfig : ServerConfig, data : TData) : string;
 
     private getDataFromCommandArgs(serverConfig : ServerConfig, commandArgs : string[]) : TData {
         if (commandArgs.length === 0) {

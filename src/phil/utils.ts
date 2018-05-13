@@ -63,7 +63,7 @@ export class BotUtils {
         return err.toString();
     }
 
-    static getRandomArrayEntry<T>(arr : T[]) : T {
+    static getRandomArrayEntry<T>(arr : ReadonlyArray<T>) : T {
         const randomIndex = Math.floor(Math.random() * arr.length);
         return arr[randomIndex];
     }

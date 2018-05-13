@@ -15,7 +15,7 @@ export namespace DiscordPromises {
 
     export interface EditRoleOptions {
         name : string;
-        color : number;
+        color? : number;
     }
 
     export function sendMessage(bot : DiscordIOClient, channelId : string, message : string) : Promise<string> {
