@@ -7,49 +7,6 @@ const https = require('https');
 import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer, Role as DiscordIORole } from 'discord.io';
 import { DiscordPromises } from '../promises/discord';
 
-// -------------------------------- PRONOUNS
-export enum Pronoun {
-    He = 0,
-    She = 1,
-    They = 2
-};
-
-export enum PronounCase {
-    He = 0,
-    Him = 1,
-    His = 2
-};
-
-const HE_PRONOUNS = {
-    [PronounCase.He]: 'he',
-    [PronounCase.Him]: 'him',
-    [PronounCase.His]: 'his'
-};
-
-const SHE_PRONOUNS = {
-    [PronounCase.He]: 'she',
-    [PronounCase.Him]: 'her',
-    [PronounCase.His]: 'hers'
-};
-
-const THEY_PRONOUNS = {
-    [PronounCase.He]: 'they',
-    [PronounCase.Him]: 'them',
-    [PronounCase.His]: 'theirs'
-};
-
-const PRONOUN_ARRAYS = {
-    [Pronoun.He]: HE_PRONOUNS,
-    [Pronoun.She]: SHE_PRONOUNS,
-    [Pronoun.They]: THEY_PRONOUNS
-};
-
-const PRONOUNS_FROM_ROLE_ID = {
-    [process.env.HE_PRONOUNS_ROLE_ID]: Pronoun.He,
-    [process.env.SHE_PRONOUNS_ROLE_ID]: Pronoun.She,
-    [process.env.THEY_PRONOUNS_ROLE_ID]: Pronoun.They
-};
-
 // ------------------------------------------ INTERNAL FUNCTIONS
 
 interface SendErrorMessageOpts {
@@ -119,35 +76,6 @@ export class BotUtils {
         const role = server.roles[roleId];
         const isHex = BotUtils.isValidHexColor(role.name);
         return isHex;
-    }
-
-    static getPronounForUser(bot : DiscordIOClient, server : DiscordIOServer, userId : string) : Pronoun {
-        const member = server.members[userId];
-        const pronounsOfUser : Pronoun[] = [];
-
-        for (let memberRoleId of member.roles) {
-            let pronoun = PRONOUNS_FROM_ROLE_ID[memberRoleId];
-            if (pronoun) {
-                pronounsOfUser.push(pronoun);
-            }
-        }
-
-        if (pronounsOfUser.length === 0) {
-            return Pronoun.They;
-        }
-
-        if (pronounsOfUser.length === 1) {
-            return pronounsOfUser[0];
-        }
-
-        // For right now, we'll go with 'They'.
-        return Pronoun.They;
-    }
-
-    static getPronounOfCase(pronoun : Pronoun, pronounCase : PronounCase) : string {
-        const pronounArray = PRONOUN_ARRAYS[pronoun];
-        const pronounStr = pronounArray[pronounCase];
-        return pronounStr;
     }
 
     static isPromise(obj : any) : boolean {

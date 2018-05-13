@@ -5,7 +5,8 @@ import { Phil } from '../phil/phil';
 import { ServerConfig } from '../phil/server-config';
 import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
-import { BotUtils, Pronoun, PronounCase } from '../phil/utils';
+import { BotUtils } from '../phil/utils';
+import { Pronoun, GROUP_PRONOUNS } from '../phil/pronouns';
 
 interface HappyBirthdayInfo {
     readonly names : string[];
@@ -51,9 +52,10 @@ export class HappyBirthdayChrono implements Chrono {
             names.push(userDisplayName);
         }
 
-        var pronoun = Pronoun.They;
+        var pronoun = GROUP_PRONOUNS;
         if (userIds.length === 1) {
-            pronoun = BotUtils.getPronounForUser(phil.bot, serverConfig.server, userIds[0]);
+            const member = serverConfig.server.members[userIds[0]];
+            pronoun = serverConfig.getPronounsForMember(member);
         }
 
         return {
@@ -89,7 +91,7 @@ export class HappyBirthdayChrono implements Chrono {
 
         message += '\'s birthday! Wish ';
 
-        const pronounInCase = BotUtils.getPronounOfCase(info.pronoun, PronounCase.Him).toLowerCase();
+        const pronounInCase = info.pronoun.object.toLowerCase();
         message += pronounInCase;
         message += ' a happy birthday when you see ';
         message += pronounInCase;

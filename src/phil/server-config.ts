@@ -4,6 +4,7 @@ import { Server as DiscordIOServer, Channel as DiscordIOChannel, Role as Discord
 import { Database } from './database';
 import { QueryResult } from 'pg';
 import { GlobalConfig } from './global-config';
+import { Pronoun, DEFAULT_PRONOUNS, getPronounFromRole } from './pronouns';
 const discord = require('discord.io');
 
 
@@ -85,6 +86,22 @@ export class ServerConfig {
 
         return (this.botControlChannel.id === channelId
             || this.adminChannel.id === channelId);
+    }
+
+    getPronounsForMember(member: DiscordIOMember) : Pronoun {
+        for (let roleId of member.roles) {
+            let role = this.server.roles[roleId];
+            if (!role) {
+                continue;
+            }
+
+            let pronoun = getPronounFromRole(role);
+            if (pronoun) {
+                return pronoun;
+            }
+        }
+
+        return DEFAULT_PRONOUNS;
     }
 
     validateCommandPrefix(commandPrefix : string) : IValidateResult {

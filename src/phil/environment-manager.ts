@@ -17,9 +17,6 @@ function assertCustomEmoji(variableName : string) {
 export function ensureNecessaryEnvironmentVariables() {
     assertVariableExists('WELCOME_RULES_CHANNEL_ID');
     assertVariableExists('BOT_MANAGER_USERNAME');
-    assertVariableExists('HE_PRONOUNS_ROLE_ID');
-    assertVariableExists('SHE_PRONOUNS_ROLE_ID');
-    assertVariableExists('THEY_PRONOUNS_ROLE_ID');
     assertVariableExists('HIJACK_FANDOM_GOOGLE_MAP_LINK');
     assertCustomEmoji('CUSTOM_EMOJI_PEEK');
     assertCustomEmoji('CUSTOM_EMOJI_TRANSPARENT');
