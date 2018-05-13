@@ -37,7 +37,8 @@ export class RemoveUnusedColorRolesChrono implements Chrono {
     private getAllUnusedColorRoleIds(server : DiscordIOServer) : RoleInfo[] {
         var colorRoles = [];
         for (let roleId in server.roles) {
-            if (!BotUtils.isHexColorRole(server, roleId)) {
+            const role = server.roles[roleId];
+            if (!role || !BotUtils.isHexColorRole(role)) {
                 continue;
             }
 

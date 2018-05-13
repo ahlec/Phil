@@ -72,8 +72,7 @@ export class BotUtils {
         return /^#[0-9A-F]{6}$/i.test(input);
     }
 
-    static isHexColorRole(server : DiscordIOServer, roleId : string) : boolean {
-        const role = server.roles[roleId];
+    static isHexColorRole(role : DiscordIORole) : boolean {
         const isHex = BotUtils.isValidHexColor(role.name);
         return isHex;
     }

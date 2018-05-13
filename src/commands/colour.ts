@@ -1,14 +1,10 @@
 'use strict';
 
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
-import { Server as DiscordIOServer, Role as DiscordIORole } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
+import { MemberUniqueRoleCommandBase } from './bases/member-unique-role-base';
+import { Features } from '../phil/features';
+import { Role as DiscordIORole } from 'discord.io';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
-import { Features } from '../phil/features';
 import { ServerConfig } from '../phil/server-config';
 
 const decemberLinks = [
@@ -28,74 +24,55 @@ const compliments = [
     'It\'s absolutely beautiful.'
 ];
 
-export class ColourCommand implements Command {
+// TData = valid string hex code (ie #000000)
+export class ColourCommand extends MemberUniqueRoleCommandBase<string> {
     readonly name = 'colour';
     readonly aliases = ['color'];
     readonly feature = Features.Colour;
 
-    readonly helpGroup = HelpGroup.Roles;
     readonly helpDescription = 'Asks Phil to change your username colour to a hex code of your choosing.';
 
     readonly versionAdded = 3;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        const hexColor = this.getHexColorFromCommandArgs(message.serverConfig, commandArgs);
-        const colorRole = await this.getRoleFromHexColor(phil, message.server, hexColor);
-
-        await this.removeColorRolesFromUser(phil, message.server, message.userId);
-        await DiscordPromises.giveRoleToUser(phil.bot, message.server.id, message.userId, colorRole.id);
-
-        const compliment = BotUtils.getRandomArrayEntry(compliments);
-        BotUtils.sendSuccessMessage({
-            bot: phil.bot,
-            channelId: message.channelId,
-            message: 'Your colour has been changed to **' + hexColor + '**. ' + compliment
-        });
+    protected getMissingCommandArgsErrorMessage(serverConfig : ServerConfig) : string {
+        const decemberLink = BotUtils.getRandomArrayEntry(decemberLinks);
+        return 'You must provide a hex code to this function of the colour that you\'d like to use. For example, `'
+            + serverConfig.commandPrefix + 'color #FFFFFF`. You could try checking out '
+            + decemberLink + ' for some codes.';
     }
 
-    private getHexColorFromCommandArgs(serverConfig : ServerConfig, commandArgs : string[]) : string {
-        if (commandArgs.length === 0) {
-            const decemberLink = BotUtils.getRandomArrayEntry(decemberLinks);
-            throw new Error('You must provide a hex code to this function of the colour that you\'d like to use. For example, `' + serverConfig.commandPrefix + 'color #FFFFFF`. You could try checking out ' + decemberLink + ' for some codes.');
-        }
-
-        var hexColor = commandArgs[0];
-        if (!BotUtils.isValidHexColor(hexColor)) {
-            const decemberLink = BotUtils.getRandomArrayEntry(decemberLinks);
-            throw new Error('`' + hexColor + '` isn\'t a valid hex code. I\'m looking for it in the format of `#RRGGBB`. You can try checking out ' + decemberLink + ' for some amazing colours.');
-        }
-
-        hexColor = hexColor.toUpperCase();
-        return hexColor;
+    protected getInvalidInputErrorMessage(input : string, serverConfig : ServerConfig) : string {
+        const decemberLink = BotUtils.getRandomArrayEntry(decemberLinks);
+        return '`' + input + '` isn\'t a valid hex code. I\'m looking for it in the format of `#RRGGBB`. You can try checking out '
+            + decemberLink + ' for some amazing colours.';
     }
 
-    private async removeColorRolesFromUser(phil : Phil, server : DiscordIOServer, userId : string) : Promise<void> {
-        const member = server.members[userId];
-
-        for (let roleId of member.roles) {
-            if (!BotUtils.isHexColorRole(server, roleId)) {
-                continue;
-            }
-
-            await DiscordPromises.takeRoleFromUser(phil.bot, server.id, userId, roleId);
+    protected tryParseInput(input : string) : string {
+        if (!BotUtils.isValidHexColor(input)) {
+            return null;
         }
+
+        return input.toUpperCase();
     }
 
-    private async getRoleFromHexColor(phil : Phil, server : DiscordIOServer, hexColor : string) : Promise<DiscordIORole> {
-        for (let roleId in server.roles) {
-            let role = server.roles[roleId];
-            if (role.name === hexColor) {
-                return role;
-            }
-        }
+    protected isRolePartOfUniquePool(role : DiscordIORole) : boolean {
+        return BotUtils.isHexColorRole(role);
+    }
 
-        const hexColorNumber = parseInt(hexColor.replace('#', '0x'), 16);
-        const newRole = await DiscordPromises.createRole(phil.bot, server.id);
-        await DiscordPromises.editRole(phil.bot, server.id, newRole.id, {
-            name: hexColor,
+    protected doesRoleMatchData(role : DiscordIORole, data : string) : boolean {
+        return (role.name === data);
+    }
+
+    protected getRoleConfig(data : string) : DiscordPromises.EditRoleOptions {
+        const hexColorNumber = parseInt(data.replace('#', '0x'), 16);
+        return {
+            name: data,
             color: hexColorNumber
-        });
-        return newRole;
+        };
+    }
+
+    protected getSuccessMessage(data : string) : string {
+        const compliment = BotUtils.getRandomArrayEntry(compliments);
+        return 'Your colour has been changed to **' + data + '**. ' + compliment;
     }
 };
