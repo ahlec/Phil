@@ -74,8 +74,8 @@ export class Phil {
         if (this._shouldSendDisconnectedMessage) {
             BotUtils.sendErrorMessage({
                 bot: this.bot,
-                channelId: process.env.BOT_COMMAND_CHANNEL_ID,
-                message: 'Encountered an unexpected shutdown, @' + process.env.BOT_MANAGER_USERNAME + '. The logs should be in Heroku. I\'ve recovered though and connected again.'
+                channelId: this.globalConfig.botManagerUserId,
+                message: 'I experienced an unexpected shutdown. The logs should be in Heroku. I\'ve recovered and connected again.'
             });
             this._shouldSendDisconnectedMessage = false;
         }

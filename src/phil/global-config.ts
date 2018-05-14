@@ -5,6 +5,7 @@ export class GlobalConfig {
     public readonly port : number;
     public readonly databaseUrl : string;
     public readonly youtubeApiKey : string;
+    public readonly botManagerUserId : string;
     public readonly maxCommandPrefixLength = 5;
 
     private constructor() {
@@ -12,6 +13,7 @@ export class GlobalConfig {
         this.port = GlobalConfig.getRequiredNumber('PORT');
         this.databaseUrl = GlobalConfig.getRequiredString('DATABASE_URL');
         this.youtubeApiKey = GlobalConfig.getRequiredString('YOUTUBE_API_KEY');
+        this.botManagerUserId = GlobalConfig.getRequiredString('BOT_MANAGER_USER_ID');
     }
 
     public static retrieve() : GlobalConfig {
