@@ -15,11 +15,11 @@ export class LeaderboardEntry {
     constructor(bot : DiscordIOClient, server : DiscordIOServer, dbRow : any) {
         this.userId = dbRow.suggesting_userid;
 
-        const member = server.members[this.userId];
-        const currentUserDisplayName = BotUtils.getUserDisplayName(bot, server.id, this.userId);
+        const user = bot.users[this.userId];
+        const currentUserDisplayName = BotUtils.getUserDisplayName(user, server);
 
         this.displayName = (currentUserDisplayName || dbRow.suggesting_user);
-        this.isStillInServer = (member != null);
+        this.isStillInServer = (server.members[this.userId] != null);
         this.score = parseInt(dbRow.score);
     }
 }

@@ -58,7 +58,8 @@ export class CalendarMonth {
 
         for (let index = 0; index < results.rowCount; ++index) {
             let userId = results.rows[index].userid;
-            let userDisplayName = BotUtils.getUserDisplayName(bot, server.id, userId);
+            let user = bot.users[userId];
+            let userDisplayName = BotUtils.getUserDisplayName(user, server);
             if (!userDisplayName) {
                 continue;
             }

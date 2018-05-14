@@ -20,12 +20,12 @@ export class Prompt {
     constructor(bot : DiscordIOClient, bucket : Bucket, dbRow : any) {
         const server = bot.servers[bucket.serverId];
         const userId = dbRow.suggesting_userid;
-        const member = server.members[userId];
-        const currentUserDisplayName = BotUtils.getUserDisplayName(bot, bucket.serverId, userId);
+        const user = bot.users[userId];
+        const currentUserDisplayName = BotUtils.getUserDisplayName(user, server);
 
         this.userId = userId;
         this.displayName = (currentUserDisplayName || dbRow.suggesting_user);
-        this.isStillInServer = (member != null);
+        this.isStillInServer = (server.members[userId] != null);
         this.promptId = dbRow.prompt_id;
         this.datePosted = (dbRow.prompt_date ? new Date(dbRow.prompt_date) : null);
         this.promptNumber = dbRow.prompt_number;

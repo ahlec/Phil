@@ -33,6 +33,7 @@ export class ServerConfig {
     readonly introductionsChannel : DiscordIOChannel;
     readonly newsChannel : DiscordIOChannel;
     readonly adminRole? : DiscordIORole;
+    readonly welcomeMessage : string;
 
     private constructor(public readonly server : DiscordIOServer,
         private readonly globalConfig : GlobalConfig,
@@ -43,6 +44,7 @@ export class ServerConfig {
         this.adminChannel = this.getChannel(dbRow.admin_channel_id);
         this.introductionsChannel = this.getChannel(dbRow.introductions_channel_id);
         this.newsChannel = this.getChannel(dbRow.news_channel_id);
+        this.welcomeMessage = dbRow.welcome_message;
 
         if (dbRow.admin_role_id) {
             this.adminRole = this.server.roles[dbRow.admin_role_id];

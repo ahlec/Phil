@@ -75,7 +75,8 @@ export const Features = {
     Requestables: new Feature(3, 'Requestable Roles', ['role', 'roles', 'requestable', 'requestables']),
     Colour: new Feature(4, 'Colour Names', ['color', 'colour']),
     Calendar: new Feature(5, 'Calendar', ['calendar']),
-    Pronouns: new Feature(6, 'Pronouns', ['pronoun', 'pronouns'])
+    Pronouns: new Feature(6, 'Pronouns', ['pronoun', 'pronouns']),
+    WelcomeMessage: new Feature(7, 'Welcome Message', ['welcome', 'welcomemessage'])
 };
 
 interface FeaturesLookup {

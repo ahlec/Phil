@@ -169,7 +169,7 @@ export class Phil {
         assert(server);
 
         const serverConfig = await this._serverDirectory.getServerConfig(server);
-        greetNewMember(this.bot, serverConfig, member);
+        await greetNewMember(this, serverConfig, member);
     }
 
     private _onRawWebSocketEvent(event : OfficialDiscordPayload<any>) {

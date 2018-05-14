@@ -1,9 +1,12 @@
 'use strict';
 
+import { Phil } from './phil';
 import { Client as DiscordIOClient, Member as DiscordIOMember, User as DiscordIOUser } from 'discord.io';
+import { Database } from './database';
 import { DiscordPromises } from '../promises/discord';
 import { BotUtils } from './utils';
 import { ServerConfig } from './server-config';
+import { Features, FeatureUtils } from './features';
 const util = require('util');
 
 function getUser(bot : DiscordIOClient, member : DiscordIOMember) : DiscordIOUser {
@@ -16,12 +19,10 @@ function getUser(bot : DiscordIOClient, member : DiscordIOMember) : DiscordIOUse
     return user;
 }
 
-function makeGreetingMessage(user : DiscordIOUser) : string {
-    var message = ':snowflake: Welcome to the server, **<@' + user.id + '>**! :dragon_face:\n\n';
-    message += 'Please check out <#' + process.env.WELCOME_RULES_CHANNEL_ID + '>, which has both the couple of rules we ask you to follow for being a part of the server, but also has a startup guide to get you all set up here. It should only take a few minutes, tops.\n\n';
-    message += 'When you\'ve finished that, feel free to come back here to introduce yourself to everybody! If you have a Tumblr account but it isn\'t the same as your Discord name, post a link to your blog so we can either recognise you, or so we can go follow you!\n\n';
-    message += 'We\'re really happy to have you here, and we hope you\'ll enjoy being here as well!';
-    return message;
+function makeGreetingMessage(serverConfig : ServerConfig, user : DiscordIOUser) : string {
+    const displayName = BotUtils.getUserDisplayName(user, serverConfig.server);
+    return serverConfig.welcomeMessage.replace(/\{user\}/g, '<@' + user.id + '>')
+        .replace(/\{name\}/g, displayName);
 }
 
 async function onError(bot : DiscordIOClient, serverConfig : ServerConfig, member : DiscordIOMember, err : Error) : Promise<void> {
@@ -32,18 +33,29 @@ async function onError(bot : DiscordIOClient, serverConfig : ServerConfig, membe
     await DiscordPromises.sendMessage(bot, serverConfig.botControlChannel.id, displayError);
 }
 
-export async function greetNewMember(bot : DiscordIOClient, serverConfig : ServerConfig, member : DiscordIOMember) : Promise<void> {
-    try {
-        const user = getUser(bot, member);
+async function shouldWelcomeMember(db : Database, serverConfig : ServerConfig, user : DiscordIOUser) : Promise<boolean> {
+    if (!user || user.bot) {
+        return false;
+    }
 
-        if (user.bot) {
-            console.log('New user is a bot, skipping greeting.');
+    if (!serverConfig.welcomeMessage || serverConfig.welcomeMessage.length === 0) {
+        return false;
+    }
+
+    return await Features.WelcomeMessage.getIsEnabled(db, serverConfig.server.id);
+}
+
+export async function greetNewMember(phil : Phil,  serverConfig : ServerConfig, member : DiscordIOMember) : Promise<void> {
+    try {
+        const user = getUser(phil.bot, member);
+        const shouldWelcome = await shouldWelcomeMember(phil.db, serverConfig, user);
+        if (!shouldWelcome) {
             return;
         }
 
-        const welcomeMessage = makeGreetingMessage(user);
-        DiscordPromises.sendMessage(bot, serverConfig.introductionsChannel.id, welcomeMessage);
+        const welcomeMessage = makeGreetingMessage(serverConfig, user);
+        DiscordPromises.sendMessage(phil.bot, serverConfig.introductionsChannel.id, welcomeMessage);
     } catch(err) {
-        onError(bot, serverConfig, member, err);
+        onError(phil.bot, serverConfig, member, err);
     }
 };

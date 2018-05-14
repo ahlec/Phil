@@ -44,7 +44,8 @@ export class HappyBirthdayChrono implements Chrono {
         var names = [];
         for (let index = 0; index < userIds.length; ++index) {
             const userId = userIds[index];
-            const userDisplayName = BotUtils.getUserDisplayName(phil.bot, serverConfig.server.id, userId);
+            const user = phil.bot.users[userId];
+            const userDisplayName = BotUtils.getUserDisplayName(user, serverConfig.server);
             if (!userDisplayName) {
                 continue;
             }

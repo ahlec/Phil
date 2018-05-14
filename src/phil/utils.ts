@@ -4,7 +4,7 @@ const url = require('url');
 const http = require('http');
 const https = require('https');
 
-import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer, Role as DiscordIORole } from 'discord.io';
+import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer, Role as DiscordIORole, User as DiscordIOUser } from 'discord.io';
 import { DiscordPromises } from '../promises/discord';
 
 // ------------------------------------------ INTERNAL FUNCTIONS
@@ -127,18 +127,13 @@ export class BotUtils {
         return str;
     }
 
-    static getUserDisplayName(bot : DiscordIOClient, serverId : string, userId : string) : string {
-        const server = bot.servers[serverId];
-        assert(server);
-
-        const user = bot.users[userId];
-        const member = server.members[userId];
-
-        if (!user || !member) {
+    static getUserDisplayName(user : DiscordIOUser, server : DiscordIOServer) : string {
+        if (!user) {
             return null;
         }
 
-        if (member.nick) {
+        const member = server.members[user.id];
+        if (member && member.nick && member.nick.length > 0) {
             return member.nick;
         }
 
