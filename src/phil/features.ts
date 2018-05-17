@@ -76,7 +76,8 @@ export const Features = {
     Colour: new Feature(4, 'Colour Names', ['color', 'colour']),
     Calendar: new Feature(5, 'Calendar', ['calendar']),
     Pronouns: new Feature(6, 'Pronouns', ['pronoun', 'pronouns']),
-    WelcomeMessage: new Feature(7, 'Welcome Message', ['welcome', 'welcomemessage'])
+    WelcomeMessage: new Feature(7, 'Welcome Message', ['welcome', 'welcomemessage']),
+    FandomMap: new Feature(8, 'Fandom Map', ['map'])
 };
 
 interface FeaturesLookup {

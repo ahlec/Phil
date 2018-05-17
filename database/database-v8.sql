@@ -17,3 +17,4 @@ ALTER TABLE server_configs ADD COLUMN introductions_channel_id VARCHAR;
 ALTER TABLE server_configs ADD COLUMN news_channel_id VARCHAR;
 ALTER TABLE server_configs ADD COLUMN admin_role_id VARCHAR;
 ALTER TABLE server_configs ADD COLUMN welcome_message TEXT;
+ALTER TABLE server_configs ADD COLUMN fandom_map_link TEXT;

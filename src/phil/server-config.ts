@@ -34,6 +34,7 @@ export class ServerConfig {
     readonly newsChannel : DiscordIOChannel;
     readonly adminRole? : DiscordIORole;
     readonly welcomeMessage : string;
+    readonly fandomMapLink : string;
 
     private constructor(public readonly server : DiscordIOServer,
         private readonly globalConfig : GlobalConfig,
@@ -44,7 +45,8 @@ export class ServerConfig {
         this.adminChannel = this.getChannel(dbRow.admin_channel_id);
         this.introductionsChannel = this.getChannel(dbRow.introductions_channel_id);
         this.newsChannel = this.getChannel(dbRow.news_channel_id);
-        this.welcomeMessage = dbRow.welcome_message;
+        this.welcomeMessage = this.getOptionalString(dbRow.welcome_message);
+        this.fandomMapLink = this.getOptionalString(dbRow.fandom_map_link);
 
         if (dbRow.admin_role_id) {
             this.adminRole = this.server.roles[dbRow.admin_role_id];
@@ -138,5 +140,13 @@ export class ServerConfig {
         }
 
         return this.server.channels[0]; // If we don't have ANY channels, got a lot bigger problems.
+    }
+
+    private getOptionalString(str : string) : string | null {
+        if (!str || str.length === 0) {
+            return null;
+        }
+
+        return str;
     }
 }
