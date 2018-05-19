@@ -37,11 +37,6 @@ export class BirthdayCommand implements Command {
         });
     }
 
-    readonly privateRequiresAdmin = false;
-    processPrivateMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        return this.processPublicMessage(phil, message, commandArgs);
-    }
-
     getInputFromCommandArgs(serverConfig : ServerConfig, commandArgs : string[]) : Moment {
         const birthdayInput = commandArgs.join(' ').trim();
         if (birthdayInput.length === 0) {

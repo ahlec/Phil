@@ -22,9 +22,4 @@ export class TimezoneCommand implements Command {
     processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
         return TimezoneQuestionnaire.startQuestionnaire(phil, message.serverConfig, message.userId, true);
     }
-
-    readonly privateRequiresAdmin = false;
-    processPrivateMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        return TimezoneQuestionnaire.startQuestionnaire(phil, message.serverConfig, message.userId, true);
-    }
 };
