@@ -87,21 +87,18 @@ export class Prompt {
         });
     }
 
-    postAsNewPrompt(phil : Phil, serverConfig : ServerConfig, now : Date) {
-        return Bucket.getFromId(phil.bot, phil.db, this.bucketId)
-            .then(bucket => {
-                return phil.db.query('SELECT prompt_number FROM prompts WHERE has_been_posted = E\'1\' AND bucket_id = $1 ORDER BY prompt_number DESC LIMIT 1', [bucket.id])
-                    .then(results => (results.rowCount > 0 ? results.rows[0].prompt_number + 1 : 1))
-                    .then(promptNumber => {
-                        return phil.db.query('UPDATE prompts SET has_been_posted = E\'1\', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3', [promptNumber, now, this.promptId])
-                            .then(innerResults => {
-                                if (innerResults.rowCount === 0) {
-                                    throw new Error('We found a prompt in the queue, but we couldn\'t update it to mark it as being posted.');
-                                }
-                            })
-                            .then(() => this.postNewPromptToChannel(phil, serverConfig, bucket, promptNumber));
-                    });
-            });
+    async postAsNewPrompt(phil : Phil, serverConfig : ServerConfig, now : Date) {
+        const bucket = await Bucket.getFromId(phil.bot, phil.db, this.bucketId);
+        const nextPromptNumberResults = await phil.db.query('SELECT prompt_number FROM prompts WHERE has_been_posted = E\'1\' AND bucket_id = $1 ORDER BY prompt_number DESC LIMIT 1', [bucket.id]);
+        const promptNumber = (nextPromptNumberResults.rowCount > 0 ?
+            nextPromptNumberResults.rows[0].prompt_number + 1 : 1);
+
+        const updateResults = await phil.db.query('UPDATE prompts SET has_been_posted = E\'1\', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3', [promptNumber, now, this.promptId])
+        if (updateResults.rowCount === 0) {
+            throw new Error('We found a prompt in the queue, but we couldn\'t update it to mark it as being posted.');
+        }
+
+        await this.postNewPromptToChannel(phil, serverConfig, bucket, promptNumber);
     }
 
     private getPromptMessageFooter(serverConfig : ServerConfig) : string {
