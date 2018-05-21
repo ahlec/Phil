@@ -89,7 +89,6 @@ export class Bucket {
     readonly handle : string;
     readonly displayName : string;
     readonly isPaused : boolean;
-    readonly shouldPinPosts : boolean;
     readonly requiredRoleId : string | null;
     readonly alertWhenLow : boolean;
     readonly frequency : BucketFrequency;
@@ -108,7 +107,6 @@ export class Bucket {
         this.handle = dbRow.reference_handle;
         this.displayName = dbRow.display_name;
         this.isPaused = (parseInt(dbRow.is_paused) === 1);
-        this.shouldPinPosts = (parseInt(dbRow.should_pin_posts) === 1);
         this.requiredRoleId = dbRow.required_role_id;
         this.alertWhenLow = (parseInt(dbRow.alert_when_low) === 1);
         this.frequency = bucketFrequency;

@@ -121,14 +121,6 @@ export class Prompt {
     }
 
     private postNewPromptToChannel(phil : Phil, serverConfig : ServerConfig, bucket : Bucket, promptNumber : number) : Promise<string> {
-        return this.sendToChannel(phil, serverConfig, bucket.channelId, bucket, promptNumber)
-            .then(messageId => {
-                if (!bucket.shouldPinPosts) {
-                    return messageId;
-                }
-
-                return DiscordPromises.pinMessage(phil.bot, bucket.channelId, messageId)
-                    .then(() => messageId);
-            });
+        return this.sendToChannel(phil, serverConfig, bucket.channelId, bucket, promptNumber);
     }
 }
