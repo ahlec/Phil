@@ -8,7 +8,7 @@ export class SuggestCommand extends SuggestCommandBase {
     readonly name = 'suggest';
     readonly aliases : string[] = [];
 
-    readonly helpDescription = 'Suggests a new prompt to Phil. (*DIRECT MESSAGE ONLY*)';
+    readonly helpDescription = 'Suggests a new prompt to Phil.';
 
     readonly versionAdded = 1;
 }

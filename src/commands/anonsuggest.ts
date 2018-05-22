@@ -8,7 +8,7 @@ export class AnonSuggestCommand extends SuggestCommandBase {
     readonly name = 'anonsuggest';
     readonly aliases : string[] = [];
 
-    readonly helpDescription = 'Suggests a new prompt to Phil anonymously. Your name will not be displayed, but you will still receive leaderboard points should it be approved. (*DIRECT MESSAGE ONLY*)';
+    readonly helpDescription = 'Suggests a new prompt to Phil anonymously. Your name will not be displayed, but you will still receive leaderboard points should it be approved.';
 
     readonly versionAdded = 11;
 }

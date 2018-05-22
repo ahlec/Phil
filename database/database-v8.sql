@@ -20,3 +20,11 @@ ALTER TABLE server_configs ADD COLUMN welcome_message TEXT;
 ALTER TABLE server_configs ADD COLUMN fandom_map_link TEXT;
 
 ALTER TABLE prompt_buckets DROP COLUMN should_pin_posts;
+
+CREATE TABLE prompt_submission_sessions (
+    user_id VARCHAR NOT NULL UNIQUE,
+    bucket_id INT NOT NULL,
+    started_utc TIMESTAMP NOT NULL,
+    timeout_utc TIMESTAMP NOT NULL,
+    is_anonymous BIT(1) NOT NULL
+);
