@@ -1,10 +1,9 @@
-import { Client as DiscordIOClient, Server as DiscordIOServer, User as DiscordIOUser } from 'discord.io';
+import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
 import { Database } from '../database';
 import { QueryResult } from 'pg';
 
 export class ReactablePost {
     readonly messageId : string;
-    readonly server : DiscordIOServer;
     readonly channelId : string;
     readonly user : DiscordIOUser;
     readonly created : Date;
@@ -14,7 +13,6 @@ export class ReactablePost {
 
     private constructor(bot : DiscordIOClient, dbRow : any) {
         this.messageId = dbRow.message_id;
-        this.server = bot.servers[dbRow.server_id];
         this.channelId = dbRow.channel_id;
         this.user = bot.users[dbRow.user_id];
         this.created = new Date(dbRow.created);
@@ -33,10 +31,6 @@ export class ReactablePost {
     }
 
     isValid() : boolean {
-        if (!this.server) {
-            return false;
-        }
-
         if (!this.user) {
             return false;
         }

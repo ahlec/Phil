@@ -5,8 +5,7 @@ import { QueryResult } from 'pg';
 import { Prompt } from './prompt';
 import { DiscordPromises } from '../../promises/discord';
 import { OfficialDiscordEmbed } from 'official-discord';
-import { ReactableFactory } from '../reactables/factory';
-import { Data as PromptQueueReactableData, PromptQueueReactable } from '../reactables/types/prompt-queue';
+import { PromptQueueReactableFactory } from '../reactables/prompt-queue/factory';
 
 export class PromptQueueEntry {
     constructor(readonly position : number, readonly prompt : Prompt) {
@@ -14,7 +13,6 @@ export class PromptQueueEntry {
 }
 
 interface PromptQueuePostData {
-    readonly server : DiscordIOServer;
     readonly channelId : string;
     readonly user : DiscordIOUser;
 }
@@ -132,29 +130,16 @@ export class PromptQueue {
     }
 
     private async setupReactable(bot : DiscordIOClient, db : Database, postData : PromptQueuePostData, messageId : string) {
-        if (this.pageNumber > 1) {
-            await DiscordPromises.addReaction(bot, postData.channelId, messageId, PromptQueueReactable.PREVIOUS_EMOJI);
-        }
-
-        if (this.pageNumber < this.totalPages) {
-            await DiscordPromises.addReaction(bot, postData.channelId, messageId, PromptQueueReactable.NEXT_EMOJI);
-        }
-
-        const factory = new ReactableFactory(bot, db);
-        factory.messageId = messageId;
-        factory.server = postData.server;
-        factory.channelId = postData.channelId;
-        factory.user = bot.users[postData.user.id];
-        factory.timeLimit = 10;
-        factory.reactableHandle = 'prompt-queue';
-
-        const data : PromptQueueReactableData = {
+        const factory = new PromptQueueReactableFactory(bot, db, {
+            messageId: messageId,
+            channelId: postData.channelId,
+            user: bot.users[postData.user.id],
+            timeLimit: 10,
             currentPage: this.pageNumber,
             totalNumberPages: this.totalPages,
             pageSize: this.pageSize,
             bucket: this.bucket.id
-        };
-        factory.jsonData = data;
+        });
 
         await factory.create();
     }

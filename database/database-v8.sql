@@ -2,7 +2,6 @@ UPDATE info SET value = '8' WHERE key = 'database-version';
 
 CREATE TABLE reactable_posts (
     message_id VARCHAR NOT NULL UNIQUE,
-    server_id VARCHAR NOT NULL,
     channel_id VARCHAR NOT NULL,
     user_id VARCHAR NOT NULL,
     created TIMESTAMP NOT NULL,

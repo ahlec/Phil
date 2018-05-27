@@ -1,9 +1,9 @@
-import { Client as DiscordIOClient } from 'discord.io';
-import { Database } from '../../database';
-import { ReactablePost } from '../post';
+import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
+import { Database } from '../database';
+import { ReactablePost } from './post';
 import { OfficialDiscordReactionEvent, OfficialDiscordEmoji } from 'official-discord';
 
-export abstract class ReactableType {
+export abstract class ReactableType  {
     abstract readonly handle : string;
 
     abstract processReactionAdded(bot : DiscordIOClient, db : Database, post : ReactablePost, event : OfficialDiscordReactionEvent) : Promise<any>;

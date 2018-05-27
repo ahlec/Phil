@@ -4,16 +4,11 @@ import { Client } from 'discord.io';
 import { Database } from '../database';
 import { OfficialDiscordReactionEvent } from 'official-discord';
 import { ReactablePost } from './post';
-import { ReactableTypeRegistry } from './types/@registry';
+import { ReactableTypeRegistry } from './@registry';
 import { BotUtils } from '../utils';
 
 export class ReactableProcessor {
-    private readonly _bot : Client;
-    private readonly _db : Database;
-
-    constructor(bot : Client, db : Database) {
-        this._bot = bot;
-        this._db = db;
+    constructor(private readonly bot : Client, private readonly db : Database) {
     }
 
     async processReactionAdded(event : OfficialDiscordReactionEvent) : Promise<void> {
@@ -21,7 +16,7 @@ export class ReactableProcessor {
             return;
         }
 
-        const post = await ReactablePost.getFromMessageId(this._bot, this._db, event.message_id);
+        const post = await ReactablePost.getFromMessageId(this.bot, this.db, event.message_id);
         if (!post) {
             return;
         }
@@ -31,11 +26,11 @@ export class ReactableProcessor {
             throw new Error('Attempted to react to an undefined reactable: `' + post.reactableHandle + '`');
         }
 
-        reactableType.processReactionAdded(this._bot, this._db, post, event);
+        reactableType.processReactionAdded(this.bot, this.db, post, event);
     }
 
     private shouldProcessEvent(event : OfficialDiscordReactionEvent) : boolean {
-        const user = this._bot.users[event.user_id];
+        const user = this.bot.users[event.user_id];
         if (!user) {
             return false;
         }
