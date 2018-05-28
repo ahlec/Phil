@@ -21,7 +21,7 @@ export class RemoveUnusedColorRolesChrono implements Chrono {
             return;
         }
 
-        var message = 'The follow colour role(s) have been removed automatically because I could not find any users on your server who were still using them:\n';
+        var message = 'The following colour role(s) have been removed automatically because I could not find any users on your server who were still using them:\n';
         for (let role of unusedColorRoles) {
             await DiscordPromises.deleteRole(phil.bot, serverConfig.server.id, role.id);
             message += '\n\t' + role.name + ' (ID: ' + role.id + ')';
