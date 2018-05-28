@@ -1,14 +1,13 @@
 'use strict';
 
-import { Client } from 'discord.io';
-import { Database } from '../database';
+import { Phil } from '../phil';
 import { OfficialDiscordReactionEvent } from 'official-discord';
 import { ReactablePost } from './post';
 import { ReactableTypeRegistry } from './@registry';
 import { BotUtils } from '../utils';
 
 export class ReactableProcessor {
-    constructor(private readonly bot : Client, private readonly db : Database) {
+    constructor(private readonly phil : Phil) {
     }
 
     async processReactionAdded(event : OfficialDiscordReactionEvent) : Promise<void> {
@@ -16,8 +15,12 @@ export class ReactableProcessor {
             return;
         }
 
-        const post = await ReactablePost.getFromMessageId(this.bot, this.db, event.message_id);
+        const post = await ReactablePost.getFromMessageId(this.phil.bot, this.phil.db, event.message_id);
         if (!post) {
+            return;
+        }
+
+        if (!post.monitoredReactions.has(event.emoji.name)) {
             return;
         }
 
@@ -26,11 +29,11 @@ export class ReactableProcessor {
             throw new Error('Attempted to react to an undefined reactable: `' + post.reactableHandle + '`');
         }
 
-        reactableType.processReactionAdded(this.bot, this.db, post, event);
+        reactableType.processReactionAdded(this.phil, post, event);
     }
 
     private shouldProcessEvent(event : OfficialDiscordReactionEvent) : boolean {
-        const user = this.bot.users[event.user_id];
+        const user = this.phil.bot.users[event.user_id];
         if (!user) {
             return false;
         }

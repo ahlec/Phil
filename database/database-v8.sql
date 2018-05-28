@@ -7,6 +7,7 @@ CREATE TABLE reactable_posts (
     created TIMESTAMP NOT NULL,
     timelimit INT NOT NULL,
     reactable_type VARCHAR NOT NULL,
+    monitored_reactions VARCHAR NOT NULL,
     jsonData TEXT
 );
 
@@ -25,5 +26,6 @@ CREATE TABLE prompt_submission_sessions (
     bucket_id INT NOT NULL,
     started_utc TIMESTAMP NOT NULL,
     timeout_utc TIMESTAMP NOT NULL,
-    is_anonymous BIT(1) NOT NULL
+    is_anonymous BIT(1) NOT NULL,
+    num_submitted INT DEFAULT(0)
 );

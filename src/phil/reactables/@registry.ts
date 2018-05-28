@@ -1,6 +1,6 @@
 import { ReactableType } from './reactable-type';
 import { PromptQueueReactable } from './prompt-queue/reactable';
-import { SuggestSessionPostReactable } from './suggest-session-post/reactable';
+import { SuggestSessionReactable } from './suggest-session/reactable';
 
 interface IReactableTypeRegistry {
     [reactableTypeName : string] : ReactableType;
@@ -13,3 +13,4 @@ function register(reactable : ReactableType) {
 }
 
 register(new PromptQueueReactable());
+register(new SuggestSessionReactable());

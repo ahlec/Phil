@@ -1,6 +1,7 @@
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
 import { Database } from '../database';
 import { DiscordPromises } from '../../promises/discord';
+import { ReactablePost } from './post';
 
 export interface IReactableCreateArgsBase {
     messageId : string;
@@ -22,8 +23,10 @@ export abstract class ReactableFactoryBase<TCreateArgs extends IReactableCreateA
             throw new Error('The provided creation args are not valid.');
         }
 
-        await this.addToDatabase();
         const reactions = this.getEmojiReactions();
+
+        await this.addToDatabase(reactions);
+        await this.removeAllOthers();
 
         for (const reaction of reactions) {
             await DiscordPromises.addReaction(this.bot,
@@ -56,11 +59,13 @@ export abstract class ReactableFactoryBase<TCreateArgs extends IReactableCreateA
     protected abstract getJsonData() : any | null;
     protected abstract getEmojiReactions() : string[];
 
-    private async addToDatabase() {
+    private async addToDatabase(reactions : string[]) {
         const jsonData = this.getJsonData();
         const results = await this.db.query(`INSERT INTO
-            reactable_posts(message_id, channel_id, user_id, created, timelimit, reactable_type, jsondata)
-            VALUES($1, $2, $3, $4, $5, $6, $7)`,
+            reactable_posts(
+                message_id,     channel_id,          user_id,  created, timelimit,
+                reactable_type, monitored_reactions, jsondata)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
             [
                 this.args.messageId,
                 this.args.channelId,
@@ -68,11 +73,23 @@ export abstract class ReactableFactoryBase<TCreateArgs extends IReactableCreateA
                 new Date(),
                 this.args.timeLimit,
                 this.handle,
+                reactions.join(),
                 (jsonData ? JSON.stringify(jsonData) : null)
             ]);
 
         if (results.rowCount === 0) {
             throw new Error('Unable to create the reactable within the database.');
+        }
+    }
+
+    private async removeAllOthers() {
+        const posts = await ReactablePost.getAllOfTypeForUser(this.bot, this.db, this.args.user.id, this.handle);
+        for (let post of posts) {
+            if (post.messageId == this.args.messageId) {
+                continue;
+            }
+
+            await post.remove(this.db);
         }
     }
 }

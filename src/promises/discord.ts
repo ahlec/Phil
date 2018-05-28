@@ -222,4 +222,23 @@ export namespace DiscordPromises {
             });
         })
     }
+
+    export function removeOwnReaction(bot : DiscordIOClient, channelId : string, messageId : string, reaction : string) : Promise<void> {
+        const anyBot : any = bot;
+        return new Promise((resolve, reject) => {
+            anyBot.removeReaction({
+                channelID: channelId,
+                messageID: messageId,
+                userID: bot.id,
+                reaction: reaction
+            }, (err : DiscordIOCallbackError, response : any) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve();
+            });
+        })
+    }
 }

@@ -9,6 +9,8 @@ import { Features } from '../../phil/features';
 import { DiscordPromises } from '../../promises/discord';
 import { Bucket } from '../../phil/buckets';
 import { ServerConfig } from '../../phil/server-config';
+import { SuggestSessionReactableShared } from '../../phil/reactables/suggest-session/shared';
+import { SuggestSessionReactableFactory } from '../../phil/reactables/suggest-session/factory';
 import { SubmissionSession } from '../../phil/prompts/submission-session';
 
 interface Suggestion {
@@ -47,21 +49,30 @@ export abstract class SuggestCommandBase implements Command {
         this.sendDirectMessage(phil, message.userId, message.serverConfig, session);
     }
 
-    private sendDirectMessage(phil : Phil, userId : string, serverConfig : ServerConfig, session : SubmissionSession) {
+    private async sendDirectMessage(phil : Phil, userId : string, serverConfig : ServerConfig, session : SubmissionSession) {
         const server = phil.bot.servers[session.bucket.serverId];
         const NOWRAP = '';
-        DiscordPromises.sendEmbedMessage(phil.bot, userId, {
+        const messageId = await DiscordPromises.sendEmbedMessage(phil.bot, userId, {
             color: 0xB0E0E6,
             title: ':pencil: Begin Sending Suggestions :incoming_envelope:',
             description: `For the next **${session.remainingTime.asMinutes()} minutes**, every ${
                 NOWRAP}message you send to me will be submitted as a new prompt to the **${
                 session.bucket.displayName}** on the **${server.name}** server.\n\nWhen ${
-                NOWRAP}you\'re finished, all you need to do is hit the :octagonal_sign: reaction ${
-                NOWRAP}on anything I post after this, or simply do nothing until your session ${
-                NOWRAP}ends naturally. If you want to change which server or prompt bucket ${
-                NOWRAP}you\'re submitting to, use the \`${serverConfig.commandPrefix}suggest\` or ${
+                NOWRAP}you\'re finished, all you need to do is hit the ${
+                NOWRAP}${SuggestSessionReactableShared.Emoji.Stop} reaction on anything I ${
+                NOWRAP}post after this, or simply do nothing until your session ends naturally. ${
+                NOWRAP}If you want to change which server or prompt bucket you\'re submitting to, ${
+                NOWRAP}use the \`${serverConfig.commandPrefix}suggest\` or ${
                 NOWRAP}\`${serverConfig.commandPrefix}anonsuggest\` command to begin a new ${
                 NOWRAP}session (which will end this one and start a new one).`
         });
+
+        const reactableFactory = new SuggestSessionReactableFactory(phil.bot, phil.db, {
+            messageId: messageId,
+            channelId: userId,
+            user: phil.bot.users[userId],
+            timeLimit: session.remainingTime.asMinutes(),
+        });
+        await reactableFactory.create();
     }
 }

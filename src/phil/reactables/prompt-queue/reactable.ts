@@ -1,6 +1,5 @@
+import { Phil } from '../../phil';
 import { ReactableType } from '../reactable-type';
-import { Client as DiscordIOClient } from 'discord.io';
-import { Database } from '../../database';
 import { ReactablePost } from '../post';
 import { OfficialDiscordReactionEvent } from 'official-discord';
 import { Bucket } from '../../buckets';
@@ -11,21 +10,21 @@ import { PromptQueueReactableShared } from './shared';
 export class PromptQueueReactable extends ReactableType {
     readonly handle = PromptQueueReactableShared.ReactableHandle;
 
-    async processReactionAdded(bot : DiscordIOClient, db : Database, post : ReactablePost, event : OfficialDiscordReactionEvent) : Promise<any> {
+    async processReactionAdded(phil : Phil, post : ReactablePost, event : OfficialDiscordReactionEvent) : Promise<any> {
         switch (event.emoji.name) {
             case PromptQueueReactableShared.Emoji.Previous: {
-                await this.movePage(bot, db, post, -1);
+                await this.movePage(phil, post, -1);
                 break;
             }
 
             case PromptQueueReactableShared.Emoji.Next: {
-                await this.movePage(bot, db, post, 1);
+                await this.movePage(phil, post, 1);
                 break;
             }
         }
     }
 
-    private async movePage(bot : DiscordIOClient, db : Database, post : ReactablePost, pageDelta : number) : Promise<void> {
+    private async movePage(phil : Phil, post : ReactablePost, pageDelta : number) : Promise<void> {
         const data = post.jsonData as PromptQueueReactableShared.IData;
         const newPageNumber = data.currentPage + pageDelta;
 
@@ -34,17 +33,17 @@ export class PromptQueueReactable extends ReactableType {
             return;
         }
 
-        const bucket = await Bucket.getFromId(bot, db, data.bucket);
+        const bucket = await Bucket.getFromId(phil.bot, phil.db, data.bucket);
         if (!bucket) {
             throw new Error('The bucket that this queue is for (`' + data.bucket + '`) has been deleted.');
         }
 
-        const queue = await PromptQueue.getPromptQueue(bot, db, bucket, newPageNumber, data.pageSize);
+        const queue = await PromptQueue.getPromptQueue(phil.bot, phil.db, bucket, newPageNumber, data.pageSize);
 
-        await post.removeFromDatabase(db);
-        await DiscordPromises.deleteMessage(bot, post.channelId, post.messageId);
+        await post.remove(phil.db);
+        await DiscordPromises.deleteMessage(phil.bot, post.channelId, post.messageId);
 
-        await queue.postToChannel(bot, db, post);
+        await queue.postToChannel(phil.bot, phil.db, post);
 
         console.log('moving to page ' + newPageNumber);
     }
