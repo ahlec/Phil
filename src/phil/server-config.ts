@@ -1,17 +1,12 @@
 'use strict';
 
 import { Server as DiscordIOServer, Channel as DiscordIOChannel, Role as DiscordIORole, Member as DiscordIOMember } from 'discord.io';
+import { IServerConfig, IValidateResult, IPronoun } from 'phil';
 import { Database } from './database';
 import { QueryResult } from 'pg';
 import { GlobalConfig } from './global-config';
-import { Pronoun, DEFAULT_PRONOUNS, getPronounFromRole } from './pronouns';
+import { DEFAULT_PRONOUNS, getPronounFromRole } from './pronouns';
 const discord = require('discord.io');
-
-
-interface IValidateResult {
-    isValid : boolean;
-    invalidReason : string | null;
-}
 
 function doesRoleHavePermission(role : DiscordIORole, permission : number) : boolean {
     // TODO: Return to this function and determine if it's actually working?
@@ -25,7 +20,7 @@ function doesRoleHavePermission(role : DiscordIORole, permission : number) : boo
     return false;
 }
 
-export class ServerConfig {
+export class ServerConfig implements IServerConfig {
     readonly serverId : string;
     readonly commandPrefix : string;
     readonly botControlChannel : DiscordIOChannel;
@@ -92,7 +87,7 @@ export class ServerConfig {
             || this.adminChannel.id === channelId);
     }
 
-    getPronounsForMember(member: DiscordIOMember) : Pronoun {
+    getPronounsForMember(member: DiscordIOMember) : IPronoun {
         for (let roleId of member.roles) {
             let role = this.server.roles[roleId];
             if (!role) {

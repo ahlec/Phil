@@ -1,12 +1,8 @@
 import { Phil } from '../phil/phil';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage } from 'phil';
 import { Database } from '../phil/database';
 import { HelpGroup } from '../phil/help-groups';
 import { Feature } from '../phil/features';
-
-export interface CommandProcessFunction {
-    (phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any>;
-}
 
 export interface Command {
     readonly name : string;
@@ -18,10 +14,7 @@ export interface Command {
     readonly versionAdded : number;
 
     readonly publicRequiresAdmin? : boolean;
-    processPublicMessage? : CommandProcessFunction;
-
-    readonly privateRequiresAdmin? : boolean;
-    processPrivateMessage? : CommandProcessFunction;
+    processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any>;
 }
 
 export interface ICommandLookup {

@@ -4,12 +4,11 @@ import { Command } from '../@types';
 import { Phil } from '../../phil/phil';
 import { HelpGroup } from '../../phil/help-groups';
 import { Server as DiscordIOServer, Role as DiscordIORole } from 'discord.io';
-import { DiscordMessage } from '../../phil/discord-message';
+import { IPublicMessage, IServerConfig } from 'phil';
 import { Database } from '../../phil/database';
 import { BotUtils } from '../../phil/utils';
 import { DiscordPromises } from '../../promises/discord';
 import { Feature } from '../../phil/features';
-import { ServerConfig } from '../../phil/server-config';
 
 export abstract class MemberUniqueRoleCommandBase<TData> implements Command {
     abstract readonly name : string;
@@ -22,7 +21,7 @@ export abstract class MemberUniqueRoleCommandBase<TData> implements Command {
     abstract readonly versionAdded : number;
 
     readonly publicRequiresAdmin = true;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const data = this.getDataFromCommandArgs(message.serverConfig, commandArgs);
         const newRole = await this.getRoleFromData(phil, message.server, data);
 
@@ -36,15 +35,15 @@ export abstract class MemberUniqueRoleCommandBase<TData> implements Command {
         });
     }
 
-    protected abstract getMissingCommandArgsErrorMessage(serverConfig : ServerConfig) : string;
-    protected abstract getInvalidInputErrorMessage(input : string, serverConfig : ServerConfig) : string;
+    protected abstract getMissingCommandArgsErrorMessage(serverConfig : IServerConfig) : string;
+    protected abstract getInvalidInputErrorMessage(input : string, serverConfig : IServerConfig) : string;
     protected abstract tryParseInput(input : string) : TData;
     protected abstract isRolePartOfUniquePool(role : DiscordIORole) : boolean;
     protected abstract doesRoleMatchData(role : DiscordIORole, data : TData) : boolean;
     protected abstract getRoleConfig(data : TData) : DiscordPromises.EditRoleOptions;
-    protected abstract getSuccessMessage(serverConfig : ServerConfig, data : TData) : string;
+    protected abstract getSuccessMessage(serverConfig : IServerConfig, data : TData) : string;
 
-    private getDataFromCommandArgs(serverConfig : ServerConfig, commandArgs : string[]) : TData {
+    private getDataFromCommandArgs(serverConfig : IServerConfig, commandArgs : string[]) : TData {
         if (commandArgs.length === 0) {
             const errorMessage = this.getMissingCommandArgsErrorMessage(serverConfig);
             throw new Error(errorMessage);

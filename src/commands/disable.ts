@@ -4,7 +4,7 @@ import { Command } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
 import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { Feature, FeatureUtils } from '../phil/features';
 
@@ -19,7 +19,7 @@ export class DisableCommand implements Command {
     readonly versionAdded = 9;
 
     readonly publicRequiresAdmin = true;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         if (commandArgs.length < 1) {
             throw new Error('This function requires specifying the name of the feature that you wish disabled.');
         }

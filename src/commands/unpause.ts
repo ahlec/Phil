@@ -3,7 +3,7 @@
 import { Command } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
@@ -20,7 +20,7 @@ export class UnpauseCommand implements Command {
     readonly versionAdded = 11;
 
     readonly publicRequiresAdmin = true;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'bucket', true);
         await bucket.setIsPaused(phil.db, false);
 

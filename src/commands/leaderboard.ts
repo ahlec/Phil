@@ -3,7 +3,7 @@
 import { Command } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage } from 'phil';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { LeaderboardEntry, Leaderboard } from '../phil/prompts/leaderboard';
@@ -78,7 +78,7 @@ export class LeaderboardCommand implements Command {
     readonly versionAdded = 11;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const leaderboard = await Leaderboard.getLeaderboard(phil.bot, phil.db, message.server);
         const reply = createLeaderboardMessage(leaderboard);
 

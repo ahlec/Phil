@@ -3,7 +3,7 @@
 import { Command } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
@@ -20,7 +20,7 @@ export class TimediffCommand implements Command {
     readonly versionAdded = 10;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         if (message.mentions.length !== 1) {
             throw new Error('In order to use this function, you must mention the user you\'re asking about. For instance, something like `' + message.serverConfig.commandPrefix + 'timediff @Bunnymund#1234`.');
         }

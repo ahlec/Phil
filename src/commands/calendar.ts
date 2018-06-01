@@ -4,14 +4,13 @@ import { Command } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
 import { Server as DiscordIOServer } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage, IServerConfig } from 'phil';
 import { Database } from '../phil/database';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { CalendarMonth } from '../phil/calendar';
 import { MessageBuilder } from '../phil/message-builder';
-import { ServerConfig } from '../phil/server-config';
 
 const chronoNode = require('chrono-node');
 
@@ -26,14 +25,14 @@ export class CalendarCommand implements Command {
     readonly versionAdded = 6;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const month = this.determineMonth(message.serverConfig, commandArgs);
         const calendar = await CalendarMonth.getForMonth(phil.bot, phil.db, message.server, month);
         const builder = this.composeMessageFromCalendar(message.server, calendar);
         return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, builder);
     }
 
-    private determineMonth(serverConfig : ServerConfig, commandArgs : string[]) : number {
+    private determineMonth(serverConfig : IServerConfig, commandArgs : string[]) : number {
         const input = commandArgs.join(' ').trim();
         if (input === '') {
             const now = new Date();

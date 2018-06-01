@@ -3,7 +3,7 @@
 import { Command, ICommandLookup } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup, getHeaderForGroup } from '../phil/help-groups';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage } from 'phil';
 import { MessageBuilder } from '../phil/message-builder';
 import { DiscordPromises } from '../promises/discord';
 import { BotUtils } from '../phil/utils';
@@ -159,7 +159,7 @@ export class HelpCommand implements Command {
     readonly versionAdded = 3;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const isAdminChannel = message.serverConfig.isAdminChannel(message.channelId);
         const featuresEnabledLookup = await FeatureUtils.getServerFeaturesStatus(phil.db, message.server.id);
         const builder = new MessageBuilder();

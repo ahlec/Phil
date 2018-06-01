@@ -5,7 +5,7 @@ import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io
 import { Database } from './database';
 import { QueryResult } from 'pg';
 import { BotUtils } from './utils';
-import { ServerConfig } from './server-config';
+import { IServerConfig } from 'phil';
 
 const assert = require('assert');
 const moment = require('moment');
@@ -34,7 +34,7 @@ const frequencyFromStrings : { [name : string] : BucketFrequency } = {
     'immediately': BucketFrequency.Immediately
 };
 
-function throwMultipleUnspecifiedBucketsError(serverConfig : ServerConfig, serverBuckets : Bucket[], commandName : string) {
+function throwMultipleUnspecifiedBucketsError(serverConfig : IServerConfig, serverBuckets : Bucket[], commandName : string) {
     if (serverBuckets.length === 0) {
         throw new Error('There are no prompt buckets configured on this server.');
     }
@@ -58,7 +58,7 @@ function throwMultipleUnspecifiedBucketsError(serverConfig : ServerConfig, serve
     throw new Error(message);
 }
 
-function _getOnlyBucketOnServer(serverConfig : ServerConfig, serverBuckets : Bucket[], commandName : string, allowInvalidServers : boolean) : Bucket {
+function _getOnlyBucketOnServer(serverConfig : IServerConfig, serverBuckets : Bucket[], commandName : string, allowInvalidServers : boolean) : Bucket {
     if (serverBuckets.length === 1 && (allowInvalidServers || serverBuckets[0].isValid)) {
         return serverBuckets[0];
     }
@@ -155,7 +155,7 @@ export class Bucket {
         return Bucket.parseListOfDbBuckets(bot, results);
     }
 
-    static async retrieveFromCommandArgs(phil : Phil, commandArgs : string[], serverConfig : ServerConfig, commandName : string, allowInvalidServers : boolean) : Promise<Bucket> {
+    static async retrieveFromCommandArgs(phil : Phil, commandArgs : string[], serverConfig : IServerConfig, commandName : string, allowInvalidServers : boolean) : Promise<Bucket> {
         const firstParameter = commandArgs[0];
         if (!firstParameter || firstParameter.length === 0) {
             const serverBuckets = await Bucket.getAllForServer(phil.bot, phil.db, serverConfig.server.id);

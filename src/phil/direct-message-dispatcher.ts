@@ -2,9 +2,8 @@ import { DirectMessageProcessor, IProcessorActiveToken } from '../direct-message
 import { TimezoneQuestionnaireProcessor } from '../direct-message-processors/timezone-questionnaire';
 
 import { Phil } from './phil';
-import { DiscordMessage } from './discord-message';
+import { IPrivateMessage } from 'phil';
 import { DiscordPromises } from '../promises/discord';
-import { ServerConfig } from './server-config';
 const util = require('util');
 
 export class DirectMessageDispatcher {
@@ -15,7 +14,7 @@ export class DirectMessageDispatcher {
     constructor(private readonly phil : Phil) {
     }
 
-    async process(message : DiscordMessage) {
+    async process(message : IPrivateMessage) {
         for (let processor of this.processorsInPriorityOrder) {
             try {
                 const token = await processor.canProcess(this.phil, message);
@@ -25,20 +24,20 @@ export class DirectMessageDispatcher {
                 }
 
             } catch (err) {
-                this.reportError(err, message.serverConfig, processor);
+                this.reportError(err, processor);
                 return;
             }
         }
     }
 
-    private reportError(err : Error, serverConfig : ServerConfig, processor : DirectMessageProcessor) {
+    private reportError(err : Error, processor : DirectMessageProcessor) {
         console.error(err);
 
         if (typeof(err) !== 'string') {
             err = util.inspect(err);
         }
 
-        DiscordPromises.sendEmbedMessage(this.phil.bot, serverConfig.botControlChannel.id, {
+        DiscordPromises.sendEmbedMessage(this.phil.bot, this.phil.globalConfig.botManagerUserId, {
             color: 0xCD5555,
             title: ':no_entry: Processor Error',
             description: err,

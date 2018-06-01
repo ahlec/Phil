@@ -4,12 +4,11 @@ import { Command } from '../@types';
 import { Phil } from '../../phil/phil';
 import { HelpGroup } from '../../phil/help-groups';
 import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../../phil/discord-message';
+import { IPublicMessage, IServerConfig } from 'phil';
 import { Database } from '../../phil/database';
 import { Features } from '../../phil/features';
 import { DiscordPromises } from '../../promises/discord';
 import { BotUtils } from '../../phil/utils';
-import { ServerConfig } from '../../phil/server-config';
 
 interface ConfirmRejectResults {
     numSuccessful : number;
@@ -37,7 +36,7 @@ export abstract class ConfirmRejectCommandBase implements Command {
     abstract readonly versionAdded : number;
 
     readonly publicRequiresAdmin = true;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const numbers = this.getNumbersFromCommandArgs(commandArgs);
         console.log(require('util').inspect(numbers));
 
@@ -60,7 +59,7 @@ export abstract class ConfirmRejectCommandBase implements Command {
         this.sendCompletionMessage(phil, message.serverConfig, message.channelId, results);
     }
 
-    protected abstract performActionOnPrompt(phil : Phil, serverConfig : ServerConfig, promptId : number) : Promise<boolean>;
+    protected abstract performActionOnPrompt(phil : Phil, serverConfig : IServerConfig, promptId : number) : Promise<boolean>;
 
     private getNumbersFromCommandArgs(commandArgs : string[]) : number[] {
         if (commandArgs.length !== 1) {
@@ -104,7 +103,7 @@ export abstract class ConfirmRejectCommandBase implements Command {
         return includedNumbers;
     }
 
-    private async performAction(phil : Phil, serverConfig : ServerConfig, channelId : string, number : number) : Promise<PerformResult> {
+    private async performAction(phil : Phil, serverConfig : IServerConfig, channelId : string, number : number) : Promise<PerformResult> {
         try {
             const results = await phil.db.query('SELECT prompt_id FROM prompt_confirmation_queue WHERE channel_id = $1 and confirm_number = $2', [channelId, number]);
             if (results.rowCount === 0) {
@@ -131,7 +130,7 @@ export abstract class ConfirmRejectCommandBase implements Command {
         }
     }
 
-    private sendCompletionMessage(phil : Phil, serverConfig : ServerConfig, channelId : string, results : ConfirmRejectResults) {
+    private sendCompletionMessage(phil : Phil, serverConfig : IServerConfig, channelId : string, results : ConfirmRejectResults) {
         if (results.numSuccessful === 0) {
             BotUtils.sendErrorMessage({
                 bot: phil.bot,

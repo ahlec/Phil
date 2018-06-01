@@ -1,6 +1,7 @@
+import { IPronoun } from 'phil';
 import { Role as DiscordIORole } from 'discord.io';
 
-export class Pronoun {
+class Pronoun implements IPronoun {
     readonly roleName : string;
     readonly displayName : string;
 
@@ -18,23 +19,23 @@ export class Pronoun {
 
 const TheyPronouns = new Pronoun('they', 'them', 'their', 'theirs', 'themself');
 
-export const AllPronouns : ReadonlyArray<Pronoun> = [
+export const AllPronouns : ReadonlyArray<IPronoun> = [
     new Pronoun('he', 'him', 'his', 'his', 'himself'),
     new Pronoun('she', 'her', 'her', 'hers', 'herself'),
     TheyPronouns
 ];
 
-export const DEFAULT_PRONOUNS = TheyPronouns;
-export const GROUP_PRONOUNS = TheyPronouns;
+export const DEFAULT_PRONOUNS : IPronoun = TheyPronouns;
+export const GROUP_PRONOUNS : IPronoun = TheyPronouns;
 
 // -------------------------- Looking up pronouns
-const roleToPronounLookup : { [displayName : string] : Pronoun } = {};
+const roleToPronounLookup : { [displayName : string] : IPronoun } = {};
 
 for (let pronoun of AllPronouns) {
     roleToPronounLookup[pronoun.roleName] = pronoun;
 }
 
-export function getPronounFromRole(role : DiscordIORole) : Pronoun | null {
+export function getPronounFromRole(role : DiscordIORole) : IPronoun | null {
     const pronoun = roleToPronounLookup[role.name];
     if (pronoun) {
         return pronoun;

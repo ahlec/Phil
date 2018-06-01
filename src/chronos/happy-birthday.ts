@@ -2,21 +2,21 @@
 
 import { Chrono } from './@types';
 import { Phil } from '../phil/phil';
-import { ServerConfig } from '../phil/server-config';
+import { IServerConfig, IPronoun } from 'phil';
 import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
 import { BotUtils } from '../phil/utils';
-import { Pronoun, GROUP_PRONOUNS } from '../phil/pronouns';
+import { GROUP_PRONOUNS } from '../phil/pronouns';
 
 interface HappyBirthdayInfo {
     readonly names : string[];
-    readonly pronoun : Pronoun;
+    readonly pronoun : IPronoun;
 }
 
 export class HappyBirthdayChrono implements Chrono {
     readonly handle = 'happy-birthday';
 
-    async process(phil : Phil, serverConfig : ServerConfig, now : Date) {
+    async process(phil : Phil, serverConfig : IServerConfig, now : Date) {
         const userIds = await this.getBirthdayUserIds(phil.db, now);
         const info = this.getInfo(phil, serverConfig, userIds);
         const birthdayWish = this.createBirthdayWish(info);
@@ -40,7 +40,7 @@ export class HappyBirthdayChrono implements Chrono {
         return userIds;
     }
 
-    private getInfo(phil : Phil, serverConfig : ServerConfig, userIds : string[]) : HappyBirthdayInfo {
+    private getInfo(phil : Phil, serverConfig : IServerConfig, userIds : string[]) : HappyBirthdayInfo {
         var names = [];
         for (let index = 0; index < userIds.length; ++index) {
             const userId = userIds[index];

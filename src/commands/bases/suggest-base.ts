@@ -4,11 +4,10 @@ import { Command } from '../@types';
 import { Phil } from '../../phil/phil';
 import { Database } from '../../phil/database';
 import { HelpGroup } from '../../phil/help-groups';
-import { DiscordMessage } from '../../phil/discord-message';
+import { IPublicMessage, IServerConfig } from 'phil';
 import { Features } from '../../phil/features';
 import { DiscordPromises } from '../../promises/discord';
 import { Bucket } from '../../phil/buckets';
-import { ServerConfig } from '../../phil/server-config';
 import { SuggestSessionReactableShared } from '../../phil/reactables/suggest-session/shared';
 import { SuggestSessionReactableFactory } from '../../phil/reactables/suggest-session/factory';
 import { SubmissionSession } from '../../phil/prompts/submission-session';
@@ -31,7 +30,7 @@ export abstract class SuggestCommandBase implements Command {
     abstract readonly versionAdded : number;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig,
             this.name, false);
         if (!bucket.canUserSubmitTo(phil.bot, message.userId)) {
@@ -49,7 +48,7 @@ export abstract class SuggestCommandBase implements Command {
         this.sendDirectMessage(phil, message.userId, message.serverConfig, session);
     }
 
-    private async sendDirectMessage(phil : Phil, userId : string, serverConfig : ServerConfig, session : SubmissionSession) {
+    private async sendDirectMessage(phil : Phil, userId : string, serverConfig : IServerConfig, session : SubmissionSession) {
         const server = phil.bot.servers[session.bucket.serverId];
         const NOWRAP = '';
         const messageId = await DiscordPromises.sendEmbedMessage(phil.bot, userId, {

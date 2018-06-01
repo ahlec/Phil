@@ -3,7 +3,7 @@
 import { Command } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import { Feature } from '../phil/features';
@@ -33,7 +33,7 @@ export class ConchCommand implements Command {
     readonly versionAdded = 3;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const conchReply = BotUtils.getRandomArrayEntry(conchReplies);
         const reply = ':shell: The Magic Conch Shell says: **' + conchReply + '**.';
 

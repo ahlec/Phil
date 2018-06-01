@@ -3,12 +3,11 @@
 import { Command } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage, IServerConfig } from 'phil';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { Bucket } from '../phil/buckets';
 import { Prompt } from '../phil/prompts/prompt';
-import { ServerConfig } from '../phil/server-config';
 
 const MAX_LIST_LENGTH = 10;
 
@@ -23,7 +22,7 @@ export class UnconfirmedCommand implements Command {
     readonly versionAdded = 1;
 
     readonly publicRequiresAdmin = true;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         await phil.db.query('DELETE FROM prompt_confirmation_queue WHERE channel_id = $1', [message.channelId]);
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'unconfirmed', false);
 
@@ -44,7 +43,7 @@ export class UnconfirmedCommand implements Command {
         return DiscordPromises.sendMessage(phil.bot, channelId, ':large_blue_diamond: There are no unconfirmed prompts in the queue right now.');
     }
 
-    private outputList(phil : Phil, serverConfig : ServerConfig, channelId : string, prompts : Prompt[]) : Promise<string> {
+    private outputList(phil : Phil, serverConfig : IServerConfig, channelId : string, prompts : Prompt[]) : Promise<string> {
         const existenceVerb = (prompts.length === 1 ? 'is' : 'are');
         const noun = (prompts.length === 1 ? 'prompt' : 'prompts');
         var message = ':pencil: Here ' + existenceVerb + ' ' + prompts.length + ' unconfirmed ' + noun + '.';

@@ -3,7 +3,7 @@
 import { Command } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage, IServerConfig } from 'phil';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { BotUtils } from '../phil/utils';
@@ -22,7 +22,7 @@ export class RequestCommand implements Command {
     readonly versionAdded = 1;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         if (commandArgs.length === 0) {
             return this.processNoCommandArgs(phil, message);
         }
@@ -42,14 +42,14 @@ export class RequestCommand implements Command {
         });
     }
 
-    private ensureUserCanRequestRole(serverConfig : ServerConfig, userId : string, requestable : Requestable) {
+    private ensureUserCanRequestRole(serverConfig : IServerConfig, userId : string, requestable : Requestable) {
         const member = serverConfig.server.members[userId];
         if (member.roles.indexOf(requestable.role.id) >= 0) {
             throw new Error('You already have the "' + requestable.role.name + '" role. You can use `' + serverConfig.commandPrefix + 'remove` to remove the role if you wish.');
         }
     }
 
-    private async processNoCommandArgs(phil : Phil, message : DiscordMessage) : Promise<any> {
+    private async processNoCommandArgs(phil : Phil, message : IPublicMessage) : Promise<any> {
         const requestables = await Requestable.getAllRequestables(phil.db, message.server);
         if (requestables.length === 0) {
             throw new Error('There are no requestable roles defined. An admin should use `' + message.serverConfig.commandPrefix + 'define` to create some roles.');
@@ -59,7 +59,7 @@ export class RequestCommand implements Command {
         return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, reply);
     }
 
-    private composeAllRequestablesList(serverConfig : ServerConfig, requestables : Requestable[]) : MessageBuilder {
+    private composeAllRequestablesList(serverConfig : IServerConfig, requestables : Requestable[]) : MessageBuilder {
         const builder = new MessageBuilder();
         builder.append(':snowflake: You must provide a valid requestable name of a role when using `' + serverConfig.commandPrefix + 'request`. These are currently:\n');
 

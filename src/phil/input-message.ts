@@ -1,6 +1,4 @@
-'use strict';
-
-import { ServerConfig } from './server-config';
+import { IServerConfig } from 'phil';
 
 export class InputMessage {
     private readonly _commandName : string;
@@ -11,7 +9,7 @@ export class InputMessage {
         this._commandArgs = commandArgs;
     }
 
-    static parseFromMessage(serverConfig : ServerConfig, message : string) : InputMessage {
+    static parseFromMessage(serverConfig : IServerConfig, message : string) : InputMessage {
         if (message === undefined || message === '') {
             return null;
         }

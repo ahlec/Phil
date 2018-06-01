@@ -3,7 +3,7 @@
 import { Command } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { Feature } from '../phil/features';
 import { DiscordPromises } from '../promises/discord';
@@ -19,12 +19,12 @@ export class NewsCommand implements Command {
     readonly versionAdded = 11;
 
     readonly publicRequiresAdmin = true;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const echoedMessage = this.getEchoedStatementFromCommandArgs(message, commandArgs);
         DiscordPromises.sendMessage(phil.bot, message.serverConfig.newsChannel.id, echoedMessage);
     }
 
-    private getEchoedStatementFromCommandArgs(message : DiscordMessage, commandArgs : string[]) {
+    private getEchoedStatementFromCommandArgs(message : IPublicMessage, commandArgs : string[]) {
         var echoedMessage = commandArgs.join(' ').trim();
         echoedMessage = echoedMessage.replace(/`/g, '');
 

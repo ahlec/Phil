@@ -5,7 +5,7 @@ import { Features } from '../phil/features';
 import { Role as DiscordIORole } from 'discord.io';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
-import { ServerConfig } from '../phil/server-config';
+import { IServerConfig } from 'phil';
 
 const decemberLinks = [
     'http://www.december.com/html/spec/color0.html',
@@ -34,14 +34,14 @@ export class ColourCommand extends MemberUniqueRoleCommandBase<string> {
 
     readonly versionAdded = 3;
 
-    protected getMissingCommandArgsErrorMessage(serverConfig : ServerConfig) : string {
+    protected getMissingCommandArgsErrorMessage(serverConfig : IServerConfig) : string {
         const decemberLink = BotUtils.getRandomArrayEntry(decemberLinks);
         return 'You must provide a hex code to this function of the colour that you\'d like to use. For example, `'
             + serverConfig.commandPrefix + 'color #FFFFFF`. You could try checking out '
             + decemberLink + ' for some codes.';
     }
 
-    protected getInvalidInputErrorMessage(input : string, serverConfig : ServerConfig) : string {
+    protected getInvalidInputErrorMessage(input : string, serverConfig : IServerConfig) : string {
         const decemberLink = BotUtils.getRandomArrayEntry(decemberLinks);
         return '`' + input + '` isn\'t a valid hex code. I\'m looking for it in the format of `#RRGGBB`. You can try checking out '
             + decemberLink + ' for some amazing colours.';
@@ -71,7 +71,7 @@ export class ColourCommand extends MemberUniqueRoleCommandBase<string> {
         };
     }
 
-    protected getSuccessMessage(serverConfig : ServerConfig, data : string) : string {
+    protected getSuccessMessage(serverConfig : IServerConfig, data : string) : string {
         const compliment = BotUtils.getRandomArrayEntry(compliments);
         return 'Your colour has been changed to **' + data + '**. ' + compliment;
     }

@@ -5,7 +5,7 @@ import { Phil } from '../phil/phil';
 import { Database } from '../phil/database';
 import { Bucket, BucketFrequency } from '../phil/buckets';
 import { Prompt } from '../phil/prompts/prompt';
-import { ServerConfig } from '../phil/server-config';
+import { IServerConfig } from 'phil';
 
 const successMessageEnd = ' confirmed. You may continue using `{commandPrefix}confirm` or start over by using `{commandPrefix}unconfirmed`.';
 
@@ -19,7 +19,7 @@ export class ConfirmCommand extends ConfirmRejectCommandBase {
 
     readonly versionAdded = 1;
 
-    protected async performActionOnPrompt(phil : Phil, serverConfig : ServerConfig, promptId : number) : Promise<boolean> {
+    protected async performActionOnPrompt(phil : Phil, serverConfig : IServerConfig, promptId : number) : Promise<boolean> {
         const bucketLookupResults = await phil.db.query('SELECT bucket_id FROM prompts WHERE prompt_id = $1', [promptId]);
         if (!bucketLookupResults || bucketLookupResults.rowCount === 0) {
             return false;

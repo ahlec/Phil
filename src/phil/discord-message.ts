@@ -1,27 +1,17 @@
 import { Phil } from './phil';
+import { IMention, IMessage, IPublicMessage, IPrivateMessage, IServerConfig } from 'phil';
 import { Server as DiscordIOServer, User as DiscordIOUser } from 'discord.io';
 import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
-import { ServerConfig } from './server-config';
 
-export class DiscordMessageMention {
-    constructor(public userId : string, public user : string, public userDiscriminator : string) {
-    }
-};
-
-export class DiscordMessage {
+abstract class MessageBase implements IMessage {
     public readonly id : string;
     public readonly channelId : string;
     public readonly user : DiscordIOUser;
     public readonly userId : string;
     public readonly content : string;
-    public readonly server? : DiscordIOServer;
-    public readonly mentions : DiscordMessageMention[];
+    public readonly mentions : IMention[];
 
-    private constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>,
-        phil : Phil,
-        public readonly serverConfig : ServerConfig,
-        public readonly isDirectMessage : boolean) {
-
+    constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>, phil : Phil) {
         this.mentions = [];
         for (let mention of event.d.mentions) {
             this.mentions.push({
@@ -36,21 +26,35 @@ export class DiscordMessage {
         this.userId = event.d.author.id;
         this.user = phil.bot.users[this.userId];
         this.content = event.d.content;
-
-        if (!isDirectMessage) {
-            this.server = this.serverConfig.server;
-        }
     }
+}
 
-    static async parse(event : OfficialDiscordPayload<OfficialDiscordMessage>, phil : Phil)
-        : Promise<DiscordMessage> {
+class PrivateMessage extends MessageBase implements IPrivateMessage {
+    constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>, phil : Phil) {
+        super(event, phil);
+    }
+}
+
+class PublicMessage extends MessageBase implements IPublicMessage {
+    readonly server : DiscordIOServer;
+
+    constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>,
+        phil : Phil,
+        public readonly serverConfig : IServerConfig) {
+        super(event, phil);
+        this.server = this.serverConfig.server;
+    }
+}
+
+export namespace Message {
+    export async function parse(phil : Phil, event : OfficialDiscordPayload<OfficialDiscordMessage>) : Promise<IMessage> {
         const isDirectMessage = (event.d.channel_id in phil.bot.directMessages);
-        var serverConfig : ServerConfig;
-        if (!isDirectMessage) {
-            var server = phil.getServerFromChannelId(event.d.channel_id);
-            serverConfig = await phil.serverDirectory.getServerConfig(server);
+        if (isDirectMessage) {
+            return new PrivateMessage(event, phil);
         }
 
-        return new DiscordMessage(event, phil, serverConfig, isDirectMessage);
+        const server = phil.getServerFromChannelId(event.d.channel_id);
+        const serverConfig = await phil.serverDirectory.getServerConfig(server);
+        return new PublicMessage(event, phil, serverConfig);
     }
 }

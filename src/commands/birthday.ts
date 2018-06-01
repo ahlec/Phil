@@ -4,12 +4,11 @@ import { Command } from './@types';
 import { Phil } from '../phil/phil';
 import { Database } from '../phil/database';
 import { HelpGroup } from '../phil/help-groups';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage, IServerConfig } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import { Feature } from '../phil/features';
 import { Moment } from 'moment';
-import { ServerConfig } from '../phil/server-config';
 import chronoNode = require('chrono-node');
 import momentModuleFunc = require('moment');
 
@@ -24,12 +23,13 @@ export class BirthdayCommand implements Command {
     readonly versionAdded = 5;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const birthday = this.getInputFromCommandArgs(message.serverConfig, commandArgs);
 
         await this.setBirthdayInDatabase(phil.db, message.user.username, message.userId, birthday);
 
-        const reply = 'I\'ve updated your birthday to be ' + birthday.format('D MMMM') + '! Thank you! If I made a mistake, however, feel free to tell me your birthday again!';
+        const reply = 'I\'ve updated your birthday to be ' + birthday.format('D MMMM') +
+            '! Thank you! If I made a mistake, however, feel free to tell me your birthday again!';
         BotUtils.sendSuccessMessage({
             bot: phil.bot,
             channelId: message.channelId,
@@ -37,7 +37,7 @@ export class BirthdayCommand implements Command {
         });
     }
 
-    getInputFromCommandArgs(serverConfig : ServerConfig, commandArgs : string[]) : Moment {
+    getInputFromCommandArgs(serverConfig : IServerConfig, commandArgs : string[]) : Moment {
         const birthdayInput = commandArgs.join(' ').trim();
         if (birthdayInput.length === 0) {
             throw new Error('Please tell me what your birthday is, like `' + serverConfig.commandPrefix + 'birthday 05 December`.');

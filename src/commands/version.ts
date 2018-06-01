@@ -3,7 +3,7 @@
 import { Command } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage } from 'phil';
 import { DiscordPromises } from '../promises/discord';
 import { Feature } from '../phil/features';
 import { Versions } from '../phil/versions';
@@ -19,7 +19,7 @@ export class VersionCommand implements Command {
     readonly versionAdded = 3;
 
     readonly publicRequiresAdmin = false;
-    processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const reply = '**Code:** Version ' + Versions.CODE + '.\n**Database:** Version ' + Versions.DATABASE + '.';
         return DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
     }

@@ -2,12 +2,13 @@
 
 const assert = require('assert');
 import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer } from 'discord.io';
+import { IMessage, IPublicMessage, IPrivateMessage } from 'phil';
 import { CommandRunner } from './command-runner';
 import { ChronoManager } from './chrono-manager';
 import { DirectMessageDispatcher } from './direct-message-dispatcher';
 import { ReactableProcessor } from './reactables/processor';
 import { greetNewMember } from './greeting';
-import { DiscordMessage } from './discord-message';
+import { Message } from './discord-message';
 import { Database } from './database';
 import { OfficialDiscordMessage, OfficialDiscordPayload, OfficialDiscordReactionEvent } from 'official-discord';
 import { BotUtils } from './utils';
@@ -16,6 +17,10 @@ import { GlobalConfig } from './global-config';
 
 function ignoreDiscordCode(code : number) {
     return (code === 1000); // General disconnect code
+}
+
+function isPublicMessage(object : any) : object is IPublicMessage {
+    return 'serverConfig' in object;
 }
 
 export class Phil {
@@ -82,39 +87,38 @@ export class Phil {
     }
 
     private async _onMessage(user : string, userId : string, channelId : string, msg : string, event : OfficialDiscordPayload<OfficialDiscordMessage>) {
-        const message = await DiscordMessage.parse(event, this);
+        const message = await Message.parse(this, event);
 
         if (this.isMessageFromPhil(message)) {
             this._handleOwnMessage(event);
             return;
         }
 
-        if (this._shouldIgnoreMessage(message)) {
+        if (this.shouldIgnoreMessage(message)) {
             return;
         }
 
-        if (message.isDirectMessage) {
+        if (isPublicMessage(message)) {
+            if (this._chronoManager) {
+                this._chronoManager.recordNewMessageInChannel(channelId);
+            }
+
+            if (this._commandRunner.isCommand(message)) {
+                this._commandRunner.runMessage(message);
+            }
+        } else {
             this._directMessageDispatcher.process(message);
             return;
         }
-
-        if (this._chronoManager) {
-            this._chronoManager.recordNewMessageInChannel(channelId);
-        }
-
-        if (this._commandRunner.isCommand(message)) {
-            this._commandRunner.runMessage(message);
-        }
     }
 
-    private isMessageFromPhil(message : DiscordMessage) : boolean {
+    private isMessageFromPhil(message : IMessage) : boolean {
         return (message.userId === this.bot.id);
     }
 
-    private _shouldIgnoreMessage(message : DiscordMessage) : boolean {
+    private shouldIgnoreMessage(message : IMessage) : boolean {
         const user = this.bot.users[message.userId];
         if (!user) {
-            console.log('yes');
             return true;
         }
 

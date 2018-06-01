@@ -3,7 +3,7 @@
 import { ConfirmRejectCommandBase } from './bases/confirm-reject-base';
 import { Phil } from '../phil/phil';
 import { Prompt } from '../phil/prompts/prompt';
-import { ServerConfig } from '../phil/server-config';
+import { IServerConfig } from 'phil';
 
 const successMessageEnd = ' rejected. You may continue using `{commandPrefix}reject` or start over by using `{commandPrefix}unconfirmed`.';
 
@@ -17,7 +17,7 @@ export class RejectCommand extends ConfirmRejectCommandBase {
 
     readonly versionAdded = 1;
 
-    protected async performActionOnPrompt(phil : Phil, serverConfig : ServerConfig, promptId : number) : Promise<boolean> {
+    protected async performActionOnPrompt(phil : Phil, serverConfig : IServerConfig, promptId : number) : Promise<boolean> {
         await phil.db.query('DELETE FROM prompts WHERE prompt_id = $1', [promptId]);
         return true;
     }

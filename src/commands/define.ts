@@ -4,14 +4,13 @@ import { Command } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
 import { Client as DiscordIOClient, Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage, IServerConfig } from 'phil';
 import { Database } from '../phil/database';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { BotUtils } from '../phil/utils';
 import { Requestable, RequestableCreationDefinition } from '../phil/requestables';
 import { MessageBuilder } from '../phil/message-builder';
-import { ServerConfig } from '../phil/server-config';
 
 export class DefineCommand implements Command {
     readonly name = 'define';
@@ -24,7 +23,7 @@ export class DefineCommand implements Command {
     readonly versionAdded = 1;
 
     readonly publicRequiresAdmin = true;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const definition = this.getDefinitionData(commandArgs, message.serverConfig);
         if (!Requestable.checkIsValidRequestableName(definition.name)) {
             throw new Error('The name you provided isn\'t valid to use as a requestable. It must be at least two characters in length and made up only of alphanumeric characters and dashes.');
@@ -44,7 +43,7 @@ export class DefineCommand implements Command {
         });
     }
 
-    private getDefinitionData(commandArgs : string[], serverConfig : ServerConfig) : RequestableCreationDefinition {
+    private getDefinitionData(commandArgs : string[], serverConfig : IServerConfig) : RequestableCreationDefinition {
         if (commandArgs.length < 2) {
             throw new Error('`' + serverConfig.commandPrefix + 'define` requires two parameters, separated by a space:\n' +
                 '[1] the text to be used by users with `' + serverConfig.commandPrefix + 'request` (cannot contain any spaces)\n' +

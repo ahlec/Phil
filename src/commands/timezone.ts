@@ -3,7 +3,7 @@
 import { Command } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { Features } from '../phil/features';
 import { TimezoneQuestionnaire } from '../phil/timezone-questionnaire';
@@ -19,7 +19,7 @@ export class TimezoneCommand implements Command {
     readonly versionAdded = 8;
 
     readonly publicRequiresAdmin = false;
-    processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
-        return TimezoneQuestionnaire.startQuestionnaire(phil, message.serverConfig, message.userId, true);
+    processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+        return TimezoneQuestionnaire.startQuestionnaire(phil, message.userId, true);
     }
 };

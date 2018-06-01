@@ -4,7 +4,7 @@ import { QueryResult } from 'pg';
 import { Bucket } from '../buckets';
 import { DiscordPromises } from '../../promises/discord';
 import { BotUtils } from '../utils';
-import { ServerConfig } from '../server-config';
+import { IServerConfig } from 'phil';
 
 export class Prompt {
     readonly userId : string;
@@ -76,7 +76,7 @@ export class Prompt {
             });
     }
 
-    sendToChannel(phil : Phil, serverConfig : ServerConfig, channelId : string, bucket : Bucket, promptNumber : number) : Promise<string> {
+    sendToChannel(phil : Phil, serverConfig : IServerConfig, channelId : string, bucket : Bucket, promptNumber : number) : Promise<string> {
         return DiscordPromises.sendEmbedMessage(phil.bot, channelId, {
             color: 0xB0E0E6,
             title: bucket.promptTitleFormat.replace(/\{0\}/g, promptNumber.toString()),
@@ -87,7 +87,7 @@ export class Prompt {
         });
     }
 
-    async postAsNewPrompt(phil : Phil, serverConfig : ServerConfig, now : Date) {
+    async postAsNewPrompt(phil : Phil, serverConfig : IServerConfig, now : Date) {
         const bucket = await Bucket.getFromId(phil.bot, phil.db, this.bucketId);
         const nextPromptNumberResults = await phil.db.query('SELECT prompt_number FROM prompts WHERE has_been_posted = E\'1\' AND bucket_id = $1 ORDER BY prompt_number DESC LIMIT 1', [bucket.id]);
         const promptNumber = (nextPromptNumberResults.rowCount > 0 ?
@@ -101,7 +101,7 @@ export class Prompt {
         await this.postNewPromptToChannel(phil, serverConfig, bucket, promptNumber);
     }
 
-    private getPromptMessageFooter(serverConfig : ServerConfig) : string {
+    private getPromptMessageFooter(serverConfig : IServerConfig) : string {
         var footer = 'This was suggested ';
 
         if (this.submittedAnonymously) {
@@ -117,7 +117,7 @@ export class Prompt {
         return footer;
     }
 
-    private postNewPromptToChannel(phil : Phil, serverConfig : ServerConfig, bucket : Bucket, promptNumber : number) : Promise<string> {
+    private postNewPromptToChannel(phil : Phil, serverConfig : IServerConfig, bucket : Bucket, promptNumber : number) : Promise<string> {
         return this.sendToChannel(phil, serverConfig, bucket.channelId, bucket, promptNumber);
     }
 }

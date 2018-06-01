@@ -3,7 +3,7 @@
 import { Command, ICommandLookup } from './@types';
 import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPublicMessage } from 'phil';
 import { DiscordPromises } from '../promises/discord';
 import { Feature } from '../phil/features';
 
@@ -18,7 +18,7 @@ export class KuzcoCommand implements Command {
     readonly versionAdded = 8;
 
     readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : DiscordMessage, commandArgs : string[]) : Promise<any> {
+    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const poison = this.getPoison(commandArgs);
         const reply = this.createReply(poison);
 

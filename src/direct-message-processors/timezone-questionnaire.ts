@@ -1,6 +1,6 @@
 import { DirectMessageProcessor, IProcessorActiveToken } from './@base';
 import { Phil } from '../phil/phil';
-import { DiscordMessage } from '../phil/discord-message';
+import { IPrivateMessage } from 'phil';
 import { TimezoneQuestionnaire } from '../phil/timezone-questionnaire';
 
 interface TimezoneQuestionnaireToken extends IProcessorActiveToken {
@@ -10,7 +10,7 @@ interface TimezoneQuestionnaireToken extends IProcessorActiveToken {
 export class TimezoneQuestionnaireProcessor implements DirectMessageProcessor {
     readonly handle = 'timezone-questionnaire';
 
-    async canProcess(phil : Phil, message : DiscordMessage) : Promise<TimezoneQuestionnaireToken> {
+    async canProcess(phil : Phil, message : IPrivateMessage) : Promise<TimezoneQuestionnaireToken> {
         const currentStage = await TimezoneQuestionnaire.getStageForUser(phil.db, message.userId);
         if (!currentStage) {
             return {
@@ -30,7 +30,7 @@ export class TimezoneQuestionnaireProcessor implements DirectMessageProcessor {
         }
     }
 
-    async process(phil : Phil, message : DiscordMessage, rawToken : IProcessorActiveToken) {
+    async process(phil : Phil, message : IPrivateMessage, rawToken : IProcessorActiveToken) {
         const token = rawToken as TimezoneQuestionnaireToken;
         token.currentStage.processInput(phil, message);
     }
