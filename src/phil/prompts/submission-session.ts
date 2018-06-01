@@ -18,9 +18,7 @@ export class SubmissionSession {
     }
 
     static async getActiveSession(phil : Phil, userId : string) : Promise<SubmissionSession | null> {
-        const now = new Date();
-        const utcNow = now.getUTCFullYear() + '-' + (now.getUTCMonth() + 1) +
-            '-' + now.getUTCDate();
+        const utcNow = momentModule.utc();
         const results = await phil.db.query(`SELECT pss.*
             FROM prompt_submission_sessions pss
             LEFT JOIN prompt_buckets pb

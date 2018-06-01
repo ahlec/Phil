@@ -4,7 +4,7 @@ const assert = require('assert');
 import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer } from 'discord.io';
 import { CommandRunner } from './command-runner';
 import { ChronoManager } from './chrono-manager';
-import { AnalyzerManager } from './analyzer-manager';
+import { DirectMessageDispatcher } from './direct-message-dispatcher';
 import { ReactableProcessor } from './reactables/processor';
 import { greetNewMember } from './greeting';
 import { DiscordMessage } from './discord-message';
@@ -20,19 +20,19 @@ function ignoreDiscordCode(code : number) {
 
 export class Phil {
     readonly bot : DiscordIOClient;
+    readonly serverDirectory : ServerDirectory;
     private readonly _commandRunner : CommandRunner;
     private readonly _chronoManager : ChronoManager;
-    private readonly _analyzerManager : AnalyzerManager;
+    private readonly _directMessageDispatcher : DirectMessageDispatcher;
     private readonly _reactableProcessor : ReactableProcessor;
-    private readonly _serverDirectory : ServerDirectory;
     private _shouldSendDisconnectedMessage : boolean;
 
     constructor(public readonly db: Database, public readonly globalConfig : GlobalConfig) {
         this.bot = new DiscordIOClient({ token: globalConfig.discordBotToken, autorun: true });
-        this._serverDirectory = new ServerDirectory(this);
+        this.serverDirectory = new ServerDirectory(this);
         this._commandRunner = new CommandRunner(this, this.bot, this.db);
-        this._chronoManager = new ChronoManager(this, this._serverDirectory);
-        this._analyzerManager = new AnalyzerManager(this);
+        this._chronoManager = new ChronoManager(this, this.serverDirectory);
+        this._directMessageDispatcher = new DirectMessageDispatcher(this);
         this._reactableProcessor = new ReactableProcessor(this);
     }
 
@@ -82,7 +82,7 @@ export class Phil {
     }
 
     private async _onMessage(user : string, userId : string, channelId : string, msg : string, event : OfficialDiscordPayload<OfficialDiscordMessage>) {
-        const message = await this.getDiscordMessage(event);
+        const message = await DiscordMessage.parse(event, this);
 
         if (this.isMessageFromPhil(message)) {
             this._handleOwnMessage(event);
@@ -93,29 +93,18 @@ export class Phil {
             return;
         }
 
+        if (message.isDirectMessage) {
+            this._directMessageDispatcher.process(message);
+            return;
+        }
+
         if (this._chronoManager) {
             this._chronoManager.recordNewMessageInChannel(channelId);
         }
 
         if (this._commandRunner.isCommand(message)) {
             this._commandRunner.runMessage(message);
-        } else {
-            this._analyzerManager.analyzeMessage(message);
         }
-    }
-
-    private async getDiscordMessage(event : OfficialDiscordPayload<OfficialDiscordMessage>) : Promise<DiscordMessage> {
-        var server = this.getServerFromChannelId(event.d.channel_id);
-        if (!server) {
-            server = this.getServerFromChannelId(process.env.HIJACK_CHANNEL_ID); // TODO: Temp for v13 to allow direct messaging. v14 we remove direct messaging altogether.
-        }
-
-        const serverConfig = await this._serverDirectory.getServerConfig(server);
-        if (!serverConfig) {
-            return;
-        }
-
-        return new DiscordMessage(event, this.bot, serverConfig);
     }
 
     private isMessageFromPhil(message : DiscordMessage) : boolean {
@@ -168,7 +157,7 @@ export class Phil {
         const server = this.bot.servers[serverId];
         assert(server);
 
-        const serverConfig = await this._serverDirectory.getServerConfig(server);
+        const serverConfig = await this.serverDirectory.getServerConfig(server);
         await greetNewMember(this, serverConfig, member);
     }
 

@@ -15,7 +15,7 @@ export class ServerDirectory {
 
     async getServerConfig(server : DiscordIOServer) : Promise<ServerConfig> {
         if (!server) {
-            throw new Error('Unknown how we\'ll handle DMs. Also, need to support new servers that aren\'t configured yet.');
+            throw new Error('Server was not provided to this function!');
         }
 
         const cached = this._configCache[server.id];

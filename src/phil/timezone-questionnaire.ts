@@ -81,7 +81,7 @@ export namespace TimezoneQuestionnaire {
     // Stages
     // =================================================
 
-    interface Stage {
+    export interface Stage {
         readonly stage : QuestionnaireStage;
         getMessage(db : Database, serverConfig : ServerConfig, userId : string) : Promise<string>;
         processInput(phil : Phil, message : DiscordMessage) : Promise<any>;
@@ -236,7 +236,10 @@ export namespace TimezoneQuestionnaire {
         readonly stage = QuestionnaireStage.Finished;
 
         async getMessage(db : Database, serverConfig : ServerConfig, userId : string) : Promise<string> {
-            return 'All done! I\'ve recorded your timezone information! When you mention a date or time in the server again, I\'ll convert it for you! If you ever need to change it, just use `' + serverConfig.commandPrefix + 'timezone` to do so!';
+            const NOWRAP = '';
+            return `All done! I\'ve recorded your timezone information! When you mention a date ${
+                NOWRAP}or time in the server again, I\'ll convert it for you! If you ever need to ${
+                NOWRAP}change it, just start up the questionnaire again to do so!`;
         }
 
         async processInput(phil : Phil, message : DiscordMessage) : Promise<any> {
@@ -248,7 +251,10 @@ export namespace TimezoneQuestionnaire {
         readonly stage = QuestionnaireStage.Declined;
 
         async getMessage(db : Database, serverConfig : ServerConfig, userId : string) : Promise<string> {
-            return 'Understood. I\'ve made a note that you don\'t want to provide this information at this time. I won\'t bother you again. If you ever change your mind, feel free to say `' + serverConfig.commandPrefix + 'timezone` to start up again.';
+            const NOWRAP = '';
+            return `Understood. I\'ve made a note that you don\'t want to provide this ${
+                NOWRAP}information at this time. I won\'t bother you again. If you ever change ${
+                NOWRAP}your mind, feel free to start the questionnaire again.`;
         }
 
         async processInput(phil : Phil, message : DiscordMessage) : Promise<any> {

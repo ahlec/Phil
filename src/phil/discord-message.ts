@@ -1,6 +1,5 @@
-'use strict';
-
-import { Client as DiscordIOClient, Server as DiscordIOServer, User as DiscordIOUser } from 'discord.io';
+import { Phil } from './phil';
+import { Server as DiscordIOServer, User as DiscordIOUser } from 'discord.io';
 import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
 import { ServerConfig } from './server-config';
 
@@ -15,13 +14,13 @@ export class DiscordMessage {
     public readonly user : DiscordIOUser;
     public readonly userId : string;
     public readonly content : string;
-    public readonly isDirectMessage : boolean;
-    public readonly server : DiscordIOServer;
+    public readonly server? : DiscordIOServer;
     public readonly mentions : DiscordMessageMention[];
 
-    constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>,
-        bot : DiscordIOClient,
-        public readonly serverConfig : ServerConfig) {
+    private constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>,
+        phil : Phil,
+        public readonly serverConfig : ServerConfig,
+        public readonly isDirectMessage : boolean) {
 
         this.mentions = [];
         for (let mention of event.d.mentions) {
@@ -35,9 +34,23 @@ export class DiscordMessage {
         this.id = event.d.id;
         this.channelId = event.d.channel_id;
         this.userId = event.d.author.id;
-        this.user = bot.users[this.userId];
+        this.user = phil.bot.users[this.userId];
         this.content = event.d.content;
-        this.server = this.serverConfig.server;
-        this.isDirectMessage = (event.d.channel_id in bot.directMessages);
+
+        if (!isDirectMessage) {
+            this.server = this.serverConfig.server;
+        }
     }
-};
+
+    static async parse(event : OfficialDiscordPayload<OfficialDiscordMessage>, phil : Phil)
+        : Promise<DiscordMessage> {
+        const isDirectMessage = (event.d.channel_id in phil.bot.directMessages);
+        var serverConfig : ServerConfig;
+        if (!isDirectMessage) {
+            var server = phil.getServerFromChannelId(event.d.channel_id);
+            serverConfig = await phil.serverDirectory.getServerConfig(server);
+        }
+
+        return new DiscordMessage(event, phil, serverConfig, isDirectMessage);
+    }
+}
