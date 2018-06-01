@@ -25,8 +25,8 @@ export class UtcCommand implements Command {
 
     readonly versionAdded = 10;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const inputTime = this.getTimeFromCommandArgs(commandArgs);
         if (!inputTime) {
             throw new Error('You must provide a time to this command so that I know what to convert to UTC. You can try using `' + message.serverConfig.commandPrefix + 'utc 5pm` or `' + message.serverConfig.commandPrefix + 'utc tomorrow at 11:30` to try it out.');

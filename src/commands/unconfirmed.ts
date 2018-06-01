@@ -21,8 +21,8 @@ export class UnconfirmedCommand implements Command {
 
     readonly versionAdded = 1;
 
-    readonly publicRequiresAdmin = true;
-    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = true;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         await phil.db.query('DELETE FROM prompt_confirmation_queue WHERE channel_id = $1', [message.channelId]);
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'unconfirmed', false);
 

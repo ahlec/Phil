@@ -79,7 +79,7 @@ export class CommandRunner {
     }
 
     private _canUserUseCommand(command : Command, message : IPublicMessage) : boolean {
-        if (!command.publicRequiresAdmin) {
+        if (!command.isAdminCommand) {
             return true;
         }
 
@@ -100,7 +100,7 @@ export class CommandRunner {
         const commandArgs = input.getCommandArgs();
 
         try {
-            await command.processPublicMessage(this.phil, message, commandArgs);
+            await command.processMessage(this.phil, message, commandArgs);
         } catch(err) {
             await this.reportCommandError(err, message.channelId);
         }

@@ -13,8 +13,8 @@ export interface Command {
     readonly helpDescription : string;
     readonly versionAdded : number;
 
-    readonly publicRequiresAdmin? : boolean;
-    processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any>;
+    readonly isAdminCommand? : boolean;
+    processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any>;
 }
 
 export interface ICommandLookup {

@@ -18,8 +18,8 @@ export class DisableCommand implements Command {
 
     readonly versionAdded = 9;
 
-    readonly publicRequiresAdmin = true;
-    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = true;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         if (commandArgs.length < 1) {
             throw new Error('This function requires specifying the name of the feature that you wish disabled.');
         }

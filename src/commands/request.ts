@@ -21,8 +21,8 @@ export class RequestCommand implements Command {
 
     readonly versionAdded = 1;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         if (commandArgs.length === 0) {
             return this.processNoCommandArgs(phil, message);
         }

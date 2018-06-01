@@ -23,7 +23,7 @@ class CommandHelpInfo {
     constructor(command : Command) {
         this.name = command.name;
         this.helpGroup = command.helpGroup;
-        this.isAdminFunction = (command.publicRequiresAdmin === true);
+        this.isAdminFunction = (command.isAdminCommand === true);
         this._helpDescription = command.helpDescription;
         this._isNew = CommandHelpInfo.isVersionNew(command.versionAdded);
         this._aliases = command.aliases;
@@ -158,8 +158,8 @@ export class HelpCommand implements Command {
 
     readonly versionAdded = 3;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const isAdminChannel = message.serverConfig.isAdminChannel(message.channelId);
         const featuresEnabledLookup = await FeatureUtils.getServerFeaturesStatus(phil.db, message.server.id);
         const builder = new MessageBuilder();

@@ -18,8 +18,8 @@ export class TimezoneCommand implements Command {
 
     readonly versionAdded = 8;
 
-    readonly publicRequiresAdmin = false;
-    processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = false;
+    processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         return TimezoneQuestionnaire.startQuestionnaire(phil, message.userId, true);
     }
 };

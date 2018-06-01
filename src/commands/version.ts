@@ -18,8 +18,8 @@ export class VersionCommand implements Command {
 
     readonly versionAdded = 3;
 
-    readonly publicRequiresAdmin = false;
-    processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = false;
+    processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const reply = '**Code:** Version ' + Versions.CODE + '.\n**Database:** Version ' + Versions.DATABASE + '.';
         return DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
     }

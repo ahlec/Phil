@@ -19,8 +19,8 @@ export class PromptCommand implements Command {
 
     readonly versionAdded = 3;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const bucket = await Bucket.getFromChannelId(phil.bot, phil.db, message.channelId);
         if (!bucket) {
             throw new Error('This channel is not configured to work with prompts.');

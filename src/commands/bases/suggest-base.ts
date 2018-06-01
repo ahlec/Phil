@@ -29,8 +29,8 @@ export abstract class SuggestCommandBase implements Command {
 
     abstract readonly versionAdded : number;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig,
             this.name, false);
         if (!bucket.canUserSubmitTo(phil.bot, message.userId)) {

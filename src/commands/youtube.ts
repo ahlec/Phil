@@ -18,8 +18,8 @@ export class YoutubeCommand implements Command {
 
     readonly versionAdded = 4;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const query = commandArgs.join(' ').trim();
         if (query.length === 0) {
             throw new Error('You must provide some text to tell me what to search for.');

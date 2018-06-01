@@ -17,8 +17,8 @@ export class KuzcoCommand implements Command {
 
     readonly versionAdded = 8;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const poison = this.getPoison(commandArgs);
         const reply = this.createReply(poison);
 

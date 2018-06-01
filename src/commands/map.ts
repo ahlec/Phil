@@ -18,8 +18,8 @@ export class MapCommand implements Command {
 
     readonly versionAdded = 8;
 
-    readonly publicRequiresAdmin = false;
-    processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = false;
+    processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         if (!message.serverConfig.fandomMapLink) {
             return BotUtils.sendErrorMessage({
                 bot: phil.bot,

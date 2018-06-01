@@ -22,8 +22,8 @@ export class BirthdayCommand implements Command {
 
     readonly versionAdded = 5;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const birthday = this.getInputFromCommandArgs(message.serverConfig, commandArgs);
 
         await this.setBirthdayInDatabase(phil.db, message.user.username, message.userId, birthday);

@@ -18,8 +18,8 @@ export class NewsCommand implements Command {
 
     readonly versionAdded = 11;
 
-    readonly publicRequiresAdmin = true;
-    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = true;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const echoedMessage = this.getEchoedStatementFromCommandArgs(message, commandArgs);
         DiscordPromises.sendMessage(phil.bot, message.serverConfig.newsChannel.id, echoedMessage);
     }

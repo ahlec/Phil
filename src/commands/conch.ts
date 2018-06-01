@@ -32,8 +32,8 @@ export class ConchCommand implements Command {
 
     readonly versionAdded = 3;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const conchReply = BotUtils.getRandomArrayEntry(conchReplies);
         const reply = ':shell: The Magic Conch Shell says: **' + conchReply + '**.';
 

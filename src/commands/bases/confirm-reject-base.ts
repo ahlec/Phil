@@ -35,8 +35,8 @@ export abstract class ConfirmRejectCommandBase implements Command {
 
     abstract readonly versionAdded : number;
 
-    readonly publicRequiresAdmin = true;
-    async processPublicMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    readonly isAdminCommand = true;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const numbers = this.getNumbersFromCommandArgs(commandArgs);
         console.log(require('util').inspect(numbers));
 
