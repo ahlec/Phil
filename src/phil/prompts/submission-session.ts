@@ -5,7 +5,7 @@ import momentModule = require('moment');
 
 const SESSION_LENGTH_IN_MINUTES : number = 10;
 
-export class SubmissionSession {
+export default class SubmissionSession {
     public readonly remainingTime : Duration;
 
     private constructor(private readonly userId : string,
@@ -13,7 +13,7 @@ export class SubmissionSession {
         public readonly startedUtc : Moment,
         public readonly timeoutUtc : Moment,
         public readonly isAnonymous : boolean,
-        public readonly numSubmitted : number) {
+        private numSubmitted : number) {
         this.remainingTime = momentModule.duration(timeoutUtc.diff(startedUtc));
     }
 
@@ -59,6 +59,36 @@ export class SubmissionSession {
         }
 
         return new SubmissionSession(userId, bucket, now, timeout, isAnonymousSession, 0);
+    }
+
+    public getNumberSubmissions(): number {
+        return this.numSubmitted;
+    }
+
+    async submit(phil: Phil, prompt: string) {
+        const user = phil.bot.users[this.userId];
+        const isAnonymousBit = (this.isAnonymous ? 1 : 0);
+        const submitPromptResult = await phil.db.query(`INSERT INTO prompts(
+                suggesting_user,       suggesting_userid, date_suggested,     prompt_text,
+                submitted_anonymously, bucket_id
+            )
+            VALUES(
+                $1,                    $2,                CURRENT_TIMESTAMP,  $3,
+                $4,                    $5)`,
+            [user.username, this.userId, prompt, isAnonymousBit, this.bucket.id]);
+        if (submitPromptResult.rowCount !== 1) {
+            throw new Error('Unable to commit the prompt to the database.');
+        }
+
+        const updateSessionResult = await phil.db.query(
+            `UPDATE prompt_submission_sessions
+             SET num_submitted = num_submitted + 1
+             WHERE user_id = $1`, [this.userId]);
+        if (updateSessionResult.rowCount !== 1) {
+            throw new Error('Unable to update the tally for this session in the database.');
+        }
+
+        this.numSubmitted++;
     }
 
     async end(phil : Phil) {

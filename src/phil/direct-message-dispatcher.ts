@@ -1,5 +1,6 @@
 import { DirectMessageProcessor, IProcessorActiveToken } from '../direct-message-processors/@base';
 import { TimezoneQuestionnaireProcessor } from '../direct-message-processors/timezone-questionnaire';
+import SuggestSessionListener from '../direct-message-processors/suggest-session-listener';
 
 import { Phil } from './phil';
 import { IPrivateMessage } from 'phil';
@@ -8,6 +9,7 @@ const util = require('util');
 
 export class DirectMessageDispatcher {
     private readonly processorsInPriorityOrder : DirectMessageProcessor[] = [
+        new SuggestSessionListener(),
         new TimezoneQuestionnaireProcessor()
     ];
 

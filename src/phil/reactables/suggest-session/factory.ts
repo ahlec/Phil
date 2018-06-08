@@ -6,7 +6,7 @@ import { SuggestSessionReactableShared } from './shared';
 interface ICreateArgs extends IReactableCreateArgsBase {
 }
 
-export class SuggestSessionReactableFactory extends ReactableFactoryBase<ICreateArgs> {
+export default class SuggestSessionReactableFactory extends ReactableFactoryBase<ICreateArgs> {
     protected readonly handle = SuggestSessionReactableShared.ReactableHandle;
 
     constructor(readonly bot : DiscordIOClient,

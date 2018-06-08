@@ -9,8 +9,8 @@ import { Features } from '../../phil/features';
 import { DiscordPromises } from '../../promises/discord';
 import { Bucket } from '../../phil/buckets';
 import { SuggestSessionReactableShared } from '../../phil/reactables/suggest-session/shared';
-import { SuggestSessionReactableFactory } from '../../phil/reactables/suggest-session/factory';
-import { SubmissionSession } from '../../phil/prompts/submission-session';
+import SuggestSessionReactableFactory from '../../phil/reactables/suggest-session/factory';
+import SubmissionSession from '../../phil/prompts/submission-session';
 
 interface Suggestion {
     readonly bucket : Bucket;

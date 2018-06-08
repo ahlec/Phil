@@ -6,7 +6,7 @@ import { ReactablePost } from '../post';
 import { OfficialDiscordReactionEvent } from 'official-discord';
 import { DiscordPromises } from '../../../promises/discord';
 import { SuggestSessionReactableShared } from './shared';
-import { SubmissionSession } from '../../prompts/submission-session';
+import SubmissionSession from '../../prompts/submission-session';
 
 export class SuggestSessionReactable extends ReactableType {
     readonly handle = SuggestSessionReactableShared.ReactableHandle;
@@ -35,11 +35,12 @@ export class SuggestSessionReactable extends ReactableType {
         const NOWRAP = '';
         var message = '';
 
-        if (activeSession.numSubmitted > 0) {
-            const suggestion = (activeSession.numSubmitted == 1 ? 'suggestion' : 'suggestions');
-            const it = (activeSession.numSubmitted == 1 ? 'It' : 'They');
+        const numSubmitted = activeSession.getNumberSubmissions();
+        if (numSubmitted > 0) {
+            const suggestion = (numSubmitted == 1 ? 'suggestion' : 'suggestions');
+            const it = (numSubmitted == 1 ? 'It' : 'They');
             message += `Thank you for submitting your ${suggestion}! During this session, you ${
-                NOWRAP} sent in **${activeSession.numSubmitted} ${suggestion}. ${it} will now ${
+                NOWRAP} sent in **${numSubmitted} ${suggestion}. ${it} will now ${
                 NOWRAP} need to be processed by the server admins. Should ${it.toLowerCase()} ${
                 NOWRAP} be approved, ${it.toLowerCase()} will go into the prompt queue and wind ${
                 NOWRAP} up being posted one day! Thank you!!\n\n`;
