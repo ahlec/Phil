@@ -1,5 +1,3 @@
-'use strict';
-
 const groupHeaders = [
     ':trident: GENERAL',
     ':joy: MEMES',

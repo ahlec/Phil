@@ -2,57 +2,57 @@
 
 import { Client } from 'discord.io';
 import { IPublicMessage } from 'phil';
-import { Database } from './database';
-import { InputMessage } from './input-message';
 import { Command } from '../commands/@types';
 import { CommandLookup } from '../commands/index';
+import Database from './database';
+import { Feature } from './features';
+import InputMessage from './input-message';
 import { Phil } from './phil';
 import { BotUtils } from './utils';
-import { Feature } from './features';
 
 const util = require('util');
 
-export class CommandRunner {
-    constructor(private readonly phil : Phil,
-        private readonly bot : Client,
-        private readonly db : Database) {
+export default class CommandRunner {
+    constructor(private readonly phil: Phil,
+        private readonly bot: Client,
+        private readonly db: Database) {
     }
 
-    public isCommand(message : IPublicMessage) : boolean {
+    public isCommand(message: IPublicMessage): boolean {
         const input = InputMessage.parseFromMessage(message.serverConfig, message.content);
         return (input !== null);
     }
 
-    public async runMessage(message : IPublicMessage) {
+    public async runMessage(message: IPublicMessage) {
         const input = InputMessage.parseFromMessage(message.serverConfig, message.content);
         if (input === null) {
             return;
         }
         this.logInputReceived(message, input);
 
-        const command = this._getCommandFromInputMessage(input);
+        const command = this.getCommandFromInputMessage(input);
         if (command === null) {
-            this._reportInvalidCommand(message, input);
+            this.reportInvalidCommand(message, input);
             return;
         }
 
         if (command.feature && message.server) {
-            let isFeatureEnabled = await command.feature.getIsEnabled(this.db, message.server.id);
+            const isFeatureEnabled = await command.feature.getIsEnabled(this.db, message.server.id);
             if (!isFeatureEnabled) {
-                this._reportInvalidCommand(message, input);
+                this.reportInvalidCommand(message, input);
                 return;
             }
         }
 
-        if (!this._canUserUseCommand(command, message)) {
-            this._reportCannotUseCommand(message, command, input);
+        if (!this.canUserUseCommand(command, message)) {
+            this.reportCannotUseCommand(message, command, input);
             return;
         }
 
         await this.runCommand(message, command, input);
     }
 
-    private logInputReceived(message : IPublicMessage, input : InputMessage) {
+    private logInputReceived(message: IPublicMessage, input: InputMessage) {
         const commandName = input.getCommandName();
         console.log('user \'%s#%d\' used command \'%s%s\'',
             message.user.username,
@@ -61,7 +61,7 @@ export class CommandRunner {
             commandName);
     }
 
-    private _getCommandFromInputMessage(input : InputMessage) {
+    private getCommandFromInputMessage(input: InputMessage) {
         const commandName = input.getCommandName();
         if (commandName in CommandLookup) {
             return CommandLookup[commandName];
@@ -69,7 +69,7 @@ export class CommandRunner {
         return null;
     }
 
-    private _reportInvalidCommand(message : IPublicMessage, input : InputMessage) {
+    private reportInvalidCommand(message: IPublicMessage, input: InputMessage) {
         const commandName = input.getCommandName();
         BotUtils.sendErrorMessage({
             bot: this.bot,
@@ -78,7 +78,7 @@ export class CommandRunner {
         });
     }
 
-    private _canUserUseCommand(command : Command, message : IPublicMessage) : boolean {
+    private canUserUseCommand(command: Command, message: IPublicMessage): boolean {
         if (!command.isAdminCommand) {
             return true;
         }
@@ -87,7 +87,7 @@ export class CommandRunner {
         return message.serverConfig.isAdmin(member);
     }
 
-    private _reportCannotUseCommand(message : IPublicMessage, command : Command, input : InputMessage) {
+    private reportCannotUseCommand(message: IPublicMessage, command: Command, input: InputMessage) {
         const commandName = input.getCommandName();
         BotUtils.sendErrorMessage({
             bot: this.bot,
@@ -96,7 +96,7 @@ export class CommandRunner {
         });
     }
 
-    private async runCommand(message : IPublicMessage, command : Command, input : InputMessage) {
+    private async runCommand(message: IPublicMessage, command: Command, input: InputMessage) {
         const commandArgs = input.getCommandArgs();
 
         try {
@@ -106,11 +106,11 @@ export class CommandRunner {
         }
     }
 
-    private async reportCommandError(err : Error, channelId : string) {
+    private async reportCommandError(err: Error, channelId: string) {
         console.error(util.inspect(err));
         BotUtils.sendErrorMessage({
             bot: this.bot,
-            channelId: channelId,
+            channelId,
             message: err.message
         });
     }

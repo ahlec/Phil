@@ -1,30 +1,29 @@
-
-import { Phil } from './phil';
 import { Server as DiscordIOServer } from 'discord.io';
-import { ServerConfig } from './server-config';
+import { Phil } from './phil';
+import ServerConfig from './server-config';
 
 interface IConfigCache {
-    [serverId : string] : ServerConfig;
+    [serverId: string]: ServerConfig;
 }
 
-export class ServerDirectory {
-    private readonly _configCache : IConfigCache = {};
+export default class ServerDirectory {
+    private readonly configCache: IConfigCache = {};
 
-    constructor(private readonly phil : Phil) {
+    constructor(private readonly phil: Phil) {
     }
 
-    async getServerConfig(server : DiscordIOServer) : Promise<ServerConfig> {
+    public async getServerConfig(server: DiscordIOServer): Promise<ServerConfig> {
         if (!server) {
             throw new Error('Server was not provided to this function!');
         }
 
-        const cached = this._configCache[server.id];
+        const cached = this.configCache[server.id];
         if (cached) {
             return cached;
         }
 
         const serverConfig = await ServerConfig.getFromId(this.phil.db, server, this.phil.globalConfig);
-        this._configCache[server.id] = serverConfig;
+        this.configCache[server.id] = serverConfig;
         return serverConfig;
     }
 };

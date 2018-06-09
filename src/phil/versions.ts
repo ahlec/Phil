@@ -1,8 +1,6 @@
-'use strict';
-
-class VersionsClass {
-    public readonly CODE : number = 13;
-    public readonly DATABASE : number = 8;
+namespace Versions {
+    export const CODE: number = 13;
+    export const DATABASE: number = 8;
 }
 
-export const Versions = new VersionsClass();
+export default Versions;
