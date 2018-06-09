@@ -20,7 +20,7 @@ export abstract class MemberUniqueRoleCommandBase<TData> implements Command {
 
     abstract readonly versionAdded : number;
 
-    readonly isAdminCommand = true;
+    readonly isAdminCommand = false;
     async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const data = this.getDataFromCommandArgs(message.serverConfig, commandArgs);
         const newRole = await this.getRoleFromData(phil, message.server, data);
