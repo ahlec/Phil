@@ -7,7 +7,7 @@ import { ServerConfig } from '../phil/server-config';
 import { Bucket } from '../phil/buckets';
 import { PromptQueue } from '../phil/prompts/queue';
 
-const PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD = 5;
+const PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD_DAYS = 5;
 
 export class AlertLowBucketQueueChrono implements Chrono {
     readonly handle = 'alert-low-bucket-queue';
@@ -20,8 +20,9 @@ export class AlertLowBucketQueueChrono implements Chrono {
                 continue;
             }
 
-            let queueLength = await PromptQueue.getTotalLength(phil.db, bucket);
-            if (queueLength > PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD) {
+            const queueLength = await PromptQueue.getTotalLength(phil.db, bucket);
+            const numberDaysRemaining = bucket.convertPromptQueueLengthToDays(queueLength);
+            if (numberDaysRemaining > PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD_DAYS) {
                 continue;
             }
 

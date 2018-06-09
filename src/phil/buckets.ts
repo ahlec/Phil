@@ -13,24 +13,18 @@ const moment = require('moment');
 export enum BucketFrequency {
     Daily = 0,
     Weekly = 1,
-    Monthly = 2,
-    Yearly = 3,
-    Immediately = 4
+    Immediately = 2
 }
 
 const frequencyDisplayStrings = {
     [BucketFrequency.Daily]: 'Daily',
     [BucketFrequency.Weekly]: 'Weekly',
-    [BucketFrequency.Monthly]: 'Monthly',
-    [BucketFrequency.Yearly]: 'Yearly',
     [BucketFrequency.Immediately]: 'Immediately'
 };
 
 const frequencyFromStrings : { [name : string] : BucketFrequency } = {
     'daily': BucketFrequency.Daily,
     'weekly': BucketFrequency.Weekly,
-    'monthly': BucketFrequency.Monthly,
-    'yearly': BucketFrequency.Yearly,
     'immediately': BucketFrequency.Immediately
 };
 
@@ -215,14 +209,23 @@ export class Bucket {
                 return !BotUtils.isSameDay(lastDate, currentDate);
             case BucketFrequency.Weekly:
                 return (moment(lastDate).format('W') !== moment(currentDate).format('W'));
-            case BucketFrequency.Monthly:
-                return (lastDate.getUTCMonth() !== currentDate.getUTCMonth());
-            case BucketFrequency.Yearly:
-                return (lastDate.getUTCFullYear() !== currentDate.getUTCFullYear());
             case BucketFrequency.Immediately:
                 return false;
             default:
-                throw 'Unrecognized frequency type: \'' + this.frequency + '\'';
+                throw new Error('Unrecognized frequency type: \'' + this.frequency + '\'');
+        }
+    }
+
+    convertPromptQueueLengthToDays(queueLength: number) : number {
+        switch (this.frequency) {
+            case BucketFrequency.Daily:
+                return queueLength;
+            case BucketFrequency.Weekly:
+                return queueLength * 7;
+            case BucketFrequency.Immediately:
+                return 0;
+            default:
+                throw new Error('Unrecognized frequency type: \'' + this.frequency + '\'');
         }
     }
 
