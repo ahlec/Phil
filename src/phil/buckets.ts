@@ -1,9 +1,11 @@
 'use strict';
 
+import { Phil } from './phil';
 import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
 import { Database } from './database';
 import { QueryResult } from 'pg';
 import { BotUtils } from './utils';
+import { IServerConfig } from 'phil';
 
 const assert = require('assert');
 const moment = require('moment');
@@ -11,28 +13,22 @@ const moment = require('moment');
 export enum BucketFrequency {
     Daily = 0,
     Weekly = 1,
-    Monthly = 2,
-    Yearly = 3,
-    Immediately = 4
+    Immediately = 2
 }
 
 const frequencyDisplayStrings = {
     [BucketFrequency.Daily]: 'Daily',
     [BucketFrequency.Weekly]: 'Weekly',
-    [BucketFrequency.Monthly]: 'Monthly',
-    [BucketFrequency.Yearly]: 'Yearly',
     [BucketFrequency.Immediately]: 'Immediately'
 };
 
 const frequencyFromStrings : { [name : string] : BucketFrequency } = {
     'daily': BucketFrequency.Daily,
     'weekly': BucketFrequency.Weekly,
-    'monthly': BucketFrequency.Monthly,
-    'yearly': BucketFrequency.Yearly,
     'immediately': BucketFrequency.Immediately
 };
 
-function throwMultipleUnspecifiedBucketsError(serverBuckets : Bucket[], commandName : string) {
+function throwMultipleUnspecifiedBucketsError(serverConfig : IServerConfig, serverBuckets : Bucket[], commandName : string) {
     if (serverBuckets.length === 0) {
         throw new Error('There are no prompt buckets configured on this server.');
     }
@@ -52,16 +48,16 @@ function throwMultipleUnspecifiedBucketsError(serverBuckets : Bucket[], commandN
     }
 
     const randomBucket = BotUtils.getRandomArrayEntry(serverBuckets);
-    message += '\nPlease try the command once more, specifying which bucket, like `' + process.env.COMMAND_PREFIX + commandName + ' ' + randomBucket.handle + '`.';
+    message += '\nPlease try the command once more, specifying which bucket, like `' + serverConfig.commandPrefix + commandName + ' ' + randomBucket.handle + '`.';
     throw new Error(message);
 }
 
-function _getOnlyBucketOnServer(serverBuckets : Bucket[], commandName : string, allowInvalidServers : boolean) : Bucket {
+function _getOnlyBucketOnServer(serverConfig : IServerConfig, serverBuckets : Bucket[], commandName : string, allowInvalidServers : boolean) : Bucket {
     if (serverBuckets.length === 1 && (allowInvalidServers || serverBuckets[0].isValid)) {
         return serverBuckets[0];
     }
 
-    throwMultipleUnspecifiedBucketsError(serverBuckets, commandName);
+    throwMultipleUnspecifiedBucketsError(serverConfig, serverBuckets, commandName);
 }
 
 function getAllServersUserIn(bot : DiscordIOClient, userId : string) : string[] {
@@ -87,7 +83,6 @@ export class Bucket {
     readonly handle : string;
     readonly displayName : string;
     readonly isPaused : boolean;
-    readonly shouldPinPosts : boolean;
     readonly requiredRoleId : string | null;
     readonly alertWhenLow : boolean;
     readonly frequency : BucketFrequency;
@@ -106,7 +101,6 @@ export class Bucket {
         this.handle = dbRow.reference_handle;
         this.displayName = dbRow.display_name;
         this.isPaused = (parseInt(dbRow.is_paused) === 1);
-        this.shouldPinPosts = (parseInt(dbRow.should_pin_posts) === 1);
         this.requiredRoleId = dbRow.required_role_id;
         this.alertWhenLow = (parseInt(dbRow.alert_when_low) === 1);
         this.frequency = bucketFrequency;
@@ -155,17 +149,17 @@ export class Bucket {
         return Bucket.parseListOfDbBuckets(bot, results);
     }
 
-    static async retrieveFromCommandArgs(bot : DiscordIOClient, db : Database, commandArgs : string[], server : DiscordIOServer, commandName : string, allowInvalidServers : boolean) : Promise<Bucket> {
+    static async retrieveFromCommandArgs(phil : Phil, commandArgs : string[], serverConfig : IServerConfig, commandName : string, allowInvalidServers : boolean) : Promise<Bucket> {
         const firstParameter = commandArgs[0];
         if (!firstParameter || firstParameter.length === 0) {
-            const serverBuckets = await Bucket.getAllForServer(bot, db, server.id);
-            return _getOnlyBucketOnServer(serverBuckets, commandName, allowInvalidServers);
+            const serverBuckets = await Bucket.getAllForServer(phil.bot, phil.db, serverConfig.server.id);
+            return _getOnlyBucketOnServer(serverConfig, serverBuckets, commandName, allowInvalidServers);
         }
 
-        const bucket = await Bucket.getFromReferenceHandle(bot, db, server, firstParameter);
+        const bucket = await Bucket.getFromReferenceHandle(phil.bot, phil.db, serverConfig.server, firstParameter);
         if (bucket === null || (!allowInvalidServers && !bucket.isValid)) {
-            const serverBuckets = await Bucket.getAllForServer(bot, db, server.id);
-            throwMultipleUnspecifiedBucketsError(serverBuckets, commandName);
+            const serverBuckets = await Bucket.getAllForServer(phil.bot, phil.db, serverConfig.server.id);
+            throwMultipleUnspecifiedBucketsError(serverConfig, serverBuckets, commandName);
         }
 
         return bucket;
@@ -215,14 +209,23 @@ export class Bucket {
                 return !BotUtils.isSameDay(lastDate, currentDate);
             case BucketFrequency.Weekly:
                 return (moment(lastDate).format('W') !== moment(currentDate).format('W'));
-            case BucketFrequency.Monthly:
-                return (lastDate.getUTCMonth() !== currentDate.getUTCMonth());
-            case BucketFrequency.Yearly:
-                return (lastDate.getUTCFullYear() !== currentDate.getUTCFullYear());
             case BucketFrequency.Immediately:
                 return false;
             default:
-                throw 'Unrecognized frequency type: \'' + this.frequency + '\'';
+                throw new Error('Unrecognized frequency type: \'' + this.frequency + '\'');
+        }
+    }
+
+    convertPromptQueueLengthToDays(queueLength: number) : number {
+        switch (this.frequency) {
+            case BucketFrequency.Daily:
+                return queueLength;
+            case BucketFrequency.Weekly:
+                return queueLength * 7;
+            case BucketFrequency.Immediately:
+                return 0;
+            default:
+                throw new Error('Unrecognized frequency type: \'' + this.frequency + '\'');
         }
     }
 

@@ -1,12 +1,8 @@
-import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
+import { Phil } from '../phil/phil';
+import { IPublicMessage } from 'phil';
 import { Database } from '../phil/database';
 import { HelpGroup } from '../phil/help-groups';
 import { Feature } from '../phil/features';
-
-export interface CommandProcessFunction {
-    (bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db: Database ) : Promise<any>;
-}
 
 export interface Command {
     readonly name : string;
@@ -17,11 +13,8 @@ export interface Command {
     readonly helpDescription : string;
     readonly versionAdded : number;
 
-    readonly publicRequiresAdmin? : boolean;
-    processPublicMessage? : CommandProcessFunction;
-
-    readonly privateRequiresAdmin? : boolean;
-    processPrivateMessage? : CommandProcessFunction;
+    readonly isAdminCommand? : boolean;
+    processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any>;
 }
 
 export interface ICommandLookup {

@@ -1,15 +1,15 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
+import { IPublicMessage, IServerConfig } from 'phil';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
 import { BotUtils } from '../phil/utils';
 import { Requestable } from '../phil/requestables';
 import { MessageBuilder } from '../phil/message-builder';
+import { ServerConfig } from '../phil/server-config';
 
 export class RequestCommand implements Command {
     readonly name = 'request';
@@ -21,47 +21,47 @@ export class RequestCommand implements Command {
 
     readonly versionAdded = 1;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         if (commandArgs.length === 0) {
-            return this.processNoCommandArgs(bot, message, db);
+            return this.processNoCommandArgs(phil, message);
         }
 
-        const requestable = await Requestable.getFromRequestString(db, message.server, commandArgs[0]);
+        const requestable = await Requestable.getFromRequestString(phil.db, message.server, commandArgs[0]);
         if (!requestable) {
             throw new Error('There is no requestable by the name of `' + commandArgs[0] + '`.');
         }
 
-        this.ensureUserCanRequestRole(message.server, message.userId, requestable);
+        this.ensureUserCanRequestRole(message.serverConfig, message.userId, requestable);
 
-        const result = await DiscordPromises.giveRoleToUser(bot, message.server.id, message.userId, requestable.role.id);
+        const result = await DiscordPromises.giveRoleToUser(phil.bot, message.server.id, message.userId, requestable.role.id);
         BotUtils.sendSuccessMessage({
-            bot: bot,
+            bot: phil.bot,
             channelId: message.channelId,
             message: 'You have been granted the "' + requestable.role.name + '" role!'
         });
     }
 
-    private ensureUserCanRequestRole(server : DiscordIOServer, userId : string, requestable : Requestable) {
-        const member = server.members[userId];
+    private ensureUserCanRequestRole(serverConfig : IServerConfig, userId : string, requestable : Requestable) {
+        const member = serverConfig.server.members[userId];
         if (member.roles.indexOf(requestable.role.id) >= 0) {
-            throw new Error('You already have the "' + requestable.role.name + '" role. You can use `' + process.env.COMMAND_PREFIX + 'remove` to remove the role if you wish.');
+            throw new Error('You already have the "' + requestable.role.name + '" role. You can use `' + serverConfig.commandPrefix + 'remove` to remove the role if you wish.');
         }
     }
 
-    private async processNoCommandArgs(bot : DiscordIOClient, message : DiscordMessage, db : Database) : Promise<any> {
-        const requestables = await Requestable.getAllRequestables(db, message.server);
+    private async processNoCommandArgs(phil : Phil, message : IPublicMessage) : Promise<any> {
+        const requestables = await Requestable.getAllRequestables(phil.db, message.server);
         if (requestables.length === 0) {
-            throw new Error('There are no requestable roles defined. An admin should use `' + process.env.COMMAND_PREFIX + 'define` to create some roles.');
+            throw new Error('There are no requestable roles defined. An admin should use `' + message.serverConfig.commandPrefix + 'define` to create some roles.');
         }
 
-        const reply = this.composeAllRequestablesList(requestables);
-        return DiscordPromises.sendMessageBuilder(bot, message.channelId, reply);
+        const reply = this.composeAllRequestablesList(message.serverConfig, requestables);
+        return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, reply);
     }
 
-    private composeAllRequestablesList(requestables : Requestable[]) : MessageBuilder {
+    private composeAllRequestablesList(serverConfig : IServerConfig, requestables : Requestable[]) : MessageBuilder {
         const builder = new MessageBuilder();
-        builder.append(':snowflake: You must provide a valid requestable name of a role when using `' + process.env.COMMAND_PREFIX + 'request`. These are currently:\n');
+        builder.append(':snowflake: You must provide a valid requestable name of a role when using `' + serverConfig.commandPrefix + 'request`. These are currently:\n');
 
         for (let requestable of requestables) {
             builder.append(this.composeRequestableListEntry(requestable));
@@ -70,7 +70,7 @@ export class RequestCommand implements Command {
         const randomRequestable = BotUtils.getRandomArrayEntry(requestables);
         const randomRequestableString = BotUtils.getRandomArrayEntry(randomRequestable.requestStrings);
 
-        builder.append('\nJust use one of the above requestable names, like `' + process.env.COMMAND_PREFIX + 'request ' + randomRequestableString + '`.');
+        builder.append('\nJust use one of the above requestable names, like `' + serverConfig.commandPrefix + 'request ' + randomRequestableString + '`.');
         return builder;
     }
 

@@ -1,10 +1,9 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
+import { IPublicMessage } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import { Feature } from '../phil/features';
@@ -33,11 +32,11 @@ export class ConchCommand implements Command {
 
     readonly versionAdded = 3;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const conchReply = BotUtils.getRandomArrayEntry(conchReplies);
         const reply = ':shell: The Magic Conch Shell says: **' + conchReply + '**.';
 
-        return DiscordPromises.sendMessage(bot, message.channelId, reply);
+        return DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
     }
 };

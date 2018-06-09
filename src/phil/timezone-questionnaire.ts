@@ -1,8 +1,9 @@
 'use strict';
 
+import { Phil } from './phil';
 import { Client as DiscordIOClient } from 'discord.io';
 import { Database } from './database';
-import { DiscordMessage } from './discord-message';
+import { IPrivateMessage, IPublicMessage, IServerConfig } from 'phil';
 import { DiscordPromises } from '../promises/discord';
 
 const chronoNode = require('chrono-node');
@@ -34,27 +35,27 @@ export namespace TimezoneQuestionnaire {
     // Utility functions
     // =================================================
 
-    async function sendStageMessage(bot : DiscordIOClient, db : Database, userId : string, stage : Stage) {
-        const message = await stage.getMessage(db, userId);
-        return DiscordPromises.sendMessage(bot, userId, message);
+    async function sendStageMessage(phil : Phil, userId : string, stage : Stage) {
+        const message = await stage.getMessage(phil.db, userId);
+        return DiscordPromises.sendMessage(phil.bot, userId, message);
     }
 
-    async function setStage(bot : DiscordIOClient, db : Database, userId : string, stage : Stage) {
-        const results = await db.query('UPDATE timezones SET stage = $1 WHERE userid = $2', [stage.stage, userId]);
+    async function setStage(phil : Phil, userId : string, stage : Stage) {
+        const results = await phil.db.query('UPDATE timezones SET stage = $1 WHERE userid = $2', [stage.stage, userId]);
         if (results.rowCount === 0) {
             throw new Error('There were no database records updated when making the database update query call.');
         }
 
-        sendStageMessage(bot, db, userId, stage);
+        sendStageMessage(phil, userId, stage);
     }
 
-    async function setTimezone(bot : DiscordIOClient, db : Database, userId : string, timezoneName : string) {
-        const results = await db.query('UPDATE timezones SET timezone_name = $1 WHERE userid = $2', [timezoneName, userId]);
+    async function setTimezone(phil : Phil, userId : string, timezoneName : string) {
+        const results = await phil.db.query('UPDATE timezones SET timezone_name = $1 WHERE userid = $2', [timezoneName, userId]);
         if (results.rowCount === 0) {
             throw new Error('Could not update the timezone field in the database.');
         }
 
-        setStage(bot, db, userId, Stages.Confirmation);
+        setStage(phil, userId, Stages.Confirmation);
     }
 
     async function canStartQuestionnaire(db : Database, userId : string, manuallyStartedQuestionnaire : boolean) : Promise<boolean> {
@@ -79,10 +80,10 @@ export namespace TimezoneQuestionnaire {
     // Stages
     // =================================================
 
-    interface Stage {
+    export interface Stage {
         readonly stage : QuestionnaireStage;
         getMessage(db : Database, userId : string) : Promise<string>;
-        processInput(bot : DiscordIOClient, db : Database, message : DiscordMessage) : Promise<any>;
+        processInput(phil : Phil, message : IPrivateMessage) : Promise<any>;
     }
 
     class LetsBeginStage implements Stage {
@@ -92,24 +93,24 @@ export namespace TimezoneQuestionnaire {
             return 'Hey! You mentioned some times in your recent message on the server. Would you be willing to tell me what timezone you\'re in so that I can convert them to UTC in the future? Just say `yes` or `no`.';
         }
 
-        async processInput(bot : DiscordIOClient, db : Database, message : DiscordMessage) : Promise<any> {
+        async processInput(phil : Phil, message : IPrivateMessage) : Promise<any> {
             const content = message.content.toLowerCase().trim();
 
             if (content === 'yes') {
-                return setStage(bot, db, message.userId, Stages.Country);
+                return setStage(phil, message.userId, Stages.Country);
             }
 
             if (content === 'no') {
-                const results = await db.query('UPDATE timezones SET will_provide = E\'0\' WHERE userid = $1', [message.userId]);
+                const results = await phil.db.query('UPDATE timezones SET will_provide = E\'0\' WHERE userid = $1', [message.userId]);
                 if (results.rowCount === 0) {
                     throw new Error('Could not update the will_provide field in the database.');
                 }
 
-                setStage(bot, db, message.userId, Stages.Declined);
+                setStage(phil, message.userId, Stages.Declined);
                 return;
             }
 
-            DiscordPromises.sendMessage(bot, message.channelId, 'I didn\'t understand that, sorry. Can you please tell me `yes` or `no` for if you\'d like to fill out the timezone questionnaire?');
+            DiscordPromises.sendMessage(phil.bot, message.channelId, 'I didn\'t understand that, sorry. Can you please tell me `yes` or `no` for if you\'d like to fill out the timezone questionnaire?');
         }
     }
 
@@ -120,26 +121,26 @@ export namespace TimezoneQuestionnaire {
             return 'Alright! Let\'s get started! Can you start by telling me the name of the country you\'re in? I\'ll never display this information publicly in the chat.';
         }
 
-        async processInput(bot : DiscordIOClient, db : Database, message : DiscordMessage) : Promise<any> {
+        async processInput(phil : Phil, message : IPrivateMessage) : Promise<any> {
             const input = message.content.trim().toLowerCase();
             const timezoneData = countryTimezones[input];
 
             if (!timezoneData) {
-                DiscordPromises.sendMessage(bot, message.channelId, 'I\'m not sure what country that was. I can understand a country by a couple of names, but the easiest is the standard English name of the country.');
+                DiscordPromises.sendMessage(phil.bot, message.channelId, 'I\'m not sure what country that was. I can understand a country by a couple of names, but the easiest is the standard English name of the country.');
                 return;
             }
 
             if (timezoneData.timezones.length === 1) {
-                setTimezone(bot, db, message.userId, timezoneData.timezones[0].name);
+                setTimezone(phil, message.userId, timezoneData.timezones[0].name);
                 return;
             }
 
-            const results = await db.query('UPDATE timezones SET country_name = $1 WHERE userid = $2', [input, message.userId]);
+            const results = await phil.db.query('UPDATE timezones SET country_name = $1 WHERE userid = $2', [input, message.userId]);
             if (results.rowCount === 0) {
                 throw new Error('Could not set the country_name field in the database.');
             }
 
-            setStage(bot, db, message.userId, Stages.Specification);
+            setStage(phil, message.userId, Stages.Specification);
         }
     }
 
@@ -151,21 +152,21 @@ export namespace TimezoneQuestionnaire {
             return this.getSpecificationList(timezoneData, 'Okay!');
         }
 
-        async processInput(bot : DiscordIOClient, db : Database, message : DiscordMessage) : Promise<any> {
-            const timezoneData = await this.getTimezoneDataFromCountryDb(db, message.userId);
+        async processInput(phil : Phil, message : IPrivateMessage) : Promise<any> {
+            const timezoneData = await this.getTimezoneDataFromCountryDb(phil.db, message.userId);
             var input = parseInt(message.content);
             if (isNaN(input)) {
                 const reply = this.getSpecificationList(timezoneData, 'Sorry, that wasn\'t actually a number. Can you try again?');
-                return DiscordPromises.sendMessage(bot, message.userId, reply);
+                return DiscordPromises.sendMessage(phil.bot, message.userId, reply);
             }
 
             input = input - 1; // Front-facing, it's one-based
             if (input < 0 || input >= timezoneData.timezones.length) {
                 const reply = this.getSpecificationList(timezoneData, 'That wasn\'t actually a number with a timezone I can understand. Can we try again?');
-                return DiscordPromises.sendMessage(bot, message.userId, reply);
+                return DiscordPromises.sendMessage(phil.bot, message.userId, reply);
             }
 
-            setTimezone(bot, db, message.userId, timezoneData.timezones[input].name);
+            setTimezone(phil, message.userId, timezoneData.timezones[input].name);
         }
 
         private async getTimezoneDataFromCountryDb(db : Database, userId : string) : Promise<TimezoneData> {
@@ -198,24 +199,24 @@ export namespace TimezoneQuestionnaire {
             return this.getConfirmationMessage(db, userId, 'Roger!');
         }
 
-        async processInput(bot : DiscordIOClient, db : Database, message : DiscordMessage) : Promise<any> {
+        async processInput(phil : Phil, message : IPrivateMessage) : Promise<any> {
             const content = message.content.toLowerCase().trim();
 
             if (content === 'yes') {
-                return setStage(bot, db, message.userId, Stages.Finished);
+                return setStage(phil, message.userId, Stages.Finished);
             }
 
             if (content === 'no') {
-                const results = await db.query('UPDATE timezones SET timezone_name = NULL WHERE userid = $1', [message.userId]);
+                const results = await phil.db.query('UPDATE timezones SET timezone_name = NULL WHERE userid = $1', [message.userId]);
                 if (results.rowCount === 0) {
                     throw new Error('Could not reset the timezone name field in the database.');
                 }
 
-                return setStage(bot, db, message.userId, Stages.Country);
+                return setStage(phil, message.userId, Stages.Country);
             }
 
-            const reply = await this.getConfirmationMessage(db, message.userId, 'Hmmmm, that wasn\'t one of the answers.');
-            return DiscordPromises.sendMessage(bot, message.channelId, reply);
+            const reply = await this.getConfirmationMessage(phil.db, message.userId, 'Hmmmm, that wasn\'t one of the answers.');
+            return DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
         }
 
         private async getConfirmationMessage(db : Database, userId : string, messagePrefix : string) : Promise<string> {
@@ -234,10 +235,13 @@ export namespace TimezoneQuestionnaire {
         readonly stage = QuestionnaireStage.Finished;
 
         async getMessage(db : Database, userId : string) : Promise<string> {
-            return 'All done! I\'ve recorded your timezone information! When you mention a date or time in the server again, I\'ll convert it for you! If you ever need to change it, just use `' + process.env.COMMAND_PREFIX + 'timezone` to do so!';
+            const NOWRAP = '';
+            return `All done! I\'ve recorded your timezone information! When you mention a date ${
+                NOWRAP}or time in the server again, I\'ll convert it for you! If you ever need to ${
+                NOWRAP}change it, just start up the questionnaire again to do so!`;
         }
 
-        async processInput(bot : DiscordIOClient, db : Database, message : DiscordMessage) : Promise<any> {
+        async processInput(phil : Phil, message : IPrivateMessage) : Promise<any> {
             throw new Error('There is nothing to process when we\'re finished.');
         }
     }
@@ -246,10 +250,13 @@ export namespace TimezoneQuestionnaire {
         readonly stage = QuestionnaireStage.Declined;
 
         async getMessage(db : Database, userId : string) : Promise<string> {
-            return 'Understood. I\'ve made a note that you don\'t want to provide this information at this time. I won\'t bother you again. If you ever change your mind, feel free to say `' + process.env.COMMAND_PREFIX + 'timezone` to start up again.';
+            const NOWRAP = '';
+            return `Understood. I\'ve made a note that you don\'t want to provide this ${
+                NOWRAP}information at this time. I won\'t bother you again. If you ever change ${
+                NOWRAP}your mind, feel free to start the questionnaire again.`;
         }
 
-        async processInput(bot : DiscordIOClient, db : Database, message : DiscordMessage) : Promise<any> {
+        async processInput(phil : Phil, message : IPrivateMessage) : Promise<any> {
             throw new Error('There is nothing to process when the user has declined the questionnaire.');
         }
     }
@@ -271,19 +278,19 @@ export namespace TimezoneQuestionnaire {
         return (stage > QuestionnaireStage.None && stage < QuestionnaireStage.Finished);
     }
 
-    export async function startQuestionnaire(bot : DiscordIOClient, db : Database, userId : string, manuallyStartedQuestionnaire : boolean) : Promise<boolean> {
-        const canStart = await canStartQuestionnaire(db, userId, manuallyStartedQuestionnaire);
+    export async function startQuestionnaire(phil : Phil, userId : string, manuallyStartedQuestionnaire : boolean) : Promise<boolean> {
+        const canStart = await canStartQuestionnaire(phil.db, userId, manuallyStartedQuestionnaire);
         if (!canStart) {
             return false;
         }
 
-        await db.query('DELETE FROM timezones WHERE userid = $1', [userId]);
+        await phil.db.query('DELETE FROM timezones WHERE userid = $1', [userId]);
 
         const initialStage = (manuallyStartedQuestionnaire ? Stages.Country : Stages.LetsBegin);
-        const username = bot.users[userId].username;
-        await db.query('INSERT INTO timezones(username, userid, stage) VALUES($1, $2, $3)', [username, userId, initialStage.stage]);
+        const username = phil.bot.users[userId].username;
+        await phil.db.query('INSERT INTO timezones(username, userid, stage) VALUES($1, $2, $3)', [username, userId, initialStage.stage]);
 
-        await sendStageMessage(bot, db, userId, initialStage);
+        await sendStageMessage(phil, userId, initialStage);
         return true;
     }
 

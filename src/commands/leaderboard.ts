@@ -1,13 +1,12 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
+import { IPublicMessage } from 'phil';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
-import { LeaderboardEntry, Leaderboard } from '../phil/prompts';
+import { LeaderboardEntry, Leaderboard } from '../phil/prompts/leaderboard';
 
 const RANKING_EMOJI : { [rank : number] : string } = {
     1: ':first_place:',
@@ -78,17 +77,17 @@ export class LeaderboardCommand implements Command {
 
     readonly versionAdded = 11;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        const leaderboard = await Leaderboard.getLeaderboard(bot, db, message.server);
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+        const leaderboard = await Leaderboard.getLeaderboard(phil.bot, phil.db, message.server);
         const reply = createLeaderboardMessage(leaderboard);
 
-        DiscordPromises.sendEmbedMessage(bot, message.channelId, {
+        DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
             color: 0xB0E0E6,
             title: 'Hijack Prompt of the Day Leaderboard',
             description: reply,
             footer: {
-                text: 'You can increase your score by submitting prompts! Use ' + process.env.COMMAND_PREFIX + 'suggest in a direct message with me!'
+                text: 'You can increase your score by submitting prompts! Use ' + message.serverConfig.commandPrefix + 'suggest in a direct message with me!'
             }
         });
     }

@@ -1,14 +1,13 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
+import { IPublicMessage } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { Features } from '../phil/features';
 import { Bucket } from '../phil/buckets';
-import { Prompt } from '../phil/prompts';
+import { Prompt } from '../phil/prompts/prompt';
 
 export class PromptCommand implements Command {
     readonly name = 'prompt';
@@ -20,18 +19,18 @@ export class PromptCommand implements Command {
 
     readonly versionAdded = 3;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        const bucket = await Bucket.getFromChannelId(bot, db, message.channelId);
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+        const bucket = await Bucket.getFromChannelId(phil.bot, phil.db, message.channelId);
         if (!bucket) {
             throw new Error('This channel is not configured to work with prompts.');
         }
 
-        const prompt = await Prompt.getCurrentPrompt(bot, db, bucket);
+        const prompt = await Prompt.getCurrentPrompt(phil, bucket);
         if (!prompt) {
-            throw new Error('There\'s no prompt right now. That probably means that I\'m out of them! Why don\'t you suggest more by sending me `' + process.env.COMMAND_PREFIX + 'suggest` and including your prompt?');
+            throw new Error('There\'s no prompt right now. That probably means that I\'m out of them! Why don\'t you suggest more by sending me `' + message.serverConfig.commandPrefix + 'suggest` and including your prompt?');
         }
 
-        prompt.sendToChannel(bot, message.channelId, bucket, prompt.promptNumber);
+        prompt.sendToChannel(phil, message.serverConfig, message.channelId, bucket, prompt.promptNumber);
     }
 };

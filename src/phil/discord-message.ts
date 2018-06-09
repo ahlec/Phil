@@ -1,39 +1,17 @@
-'use strict';
-
-const assert = require('assert');
-
-import { Server as DiscordIOServer } from 'discord.io';
+import { Phil } from './phil';
+import { IMention, IMessage, IPublicMessage, IPrivateMessage, IServerConfig } from 'phil';
+import { Server as DiscordIOServer, User as DiscordIOUser } from 'discord.io';
 import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
 
-function getServer(bot : any, channelId : string) : DiscordIOServer {
-    if (!bot.channels[channelId]) {
-        return null;
-    }
-
-    const serverId = bot.channels[channelId].guild_id;
-    if (!bot.servers[serverId]) {
-        return null;
-    }
-
-    return bot.servers[serverId];
-}
-
-export class DiscordMessageMention {
-    constructor(public userId : string, public user : string, public userDiscriminator : string) {
-    }
-};
-
-export class DiscordMessage {
+abstract class MessageBase implements IMessage {
     public readonly id : string;
     public readonly channelId : string;
-    public readonly user : string;
+    public readonly user : DiscordIOUser;
     public readonly userId : string;
     public readonly content : string;
-    public readonly isDirectMessage : boolean;
-    public readonly mentions : DiscordMessageMention[];
-    public readonly server : DiscordIOServer;
+    public readonly mentions : IMention[];
 
-    constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>, bot : any) {
+    constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>, phil : Phil) {
         this.mentions = [];
         for (let mention of event.d.mentions) {
             this.mentions.push({
@@ -45,10 +23,38 @@ export class DiscordMessage {
 
         this.id = event.d.id;
         this.channelId = event.d.channel_id;
-        this.user = event.d.author.username;
         this.userId = event.d.author.id;
+        this.user = phil.bot.users[this.userId];
         this.content = event.d.content;
-        this.isDirectMessage = (event.d.channel_id in bot.directMessages);
-        this.server = getServer(bot, event.d.channel_id);
     }
-};
+}
+
+class PrivateMessage extends MessageBase implements IPrivateMessage {
+    constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>, phil : Phil) {
+        super(event, phil);
+    }
+}
+
+class PublicMessage extends MessageBase implements IPublicMessage {
+    readonly server : DiscordIOServer;
+
+    constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>,
+        phil : Phil,
+        public readonly serverConfig : IServerConfig) {
+        super(event, phil);
+        this.server = this.serverConfig.server;
+    }
+}
+
+export namespace Message {
+    export async function parse(phil : Phil, event : OfficialDiscordPayload<OfficialDiscordMessage>) : Promise<IMessage> {
+        const isDirectMessage = (event.d.channel_id in phil.bot.directMessages);
+        if (isDirectMessage) {
+            return new PrivateMessage(event, phil);
+        }
+
+        const server = phil.getServerFromChannelId(event.d.channel_id);
+        const serverConfig = await phil.serverDirectory.getServerConfig(server);
+        return new PublicMessage(event, phil, serverConfig);
+    }
+}

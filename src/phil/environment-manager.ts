@@ -15,24 +15,6 @@ function assertCustomEmoji(variableName : string) {
 }
 
 export function ensureNecessaryEnvironmentVariables() {
-    assertVariableExists('DISCORD_BOT_TOKEN');
-    assertVariableExists('PORT');
-    assertVariableExists('COMMAND_PREFIX');
-    assert.ok(process.env.COMMAND_PREFIX.toLowerCase() === process.env.COMMAND_PREFIX); // Prefix must be lowercase!!
-    assertVariableExists('DATABASE_URL');
-    assertVariableExists('INTRODUCTIONS_CHANNEL_ID');
-    assertVariableExists('ADMIN_CHANNEL_ID');
-    assertVariableExists('HIJACK_CHANNEL_ID');
-    assertVariableExists('NEWS_CHANNEL_ID');
-    assertVariableExists('BOT_CONTROL_CHANNEL_ID');
-    assertVariableExists('WELCOME_RULES_CHANNEL_ID');
-    assertVariableExists('ADMIN_ROLE_ID');
-    assertVariableExists('YOUTUBE_API_KEY');
-    assertVariableExists('BOT_MANAGER_USERNAME');
-    assertVariableExists('HE_PRONOUNS_ROLE_ID');
-    assertVariableExists('SHE_PRONOUNS_ROLE_ID');
-    assertVariableExists('THEY_PRONOUNS_ROLE_ID');
-    assertVariableExists('HIJACK_FANDOM_GOOGLE_MAP_LINK');
     assertCustomEmoji('CUSTOM_EMOJI_PEEK');
     assertCustomEmoji('CUSTOM_EMOJI_TRANSPARENT');
 }

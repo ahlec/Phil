@@ -14,7 +14,8 @@
             "official-discord",
             "chrono-node",
             "moment",
-            "moment-timezone"
+            "moment-timezone",
+            "phil"
         ],
         "typeRoots": ["node_modules/@types", "./types"]
     },

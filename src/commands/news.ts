@@ -1,10 +1,9 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
+import { IPublicMessage } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { Feature } from '../phil/features';
 import { DiscordPromises } from '../promises/discord';
@@ -19,18 +18,18 @@ export class NewsCommand implements Command {
 
     readonly versionAdded = 11;
 
-    readonly publicRequiresAdmin = true;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        const echoedMessage = this.getEchoedStatementFromCommandArgs(commandArgs);
-        DiscordPromises.sendMessage(bot, process.env.NEWS_CHANNEL_ID, echoedMessage);
+    readonly isAdminCommand = true;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+        const echoedMessage = this.getEchoedStatementFromCommandArgs(message, commandArgs);
+        DiscordPromises.sendMessage(phil.bot, message.serverConfig.newsChannel.id, echoedMessage);
     }
 
-    private getEchoedStatementFromCommandArgs(commandArgs : string[]) {
+    private getEchoedStatementFromCommandArgs(message : IPublicMessage, commandArgs : string[]) {
         var echoedMessage = commandArgs.join(' ').trim();
         echoedMessage = echoedMessage.replace(/`/g, '');
 
         if (echoedMessage.length === 0) {
-            throw new Error('You must provide a message to this function that you would like Phil to repeat in #news. For instance, `' + process.env.COMMAND_PREFIX + 'news A New Guardian has been Chosen!`');
+            throw new Error('You must provide a message to this function that you would like Phil to repeat in #news. For instance, `' + message.serverConfig.commandPrefix + 'news A New Guardian has been Chosen!`');
         }
 
         return echoedMessage;

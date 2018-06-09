@@ -1,9 +1,10 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
+import { Server as DiscordIOServer } from 'discord.io';
+import { IPublicMessage, IServerConfig } from 'phil';
 import { Database } from '../phil/database';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
@@ -23,15 +24,15 @@ export class CalendarCommand implements Command {
 
     readonly versionAdded = 6;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        const month = this.determineMonth(commandArgs);
-        const calendar = await CalendarMonth.getForMonth(bot, db, message.server, month);
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+        const month = this.determineMonth(message.serverConfig, commandArgs);
+        const calendar = await CalendarMonth.getForMonth(phil.bot, phil.db, message.server, month);
         const builder = this.composeMessageFromCalendar(message.server, calendar);
-        return DiscordPromises.sendMessageBuilder(bot, message.channelId, builder);
+        return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, builder);
     }
 
-    private determineMonth(commandArgs : string[]) : number {
+    private determineMonth(serverConfig : IServerConfig, commandArgs : string[]) : number {
         const input = commandArgs.join(' ').trim();
         if (input === '') {
             const now = new Date();
@@ -40,7 +41,7 @@ export class CalendarCommand implements Command {
 
         const inputDate = chronoNode.parseDate(input);
         if (inputDate === null) {
-            throw new Error('I couldn\'t understand what month you were trying to get the calendar for. Please try requesting `' + process.env.COMMAND_PREFIX + 'calendar` or `' + process.env.COMMAND_PREFIX + 'calendar december` to target a month that isn\'t this month.');
+            throw new Error('I couldn\'t understand what month you were trying to get the calendar for. Please try requesting `' + serverConfig.commandPrefix + 'calendar` or `' + serverConfig.commandPrefix + 'calendar december` to target a month that isn\'t this month.');
         }
 
         return inputDate.getUTCMonth() + 1;

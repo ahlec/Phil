@@ -1,10 +1,10 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
 import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
+import { IPublicMessage } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { Feature, FeatureUtils } from '../phil/features';
 
@@ -18,8 +18,8 @@ export class DisableCommand implements Command {
 
     readonly versionAdded = 9;
 
-    readonly publicRequiresAdmin = true;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    readonly isAdminCommand = true;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         if (commandArgs.length < 1) {
             throw new Error('This function requires specifying the name of the feature that you wish disabled.');
         }
@@ -30,12 +30,12 @@ export class DisableCommand implements Command {
             throw new Error(errorMessage);
         }
 
-        await feature.setIsEnabled(db, message.server.id, false);
+        await feature.setIsEnabled(phil.db, message.server.id, false);
 
         await BotUtils.sendSuccessMessage({
-            bot: bot,
+            bot: phil.bot,
             channelId: message.channelId,
-            message: 'The **' + feature.displayName + '** feature is now disabled. You can enable this feature by using `' + process.env.COMMAND_PREFIX + 'enable`.'
+            message: 'The **' + feature.displayName + '** feature is now disabled. You can enable this feature by using `' + message.serverConfig.commandPrefix + 'enable`.'
         });
     }
 };

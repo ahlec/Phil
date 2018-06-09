@@ -1,10 +1,10 @@
 'use strict';
 
 import { Command } from './@types';
-import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
+import { Phil } from '../phil/phil';
 import { Database } from '../phil/database';
+import { HelpGroup } from '../phil/help-groups';
+import { IPublicMessage, IServerConfig } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import { Feature } from '../phil/features';
@@ -22,29 +22,25 @@ export class BirthdayCommand implements Command {
 
     readonly versionAdded = 5;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        const birthday = this.getInputFromCommandArgs(commandArgs);
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+        const birthday = this.getInputFromCommandArgs(message.serverConfig, commandArgs);
 
-        await this.setBirthdayInDatabase(db, message.user, message.userId, birthday);
+        await this.setBirthdayInDatabase(phil.db, message.user.username, message.userId, birthday);
 
-        const reply = 'I\'ve updated your birthday to be ' + birthday.format('D MMMM') + '! Thank you! If I made a mistake, however, feel free to tell me your birthday again!';
+        const reply = 'I\'ve updated your birthday to be ' + birthday.format('D MMMM') +
+            '! Thank you! If I made a mistake, however, feel free to tell me your birthday again!';
         BotUtils.sendSuccessMessage({
-            bot: bot,
+            bot: phil.bot,
             channelId: message.channelId,
             message: reply
         });
     }
 
-    readonly privateRequiresAdmin = false;
-    processPrivateMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        return this.processPublicMessage(bot, message, commandArgs, db);
-    }
-
-    getInputFromCommandArgs(commandArgs : string[]) : Moment {
+    getInputFromCommandArgs(serverConfig : IServerConfig, commandArgs : string[]) : Moment {
         const birthdayInput = commandArgs.join(' ').trim();
         if (birthdayInput.length === 0) {
-            throw new Error('Please tell me what your birthday is, like `' + process.env.COMMAND_PREFIX + 'birthday 05 December`.');
+            throw new Error('Please tell me what your birthday is, like `' + serverConfig.commandPrefix + 'birthday 05 December`.');
         }
 
         const birthday = chronoNode.parseDate(birthdayInput);
@@ -55,7 +51,7 @@ export class BirthdayCommand implements Command {
         return momentModuleFunc(birthday);
     }
 
-    async setBirthdayInDatabase(db : Database, user : string, userId : string, birthday : Moment) {
+    async setBirthdayInDatabase(db : Database, username : string, userId : string, birthday : Moment) {
         const day = birthday.date();
         const month = birthday.month() + 1;
 
@@ -68,7 +64,7 @@ export class BirthdayCommand implements Command {
 
         const insertResults = await db.query(`INSERT INTO
             birthdays(username, userid, birthday_day, birthday_month)
-            VALUES($1, $2, $3, $4)`, [user, userId, day, month]);
+            VALUES($1, $2, $3, $4)`, [username, userId, day, month]);
         if (insertResults.rowCount >= 1) {
             return;
         }

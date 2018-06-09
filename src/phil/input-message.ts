@@ -1,4 +1,4 @@
-'use strict';
+import { IServerConfig } from 'phil';
 
 export class InputMessage {
     private readonly _commandName : string;
@@ -9,7 +9,7 @@ export class InputMessage {
         this._commandArgs = commandArgs;
     }
 
-    static parseFromMessage(message : string) : InputMessage {
+    static parseFromMessage(serverConfig : IServerConfig, message : string) : InputMessage {
         if (message === undefined || message === '') {
             return null;
         }
@@ -20,11 +20,11 @@ export class InputMessage {
         }
 
         const prompt = words[0].toLowerCase();
-        if (!prompt.startsWith(process.env.COMMAND_PREFIX)) {
+        if (!prompt.startsWith(serverConfig.commandPrefix)) {
             return null;
         }
 
-        const commandName = prompt.substr(process.env.COMMAND_PREFIX.length);
+        const commandName = prompt.substr(serverConfig.commandPrefix.length);
         return new InputMessage(commandName, words.slice(1));
     }
 

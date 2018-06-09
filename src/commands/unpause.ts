@@ -1,10 +1,9 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
+import { IPublicMessage } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
@@ -20,12 +19,12 @@ export class UnpauseCommand implements Command {
 
     readonly versionAdded = 11;
 
-    readonly publicRequiresAdmin = true;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        const bucket = await Bucket.retrieveFromCommandArgs(bot, db, commandArgs, message.server, 'bucket', true);
-        await bucket.setIsPaused(db, false);
+    readonly isAdminCommand = true;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+        const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'bucket', true);
+        await bucket.setIsPaused(phil.db, false);
 
-        const reply = '**' + bucket.displayName + '** (' + bucket.handle + ') has been unpaused. You can pause it once more by using `' + process.env.COMMAND_PREFIX + 'pause ' + bucket.handle + '`.';
-        DiscordPromises.sendMessage(bot, message.channelId, reply);
+        const reply = '**' + bucket.displayName + '** (' + bucket.handle + ') has been unpaused. You can pause it once more by using `' + message.serverConfig.commandPrefix + 'pause ' + bucket.handle + '`.';
+        DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
     }
 };

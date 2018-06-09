@@ -1,25 +1,33 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
+import { IPublicMessage } from 'phil';
 import { DiscordPromises } from '../promises/discord';
-import { Feature } from '../phil/features';
+import { Features } from '../phil/features';
+import { BotUtils } from '../phil/utils';
 
 export class MapCommand implements Command {
     readonly name = 'map';
     readonly aliases : string[] = [];
-    readonly feature : Feature = null;
+    readonly feature = Features.FandomMap;
 
     readonly helpGroup = HelpGroup.General;
     readonly helpDescription = 'Has Phil provide a link to the editable map of the fandom.';
 
     readonly versionAdded = 8;
 
-    readonly publicRequiresAdmin = false;
-    processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
-        return DiscordPromises.sendMessage(bot, message.channelId, process.env.HIJACK_FANDOM_GOOGLE_MAP_LINK);
+    readonly isAdminCommand = false;
+    processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+        if (!message.serverConfig.fandomMapLink) {
+            return BotUtils.sendErrorMessage({
+                bot: phil.bot,
+                channelId: message.channelId,
+                message: 'This server has not provided a link to a shared map of the fandom.'
+            });
+        }
+
+        return DiscordPromises.sendMessage(phil.bot, message.channelId, message.serverConfig.fandomMapLink);
     }
 };

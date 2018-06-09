@@ -1,10 +1,9 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
+import { IPublicMessage } from 'phil';
 import { DiscordPromises } from '../promises/discord';
 import { Feature } from '../phil/features';
 import { YouTubePromises } from '../promises/youtube';
@@ -19,19 +18,19 @@ export class YoutubeCommand implements Command {
 
     readonly versionAdded = 4;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const query = commandArgs.join(' ').trim();
         if (query.length === 0) {
             throw new Error('You must provide some text to tell me what to search for.');
         }
 
-        const results = await YouTubePromises.search(query);
+        const results = await YouTubePromises.search(phil.globalConfig, query);
         if (results.length === 0 || !results[0].id) {
             throw new Error('There were no results on YouTube for you search.');
         }
 
         const link = 'https://youtu.be/' + results[0].id;
-        DiscordPromises.sendMessage(bot, message.channelId, link);
+        DiscordPromises.sendMessage(phil.bot, message.channelId, link);
     }
 };

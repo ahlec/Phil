@@ -1,10 +1,9 @@
 'use strict';
 
 import { Command } from './@types';
+import { Phil } from '../phil/phil';
 import { HelpGroup } from '../phil/help-groups';
-import { Client as DiscordIOClient } from 'discord.io';
-import { DiscordMessage } from '../phil/discord-message';
-import { Database } from '../phil/database';
+import { IPublicMessage } from 'phil';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import { Features } from '../phil/features';
@@ -26,25 +25,25 @@ export class UtcCommand implements Command {
 
     readonly versionAdded = 10;
 
-    readonly publicRequiresAdmin = false;
-    async processPublicMessage(bot : DiscordIOClient, message : DiscordMessage, commandArgs : string[], db : Database) : Promise<any> {
+    readonly isAdminCommand = false;
+    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
         const inputTime = this.getTimeFromCommandArgs(commandArgs);
         if (!inputTime) {
-            throw new Error('You must provide a time to this command so that I know what to convert to UTC. You can try using `' + process.env.COMMAND_PREFIX + 'utc 5pm` or `' + process.env.COMMAND_PREFIX + 'utc tomorrow at 11:30` to try it out.');
+            throw new Error('You must provide a time to this command so that I know what to convert to UTC. You can try using `' + message.serverConfig.commandPrefix + 'utc 5pm` or `' + message.serverConfig.commandPrefix + 'utc tomorrow at 11:30` to try it out.');
         }
 
-        const timezone = await UserTimezone.getForUser(db, message.userId);
+        const timezone = await UserTimezone.getForUser(phil.db, message.userId);
         if (!timezone || !timezone.hasProvided) {
-            throw new Error('In order to use this command, you must first provide your timezone to me so I know how to convert your local time. You can use `' + process.env.COMMAND_PREFIX + 'timezone` to start that process.');
+            throw new Error('In order to use this command, you must first provide your timezone to me so I know how to convert your local time. You can use `' + message.serverConfig.commandPrefix + 'timezone` to start that process.');
         }
 
         const reply = this.createReply(inputTime, timezone);
-        return DiscordPromises.sendEmbedMessage(bot, message.channelId, {
+        return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
             color: 0x7A378B,
             title: 'Timezone Conversion',
             description: reply,
             footer: {
-                text: 'Converted from user\'s local timezone to UTC. If the time provided is incorrect, your timezone might need to be updated. Use ' + process.env.COMMAND_PREFIX + 'timezone to change/set.'
+                text: 'Converted from user\'s local timezone to UTC. If the time provided is incorrect, your timezone might need to be updated. Use ' + message.serverConfig.commandPrefix + 'timezone to change/set.'
             }
         });
     }

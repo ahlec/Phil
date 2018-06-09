@@ -1,44 +1,68 @@
 'use strict';
 
 const assert = require('assert');
-import { Client as DiscordIOClient, Member as DiscordIOMember } from 'discord.io';
+import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer } from 'discord.io';
+import { IMessage, IPublicMessage, IPrivateMessage } from 'phil';
 import { CommandRunner } from './command-runner';
 import { ChronoManager } from './chrono-manager';
-import { AnalyzerManager } from './analyzer-manager';
+import { DirectMessageDispatcher } from './direct-message-dispatcher';
+import { ReactableProcessor } from './reactables/processor';
 import { greetNewMember } from './greeting';
-import { DiscordMessage } from './discord-message';
+import { Message } from './discord-message';
 import { Database } from './database';
-import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
+import { OfficialDiscordMessage, OfficialDiscordPayload, OfficialDiscordReactionEvent } from 'official-discord';
 import { BotUtils } from './utils';
+import { ServerDirectory } from './server-directory';
+import { GlobalConfig } from './global-config';
 
 function ignoreDiscordCode(code : number) {
     return (code === 1000); // General disconnect code
 }
 
+function isPublicMessage(object : any) : object is IPublicMessage {
+    return 'serverConfig' in object;
+}
+
 export class Phil {
-    private readonly _db : Database;
-    private readonly _bot : DiscordIOClient;
+    readonly bot : DiscordIOClient;
+    readonly serverDirectory : ServerDirectory;
     private readonly _commandRunner : CommandRunner;
     private readonly _chronoManager : ChronoManager;
-    private readonly _analyzerManager : AnalyzerManager;
+    private readonly _directMessageDispatcher : DirectMessageDispatcher;
+    private readonly _reactableProcessor : ReactableProcessor;
     private _shouldSendDisconnectedMessage : boolean;
 
-    constructor(db: Database) {
-        this._db = db;
-
-        this._bot = new DiscordIOClient({ token: process.env.DISCORD_BOT_TOKEN, autorun: true });
-        this._commandRunner = new CommandRunner(this._bot, this._db);
-        this._chronoManager = new ChronoManager(this._bot, this._db);
-        this._analyzerManager = new AnalyzerManager(this._bot, this._db);
+    constructor(public readonly db: Database, public readonly globalConfig : GlobalConfig) {
+        this.bot = new DiscordIOClient({ token: globalConfig.discordBotToken, autorun: true });
+        this.serverDirectory = new ServerDirectory(this);
+        this._commandRunner = new CommandRunner(this, this.bot, this.db);
+        this._chronoManager = new ChronoManager(this, this.serverDirectory);
+        this._directMessageDispatcher = new DirectMessageDispatcher(this);
+        this._reactableProcessor = new ReactableProcessor(this);
     }
 
-    public start() {
+    start() {
         this._shouldSendDisconnectedMessage = false;
 
-        this._bot.on('ready', this._onReady.bind(this));
-        this._bot.on('message', this._onMessage.bind(this));
-        this._bot.on('disconnect', this._onDisconnect.bind(this));
-        this._bot.on('guildMemberAdd', this._onMemberAdd.bind(this));
+        this.bot.on('ready', this._onReady.bind(this));
+        this.bot.on('message', this._onMessage.bind(this));
+        this.bot.on('disconnect', this._onDisconnect.bind(this));
+        this.bot.on('guildMemberAdd', this.onMemberAdd.bind(this));
+        this.bot.on('any', this._onRawWebSocketEvent.bind(this));
+    }
+
+    getServerFromChannelId(channelId : string) : DiscordIOServer | null {
+        if (!this.bot.channels[channelId]) {
+            return null;
+        }
+
+        const serverId = this.bot.channels[channelId].guild_id;
+        const server = this.bot.servers[serverId];
+        if (!server) {
+            return null;
+        }
+
+        return server;
     }
 
     private _reportStartupError(err : Error) {
@@ -48,51 +72,53 @@ export class Phil {
     }
 
     private _onReady() {
-        console.log('Logged in as %s - %s\n', this._bot.username, this._bot.id);
+        console.log('Logged in as %s - %s\n', this.bot.username, this.bot.id);
 
         this._chronoManager.start();
 
         if (this._shouldSendDisconnectedMessage) {
             BotUtils.sendErrorMessage({
-                bot: this._bot,
-                channelId: process.env.BOT_COMMAND_CHANNEL_ID,
-                message: 'Encountered an unexpected shutdown, @' + process.env.BOT_MANAGER_USERNAME + '. The logs should be in Heroku. I\'ve recovered though and connected again.'
+                bot: this.bot,
+                channelId: this.globalConfig.botManagerUserId,
+                message: 'I experienced an unexpected shutdown. The logs should be in Heroku. I\'ve recovered and connected again.'
             });
             this._shouldSendDisconnectedMessage = false;
         }
     }
 
-    private _onMessage(user : string, userId : string, channelId : string, msg : string, event : OfficialDiscordPayload<OfficialDiscordMessage>) {
-        const message = new DiscordMessage(event, this._bot);
+    private async _onMessage(user : string, userId : string, channelId : string, msg : string, event : OfficialDiscordPayload<OfficialDiscordMessage>) {
+        const message = await Message.parse(this, event);
 
-        if (this._isOwnMessage(message)) {
+        if (this.isMessageFromPhil(message)) {
             this._handleOwnMessage(event);
             return;
         }
 
-        if (this._shouldIgnoreMessage(message)) {
+        if (this.shouldIgnoreMessage(message)) {
             return;
         }
 
-        if (this._chronoManager) {
-            this._chronoManager.recordNewMessageInChannel(channelId);
-        }
+        if (isPublicMessage(message)) {
+            if (this._chronoManager) {
+                this._chronoManager.recordNewMessageInChannel(channelId);
+            }
 
-        if (this._commandRunner.isCommand(message)) {
-            this._commandRunner.runMessage(message);
+            if (this._commandRunner.isCommand(message)) {
+                this._commandRunner.runMessage(message);
+            }
         } else {
-            this._analyzerManager.analyzeMessage(message);
+            this._directMessageDispatcher.process(message);
+            return;
         }
     }
 
-    private _isOwnMessage(message : DiscordMessage) : boolean {
-        return (message.userId === this._bot.id);
+    private isMessageFromPhil(message : IMessage) : boolean {
+        return (message.userId === this.bot.id);
     }
 
-    private _shouldIgnoreMessage(message : DiscordMessage) : boolean {
-        const user = this._bot.users[message.userId];
+    private shouldIgnoreMessage(message : IMessage) : boolean {
+        const user = this.bot.users[message.userId];
         if (!user) {
-            console.log('yes');
             return true;
         }
 
@@ -112,7 +138,7 @@ export class Phil {
         // I dislike those messages that say 'Phil has pinned a message to this channel.'
         // So Phil is going to delete his own when he encounters them.
         console.log('Phil posted an empty message (id %s) to channel %s. deleting.', event.d.id, event.d.channel_id);
-        this._bot.deleteMessage({
+        this.bot.deleteMessage({
             channelID: event.d.channel_id,
             messageID: event.d.id
         });
@@ -126,11 +152,22 @@ export class Phil {
         }
         console.error('Reconnecting now...');
         this._shouldSendDisconnectedMessage = !ignoreDiscordCode(code);
-        this._bot.connect();
+        this.bot.connect();
     }
 
-    private _onMemberAdd(member : DiscordIOMember) {
+    private async onMemberAdd(member : DiscordIOMember, event : any) {
         console.log('A new member has joined the server.');
-        greetNewMember(this._bot, member);
+        const serverId = (member as any).guild_id; // special field for this event
+        const server = this.bot.servers[serverId];
+        assert(server);
+
+        const serverConfig = await this.serverDirectory.getServerConfig(server);
+        await greetNewMember(this, serverConfig, member);
+    }
+
+    private _onRawWebSocketEvent(event : OfficialDiscordPayload<any>) {
+        if (event.t === 'MESSAGE_REACTION_ADD') {
+            this._reactableProcessor.processReactionAdded(event.d as OfficialDiscordReactionEvent);
+        }
     }
 };

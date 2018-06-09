@@ -4,65 +4,10 @@ const url = require('url');
 const http = require('http');
 const https = require('https');
 
-import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer, Role as DiscordIORole } from 'discord.io';
+import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer, Role as DiscordIORole, User as DiscordIOUser } from 'discord.io';
 import { DiscordPromises } from '../promises/discord';
 
-// -------------------------------- PRONOUNS
-export enum Pronoun {
-    He = 0,
-    She = 1,
-    They = 2
-};
-
-export enum PronounCase {
-    He = 0,
-    Him = 1,
-    His = 2
-};
-
-const HE_PRONOUNS = {
-    [PronounCase.He]: 'he',
-    [PronounCase.Him]: 'him',
-    [PronounCase.His]: 'his'
-};
-
-const SHE_PRONOUNS = {
-    [PronounCase.He]: 'she',
-    [PronounCase.Him]: 'her',
-    [PronounCase.His]: 'hers'
-};
-
-const THEY_PRONOUNS = {
-    [PronounCase.He]: 'they',
-    [PronounCase.Him]: 'them',
-    [PronounCase.His]: 'theirs'
-};
-
-const PRONOUN_ARRAYS = {
-    [Pronoun.He]: HE_PRONOUNS,
-    [Pronoun.She]: SHE_PRONOUNS,
-    [Pronoun.They]: THEY_PRONOUNS
-};
-
-const PRONOUNS_FROM_ROLE_ID = {
-    [process.env.HE_PRONOUNS_ROLE_ID]: Pronoun.He,
-    [process.env.SHE_PRONOUNS_ROLE_ID]: Pronoun.She,
-    [process.env.THEY_PRONOUNS_ROLE_ID]: Pronoun.They
-};
-
 // ------------------------------------------ INTERNAL FUNCTIONS
-
-function doesRoleHavePermission(role : DiscordIORole, permission : number) : boolean {
-    // TODO: Return to this function and determine if it's actually working?
-    var binary = (role.permissions >>> 0).toString(2).split('');
-    for (let strBit of binary) {
-        let bit = parseInt(strBit);
-        if (bit === permission) {
-            return true;
-        }
-    }
-    return false;
-}
 
 interface SendErrorMessageOpts {
     readonly bot : DiscordIOClient;
@@ -110,27 +55,6 @@ export class BotUtils {
         return false;
     }
 
-    static isMemberAnAdminOnServer(member : DiscordIOMember, server : DiscordIOServer) : boolean {
-        for (let memberRoleId of member.roles) {
-            if (memberRoleId === process.env.ADMIN_ROLE_ID) {
-                return true;
-            }
-
-            let role = server.roles[memberRoleId];
-            if (doesRoleHavePermission(role, discord.Permissions.GENERAL_ADMINISTRATOR)) {
-                return true;
-            }
-        }
-
-        // Check @everyone role
-        if (doesRoleHavePermission(server.roles[server.id], discord.Permissions.GENERAL_ADMINISTRATOR)) {
-            return true;
-        }
-
-        // The owner of the server is also an admin
-        return (server.owner_id === member.id);
-    }
-
     static toStringDiscordError(err : any) : string {
         if (err.response) {
             return '[Code ' + err.response.code + ': ' + err.response.message + ']';
@@ -139,7 +63,7 @@ export class BotUtils {
         return err.toString();
     }
 
-    static getRandomArrayEntry<T>(arr : T[]) : T {
+    static getRandomArrayEntry<T>(arr : ReadonlyArray<T>) : T {
         const randomIndex = Math.floor(Math.random() * arr.length);
         return arr[randomIndex];
     }
@@ -148,39 +72,9 @@ export class BotUtils {
         return /^#[0-9A-F]{6}$/i.test(input);
     }
 
-    static isHexColorRole(server : DiscordIOServer, roleId : string) : boolean {
-        const role = server.roles[roleId];
+    static isHexColorRole(role : DiscordIORole) : boolean {
         const isHex = BotUtils.isValidHexColor(role.name);
         return isHex;
-    }
-
-    static getPronounForUser(bot : DiscordIOClient, server : DiscordIOServer, userId : string) : Pronoun {
-        const member = server.members[userId];
-        const pronounsOfUser : Pronoun[] = [];
-
-        for (let memberRoleId of member.roles) {
-            let pronoun = PRONOUNS_FROM_ROLE_ID[memberRoleId];
-            if (pronoun) {
-                pronounsOfUser.push(pronoun);
-            }
-        }
-
-        if (pronounsOfUser.length === 0) {
-            return Pronoun.They;
-        }
-
-        if (pronounsOfUser.length === 1) {
-            return pronounsOfUser[0];
-        }
-
-        // For right now, we'll go with 'They'.
-        return Pronoun.They;
-    }
-
-    static getPronounOfCase(pronoun : Pronoun, pronounCase : PronounCase) : string {
-        const pronounArray = PRONOUN_ARRAYS[pronoun];
-        const pronounStr = pronounArray[pronounCase];
-        return pronounStr;
     }
 
     static isPromise(obj : any) : boolean {
@@ -202,10 +96,6 @@ export class BotUtils {
         }
 
         return (numInput.toString(10) === input);
-    }
-
-    static isAdminChannel(channelId : string) : boolean {
-        return (channelId === process.env.BOT_CONTROL_CHANNEL_ID || channelId === process.env.ADMIN_CHANNEL_ID);
     }
 
     static isSameDay(dateA : Date, dateB : Date) : boolean {
@@ -237,18 +127,13 @@ export class BotUtils {
         return str;
     }
 
-    static getUserDisplayName(bot : DiscordIOClient, serverId : string, userId : string) : string {
-        const server = bot.servers[serverId];
-        assert(server);
-
-        const user = bot.users[userId];
-        const member = server.members[userId];
-
-        if (!user || !member) {
+    static getUserDisplayName(user : DiscordIOUser, server : DiscordIOServer) : string {
+        if (!user) {
             return null;
         }
 
-        if (member.nick) {
+        const member = server.members[user.id];
+        if (member && member.nick && member.nick.length > 0) {
             return member.nick;
         }
 

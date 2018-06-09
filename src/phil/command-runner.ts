@@ -1,42 +1,34 @@
 'use strict';
 
 import { Client } from 'discord.io';
+import { IPublicMessage } from 'phil';
 import { Database } from './database';
-import { DiscordMessage } from './discord-message';
 import { InputMessage } from './input-message';
-import { Command, CommandProcessFunction } from '../commands/@types';
+import { Command } from '../commands/@types';
 import { CommandLookup } from '../commands/index';
+import { Phil } from './phil';
 import { BotUtils } from './utils';
 import { Feature } from './features';
 
 const util = require('util');
 
-class CommandRunData {
-    requiresAdmin : boolean;
-    func : CommandProcessFunction;
-    incorrectChannelMessage : string;
-}
-
 export class CommandRunner {
-    private readonly _bot : Client;
-    private readonly _db : Database;
-
-    constructor(bot : Client, db : Database) {
-        this._bot = bot;
-        this._db = db;
+    constructor(private readonly phil : Phil,
+        private readonly bot : Client,
+        private readonly db : Database) {
     }
 
-    public isCommand(message : DiscordMessage) : boolean {
-        const input = InputMessage.parseFromMessage(message.content);
+    public isCommand(message : IPublicMessage) : boolean {
+        const input = InputMessage.parseFromMessage(message.serverConfig, message.content);
         return (input !== null);
     }
 
-    public async runMessage(message : DiscordMessage) {
-        const input = InputMessage.parseFromMessage(message.content);
+    public async runMessage(message : IPublicMessage) {
+        const input = InputMessage.parseFromMessage(message.serverConfig, message.content);
         if (input === null) {
             return;
         }
-        this._logInputReceived(message, input);
+        this.logInputReceived(message, input);
 
         const command = this._getCommandFromInputMessage(input);
         if (command === null) {
@@ -45,30 +37,28 @@ export class CommandRunner {
         }
 
         if (command.feature && message.server) {
-            let isFeatureEnabled = await command.feature.getIsEnabled(this._db, message.server.id);
+            let isFeatureEnabled = await command.feature.getIsEnabled(this.db, message.server.id);
             if (!isFeatureEnabled) {
                 this._reportInvalidCommand(message, input);
                 return;
             }
         }
 
-        const commandData = this._getCommandDataForChannel(command, input, message);
-        if (typeof(commandData.func) !== 'function') {
-            this._reportInvalidChannel(message, commandData);
+        if (!this._canUserUseCommand(command, message)) {
+            this._reportCannotUseCommand(message, command, input);
             return;
         }
 
-        if (!this._canUserUseCommand(commandData, message)) {
-            this._reportCannotUseCommand(message, commandData, input);
-            return;
-        }
-
-        await this.runCommand(message, commandData, input);
+        await this.runCommand(message, command, input);
     }
 
-    private _logInputReceived(message : DiscordMessage, input : InputMessage) {
+    private logInputReceived(message : IPublicMessage, input : InputMessage) {
         const commandName = input.getCommandName();
-        console.log('user \'%s\' (%s) used command \'%s\'', message.user, message.userId, commandName);
+        console.log('user \'%s#%d\' used command \'%s%s\'',
+            message.user.username,
+            message.user.discriminator,
+            message.serverConfig.commandPrefix,
+            commandName);
     }
 
     private _getCommandFromInputMessage(input : InputMessage) {
@@ -79,67 +69,38 @@ export class CommandRunner {
         return null;
     }
 
-    private _reportInvalidCommand(message : DiscordMessage, input : InputMessage) {
+    private _reportInvalidCommand(message : IPublicMessage, input : InputMessage) {
         const commandName = input.getCommandName();
         BotUtils.sendErrorMessage({
-            bot: this._bot,
+            bot: this.bot,
             channelId: message.channelId,
-            message: 'There is no `' + process.env.COMMAND_PREFIX + commandName + '` command.'
+            message: 'There is no `' + message.serverConfig.commandPrefix + commandName + '` command.'
         });
     }
 
-    private _getCommandDataForChannel(command :Command, input : InputMessage, message : DiscordMessage) : CommandRunData {
-        const isDirectMessage = (message.channelId in this._bot.directMessages);
-        const commandName = input.getCommandName();
-
-        if (isDirectMessage) {
-            return {
-                requiresAdmin: command.privateRequiresAdmin,
-                func: command.processPrivateMessage.bind(command), // TODO: Return to this whole structure
-                incorrectChannelMessage: 'The `' + process.env.COMMAND_PREFIX + commandName + '` command can only be used in the public server itself.'
-            };
-        }
-
-        return {
-            requiresAdmin: command.publicRequiresAdmin,
-            func: command.processPublicMessage.bind(command), // TODO: Return to this whole structure
-            incorrectChannelMessage: 'The `' + process.env.COMMAND_PREFIX + commandName + '` command can only be used in a direct message with me.'
-        };
-    }
-
-    private _reportInvalidChannel(message : DiscordMessage, commandData : CommandRunData) {
-        BotUtils.sendErrorMessage({
-            bot: this._bot,
-            channelId: message.channelId,
-            message: commandData.incorrectChannelMessage
-        });
-    }
-
-    private _canUserUseCommand(commandData : CommandRunData, message : DiscordMessage) : boolean {
-        if (!commandData.requiresAdmin) {
+    private _canUserUseCommand(command : Command, message : IPublicMessage) : boolean {
+        if (!command.isAdminCommand) {
             return true;
         }
 
-        const serverId = this._bot.channels[message.channelId].guild_id;
-        const server = this._bot.servers[serverId];
-        const member = server.members[message.userId];
-        return BotUtils.isMemberAnAdminOnServer(member, server);
+        const member = message.server.members[message.userId];
+        return message.serverConfig.isAdmin(member);
     }
 
-    private _reportCannotUseCommand(message : DiscordMessage, commandData : CommandRunData, input : InputMessage) {
+    private _reportCannotUseCommand(message : IPublicMessage, command : Command, input : InputMessage) {
         const commandName = input.getCommandName();
         BotUtils.sendErrorMessage({
-            bot: this._bot,
+            bot: this.bot,
             channelId: message.channelId,
-            message: 'The `' + process.env.COMMAND_PREFIX + commandName + '` command requires admin privileges to use here.'
+            message: 'The `' + message.serverConfig.commandPrefix + commandName + '` command requires admin privileges to use here.'
         });
     }
 
-    private async runCommand(message : DiscordMessage, commandData : CommandRunData, input : InputMessage) {
+    private async runCommand(message : IPublicMessage, command : Command, input : InputMessage) {
         const commandArgs = input.getCommandArgs();
 
         try {
-            await commandData.func(this._bot, message, commandArgs, this._db);
+            await command.processMessage(this.phil, message, commandArgs);
         } catch(err) {
             await this.reportCommandError(err, message.channelId);
         }
@@ -148,7 +109,7 @@ export class CommandRunner {
     private async reportCommandError(err : Error, channelId : string) {
         console.error(util.inspect(err));
         BotUtils.sendErrorMessage({
-            bot: this._bot,
+            bot: this.bot,
             channelId: channelId,
             message: err.message
         });

@@ -2,12 +2,20 @@
 
 import { Client as DiscordIOClient, Role as DiscordIORole } from 'discord.io';
 import { MessageBuilder } from '../phil/message-builder';
+import { OfficialDiscordEmbed } from 'official-discord';
+import { Delay } from '../phil/utils/delay';
+
+declare interface DiscordIOCallbackError {
+		statusCode?: number,
+		statusMessage?: string,
+		response?: any
+}
 
 export namespace DiscordPromises {
 
     export interface EditRoleOptions {
         name : string;
-        color : number;
+        color? : number;
     }
 
     export function sendMessage(bot : DiscordIOClient, channelId : string, message : string) : Promise<string> {
@@ -184,5 +192,64 @@ export namespace DiscordPromises {
                 resolve(response); // TODO: What does this return?
             });
         });
+    }
+
+    export function addReaction(bot : DiscordIOClient, channelId : string, messageId : string, reaction : string) : Promise<void> {
+        const anyBot : any = bot;
+        return new Promise((resolve, reject) => {
+            anyBot.addReaction({
+                channelID: channelId,
+                messageID: messageId,
+                reaction: reaction
+            }, (err : DiscordIOCallbackError, response : any) => {
+                if (err) {
+                    if (err.statusCode === 429) {
+                        const waitTime : number = err.response.retry_after;
+                        if (waitTime) {
+                            console.log('rate limited, waiting ' + waitTime);
+                            Delay.wait(waitTime)
+                                .then(() => addReaction(bot, channelId, messageId, reaction))
+                                .then(resolve);
+                            return;
+                        }
+                    }
+
+                    reject(err);
+                    return;
+                }
+
+                resolve();
+            });
+        })
+    }
+
+    export function removeOwnReaction(bot: DiscordIOClient, channelId: string, messageId: string, reaction: string): Promise<void> {
+        const anyBot: any = bot;
+        return new Promise((resolve, reject) => {
+            anyBot.removeReaction({
+                channelID: channelId,
+                messageID: messageId,
+                userID: bot.id,
+                reaction: reaction
+            }, (err: DiscordIOCallbackError, response: any) => {
+                if (err) {
+                    if (err.statusCode === 429) {
+                        const waitTime: number = err.response.retry_after;
+                        if (waitTime) {
+                            console.log('rate limited, waiting ' + waitTime);
+                            Delay.wait(waitTime)
+                                .then(() => removeOwnReaction(bot, channelId, messageId, reaction))
+                                .then(resolve);
+                            return;
+                        }
+                    }
+
+                    reject(err);
+                    return;
+                }
+
+                resolve();
+            });
+        })
     }
 }
