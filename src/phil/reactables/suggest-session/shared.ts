@@ -3,5 +3,6 @@ export namespace SuggestSessionReactableShared {
 
     export namespace Emoji {
         export const Stop = '🛑';
+        export const MakeAnonymous = '🕵';
     }
 }

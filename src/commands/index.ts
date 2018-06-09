@@ -1,7 +1,6 @@
 'use strict';
 
 import { Command, ICommandLookup } from './@types';
-import { AnonSuggestCommand } from './anonsuggest';
 import { ApologiseCommand } from './apologise';
 import { BirthdayCommand } from './birthday';
 import { BucketCommand } from './bucket';
@@ -24,7 +23,7 @@ import { QueueCommand } from './queue';
 import { RejectCommand } from './reject';
 import { RemoveCommand } from './remove';
 import { RequestCommand } from './request';
-import { SuggestCommand } from './suggest';
+import SuggestCommand from './suggest';
 import { TimediffCommand } from './timediff';
 import { TimezoneCommand } from './timezone';
 import { UnconfirmedCommand } from './unconfirmed';
@@ -44,7 +43,6 @@ function registerCommand(command : Command) {
 
 let helpCommand = new HelpCommand();
 
-registerCommand(new AnonSuggestCommand());
 registerCommand(new ApologiseCommand());
 registerCommand(new BirthdayCommand());
 registerCommand(new BucketCommand());

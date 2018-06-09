@@ -223,16 +223,27 @@ export namespace DiscordPromises {
         })
     }
 
-    export function removeOwnReaction(bot : DiscordIOClient, channelId : string, messageId : string, reaction : string) : Promise<void> {
-        const anyBot : any = bot;
+    export function removeOwnReaction(bot: DiscordIOClient, channelId: string, messageId: string, reaction: string): Promise<void> {
+        const anyBot: any = bot;
         return new Promise((resolve, reject) => {
             anyBot.removeReaction({
                 channelID: channelId,
                 messageID: messageId,
                 userID: bot.id,
                 reaction: reaction
-            }, (err : DiscordIOCallbackError, response : any) => {
+            }, (err: DiscordIOCallbackError, response: any) => {
                 if (err) {
+                    if (err.statusCode === 429) {
+                        const waitTime: number = err.response.retry_after;
+                        if (waitTime) {
+                            console.log('rate limited, waiting ' + waitTime);
+                            Delay.wait(waitTime)
+                                .then(() => removeOwnReaction(bot, channelId, messageId, reaction))
+                                .then(resolve);
+                            return;
+                        }
+                    }
+
                     reject(err);
                     return;
                 }

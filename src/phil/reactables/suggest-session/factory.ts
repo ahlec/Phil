@@ -4,22 +4,29 @@ import { Database } from '../../database';
 import { SuggestSessionReactableShared } from './shared';
 
 interface ICreateArgs extends IReactableCreateArgsBase {
+    canMakeAnonymous: boolean;
 }
 
 export default class SuggestSessionReactableFactory extends ReactableFactoryBase<ICreateArgs> {
     protected readonly handle = SuggestSessionReactableShared.ReactableHandle;
 
-    constructor(readonly bot : DiscordIOClient,
-        readonly db : Database,
-        readonly args : ICreateArgs) {
+    constructor(readonly bot: DiscordIOClient,
+        readonly db: Database,
+        readonly args: ICreateArgs) {
             super(bot, db, args);
     }
 
-    protected getJsonData() : any | null {
+    protected getJsonData(): any | null {
         return null;
     }
 
-    protected getEmojiReactions() : string[] {
-        return [SuggestSessionReactableShared.Emoji.Stop];
+    protected getEmojiReactions(): string[] {
+        const reactions = [SuggestSessionReactableShared.Emoji.Stop];
+
+        if (this.args.canMakeAnonymous) {
+            reactions.push(SuggestSessionReactableShared.Emoji.MakeAnonymous);
+        }
+
+        return reactions;
     }
 }

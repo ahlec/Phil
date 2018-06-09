@@ -70,6 +70,7 @@ export default class SuggestSessionListener implements DirectMessageProcessor {
             channelId: message.channelId,
             user: message.user,
             timeLimit: token.currentSession.remainingTime.asMinutes(),
+            canMakeAnonymous: false
         });
         await reactableFactory.create();
     }

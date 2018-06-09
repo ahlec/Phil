@@ -12,7 +12,7 @@ export default class SubmissionSession {
         public readonly bucket : Bucket,
         public readonly startedUtc : Moment,
         public readonly timeoutUtc : Moment,
-        public readonly isAnonymous : boolean,
+        private isAnonymous : boolean,
         private numSubmitted : number) {
         this.remainingTime = momentModule.duration(timeoutUtc.diff(startedUtc));
     }
@@ -46,23 +46,27 @@ export default class SubmissionSession {
             numSubmitted);
     }
 
-    static async startNewSession(phil : Phil, userId : string, bucket : Bucket, isAnonymousSession : boolean) : Promise<SubmissionSession> {
+    static async startNewSession(phil: Phil, userId: string, bucket: Bucket): Promise<SubmissionSession> {
         await phil.db.query(`DELETE FROM prompt_submission_sessions
             WHERE user_id = $1`, [userId]);
         const now = momentModule.utc();
         const timeout = momentModule(now).add(SESSION_LENGTH_IN_MINUTES, 'minutes');
         const results = await phil.db.query(`INSERT INTO
             prompt_submission_sessions(user_id, bucket_id, started_utc, timeout_utc, is_anonymous)
-            VALUES($1, $2, $3, $4, $5)`, [userId, bucket.id, now, timeout, isAnonymousSession ? 1 : 0]);
+            VALUES($1, $2, $3, $4, E'0')`, [userId, bucket.id, now, timeout]);
         if (results.rowCount !== 1) {
             throw new Error('Unable to begin session in the database.');
         }
 
-        return new SubmissionSession(userId, bucket, now, timeout, isAnonymousSession, 0);
+        return new SubmissionSession(userId, bucket, now, timeout, false, 0);
     }
 
     public getNumberSubmissions(): number {
         return this.numSubmitted;
+    }
+
+    public getIsAnonymous(): boolean {
+        return this.isAnonymous;
     }
 
     async submit(phil: Phil, prompt: string) {
@@ -91,7 +95,23 @@ export default class SubmissionSession {
         this.numSubmitted++;
     }
 
-    async end(phil : Phil) {
+    async makeAnonymous(phil: Phil) {
+        if (this.isAnonymous) {
+            return;
+        }
+
+        const updateSessionResult = await phil.db.query(
+            `UPDATE prompt_submission_sessions
+             SET is_anonymous = E'1'
+             WHERE user_id = $1`, [this.userId]);
+        if (updateSessionResult.rowCount !== 1) {
+            throw new Error('Unable to make this session anonymous in the database.');
+        }
+
+        this.isAnonymous = true;
+    }
+
+    async end(phil: Phil) {
         await phil.db.query(`DELETE FROM prompt_submission_sessions WHERE user_id = $1`,
             [this.userId]);
     }
