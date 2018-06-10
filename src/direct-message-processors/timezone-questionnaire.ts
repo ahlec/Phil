@@ -1,10 +1,11 @@
 import { IPrivateMessage } from 'phil';
 import Phil from '../phil/phil';
-import { TimezoneQuestionnaire } from '../phil/timezone-questionnaire';
+import TimezoneQuestionnaire from '../phil/timezones/questionnaire';
+import IStage from '../phil/timezones/questionnaire-stages/@stage';
 import { IDirectMessageProcessor, IProcessorActiveToken } from './@base';
 
 interface ITimezoneQuestionnaireToken extends IProcessorActiveToken {
-    readonly currentStage? : TimezoneQuestionnaire.Stage;
+    readonly currentStage? : IStage;
 }
 
 export default class TimezoneQuestionnaireProcessor implements IDirectMessageProcessor {
@@ -18,7 +19,7 @@ export default class TimezoneQuestionnaireProcessor implements IDirectMessagePro
             };
         }
 
-        if (!TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(currentStage.stage)) {
+        if (!TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(currentStage)) {
             return {
                 isActive: false
             };

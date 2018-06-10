@@ -1,7 +1,9 @@
 import moment = require('moment-timezone');
 import { QueryResult } from 'pg';
-import Database from './database';
-import { QuestionnaireStage, TimezoneQuestionnaire } from './timezone-questionnaire';
+import Database from '../database';
+import TimezoneQuestionnaire from './questionnaire';
+import Stages from './questionnaire-stages/@all-stages';
+import IStage from './questionnaire-stages/@stage';
 
 export default class UserTimezone {
     public static async getForUser(db: Database, userId: string): Promise<UserTimezone> {
@@ -12,13 +14,9 @@ export default class UserTimezone {
         return new UserTimezone(userId, results);
     }
 
-    private static determineStage(results: QueryResult): QuestionnaireStage {
-        if (results.rowCount !== 1) {
-            return QuestionnaireStage.None;
-        }
-
-        const stage = parseInt(results.rows[0].stage, 10);
-        return stage;
+    private static determineStage(results: QueryResult): IStage {
+        const stageNo = parseInt(results.rows[0].stage, 10);
+        return Stages.getFromNumber(stageNo);
     }
 
     public readonly hasProvided: boolean;
@@ -28,8 +26,8 @@ export default class UserTimezone {
 
     private constructor(public readonly userId: string, results: QueryResult) {
         const stage = UserTimezone.determineStage(results);
-        this.hasProvided = (stage === QuestionnaireStage.Finished);
-        this.hasDeclined = (stage === QuestionnaireStage.Declined);
+        this.hasProvided = (stage === Stages.Finished);
+        this.hasDeclined = (stage === Stages.Declined);
         this.isCurrentlyDoingQuestionnaire = TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(stage);
 
         if (this.hasProvided) {

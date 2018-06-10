@@ -3,7 +3,7 @@ import Database from '../../database';
 import Phil from '../../phil';
 
 export default interface IStage {
-    readonly stage: QuestionnaireStage;
+    readonly stageNumber: number;
     getMessage(db: Database, userId: string): Promise<string>;
     processInput(phil: Phil, message: IPrivateMessage): Promise<any>;
 }

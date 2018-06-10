@@ -1,13 +1,14 @@
+import Stages from './@all-stages';
 import IStage from './@stage';
+import QuestionnaireStageUtils from './@utils';
 
 import { IPrivateMessage, IPublicMessage, IServerConfig } from 'phil';
 import { DiscordPromises } from '../../../promises/discord';
 import Database from '../../database';
 import Phil from '../../phil';
-import QuestionnaireStage from '../questionnaire-stage';
 
-class LetsBeginStage implements IStage {
-    readonly stage = QuestionnaireStage.LetsBegin;
+export default class LetsBeginStage implements IStage {
+    public readonly stageNumber = 1;
 
     public async getMessage(db: Database, userId: string): Promise<string> {
         return 'Hey! You mentioned some times in your recent message on the server. Would you be willing to tell me what timezone you\'re in so that I can convert them to UTC in the future? Just say `yes` or `no`.';
@@ -17,7 +18,7 @@ class LetsBeginStage implements IStage {
         const content = message.content.toLowerCase().trim();
 
         if (content === 'yes') {
-            return setStage(phil, message.userId, Stages.Country);
+            return QuestionnaireStageUtils.setStage(phil, message.userId, Stages.Country);
         }
 
         if (content === 'no') {
@@ -26,7 +27,7 @@ class LetsBeginStage implements IStage {
                 throw new Error('Could not update the will_provide field in the database.');
             }
 
-            setStage(phil, message.userId, Stages.Declined);
+            QuestionnaireStageUtils.setStage(phil, message.userId, Stages.Declined);
             return;
         }
 
