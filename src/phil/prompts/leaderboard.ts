@@ -1,6 +1,6 @@
 import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
 import { QueryResult } from 'pg';
-import { Bucket } from '../buckets';
+import Bucket from '../buckets';
 import Database from '../database';
 import LeaderboardEntry from './leaderboard-entry';
 

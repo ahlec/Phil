@@ -4,7 +4,7 @@ import Feature from '../phil/features/feature';
 import { HelpGroup } from '../phil/help-groups';
 import Phil from '../phil/phil';
 
-export default abstract class ICommand {
+export default interface ICommand {
     readonly name: string;
     readonly aliases: ReadonlyArray<string>;
     readonly feature?: Feature;
@@ -14,7 +14,7 @@ export default abstract class ICommand {
     readonly versionAdded: number;
 
     readonly isAdminCommand: boolean;
-    public abstract processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any>;
+    processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any>;
 }
 
 export interface ICommandLookup {

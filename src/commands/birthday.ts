@@ -10,7 +10,7 @@ import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
 import ICommand from './@types';
 
-export class BirthdayCommand implements ICommand {
+export default class BirthdayCommand implements ICommand {
     public readonly name = 'birthday';
     public readonly aliases: ReadonlyArray<string> = [];
     public readonly feature: Feature = null;

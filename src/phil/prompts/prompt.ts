@@ -2,7 +2,7 @@ import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io
 import { QueryResult } from 'pg';
 import { IServerConfig } from 'phil';
 import { DiscordPromises } from '../../promises/discord';
-import { Bucket } from '../buckets';
+import Bucket from '../buckets';
 import Phil from '../phil';
 import { BotUtils } from '../utils';
 

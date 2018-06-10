@@ -3,11 +3,8 @@ import Database from '../database';
 import { BotUtils } from '../utils';
 import { AllMonths, MonthDefinition } from './month-definition';
 
-interface IDayEventCollection {
-    [index: number]: string[];
-    length: number;
-    push(eventDisplayStr: string): void;
-}
+
+type DayEventCollection = ReadonlyArray<string[]>;
 
 export default class CalendarMonth {
     public static async getForMonth(bot: DiscordIOClient, db: Database, server: DiscordIOServer, month: number): Promise<CalendarMonth> {
@@ -18,14 +15,17 @@ export default class CalendarMonth {
     }
 
     public readonly definition: MonthDefinition;
-    public readonly days: IDayEventCollection[] = [];
+    public readonly days: DayEventCollection;
 
     private constructor(private readonly month: number) {
         this.definition = AllMonths[month - 1];
 
+        const mutableDays: string[][] = [];
         for (let day = 0; day < 31; ++day) {
-            this.days.push([]);
+            mutableDays.push([]);
         }
+
+        this.days = mutableDays;
     }
 
     private addEvent(day: number, eventDisplayStr: string): void {

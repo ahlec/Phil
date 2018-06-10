@@ -1,6 +1,6 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
 import { DiscordPromises } from '../../../promises/discord';
-import { Bucket } from '../../buckets';
+import Bucket from '../../buckets';
 import Phil from '../../phil';
 import { PromptQueue } from '../../prompts/queue';
 import ReactablePost from '../post';

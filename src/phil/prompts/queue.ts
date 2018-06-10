@@ -2,7 +2,7 @@ import { Client as DiscordIOClient, Server as DiscordIOServer, User as DiscordIO
 import { OfficialDiscordEmbed } from 'official-discord';
 import { QueryResult } from 'pg';
 import { DiscordPromises } from '../../promises/discord';
-import { Bucket } from '../buckets';
+import Bucket from '../buckets';
 import Database from '../database';
 import { PromptQueueReactableFactory } from '../reactables/prompt-queue/factory';
 import Prompt from './prompt';

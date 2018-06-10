@@ -18,7 +18,7 @@ const apologies = [
     'On my Yeti honour and pride, I shall never do this again.'
 ];
 
-export class ApologiseCommand extends ICommand {
+export default class ApologiseCommand implements ICommand {
     public readonly name = 'apologise';
     public readonly aliases = ['apologize'];
     public readonly feature: Feature = null;
