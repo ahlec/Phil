@@ -1,20 +1,18 @@
-'use strict';
-
-import { Client } from 'discord.io';
+import { Client as DiscordIOClient } from 'discord.io';
 import { IPublicMessage } from 'phil';
-import { Command } from '../commands/@types';
+import ICommand from '../commands/@types';
 import { CommandLookup } from '../commands/index';
 import Database from './database';
-import { Feature } from './features';
+import Feature from './features/feature';
 import InputMessage from './input-message';
-import { Phil } from './phil';
-import { BotUtils } from './utils';
+import Phil from './phil';
+import BotUtils from './utils';
 
 const util = require('util');
 
 export default class CommandRunner {
     constructor(private readonly phil: Phil,
-        private readonly bot: Client,
+        private readonly bot: DiscordIOClient,
         private readonly db: Database) {
     }
 
@@ -53,32 +51,29 @@ export default class CommandRunner {
     }
 
     private logInputReceived(message: IPublicMessage, input: InputMessage) {
-        const commandName = input.getCommandName();
         console.log('user \'%s#%d\' used command \'%s%s\'',
             message.user.username,
             message.user.discriminator,
             message.serverConfig.commandPrefix,
-            commandName);
+            input.commandName);
     }
 
     private getCommandFromInputMessage(input: InputMessage) {
-        const commandName = input.getCommandName();
-        if (commandName in CommandLookup) {
-            return CommandLookup[commandName];
+        if (input.commandName in CommandLookup) {
+            return CommandLookup[input.commandName];
         }
         return null;
     }
 
     private reportInvalidCommand(message: IPublicMessage, input: InputMessage) {
-        const commandName = input.getCommandName();
         BotUtils.sendErrorMessage({
             bot: this.bot,
             channelId: message.channelId,
-            message: 'There is no `' + message.serverConfig.commandPrefix + commandName + '` command.'
+            message: `There is no \`${message.serverConfig.commandPrefix}${input.commandName}\` command.`
         });
     }
 
-    private canUserUseCommand(command: Command, message: IPublicMessage): boolean {
+    private canUserUseCommand(command: ICommand, message: IPublicMessage): boolean {
         if (!command.isAdminCommand) {
             return true;
         }
@@ -87,20 +82,17 @@ export default class CommandRunner {
         return message.serverConfig.isAdmin(member);
     }
 
-    private reportCannotUseCommand(message: IPublicMessage, command: Command, input: InputMessage) {
-        const commandName = input.getCommandName();
+    private reportCannotUseCommand(message: IPublicMessage, command: ICommand, input: InputMessage) {
         BotUtils.sendErrorMessage({
             bot: this.bot,
             channelId: message.channelId,
-            message: 'The `' + message.serverConfig.commandPrefix + commandName + '` command requires admin privileges to use here.'
+            message: `The \`${message.serverConfig.commandPrefix}${input.commandName}\` command requires admin privileges to use here.`
         });
     }
 
-    private async runCommand(message: IPublicMessage, command: Command, input: InputMessage) {
-        const commandArgs = input.getCommandArgs();
-
+    private async runCommand(message: IPublicMessage, command: ICommand, input: InputMessage) {
         try {
-            await command.processMessage(this.phil, message, commandArgs);
+            await command.processMessage(this.phil, message, input.commandArgs);
         } catch(err) {
             await this.reportCommandError(err, message.channelId);
         }

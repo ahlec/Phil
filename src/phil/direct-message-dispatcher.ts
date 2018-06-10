@@ -1,14 +1,15 @@
-import { DirectMessageProcessor, IProcessorActiveToken } from '../direct-message-processors/@base';
-import { TimezoneQuestionnaireProcessor } from '../direct-message-processors/timezone-questionnaire';
+import { IDirectMessageProcessor, IProcessorActiveToken } from '../direct-message-processors/@base';
+
 import SuggestSessionListener from '../direct-message-processors/suggest-session-listener';
+import TimezoneQuestionnaireProcessor from '../direct-message-processors/timezone-questionnaire';
 
 import { IPrivateMessage } from 'phil';
 import { DiscordPromises } from '../promises/discord';
-import { Phil } from './phil';
+import Phil from './phil';
 const util = require('util');
 
 export default class DirectMessageDispatcher {
-    private readonly processorsInPriorityOrder : DirectMessageProcessor[] = [
+    private readonly processorsInPriorityOrder : IDirectMessageProcessor[] = [
         new SuggestSessionListener(),
         new TimezoneQuestionnaireProcessor()
     ];
@@ -32,7 +33,7 @@ export default class DirectMessageDispatcher {
         }
     }
 
-    private reportError(err : Error, processor : DirectMessageProcessor) {
+    private reportError(err: Error, processor: IDirectMessageProcessor) {
         console.error(err);
 
         if (typeof(err) !== 'string') {

@@ -34,15 +34,15 @@ export default class ServerConfig implements IServerConfig {
         return new ServerConfig(server, globalConfig, results.rows[0]);
     }
 
-    public readonly serverId : string;
-    public readonly commandPrefix : string;
-    public readonly botControlChannel : DiscordIOChannel;
-    public readonly adminChannel : DiscordIOChannel;
-    public readonly introductionsChannel : DiscordIOChannel;
-    public readonly newsChannel : DiscordIOChannel;
-    public readonly adminRole? : DiscordIORole;
-    public readonly welcomeMessage : string;
-    public readonly fandomMapLink : string;
+    public readonly serverId: string;
+    public readonly commandPrefix: string;
+    public readonly botControlChannel: DiscordIOChannel;
+    public readonly adminChannel: DiscordIOChannel;
+    public readonly introductionsChannel: DiscordIOChannel;
+    public readonly newsChannel: DiscordIOChannel;
+    public readonly adminRole?: DiscordIORole;
+    public readonly welcomeMessage: string;
+    public readonly fandomMapLink: string;
 
     private constructor(public readonly server : DiscordIOServer,
         private readonly globalConfig : GlobalConfig,

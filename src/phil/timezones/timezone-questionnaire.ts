@@ -20,16 +20,6 @@ interface TimezoneData {
     readonly timezones : Timezone[];
 }
 
-export enum QuestionnaireStage {
-    None = 0,
-    LetsBegin = 1,
-    Country = 2,
-    Specification = 3,
-    Confirmation = 4,
-    Finished = 5,
-    Declined = 6
-}
-
 export namespace TimezoneQuestionnaire {
     // =================================================
     // Utility functions
@@ -79,40 +69,6 @@ export namespace TimezoneQuestionnaire {
     // =================================================
     // Stages
     // =================================================
-
-    export interface Stage {
-        readonly stage : QuestionnaireStage;
-        getMessage(db : Database, userId : string) : Promise<string>;
-        processInput(phil : Phil, message : IPrivateMessage) : Promise<any>;
-    }
-
-    class LetsBeginStage implements Stage {
-        readonly stage = QuestionnaireStage.LetsBegin;
-
-        async getMessage(db : Database, userId : string) : Promise<string> {
-            return 'Hey! You mentioned some times in your recent message on the server. Would you be willing to tell me what timezone you\'re in so that I can convert them to UTC in the future? Just say `yes` or `no`.';
-        }
-
-        async processInput(phil : Phil, message : IPrivateMessage) : Promise<any> {
-            const content = message.content.toLowerCase().trim();
-
-            if (content === 'yes') {
-                return setStage(phil, message.userId, Stages.Country);
-            }
-
-            if (content === 'no') {
-                const results = await phil.db.query('UPDATE timezones SET will_provide = E\'0\' WHERE userid = $1', [message.userId]);
-                if (results.rowCount === 0) {
-                    throw new Error('Could not update the will_provide field in the database.');
-                }
-
-                setStage(phil, message.userId, Stages.Declined);
-                return;
-            }
-
-            DiscordPromises.sendMessage(phil.bot, message.channelId, 'I didn\'t understand that, sorry. Can you please tell me `yes` or `no` for if you\'d like to fill out the timezone questionnaire?');
-        }
-    }
 
     class CountryStage implements Stage {
         readonly stage = QuestionnaireStage.Country;

@@ -1,7 +1,8 @@
 import { Client as DiscordIOClient, Member as DiscordIOMember, User as DiscordIOUser } from 'discord.io';
 import { DiscordPromises } from '../promises/discord';
 import Database from './database';
-import { Features, FeatureUtils } from './features';
+import Features from './features/all-features';
+import FeatureUtils from './features/feature-utils';
 import Phil from './phil';
 import ServerConfig from './server-config';
 import { BotUtils } from './utils';

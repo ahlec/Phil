@@ -1,28 +1,27 @@
-'use strict';
-
-import { Database } from './database';
-import { QueryResult } from 'pg';
 import { Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
+import { QueryResult } from 'pg';
+import Database from './database';
 
-export interface RequestableCreationDefinition {
-    name : string;
-    role : DiscordIORole;
+export interface IRequestableCreationDefinition {
+    name: string;
+    role: DiscordIORole;
 }
 
-export class Requestable {
-    constructor(public readonly role : DiscordIORole, public readonly requestStrings : string[]) {
-    }
-
-    static checkIsValidRequestableName(name : string) : boolean {
+export default class Requestable {
+    public static checkIsValidRequestableName(name: string): boolean {
         // Only alphanumeric (with dashes) and must be 2+ characters in length
         return /^[A-Za-z0-9\-]{2,}$/.test(name);
     }
 
-    static async getAllRequestables(db : Database, server : DiscordIOServer) : Promise<Requestable[]> {
+    public static async getAllRequestables(db: Database, server: DiscordIOServer): Promise<Requestable[]> {
         const results = await db.query('SELECT request_string, role_id FROM requestable_roles WHERE server_id = $1', [server.id]);
         const groupedRequestStrings = this.groupRequestStrings(results);
         const requestables = [];
-        for (let roleId in groupedRequestStrings) {
+        for (const roleId in groupedRequestStrings) {
+            if (!groupedRequestStrings.hasOwnProperty(roleId)) {
+                continue;
+            }
+
             const role = server.roles[roleId];
             if (role === undefined || role === null) {
                 continue;
@@ -34,7 +33,7 @@ export class Requestable {
         return requestables;
     }
 
-    static async getFromRequestString(db : Database, server : DiscordIOServer, requestString : string) : Promise<Requestable> {
+    public static async getFromRequestString(db: Database, server: DiscordIOServer, requestString: string): Promise<Requestable> {
         requestString = requestString.toLowerCase();
         const results = await db.query('SELECT role_id FROM requestable_roles WHERE request_string = $1 AND server_id = $2', [requestString, server.id]);
 
@@ -51,12 +50,12 @@ export class Requestable {
         return new Requestable(role, []); // TODO: We need to get the list of request strings here!!
     }
 
-    static async createRequestable(db : Database, server : DiscordIOServer, info : RequestableCreationDefinition) : Promise<void> {
+    public static async createRequestable(db: Database, server: DiscordIOServer, info: IRequestableCreationDefinition): Promise<void> {
         await db.query('INSERT INTO requestable_roles VALUES($1, $2, $3)', [info.name, info.role.id, server.id]);
     }
 
-    private static groupRequestStrings(results : QueryResult) : { [roleId : string] : string[] } {
-        const groupedRequestStrings : { [roleId : string] : string[] } = {};
+    private static groupRequestStrings(results: QueryResult): { [roleId: string]: string[] } {
+        const groupedRequestStrings: { [roleId: string]: string[] } = {};
         for (let index = 0; index < results.rowCount; ++index) {
             const roleId = results.rows[index].role_id;
             if (groupedRequestStrings[roleId] === undefined) {
@@ -67,5 +66,9 @@ export class Requestable {
         }
 
         return groupedRequestStrings;
+    }
+
+    constructor(public readonly role: DiscordIORole,
+        public readonly requestStrings: ReadonlyArray<string>) {
     }
 }

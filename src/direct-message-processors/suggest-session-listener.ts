@@ -1,9 +1,9 @@
-import { DirectMessageProcessor, IProcessorActiveToken } from './@base';
-import { Phil } from '../phil/phil';
 import { IPrivateMessage } from 'phil';
-import { DiscordPromises } from '../promises/discord';
+import Phil from '../phil/phil';
 import SubmissionSession from '../phil/prompts/submission-session';
 import SuggestSessionReactableFactory from '../phil/reactables/suggest-session/factory';
+import { DiscordPromises } from '../promises/discord';
+import { IDirectMessageProcessor, IProcessorActiveToken } from './@base';
 
 interface IPromptValidateResult {
     isValid: boolean;
@@ -21,14 +21,14 @@ function validatePromptSubmission(message: string): IPromptValidateResult {
     return {isValid: true, validatedMessage: message};
 }
 
-interface SuggestSessionListenerToken extends IProcessorActiveToken {
+interface ISuggestSessionListenerToken extends IProcessorActiveToken {
     readonly currentSession? : SubmissionSession;
 }
 
-export default class SuggestSessionListener implements DirectMessageProcessor {
-    readonly handle = 'suggest-session-listener';
+export default class SuggestSessionListener implements IDirectMessageProcessor {
+    public readonly handle = 'suggest-session-listener';
 
-    async canProcess(phil: Phil, message: IPrivateMessage): Promise<SuggestSessionListenerToken> {
+    public async canProcess(phil: Phil, message: IPrivateMessage): Promise<ISuggestSessionListenerToken> {
         const currentSession = await SubmissionSession.getActiveSession(phil, message.userId);
         if (!currentSession) {
             return {
@@ -37,13 +37,13 @@ export default class SuggestSessionListener implements DirectMessageProcessor {
         }
 
         return {
-            isActive: true,
-            currentSession
+            currentSession,
+            isActive: true
         }
     }
 
-    async process(phil: Phil, message: IPrivateMessage, rawToken: IProcessorActiveToken) {
-        const token = rawToken as SuggestSessionListenerToken;
+    public async process(phil: Phil, message: IPrivateMessage, rawToken: IProcessorActiveToken) {
+        const token = rawToken as ISuggestSessionListenerToken;
         const validationResults = validatePromptSubmission(message.content);
         if (!validationResults.isValid) {
             // TODO
@@ -56,21 +56,21 @@ export default class SuggestSessionListener implements DirectMessageProcessor {
         const numSubmissions = token.currentSession.getNumberSubmissions();
         const messageId = await DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
             color: 0xB0E0E6,
-            title: ':pencil: Prompt Received :incoming_envelope:',
             description: `**${validationResults.validatedMessage}** has been sent to the admins ${
                 NOWRAP}for approval.`,
             footer: {
                 text: `You have made ${numSubmissions} submission${
                     numSubmissions !== 1 ? 's' : ''} during this session.`
-            }
+            },
+            title: ':pencil: Prompt Received :incoming_envelope:'
         });
 
         const reactableFactory = new SuggestSessionReactableFactory(phil.bot, phil.db, {
-            messageId: messageId,
+            canMakeAnonymous: false,
             channelId: message.channelId,
-            user: message.user,
+            messageId,
             timeLimit: token.currentSession.remainingTime.asMinutes(),
-            canMakeAnonymous: false
+            user: message.user,
         });
         await reactableFactory.create();
     }
