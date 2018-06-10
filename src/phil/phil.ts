@@ -11,7 +11,7 @@ import DirectMessageDispatcher from './direct-message-dispatcher';
 import { Message } from './discord-message';
 import GlobalConfig from './global-config';
 import { greetNewMember } from './greeting';
-import { ReactableProcessor } from './reactables/processor';
+import ReactableProcessor from './reactables/processor';
 import ServerDirectory from './server-directory';
 import { BotUtils } from './utils';
 

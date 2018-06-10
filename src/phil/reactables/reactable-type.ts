@@ -1,9 +1,10 @@
-import { Phil } from '../phil';
-import { ReactablePost } from './post';
-import { OfficialDiscordReactionEvent, OfficialDiscordEmoji } from 'official-discord';
+import { OfficialDiscordEmoji, OfficialDiscordReactionEvent } from 'official-discord';
+import Phil from '../phil';
+import ReactablePost from './post';
 
-export abstract class ReactableType  {
-    abstract readonly handle : string;
+export default abstract class ReactableType  {
+    public abstract readonly handle : string;
 
-    abstract processReactionAdded(phil : Phil, post : ReactablePost, event : OfficialDiscordReactionEvent) : Promise<any>;
+    public abstract processReactionAdded(phil: Phil, post: ReactablePost,
+        event: OfficialDiscordReactionEvent): Promise<any>;
 };

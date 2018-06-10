@@ -1,6 +1,6 @@
-import { ReactableFactoryBase, IReactableCreateArgsBase } from '../factory-base'
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
-import { Database } from '../../database';
+import Database from '../../database';
+import { IReactableCreateArgsBase, ReactableFactoryBase } from '../factory-base'
 import { PromptQueueReactableShared } from './shared';
 
 interface ICreateArgs extends IReactableCreateArgsBase, PromptQueueReactableShared.IData {
@@ -9,25 +9,25 @@ interface ICreateArgs extends IReactableCreateArgsBase, PromptQueueReactableShar
 export class PromptQueueReactableFactory extends ReactableFactoryBase<ICreateArgs> {
     protected readonly handle = PromptQueueReactableShared.ReactableHandle;
 
-    constructor(readonly bot : DiscordIOClient,
-        readonly db : Database,
-        readonly args : ICreateArgs) {
+    constructor(readonly bot: DiscordIOClient,
+        readonly db: Database,
+        readonly args: ICreateArgs) {
             super(bot, db, args);
     }
 
-    protected getJsonData() : any | null {
-        const data : PromptQueueReactableShared.IData = {
+    protected getJsonData(): any | null {
+        const data: PromptQueueReactableShared.IData = {
+            bucket: this.args.bucket,
             currentPage : this.args.currentPage,
-            totalNumberPages: this.args.totalNumberPages,
             pageSize: this.args.pageSize,
-            bucket: this.args.bucket
+            totalNumberPages: this.args.totalNumberPages
         };
 
         return data;
     }
 
-    protected getEmojiReactions() : string[] {
-        const reactions : string[] = [];
+    protected getEmojiReactions(): string[] {
+        const reactions: string[] = [];
 
         if (this.args.currentPage > 1) {
             reactions.push(PromptQueueReactableShared.Emoji.Previous);

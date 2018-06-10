@@ -1,16 +1,14 @@
-'use strict';
-
-import { Phil } from '../phil';
 import { OfficialDiscordReactionEvent } from 'official-discord';
-import { ReactablePost } from './post';
+import Phil from '../phil';
+import BotUtils from '../utils';
 import { ReactableTypeRegistry } from './@registry';
-import { BotUtils } from '../utils';
+import ReactablePost from './post';
 
-export class ReactableProcessor {
-    constructor(private readonly phil : Phil) {
+export default class ReactableProcessor {
+    constructor(private readonly phil: Phil) {
     }
 
-    async processReactionAdded(event : OfficialDiscordReactionEvent) : Promise<void> {
+    public async processReactionAdded(event: OfficialDiscordReactionEvent): Promise<void> {
         if (!this.shouldProcessEvent(event)) {
             return;
         }
