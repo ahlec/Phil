@@ -1,24 +1,23 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage } from 'phil';
-import { BotUtils } from '../phil/utils';
-import { Feature, FeatureUtils } from '../phil/features';
+import Feature from '../phil/features/feature';
+import FeatureUtils from '../phil/features/feature-utils';
+import { HelpGroup } from '../phil/help-groups';
+import Phil from '../phil/phil';
+import BotUtils from '../phil/utils';
+import ICommand from './@types';
 
-export class EnableCommand implements Command {
-    readonly name = 'enable';
-    readonly aliases : string[] = [];
-    readonly feature : Feature = null;
+export default class EnableCommand implements ICommand {
+    public readonly name = 'enable';
+    public readonly aliases: ReadonlyArray<string> = [];
+    public readonly feature: Feature = null;
 
-    readonly helpGroup = HelpGroup.Admin;
-    readonly helpDescription = 'Enables a feature of Phil\'s.';
+    public readonly helpGroup = HelpGroup.Admin;
+    public readonly helpDescription = 'Enables a feature of Phil\'s.';
 
-    readonly versionAdded = 9;
+    public readonly versionAdded = 9;
 
-    readonly isAdminCommand = true;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = true;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         if (commandArgs.length < 1) {
             throw new Error('This function requires specifying the name of the feature that you wish enabled.');
         }

@@ -1,24 +1,22 @@
-'use strict';
-
-import { Command, ICommandLookup } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage } from 'phil';
+import Feature from '../phil/features/feature';
+import { HelpGroup } from '../phil/help-groups';
+import Phil from '../phil/phil';
 import { DiscordPromises } from '../promises/discord';
-import { Feature } from '../phil/features';
+import ICommand from './@types';
 
-export class KuzcoCommand implements Command {
-    readonly name = 'kuzco';
-    readonly aliases = [ 'poison' ];
-    readonly feature : Feature = null;
+export default class KuzcoCommand implements ICommand {
+    public readonly name = 'kuzco';
+    public readonly aliases = [ 'poison' ];
+    public readonly feature: Feature = null;
 
-    readonly helpGroup = HelpGroup.Memes;
-    readonly helpDescription = 'Oh right, the poison.';
+    public readonly helpGroup = HelpGroup.Memes;
+    public readonly helpDescription = 'Oh right, the poison.';
 
-    readonly versionAdded = 8;
+    public readonly versionAdded = 8;
 
-    readonly isAdminCommand = false;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = false;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const poison = this.getPoison(commandArgs);
         const reply = this.createReply(poison);
 
@@ -26,7 +24,7 @@ export class KuzcoCommand implements Command {
         return DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
     }
 
-    private getPoison(commandArgs : string[]) : string[] {
+    private getPoison(commandArgs: ReadonlyArray<string>): string[] {
         if (commandArgs.length === 0) {
             return ['kuzco', 'poison'];
         }
@@ -35,14 +33,14 @@ export class KuzcoCommand implements Command {
             return [commandArgs[0], 'poison'];
         }
 
-        var indexOfSecondArgument = Math.ceil(commandArgs.length / 2);
+        const indexOfSecondArgument = Math.ceil(commandArgs.length / 2);
         return [
             commandArgs.slice(0, indexOfSecondArgument).join(' ').trim(),
             commandArgs.slice(indexOfSecondArgument).join(' ').trim()
         ];
     }
 
-    private createReply(kuzcosPoison : string[]) : string {
+    private createReply(kuzcosPoison: string[]): string {
         return 'Oh right, the ' +
             kuzcosPoison[1] +
             '. The ' +

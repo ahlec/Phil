@@ -1,12 +1,10 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage } from 'phil';
+import Feature from '../phil/features/feature';
+import { HelpGroup } from '../phil/help-groups';
+import Phil from '../phil/phil';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
-import { Feature } from '../phil/features';
+import ICommand from './@types';
 
 const conchReplies = [
     'Maybe someday',
@@ -22,18 +20,18 @@ const conchReplies = [
     'Try asking again'
 ];
 
-export class ConchCommand implements Command {
-    readonly name = 'conch';
-    readonly aliases = ['magicconch', 'mc'];
-    readonly feature : Feature = null;
+export default class ConchCommand implements ICommand {
+    public readonly name = 'conch';
+    public readonly aliases = ['magicconch', 'mc'];
+    public readonly feature: Feature = null;
 
-    readonly helpGroup = HelpGroup.Memes;
-    readonly helpDescription = 'The Magic Conch says...';
+    public readonly helpGroup = HelpGroup.Memes;
+    public readonly helpDescription = 'The Magic Conch says...';
 
-    readonly versionAdded = 3;
+    public readonly versionAdded = 3;
 
-    readonly isAdminCommand = false;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = false;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>) : Promise<any> {
         const conchReply = BotUtils.getRandomArrayEntry(conchReplies);
         const reply = ':shell: The Magic Conch Shell says: **' + conchReply + '**.';
 

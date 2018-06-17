@@ -1,11 +1,9 @@
-'use strict';
-
-import { MemberUniqueRoleCommandBase } from './bases/member-unique-role-base';
-import { Features } from '../phil/features';
 import { Role as DiscordIORole } from 'discord.io';
+import { IServerConfig } from 'phil';
+import Features from '../phil/features/all-features';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
-import { IServerConfig } from 'phil';
+import MemberUniqueRoleCommandBase from './bases/member-unique-role-base';
 
 const decemberLinks = [
     'http://www.december.com/html/spec/color0.html',
@@ -25,29 +23,29 @@ const compliments = [
 ];
 
 // TData = valid string hex code (ie #000000)
-export class ColourCommand extends MemberUniqueRoleCommandBase<string> {
-    readonly name = 'colour';
-    readonly aliases = ['color'];
-    readonly feature = Features.Colour;
+export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
+    public readonly name = 'colour';
+    public readonly aliases = ['color'];
+    public readonly feature = Features.Colour;
 
-    readonly helpDescription = 'Asks Phil to change your username colour to a hex code of your choosing.';
+    public readonly helpDescription = 'Asks Phil to change your username colour to a hex code of your choosing.';
 
-    readonly versionAdded = 3;
+    public readonly versionAdded = 3;
 
-    protected getMissingCommandArgsErrorMessage(serverConfig : IServerConfig) : string {
+    protected getMissingCommandArgsErrorMessage(serverConfig: IServerConfig): string {
         const decemberLink = BotUtils.getRandomArrayEntry(decemberLinks);
         return 'You must provide a hex code to this function of the colour that you\'d like to use. For example, `'
             + serverConfig.commandPrefix + 'color #FFFFFF`. You could try checking out '
             + decemberLink + ' for some codes.';
     }
 
-    protected getInvalidInputErrorMessage(input : string, serverConfig : IServerConfig) : string {
+    protected getInvalidInputErrorMessage(input: string, serverConfig: IServerConfig): string {
         const decemberLink = BotUtils.getRandomArrayEntry(decemberLinks);
         return '`' + input + '` isn\'t a valid hex code. I\'m looking for it in the format of `#RRGGBB`. You can try checking out '
             + decemberLink + ' for some amazing colours.';
     }
 
-    protected tryParseInput(input : string) : string {
+    protected tryParseInput(input: string): string {
         if (!BotUtils.isValidHexColor(input)) {
             return null;
         }
@@ -55,23 +53,23 @@ export class ColourCommand extends MemberUniqueRoleCommandBase<string> {
         return input.toUpperCase();
     }
 
-    protected isRolePartOfUniquePool(role : DiscordIORole) : boolean {
+    protected isRolePartOfUniquePool(role: DiscordIORole): boolean {
         return BotUtils.isHexColorRole(role);
     }
 
-    protected doesRoleMatchData(role : DiscordIORole, data : string) : boolean {
+    protected doesRoleMatchData(role: DiscordIORole, data: string): boolean {
         return (role.name === data);
     }
 
-    protected getRoleConfig(data : string) : DiscordPromises.EditRoleOptions {
+    protected getRoleConfig(data: string): DiscordPromises.EditRoleOptions {
         const hexColorNumber = parseInt(data.replace('#', '0x'), 16);
         return {
-            name: data,
-            color: hexColorNumber
+            color: hexColorNumber,
+            name: data
         };
     }
 
-    protected getSuccessMessage(serverConfig : IServerConfig, data : string) : string {
+    protected getSuccessMessage(serverConfig: IServerConfig, data: string): string {
         const compliment = BotUtils.getRandomArrayEntry(compliments);
         return 'Your colour has been changed to **' + data + '**. ' + compliment;
     }
