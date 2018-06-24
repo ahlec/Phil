@@ -1,42 +1,44 @@
-'use strict';
-
-import { Chrono } from './@types';
-import { Phil } from '../phil/phil';
 import { Server as DiscordIOServer } from 'discord.io';
-import { DiscordPromises } from '../promises/discord';
-import { ServerConfig } from '../phil/server-config';
+import Phil from '../phil/phil';
+import ServerConfig from '../phil/server-config';
 import { BotUtils } from '../phil/utils';
+import { DiscordPromises } from '../promises/discord';
+import IChrono from './@types';
 
-interface RoleInfo {
-    id : string;
-    name : string;
+interface IRoleInfo {
+    id: string;
+    name: string;
 }
 
-export class RemoveUnusedColorRolesChrono implements Chrono {
-    readonly handle = 'remove-unused-colour-roles';
+export default class RemoveUnusedColorRolesChrono implements IChrono {
+    public readonly handle = 'remove-unused-colour-roles';
 
-    async process(phil : Phil, serverConfig : ServerConfig, now : Date) {
-        let unusedColorRoles = this.getAllUnusedColorRoleIds(serverConfig.server);
+    public async process(phil: Phil, serverConfig: ServerConfig, now: Date) {
+        const unusedColorRoles = this.getAllUnusedColorRoleIds(serverConfig.server);
         if (unusedColorRoles.length === 0) {
             return;
         }
 
-        var message = 'The following colour role(s) have been removed automatically because I could not find any users on your server who were still using them:\n';
-        for (let role of unusedColorRoles) {
+        let message = 'The following colour role(s) have been removed automatically because I could not find any users on your server who were still using them:\n';
+        for (const role of unusedColorRoles) {
             await DiscordPromises.deleteRole(phil.bot, serverConfig.server.id, role.id);
             message += '\n\t' + role.name + ' (ID: ' + role.id + ')';
         }
 
         DiscordPromises.sendEmbedMessage(phil.bot, serverConfig.botControlChannel.id, {
             color: 0xB0E0E6,
-            title: ':scroll: Unused Colour Roles Removed',
-            description: message
+            description: message,
+            title: ':scroll: Unused Colour Roles Removed'
         });
     }
 
-    private getAllUnusedColorRoleIds(server : DiscordIOServer) : RoleInfo[] {
-        var colorRoles = [];
-        for (let roleId in server.roles) {
+    private getAllUnusedColorRoleIds(server: DiscordIOServer): IRoleInfo[] {
+        const colorRoles = [];
+        for (const roleId in server.roles) {
+            if (!server.roles.hasOwnProperty(roleId)) {
+                continue;
+            }
+
             const role = server.roles[roleId];
             if (!role || !BotUtils.isHexColorRole(role)) {
                 continue;
@@ -55,8 +57,8 @@ export class RemoveUnusedColorRolesChrono implements Chrono {
         return colorRoles;
     }
 
-    private isRoleUnused(server : DiscordIOServer, roleId : string) : boolean {
-        for (let memberId in server.members) {
+    private isRoleUnused(server: DiscordIOServer, roleId: string): boolean {
+        for (const memberId in server.members) {
             if (BotUtils.doesMemberUseRole(server.members[memberId], roleId)) {
                 return false;
             }

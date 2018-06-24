@@ -1,7 +1,7 @@
-import { Phil } from './phil';
-import { IMention, IMessage, IPublicMessage, IPrivateMessage, IServerConfig } from 'phil';
 import { Server as DiscordIOServer, User as DiscordIOUser } from 'discord.io';
 import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
+import { IMention, IMessage, IPublicMessage, IPrivateMessage, IServerConfig } from 'phil';
+import Phil from './phil';
 
 abstract class MessageBase implements IMessage {
     public readonly id : string;
@@ -47,7 +47,7 @@ class PublicMessage extends MessageBase implements IPublicMessage {
 }
 
 export namespace Message {
-    export async function parse(phil : Phil, event : OfficialDiscordPayload<OfficialDiscordMessage>) : Promise<IMessage> {
+    export async function parse(phil: Phil, event: OfficialDiscordPayload<OfficialDiscordMessage>): Promise<IMessage> {
         const isDirectMessage = (event.d.channel_id in phil.bot.directMessages);
         if (isDirectMessage) {
             return new PrivateMessage(event, phil);

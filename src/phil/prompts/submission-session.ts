@@ -1,23 +1,12 @@
-import { Phil } from '../phil';
-import { Bucket } from '../buckets';
-import { Moment, Duration } from 'moment';
+import { Duration, Moment } from 'moment';
 import momentModule = require('moment');
+import Bucket from '../buckets';
+import Phil from '../phil';
 
 const SESSION_LENGTH_IN_MINUTES : number = 10;
 
 export default class SubmissionSession {
-    public readonly remainingTime : Duration;
-
-    private constructor(private readonly userId : string,
-        public readonly bucket : Bucket,
-        public readonly startedUtc : Moment,
-        public readonly timeoutUtc : Moment,
-        private isAnonymous : boolean,
-        private numSubmitted : number) {
-        this.remainingTime = momentModule.duration(timeoutUtc.diff(startedUtc));
-    }
-
-    static async getActiveSession(phil : Phil, userId : string) : Promise<SubmissionSession | null> {
+    public static async getActiveSession(phil: Phil, userId: string) : Promise<SubmissionSession> {
         const utcNow = momentModule.utc();
         const results = await phil.db.query(`SELECT pss.*
             FROM prompt_submission_sessions pss
@@ -32,7 +21,7 @@ export default class SubmissionSession {
         }
 
         const dbRow = results.rows[0];
-        const bucketId = parseInt(dbRow.bucket_id);
+        const bucketId = parseInt(dbRow.bucket_id, 10);
         const bucket = await Bucket.getFromId(phil.bot, phil.db, bucketId);
         if (!bucket) {
             return null;
@@ -40,13 +29,13 @@ export default class SubmissionSession {
 
         const startedUtc = momentModule.utc(dbRow.started_utc);
         const timeoutUtc = momentModule.utc(dbRow.timeout_utc);
-        const isAnonymous = (parseInt(dbRow.is_anonymous) === 1);
-        const numSubmitted = parseInt(dbRow.num_submitted);
+        const isAnonymous = (parseInt(dbRow.is_anonymous, 10) === 1);
+        const numSubmitted = parseInt(dbRow.num_submitted, 10);
         return new SubmissionSession(userId, bucket, startedUtc, timeoutUtc, isAnonymous,
             numSubmitted);
     }
 
-    static async startNewSession(phil: Phil, userId: string, bucket: Bucket): Promise<SubmissionSession> {
+    public static async startNewSession(phil: Phil, userId: string, bucket: Bucket): Promise<SubmissionSession> {
         await phil.db.query(`DELETE FROM prompt_submission_sessions
             WHERE user_id = $1`, [userId]);
         const now = momentModule.utc();
@@ -61,6 +50,17 @@ export default class SubmissionSession {
         return new SubmissionSession(userId, bucket, now, timeout, false, 0);
     }
 
+    public readonly remainingTime : Duration;
+
+    private constructor(private readonly userId : string,
+        public readonly bucket : Bucket,
+        public readonly startedUtc : Moment,
+        public readonly timeoutUtc : Moment,
+        private isAnonymous : boolean,
+        private numSubmitted : number) {
+        this.remainingTime = momentModule.duration(timeoutUtc.diff(startedUtc));
+    }
+
     public getNumberSubmissions(): number {
         return this.numSubmitted;
     }
@@ -69,7 +69,7 @@ export default class SubmissionSession {
         return this.isAnonymous;
     }
 
-    async submit(phil: Phil, prompt: string) {
+    public async submit(phil: Phil, prompt: string) {
         const user = phil.bot.users[this.userId];
         const isAnonymousBit = (this.isAnonymous ? 1 : 0);
         const submitPromptResult = await phil.db.query(`INSERT INTO prompts(
@@ -95,7 +95,7 @@ export default class SubmissionSession {
         this.numSubmitted++;
     }
 
-    async makeAnonymous(phil: Phil) {
+    public async makeAnonymous(phil: Phil) {
         if (this.isAnonymous) {
             return;
         }
@@ -111,7 +111,7 @@ export default class SubmissionSession {
         this.isAnonymous = true;
     }
 
-    async end(phil: Phil) {
+    public async end(phil: Phil) {
         await phil.db.query(`DELETE FROM prompt_submission_sessions WHERE user_id = $1`,
             [this.userId]);
     }

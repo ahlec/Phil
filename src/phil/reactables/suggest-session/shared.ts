@@ -6,3 +6,5 @@ export namespace SuggestSessionReactableShared {
         export const MakeAnonymous = '🕵';
     }
 }
+
+export default SuggestSessionReactableShared;

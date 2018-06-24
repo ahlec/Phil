@@ -14,17 +14,19 @@
     "clean": "rm -rf ./build ./node_modules"
   },
   "dependencies": {
+    "@types/moment-timezone": "^0.5.4",
+    "@types/node": "^9.4.6",
+    "@types/pg": "^7.4.4",
+    "chrono-node": "1.3.5",
     "discord.io": "github:woor/discord.io#gateway_v6",
     "ejs": "2.5.6",
     "express": "4.15.2",
-    "pg": "6.x",
-    "youtube-node": "1.3.2",
-    "chrono-node": "1.3.5",
     "moment-timezone": "0.5.14",
+    "pg": "6.x",
+    "tslint": "^5.10.0",
+    "tslint-config-prettier": "^1.10.0",
     "typescript": "^2.7",
-    "@types/moment-timezone": "^0.5.4",
-    "@types/node": "^9.4.6",
-    "@types/pg": "^7.4.4"
+    "youtube-node": "1.3.2"
   },
   "repository": {
     "type": "git",

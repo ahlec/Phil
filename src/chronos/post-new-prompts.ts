@@ -1,20 +1,18 @@
-'use strict';
-
-import { Chrono } from './@types';
-import { Phil } from '../phil/phil';
-import { ServerConfig } from '../phil/server-config';
-import { DiscordPromises } from '../promises/discord';
-import { Bucket } from '../phil/buckets';
-import { Prompt } from '../phil/prompts/prompt';
+import Bucket from '../phil/buckets';
+import Phil from '../phil/phil';
+import Prompt from '../phil/prompts/prompt';
 import { PromptQueue } from '../phil/prompts/queue'
+import ServerConfig from '../phil/server-config';
+import { DiscordPromises } from '../promises/discord';
+import IChrono from './@types';
 
-export class PostNewPromptsChrono implements Chrono {
-    readonly handle = 'post-new-prompts';
+export default class PostNewPromptsChrono implements IChrono {
+    public readonly handle = 'post-new-prompts';
 
-    async process(phil : Phil, serverConfig : ServerConfig, now : Date) {
+    public async process(phil: Phil, serverConfig: ServerConfig, now: Date) {
         const serverBuckets = await Bucket.getAllForServer(phil.bot, phil.db, serverConfig.server.id);
 
-        for (let bucket of serverBuckets) {
+        for (const bucket of serverBuckets) {
             if (bucket.isPaused || !bucket.isValid) {
                 continue;
             }
@@ -23,7 +21,7 @@ export class PostNewPromptsChrono implements Chrono {
         }
     }
 
-    private async processBucket(phil : Phil, serverConfig : ServerConfig, now : Date, bucket : Bucket) {
+    private async processBucket(phil: Phil, serverConfig: ServerConfig, now: Date, bucket: Bucket) {
         const currentPrompt = await Prompt.getCurrentPrompt(phil, bucket);
         if (!this.isCurrentPromptOutdated(currentPrompt, now, bucket)) {
             console.log('[CHRONOS]    - bucket %s on server %s is not ready for a new prompt just yet', bucket.handle, serverConfig.serverId);
@@ -39,7 +37,7 @@ export class PostNewPromptsChrono implements Chrono {
         await prompt.postAsNewPrompt(phil, serverConfig, now);
     }
 
-    private isCurrentPromptOutdated(currentPrompt : Prompt, now : Date, bucket : Bucket) {
+    private isCurrentPromptOutdated(currentPrompt: Prompt, now: Date, bucket: Bucket) {
         if (!currentPrompt || !currentPrompt.datePosted) {
             return true;
         }

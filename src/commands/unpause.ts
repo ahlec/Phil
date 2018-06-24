@@ -1,26 +1,24 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage } from 'phil';
-import { BotUtils } from '../phil/utils';
+import Bucket from '../phil/buckets';
+import Features from '../phil/features/all-features';
+import { HelpGroup } from '../phil/help-groups';
+import Phil from '../phil/phil';
+import BotUtils from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
-import { Features } from '../phil/features';
-import { Bucket } from '../phil/buckets';
+import ICommand from './@types';
 
-export class UnpauseCommand implements Command {
-    readonly name = 'unpause';
-    readonly aliases = ['resume'];
-    readonly feature = Features.Prompts;
+export default class UnpauseCommand implements ICommand {
+    public readonly name = 'unpause';
+    public readonly aliases = ['resume'];
+    public readonly feature = Features.Prompts;
 
-    readonly helpGroup = HelpGroup.Prompts;
-    readonly helpDescription = 'Unpauses a prompt bucket that had been paused earlier from posting any new prompts.';
+    public readonly helpGroup = HelpGroup.Prompts;
+    public readonly helpDescription = 'Unpauses a prompt bucket that had been paused earlier from posting any new prompts.';
 
-    readonly versionAdded = 11;
+    public readonly versionAdded = 11;
 
-    readonly isAdminCommand = true;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = true;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'bucket', true);
         await bucket.setIsPaused(phil.db, false);
 

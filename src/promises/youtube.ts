@@ -1,27 +1,28 @@
-const YouTube = require('youtube-node');
-import { GlobalConfig } from '../phil/global-config';
+import GlobalConfig from '../phil/global-config';
 
-export interface YoutubeVideo {
+const YouTube = require('youtube-node');
+
+export interface IYoutubeVideo {
     id : string;
 }
 
 export namespace YouTubePromises {
-    export function search(globalConfig : GlobalConfig, query : string) : Promise<YoutubeVideo[]> {
+    export function search(globalConfig: GlobalConfig, query: string): Promise<IYoutubeVideo[]> {
          // Their typing definition for search is wrong, and the repo seems dead.
          // Unlikely that I can submit a fix and have it get pushed live.
 
-        const youtubeApi : any = new YouTube();
+        const youtubeApi: any = new YouTube();
         youtubeApi.setKey(globalConfig.youtubeApiKey);
 
         return new Promise((resolve, reject) => {
-            youtubeApi.search(query, 1, (err : Error, result : any) => {
+            youtubeApi.search(query, 1, (err: Error, result: any) => {
                 if (err) {
                     reject(err);
                     return;
                 }
 
-                const videos : YoutubeVideo[] = [];
-                for (let ytItem of result.items) {
+                const videos: IYoutubeVideo[] = [];
+                for (const ytItem of result.items) {
                     videos.push({
                         id: ytItem.id.videoId
                     });
@@ -32,3 +33,5 @@ export namespace YouTubePromises {
         });
     }
 }
+
+export default YouTubePromises;

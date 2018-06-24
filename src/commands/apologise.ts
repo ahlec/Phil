@@ -1,12 +1,10 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage } from 'phil';
+import Feature from '../phil/features/feature';
+import { HelpGroup } from '../phil/help-groups';
+import Phil from '../phil/phil';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
-import { Feature } from '../phil/features';
+import ICommand from './@types';
 
 const apologies = [
     'I am incredibly sorry for my mistake.',
@@ -20,18 +18,18 @@ const apologies = [
     'On my Yeti honour and pride, I shall never do this again.'
 ];
 
-export class ApologiseCommand implements Command {
-    readonly name = 'apologise';
-    readonly aliases = ['apologize'];
-    readonly feature : Feature = null;
+export default class ApologiseCommand implements ICommand {
+    public readonly name = 'apologise';
+    public readonly aliases = ['apologize'];
+    public readonly feature: Feature = null;
 
-    readonly helpGroup = HelpGroup.None;
-    readonly helpDescription = 'Makes Phil apologise for making a mistake.';
+    public readonly helpGroup = HelpGroup.None;
+    public readonly helpDescription = 'Makes Phil apologise for making a mistake.';
 
-    readonly versionAdded = 3;
+    public readonly versionAdded = 3;
 
-    readonly isAdminCommand = false;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = false;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const apology = BotUtils.getRandomArrayEntry(apologies);
         return DiscordPromises.sendMessage(phil.bot, message.channelId, apology);
     }

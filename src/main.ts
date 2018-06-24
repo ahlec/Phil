@@ -1,16 +1,14 @@
-'use strict';
-
+import Database from './phil/database';
 import { ensureNecessaryEnvironmentVariables } from './phil/environment-manager';
-import { GlobalConfig } from './phil/global-config';
-import { Database } from './phil/database';
-import { Phil } from './phil/phil';
-import { WebPortal } from './phil/web-portal';
+import GlobalConfig from './phil/global-config';
+import Phil from './phil/phil';
+import WebPortal from './phil/web-portal';
 
 async function main() {
     try {
         ensureNecessaryEnvironmentVariables();
 
-        const globalConfig = GlobalConfig.retrieve();
+        const globalConfig = new GlobalConfig();
         const db = new Database(globalConfig);
         await db.checkIsCurrentVersion();
 

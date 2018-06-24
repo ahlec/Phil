@@ -1,28 +1,26 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage, IServerConfig } from 'phil';
+import Bucket from '../phil/buckets';
+import Features from '../phil/features/all-features';
+import { HelpGroup } from '../phil/help-groups';
+import Phil from '../phil/phil';
+import Prompt from '../phil/prompts/prompt';
 import { DiscordPromises } from '../promises/discord';
-import { Features } from '../phil/features';
-import { Bucket } from '../phil/buckets';
-import { Prompt } from '../phil/prompts/prompt';
+import ICommand from './@types';
 
 const MAX_LIST_LENGTH = 10;
 
-export class UnconfirmedCommand implements Command {
-    readonly name = 'unconfirmed';
-    readonly aliases : string[] = [];
-    readonly feature = Features.Prompts;
+export default class UnconfirmedCommand implements ICommand {
+    public readonly name = 'unconfirmed';
+    public readonly aliases: ReadonlyArray<string> = [];
+    public readonly feature = Features.Prompts;
 
-    readonly helpGroup = HelpGroup.Prompts;
-    readonly helpDescription = 'Creates a list of some of the unconfirmed prompts that are awaiting admin approval before being added to the prompt queue.';
+    public readonly helpGroup = HelpGroup.Prompts;
+    public readonly helpDescription = 'Creates a list of some of the unconfirmed prompts that are awaiting admin approval before being added to the prompt queue.';
 
-    readonly versionAdded = 1;
+    public readonly versionAdded = 1;
 
-    readonly isAdminCommand = true;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = true;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         await phil.db.query('DELETE FROM prompt_confirmation_queue WHERE channel_id = $1', [message.channelId]);
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'unconfirmed', false);
 
@@ -32,21 +30,21 @@ export class UnconfirmedCommand implements Command {
         }
 
         for (let index = 0; index < prompts.length; ++index) {
-            let prompt = prompts[index];
+            const prompt = prompts[index];
             await phil.db.query('INSERT INTO prompt_confirmation_queue VALUES($1, $2, $3)', [message.channelId, prompt.promptId, index]);
         }
 
         return this.outputList(phil, message.serverConfig, message.channelId, prompts);
     }
 
-    private outputNoUnconfirmedPrompts(phil : Phil, channelId : string) : Promise<string> {
+    private outputNoUnconfirmedPrompts(phil: Phil, channelId: string): Promise<string> {
         return DiscordPromises.sendMessage(phil.bot, channelId, ':large_blue_diamond: There are no unconfirmed prompts in the queue right now.');
     }
 
-    private outputList(phil : Phil, serverConfig : IServerConfig, channelId : string, prompts : Prompt[]) : Promise<string> {
+    private outputList(phil: Phil, serverConfig: IServerConfig, channelId: string, prompts: Prompt[]): Promise<string> {
         const existenceVerb = (prompts.length === 1 ? 'is' : 'are');
         const noun = (prompts.length === 1 ? 'prompt' : 'prompts');
-        var message = ':pencil: Here ' + existenceVerb + ' ' + prompts.length + ' unconfirmed ' + noun + '.';
+        let message = ':pencil: Here ' + existenceVerb + ' ' + prompts.length + ' unconfirmed ' + noun + '.';
 
         for (let index = 0; index < prompts.length; ++index) {
             message += '\n        `' + (index + 1) + '`: "' + prompts[index].text + '"';
@@ -57,4 +55,4 @@ export class UnconfirmedCommand implements Command {
 
         return DiscordPromises.sendMessage(phil.bot, channelId, message);
     }
-};
+}

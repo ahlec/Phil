@@ -1,9 +1,9 @@
 export namespace PromptQueueReactableShared {
     export interface IData {
-        currentPage : number;
-        totalNumberPages : number;
-        pageSize : number;
-        bucket : number;
+        currentPage: number;
+        totalNumberPages: number;
+        pageSize: number;
+        bucket: number;
     }
 
     export const ReactableHandle = 'prompt-queue';
@@ -13,3 +13,5 @@ export namespace PromptQueueReactableShared {
         export const Next = '▶';
     }
 }
+
+export default PromptQueueReactableShared;

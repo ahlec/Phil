@@ -1,38 +1,36 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { Server as DiscordIOServer } from 'discord.io';
 import { IPublicMessage, IServerConfig } from 'phil';
-import { Database } from '../phil/database';
+import CalendarMonth from '../phil/calendar/calendar-month';
+import Database from '../phil/database';
+import Features from '../phil/features/all-features';
+import { HelpGroup } from '../phil/help-groups';
+import MessageBuilder from '../phil/message-builder';
+import Phil from '../phil/phil';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
-import { Features } from '../phil/features';
-import { CalendarMonth } from '../phil/calendar';
-import { MessageBuilder } from '../phil/message-builder';
+import ICommand from './@types';
 
 const chronoNode = require('chrono-node');
 
-export class CalendarCommand implements Command {
-    readonly name = 'calendar';
-    readonly aliases : string[] = [];
-    readonly feature = Features.Calendar;
+export default class CalendarCommand implements ICommand {
+    public readonly name = 'calendar';
+    public readonly aliases: ReadonlyArray<string> = [];
+    public readonly feature = Features.Calendar;
 
-    readonly helpGroup = HelpGroup.General;
-    readonly helpDescription = 'Has Phil display the calendar of server events for the month in question.';
+    public readonly helpGroup = HelpGroup.General;
+    public readonly helpDescription = 'Has Phil display the calendar of server events for the month in question.';
 
-    readonly versionAdded = 6;
+    public readonly versionAdded = 6;
 
-    readonly isAdminCommand = false;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = false;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const month = this.determineMonth(message.serverConfig, commandArgs);
         const calendar = await CalendarMonth.getForMonth(phil.bot, phil.db, message.server, month);
         const builder = this.composeMessageFromCalendar(message.server, calendar);
         return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, builder);
     }
 
-    private determineMonth(serverConfig : IServerConfig, commandArgs : string[]) : number {
+    private determineMonth(serverConfig: IServerConfig, commandArgs: ReadonlyArray<string>): number {
         const input = commandArgs.join(' ').trim();
         if (input === '') {
             const now = new Date();
@@ -47,16 +45,16 @@ export class CalendarCommand implements Command {
         return inputDate.getUTCMonth() + 1;
     }
 
-    private composeMessageFromCalendar(server : DiscordIOServer, calendar : CalendarMonth) : MessageBuilder {
+    private composeMessageFromCalendar(server: DiscordIOServer, calendar: CalendarMonth): MessageBuilder {
         const builder = new MessageBuilder();
-        builder.append(calendar.monthInfo.emoji + ' **' + calendar.monthInfo.fullName + '** calendar for the ' + server.name + ' Server\n\n');
+        builder.append(calendar.definition.emoji + ' **' + calendar.definition.fullName + '** calendar for the ' + server.name + ' Server\n\n');
 
         for (let index = 0; index < calendar.days.length; ++index) {
-            let day = calendar.days[index];
-            const dayPrefix = (index + 1) + ' ' + calendar.monthInfo.abbreviation + ': ';
+            const day = calendar.days[index];
+            const dayPrefix = (index + 1) + ' ' + calendar.definition.abbreviation + ': ';
 
-            for (let messageIndex = 0; messageIndex < day.length; ++messageIndex) {
-                builder.append(dayPrefix + day[messageIndex] + '\n');
+            for (const event of day) {
+                builder.append(dayPrefix + event + '\n');
             }
         }
 

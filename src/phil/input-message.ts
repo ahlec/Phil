@@ -1,21 +1,13 @@
 import { IServerConfig } from 'phil';
 
-export class InputMessage {
-    private readonly _commandName : string;
-    private readonly _commandArgs : string[];
-
-    constructor(commandName : string, commandArgs : string[]) {
-        this._commandName = commandName;
-        this._commandArgs = commandArgs;
-    }
-
-    static parseFromMessage(serverConfig : IServerConfig, message : string) : InputMessage {
-        if (message === undefined || message === '') {
+export default class InputMessage {
+    public static parseFromMessage(serverConfig: IServerConfig, message: string): InputMessage {
+        if (!message || message === '') {
             return null;
         }
 
         const words = message.split(' ').filter(word => word.trim().length > 0);
-        if (words.length === 0) {
+        if (!words.length) {
             return null;
         }
 
@@ -28,11 +20,7 @@ export class InputMessage {
         return new InputMessage(commandName, words.slice(1));
     }
 
-    getCommandName() : string {
-        return this._commandName;
-    }
-
-    getCommandArgs() : string[] {
-        return this._commandArgs;
+    private constructor(public readonly commandName: string,
+        public readonly commandArgs: ReadonlyArray<string>) {
     }
 };

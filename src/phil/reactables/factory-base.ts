@@ -1,7 +1,7 @@
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
-import { Database } from '../database';
 import { DiscordPromises } from '../../promises/discord';
-import { ReactablePost } from './post';
+import Database from '../database';
+import ReactablePost from './post';
 
 export interface IReactableCreateArgsBase {
     messageId : string;
@@ -11,14 +11,14 @@ export interface IReactableCreateArgsBase {
 }
 
 export abstract class ReactableFactoryBase<TCreateArgs extends IReactableCreateArgsBase> {
-    protected abstract readonly handle : string;
+    protected abstract readonly handle: string;
 
-    protected constructor(readonly bot : DiscordIOClient,
-        readonly db : Database,
-        readonly args : TCreateArgs) {
+    protected constructor(readonly bot: DiscordIOClient,
+        readonly db: Database,
+        readonly args: TCreateArgs) {
     }
 
-    async create() {
+    public async create() {
         if (!this.isValid()) {
             throw new Error('The provided creation args are not valid.');
         }
@@ -36,7 +36,7 @@ export abstract class ReactableFactoryBase<TCreateArgs extends IReactableCreateA
         }
     }
 
-    protected isValid() : boolean {
+    protected isValid(): boolean {
         if (!this.args.messageId || this.args.messageId.length === 0) {
             return false;
         }
@@ -56,10 +56,10 @@ export abstract class ReactableFactoryBase<TCreateArgs extends IReactableCreateA
         return true;
     }
 
-    protected abstract getJsonData() : any | null;
-    protected abstract getEmojiReactions() : string[];
+    protected abstract getJsonData(): any | null;
+    protected abstract getEmojiReactions(): string[];
 
-    private async addToDatabase(reactions : string[]) {
+    private async addToDatabase(reactions: string[]) {
         const jsonData = this.getJsonData();
         const results = await this.db.query(`INSERT INTO
             reactable_posts(
@@ -84,8 +84,8 @@ export abstract class ReactableFactoryBase<TCreateArgs extends IReactableCreateA
 
     private async removeAllOthers() {
         const posts = await ReactablePost.getAllOfTypeForUser(this.bot, this.db, this.args.user.id, this.handle);
-        for (let post of posts) {
-            if (post.messageId == this.args.messageId) {
+        for (const post of posts) {
+            if (post.messageId === this.args.messageId) {
                 continue;
             }
 

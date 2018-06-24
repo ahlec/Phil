@@ -1,43 +1,41 @@
-'use strict';
-
 const util = require('util');
 
-import { Phil } from './phil';
 import { QueryResult } from 'pg';
-import { Chrono } from '../chronos/@types';
-import { ChronoLookup } from '../chronos/index';
+import IChrono from '../chronos/@types';
+import ChronoLookup from '../chronos/index';
 import { DiscordPromises } from '../promises/discord';
-import { ServerDirectory } from './server-directory';
-import { ServerConfig } from './server-config';
+import Phil from './phil';
+import ServerConfig from './server-config';
+import ServerDirectory from './server-directory';
 
-export class ChronoManager {
-    private readonly _channelsLastMessageTable : { [channelId: string] : Date };
-    private _hasBeenStarted : boolean;
+export default class ChronoManager {
+    private readonly channelsLastMessageTable: { [channelId: string]: Date };
+    private hasBeenStarted: boolean;
 
-    constructor(private readonly phil : Phil, private readonly serverDirectory : ServerDirectory) {
-        this._channelsLastMessageTable = {};
-        this._hasBeenStarted = false;
+    constructor(private readonly phil: Phil, private readonly serverDirectory: ServerDirectory) {
+        this.channelsLastMessageTable = {};
+        this.hasBeenStarted = false;
     }
 
     get MinimumSilenceRequiredBeforePostingInChannel() {
         return 10; // 10 minutes
     }
 
-    start() {
-        if (this._hasBeenStarted) {
+    public start() {
+        if (this.hasBeenStarted) {
             return;
         }
 
-        this._hasBeenStarted = true;
+        this.hasBeenStarted = true;
         console.log('[CHRONOS] Starting chronos system.');
-        setInterval(this._processChronos.bind(this), 1000 * 60 * 15); // Run every 15 minutes
-        this._processChronos(); // Also run at startup to make sure you get anything that ran earlier that day
+        setInterval(this.processChronos.bind(this), 1000 * 60 * 15); // Run every 15 minutes
+        this.processChronos(); // Also run at startup to make sure you get anything that ran earlier that day
     }
 
-    getMinutesSinceLastMessageInChannel(channelId : string, now : Date) {
-        const minutesSinceLast = this._channelsLastMessageTable[channelId];
-        if (minutesSinceLast === undefined) {
-            this._channelsLastMessageTable[channelId] = new Date(); // We'll set it here since we don't have a baseline but it helps us move past this section if the bot started out with the channel dead
+    public getMinutesSinceLastMessageInChannel(channelId: string, now: Date) {
+        const minutesSinceLast = this.channelsLastMessageTable[channelId];
+        if (!minutesSinceLast) {
+            this.channelsLastMessageTable[channelId] = new Date(); // We'll set it here since we don't have a baseline but it helps us move past this section if the bot started out with the channel dead
             return 0;
         }
 
@@ -49,11 +47,11 @@ export class ChronoManager {
         return Math.floor((millisecondsDiff / 1000) / 60);
     }
 
-    recordNewMessageInChannel(channelId : string) {
-        this._channelsLastMessageTable[channelId] = new Date();
+    public recordNewMessageInChannel(channelId: string) {
+        this.channelsLastMessageTable[channelId] = new Date();
     }
 
-    private _processChronos() {
+    private processChronos() {
         const now = new Date();
         const utcHour = now.getUTCHours();
         const utcDate = now.getUTCFullYear() + '-' + (now.getUTCMonth() + 1) + '-' + now.getUTCDate();
@@ -75,14 +73,14 @@ export class ChronoManager {
                 (sc.date_last_ran IS NULL OR sc.date_last_ran < $2)
             ORDER BY
                 c.utc_hour ASC`, [utcHour, utcDate])
-            .then((results : QueryResult) => {
-                for (let dbRow of results.rows) {
-                    this._processChronoInstance(now, dbRow.chrono_handle, dbRow.chrono_id, dbRow.server_id, utcDate);
+            .then((results: QueryResult) => {
+                for (const dbRow of results.rows) {
+                    this.processChronoInstance(now, dbRow.chrono_handle, dbRow.chrono_id, dbRow.server_id, utcDate);
                 }
             });
     }
 
-    private async _processChronoInstance(now : Date, chronoHandle : string, chronoId : number, serverId : string, utcDate : string) {
+    private async processChronoInstance(now: Date, chronoHandle: string, chronoId: number, serverId: string, utcDate: string) {
         console.log('[CHRONOS] %s for serverId %s', chronoHandle, serverId);
 
         const server = this.phil.bot.servers[serverId];
@@ -106,13 +104,13 @@ export class ChronoManager {
         }
     }
 
-    private markChronoProcessed(chronoId : number, serverId : string, utcDate : string) {
+    private markChronoProcessed(chronoId: number, serverId: string, utcDate: string) {
         return this.phil.db.query(`UPDATE server_chronos
             SET date_last_ran = $1
             WHERE server_id = $2 AND chrono_id = $3`, [utcDate, serverId, chronoId]);
     }
 
-    private reportChronoError(err : Error | string, serverConfig : ServerConfig, chronoHandle : string) {
+    private reportChronoError(err: Error | string, serverConfig: ServerConfig, chronoHandle: string) {
         console.error('[CHRONOS]     error running %s for server %s', chronoHandle, serverConfig.server.id);
         console.error(err);
 
@@ -122,11 +120,11 @@ export class ChronoManager {
 
         return DiscordPromises.sendEmbedMessage(this.phil.bot, serverConfig.botControlChannel.id, {
             color: 0xCD5555,
-            title: ':no_entry: Chrono Error',
             description: err,
             footer: {
                 text: 'chrono: ' + chronoHandle
-            }
+            },
+            title: ':no_entry: Chrono Error'
         });
     }
 };

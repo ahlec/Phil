@@ -1,29 +1,27 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { Client as DiscordIOClient, Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
 import { IPublicMessage, IServerConfig } from 'phil';
-import { Database } from '../phil/database';
-import { DiscordPromises } from '../promises/discord';
-import { Features } from '../phil/features';
+import Database from '../phil/database';
+import Features from '../phil/features/all-features';
+import { HelpGroup } from '../phil/help-groups';
+import MessageBuilder from '../phil/message-builder';
+import Phil from '../phil/phil';
+import Requestable, { IRequestableCreationDefinition } from '../phil/requestables';
 import { BotUtils } from '../phil/utils';
-import { Requestable, RequestableCreationDefinition } from '../phil/requestables';
-import { MessageBuilder } from '../phil/message-builder';
+import { DiscordPromises } from '../promises/discord';
+import ICommand from './@types';
 
-export class DefineCommand implements Command {
-    readonly name = 'define';
-    readonly aliases : string[] = [];
-    readonly feature = Features.Requestables;
+export default class DefineCommand implements ICommand {
+    public readonly name = 'define';
+    public readonly aliases: ReadonlyArray<string> = [];
+    public readonly feature = Features.Requestables;
 
-    readonly helpGroup = HelpGroup.Roles;
-    readonly helpDescription = 'Creates a new requestable role that users can use with the request command.';
+    public readonly helpGroup = HelpGroup.Roles;
+    public readonly helpDescription = 'Creates a new requestable role that users can use with the request command.';
 
-    readonly versionAdded = 1;
+    public readonly versionAdded = 1;
 
-    readonly isAdminCommand = true;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = true;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const definition = this.getDefinitionData(commandArgs, message.serverConfig);
         if (!Requestable.checkIsValidRequestableName(definition.name)) {
             throw new Error('The name you provided isn\'t valid to use as a requestable. It must be at least two characters in length and made up only of alphanumeric characters and dashes.');
@@ -43,7 +41,7 @@ export class DefineCommand implements Command {
         });
     }
 
-    private getDefinitionData(commandArgs : string[], serverConfig : IServerConfig) : RequestableCreationDefinition {
+    private getDefinitionData(commandArgs: ReadonlyArray<string>, serverConfig: IServerConfig): IRequestableCreationDefinition {
         if (commandArgs.length < 2) {
             throw new Error('`' + serverConfig.commandPrefix + 'define` requires two parameters, separated by a space:\n' +
                 '[1] the text to be used by users with `' + serverConfig.commandPrefix + 'request` (cannot contain any spaces)\n' +
@@ -56,12 +54,16 @@ export class DefineCommand implements Command {
         }
 
         const roleName = commandArgs.slice(1).join(' ').trim().toLowerCase();
-        for (let roleId in serverConfig.server.roles) {
+        for (const roleId in serverConfig.server.roles) {
+            if (!serverConfig.server.roles.hasOwnProperty(roleId)) {
+                continue;
+            }
+
             const role = serverConfig.server.roles[roleId];
             if (role.name.toLowerCase() === roleName) {
                 return {
                     name: requestString,
-                    role: role
+                    role
                 };
             }
         }

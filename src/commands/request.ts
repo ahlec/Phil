@@ -1,28 +1,26 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage, IServerConfig } from 'phil';
+import Features from '../phil/features/all-features';
+import { HelpGroup } from '../phil/help-groups';
+import MessageBuilder from '../phil/message-builder';
+import Phil from '../phil/phil';
+import Requestable from '../phil/requestables';
+import ServerConfig from '../phil/server-config';
+import BotUtils from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
-import { Features } from '../phil/features';
-import { BotUtils } from '../phil/utils';
-import { Requestable } from '../phil/requestables';
-import { MessageBuilder } from '../phil/message-builder';
-import { ServerConfig } from '../phil/server-config';
+import ICommand from './@types';
 
-export class RequestCommand implements Command {
-    readonly name = 'request';
-    readonly aliases = ['giveme'];
-    readonly feature = Features.Requestables;
+export default class RequestCommand implements ICommand {
+    public readonly name = 'request';
+    public readonly aliases = ['giveme'];
+    public readonly feature = Features.Requestables;
 
-    readonly helpGroup = HelpGroup.Roles;
-    readonly helpDescription = 'Asks Phil to give you a role. Using the command by itself will show you all of the roles he can give you.';
+    public readonly helpGroup = HelpGroup.Roles;
+    public readonly helpDescription = 'Asks Phil to give you a role. Using the command by itself will show you all of the roles he can give you.';
 
-    readonly versionAdded = 1;
+    public readonly versionAdded = 1;
 
-    readonly isAdminCommand = false;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = false;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         if (commandArgs.length === 0) {
             return this.processNoCommandArgs(phil, message);
         }
@@ -42,14 +40,14 @@ export class RequestCommand implements Command {
         });
     }
 
-    private ensureUserCanRequestRole(serverConfig : IServerConfig, userId : string, requestable : Requestable) {
+    private ensureUserCanRequestRole(serverConfig: IServerConfig, userId: string, requestable: Requestable) {
         const member = serverConfig.server.members[userId];
         if (member.roles.indexOf(requestable.role.id) >= 0) {
             throw new Error('You already have the "' + requestable.role.name + '" role. You can use `' + serverConfig.commandPrefix + 'remove` to remove the role if you wish.');
         }
     }
 
-    private async processNoCommandArgs(phil : Phil, message : IPublicMessage) : Promise<any> {
+    private async processNoCommandArgs(phil: Phil, message: IPublicMessage): Promise<any> {
         const requestables = await Requestable.getAllRequestables(phil.db, message.server);
         if (requestables.length === 0) {
             throw new Error('There are no requestable roles defined. An admin should use `' + message.serverConfig.commandPrefix + 'define` to create some roles.');
@@ -59,11 +57,11 @@ export class RequestCommand implements Command {
         return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, reply);
     }
 
-    private composeAllRequestablesList(serverConfig : IServerConfig, requestables : Requestable[]) : MessageBuilder {
+    private composeAllRequestablesList(serverConfig: IServerConfig, requestables: Requestable[]): MessageBuilder {
         const builder = new MessageBuilder();
         builder.append(':snowflake: You must provide a valid requestable name of a role when using `' + serverConfig.commandPrefix + 'request`. These are currently:\n');
 
-        for (let requestable of requestables) {
+        for (const requestable of requestables) {
             builder.append(this.composeRequestableListEntry(requestable));
         }
 
@@ -74,8 +72,8 @@ export class RequestCommand implements Command {
         return builder;
     }
 
-    private composeRequestableListEntry(requestable : Requestable) : string {
-        var entry = '- ';
+    private composeRequestableListEntry(requestable: Requestable): string {
+        let entry = '- ';
         entry += BotUtils.stitchTogetherArray(requestable.requestStrings);
         entry += ' to receive the "' + requestable.role.name + '" role\n';
         return entry;

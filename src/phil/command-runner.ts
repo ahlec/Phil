@@ -1,84 +1,79 @@
-'use strict';
-
-import { Client } from 'discord.io';
+import { Client as DiscordIOClient } from 'discord.io';
 import { IPublicMessage } from 'phil';
-import { Database } from './database';
-import { InputMessage } from './input-message';
-import { Command } from '../commands/@types';
+import ICommand from '../commands/@types';
 import { CommandLookup } from '../commands/index';
-import { Phil } from './phil';
-import { BotUtils } from './utils';
-import { Feature } from './features';
+import Database from './database';
+import Feature from './features/feature';
+import InputMessage from './input-message';
+import Phil from './phil';
+import BotUtils from './utils';
 
 const util = require('util');
 
-export class CommandRunner {
-    constructor(private readonly phil : Phil,
-        private readonly bot : Client,
-        private readonly db : Database) {
+export default class CommandRunner {
+    constructor(private readonly phil: Phil,
+        private readonly bot: DiscordIOClient,
+        private readonly db: Database) {
     }
 
-    public isCommand(message : IPublicMessage) : boolean {
+    public isCommand(message: IPublicMessage): boolean {
         const input = InputMessage.parseFromMessage(message.serverConfig, message.content);
         return (input !== null);
     }
 
-    public async runMessage(message : IPublicMessage) {
+    public async runMessage(message: IPublicMessage) {
         const input = InputMessage.parseFromMessage(message.serverConfig, message.content);
         if (input === null) {
             return;
         }
         this.logInputReceived(message, input);
 
-        const command = this._getCommandFromInputMessage(input);
+        const command = this.getCommandFromInputMessage(input);
         if (command === null) {
-            this._reportInvalidCommand(message, input);
+            this.reportInvalidCommand(message, input);
             return;
         }
 
         if (command.feature && message.server) {
-            let isFeatureEnabled = await command.feature.getIsEnabled(this.db, message.server.id);
+            const isFeatureEnabled = await command.feature.getIsEnabled(this.db, message.server.id);
             if (!isFeatureEnabled) {
-                this._reportInvalidCommand(message, input);
+                this.reportInvalidCommand(message, input);
                 return;
             }
         }
 
-        if (!this._canUserUseCommand(command, message)) {
-            this._reportCannotUseCommand(message, command, input);
+        if (!this.canUserUseCommand(command, message)) {
+            this.reportCannotUseCommand(message, command, input);
             return;
         }
 
         await this.runCommand(message, command, input);
     }
 
-    private logInputReceived(message : IPublicMessage, input : InputMessage) {
-        const commandName = input.getCommandName();
+    private logInputReceived(message: IPublicMessage, input: InputMessage) {
         console.log('user \'%s#%d\' used command \'%s%s\'',
             message.user.username,
             message.user.discriminator,
             message.serverConfig.commandPrefix,
-            commandName);
+            input.commandName);
     }
 
-    private _getCommandFromInputMessage(input : InputMessage) {
-        const commandName = input.getCommandName();
-        if (commandName in CommandLookup) {
-            return CommandLookup[commandName];
+    private getCommandFromInputMessage(input: InputMessage) {
+        if (input.commandName in CommandLookup) {
+            return CommandLookup[input.commandName];
         }
         return null;
     }
 
-    private _reportInvalidCommand(message : IPublicMessage, input : InputMessage) {
-        const commandName = input.getCommandName();
+    private reportInvalidCommand(message: IPublicMessage, input: InputMessage) {
         BotUtils.sendErrorMessage({
             bot: this.bot,
             channelId: message.channelId,
-            message: 'There is no `' + message.serverConfig.commandPrefix + commandName + '` command.'
+            message: `There is no \`${message.serverConfig.commandPrefix}${input.commandName}\` command.`
         });
     }
 
-    private _canUserUseCommand(command : Command, message : IPublicMessage) : boolean {
+    private canUserUseCommand(command: ICommand, message: IPublicMessage): boolean {
         if (!command.isAdminCommand) {
             return true;
         }
@@ -87,30 +82,27 @@ export class CommandRunner {
         return message.serverConfig.isAdmin(member);
     }
 
-    private _reportCannotUseCommand(message : IPublicMessage, command : Command, input : InputMessage) {
-        const commandName = input.getCommandName();
+    private reportCannotUseCommand(message: IPublicMessage, command: ICommand, input: InputMessage) {
         BotUtils.sendErrorMessage({
             bot: this.bot,
             channelId: message.channelId,
-            message: 'The `' + message.serverConfig.commandPrefix + commandName + '` command requires admin privileges to use here.'
+            message: `The \`${message.serverConfig.commandPrefix}${input.commandName}\` command requires admin privileges to use here.`
         });
     }
 
-    private async runCommand(message : IPublicMessage, command : Command, input : InputMessage) {
-        const commandArgs = input.getCommandArgs();
-
+    private async runCommand(message: IPublicMessage, command: ICommand, input: InputMessage) {
         try {
-            await command.processMessage(this.phil, message, commandArgs);
+            await command.processMessage(this.phil, message, input.commandArgs);
         } catch(err) {
             await this.reportCommandError(err, message.channelId);
         }
     }
 
-    private async reportCommandError(err : Error, channelId : string) {
+    private async reportCommandError(err: Error, channelId: string) {
         console.error(util.inspect(err));
         BotUtils.sendErrorMessage({
             bot: this.bot,
-            channelId: channelId,
+            channelId,
             message: err.message
         });
     }

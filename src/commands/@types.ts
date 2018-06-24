@@ -1,22 +1,22 @@
-import { Phil } from '../phil/phil';
 import { IPublicMessage } from 'phil';
-import { Database } from '../phil/database';
+import Database from '../phil/database';
+import Feature from '../phil/features/feature';
 import { HelpGroup } from '../phil/help-groups';
-import { Feature } from '../phil/features';
+import Phil from '../phil/phil';
 
-export interface Command {
-    readonly name : string;
-    readonly aliases : string[];
-    readonly feature : Feature | null;
+export default interface ICommand {
+    readonly name: string;
+    readonly aliases: ReadonlyArray<string>;
+    readonly feature?: Feature;
 
-    readonly helpGroup : HelpGroup;
-    readonly helpDescription : string;
-    readonly versionAdded : number;
+    readonly helpGroup: HelpGroup;
+    readonly helpDescription: string;
+    readonly versionAdded: number;
 
-    readonly isAdminCommand? : boolean;
-    processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any>;
+    readonly isAdminCommand: boolean;
+    processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any>;
 }
 
 export interface ICommandLookup {
-    [name : string] : Command;
+    [name: string]: ICommand;
 }

@@ -1,7 +1,7 @@
-import { ReactableFactoryBase, IReactableCreateArgsBase } from '../factory-base'
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
-import { Database } from '../../database';
-import { SuggestSessionReactableShared } from './shared';
+import Database from '../../database';
+import { IReactableCreateArgsBase, ReactableFactoryBase } from '../factory-base'
+import SuggestSessionReactableShared from './shared';
 
 interface ICreateArgs extends IReactableCreateArgsBase {
     canMakeAnonymous: boolean;

@@ -1,21 +1,19 @@
-'use strict';
-
-import { Chrono } from './@types';
-import { Phil } from '../phil/phil';
-import { DiscordPromises } from '../promises/discord';
-import { ServerConfig } from '../phil/server-config';
-import { Bucket } from '../phil/buckets';
+import Bucket from '../phil/buckets';
+import Phil from '../phil/phil';
 import { PromptQueue } from '../phil/prompts/queue';
+import ServerConfig from '../phil/server-config';
+import { DiscordPromises } from '../promises/discord';
+import IChrono from './@types';
 
 const PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD_DAYS = 5;
 
-export class AlertLowBucketQueueChrono implements Chrono {
-    readonly handle = 'alert-low-bucket-queue';
+export default class AlertLowBucketQueueChrono implements IChrono {
+    public readonly handle = 'alert-low-bucket-queue';
 
-    async process(phil : Phil, serverConfig : ServerConfig, now : Date) {
+    public async process(phil: Phil, serverConfig: ServerConfig, now: Date) {
         const serverBuckets = await Bucket.getAllForServer(phil.bot, phil.db, serverConfig.server.id);
 
-        for (let bucket of serverBuckets) {
+        for (const bucket of serverBuckets) {
             if (!bucket.isValid || bucket.isPaused || !bucket.alertWhenLow) {
                 continue;
             }
@@ -30,11 +28,11 @@ export class AlertLowBucketQueueChrono implements Chrono {
         }
     }
 
-    private alertQueueDwindling(phil : Phil, serverConfig : ServerConfig, bucket : Bucket, queueLength : number) {
-        var are = (queueLength === 1 ? 'is' : 'are');
-        var promptNoun = (queueLength === 1 ? 'prompt' : 'prompts');
+    private alertQueueDwindling(phil: Phil, serverConfig: ServerConfig, bucket: Bucket, queueLength: number) {
+        const are = (queueLength === 1 ? 'is' : 'are');
+        const promptNoun = (queueLength === 1 ? 'prompt' : 'prompts');
 
-        var message = ':warning: The queue for **' + bucket.displayName + '** (`' + bucket.handle + '`) is growing short. There ' + are + ' **' + (queueLength > 0 ? queueLength : 'no') + '** more ' + promptNoun + ' in the queue.';
+        const message = ':warning: The queue for **' + bucket.displayName + '** (`' + bucket.handle + '`) is growing short. There ' + are + ' **' + (queueLength > 0 ? queueLength : 'no') + '** more ' + promptNoun + ' in the queue.';
         DiscordPromises.sendMessage(phil.bot, serverConfig.botControlChannel.id, message);
     }
 }

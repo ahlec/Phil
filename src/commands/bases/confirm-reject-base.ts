@@ -1,16 +1,14 @@
-'use strict';
-
-import { Command } from '../@types';
-import { Phil } from '../../phil/phil';
-import { HelpGroup } from '../../phil/help-groups';
 import { Client as DiscordIOClient } from 'discord.io';
 import { IPublicMessage, IServerConfig } from 'phil';
-import { Database } from '../../phil/database';
-import { Features } from '../../phil/features';
-import { DiscordPromises } from '../../promises/discord';
+import Database from '../../phil/database';
+import Features from '../../phil/features/all-features';
+import { HelpGroup } from '../../phil/help-groups';
+import Phil from '../../phil/phil';
 import { BotUtils } from '../../phil/utils';
+import { DiscordPromises } from '../../promises/discord';
+import ICommand from '../@types';
 
-interface ConfirmRejectResults {
+interface IConfirmRejectResults {
     numSuccessful : number;
     numFailed : number;
 }
@@ -21,34 +19,35 @@ enum PerformResult {
     Success
 }
 
-export abstract class ConfirmRejectCommandBase implements Command {
-    protected abstract readonly noPromptsConfirmedMessage : string;
-    protected abstract readonly onePromptConfirmedMessage : string;
-    protected abstract readonly multiplePromptsConfirmedMessage : string;
+export default abstract class ConfirmRejectCommandBase implements ICommand {
+    public abstract readonly name: string;
+    public abstract readonly aliases: ReadonlyArray<string>;
+    public readonly feature = Features.Prompts;
 
-    abstract readonly name : string;
-    abstract readonly aliases : string[];
-    readonly feature = Features.Prompts;
+    public readonly helpGroup = HelpGroup.None;
+    public readonly helpDescription: string = null;
 
-    readonly helpGroup = HelpGroup.None;
-    readonly helpDescription : string = null;
+    public abstract readonly versionAdded: number;
 
-    abstract readonly versionAdded : number;
+    public readonly isAdminCommand = true;
 
-    readonly isAdminCommand = true;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    protected abstract readonly noPromptsConfirmedMessage: string;
+    protected abstract readonly onePromptConfirmedMessage: string;
+    protected abstract readonly multiplePromptsConfirmedMessage: string;
+
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const numbers = this.getNumbersFromCommandArgs(commandArgs);
         console.log(require('util').inspect(numbers));
 
-        const results = {
-            numSuccessful: 0,
-            numFailed: 0
+        const results: IConfirmRejectResults = {
+            numFailed: 0,
+            numSuccessful: 0
         };
 
-        for (let number of numbers) {
-            number = number - 1; // Public facing, it's 1-based, but in the database it's 0-based
-            let result = await this.performAction(phil, message.serverConfig, message.channelId, number);
-            console.log('result of number %d: %d', number, result);
+        for (let confirmNumber of numbers) {
+            confirmNumber = confirmNumber - 1; // Public facing, it's 1-based, but in the database it's 0-based
+            const result = await this.performAction(phil, message.serverConfig, message.channelId, confirmNumber);
+            console.log('result of number %d: %d', confirmNumber, result);
             if (result === PerformResult.Success) {
                 results.numSuccessful++;
             } else if (result === PerformResult.Error) {
@@ -59,15 +58,15 @@ export abstract class ConfirmRejectCommandBase implements Command {
         this.sendCompletionMessage(phil, message.serverConfig, message.channelId, results);
     }
 
-    protected abstract performActionOnPrompt(phil : Phil, serverConfig : IServerConfig, promptId : number) : Promise<boolean>;
+    protected abstract performActionOnPrompt(phil: Phil, serverConfig: IServerConfig, promptId: number): Promise<boolean>;
 
-    private getNumbersFromCommandArgs(commandArgs : string[]) : number[] {
+    private getNumbersFromCommandArgs(commandArgs: ReadonlyArray<string>): number[] {
         if (commandArgs.length !== 1) {
             throw new Error('You must provide a single parameter. This can be either an individual number, or a range of numbers.');
         }
 
         if (BotUtils.isNumeric(commandArgs[0])) {
-            const singleNumber = parseInt(commandArgs[0]);
+            const singleNumber = parseInt(commandArgs[0], 10);
             return [singleNumber];
         }
 
@@ -79,7 +78,7 @@ export abstract class ConfirmRejectCommandBase implements Command {
         return numberSpan;
     }
 
-    private parseNumberSpan(arg : string) : number[] {
+    private parseNumberSpan(arg: string): number[] {
         const separatedPieces = arg.split('-');
         if (separatedPieces.length !== 2) {
             throw new Error('You must use the format of `1-9` or `3-5` to indicate a range of numbers.');
@@ -89,13 +88,13 @@ export abstract class ConfirmRejectCommandBase implements Command {
             throw new Error('One or both of the arguments you provided in the range were not actually numbers.');
         }
 
-        const lowerBound = parseInt(separatedPieces[0]);
-        const upperBound = parseInt(separatedPieces[1]);
+        const lowerBound = parseInt(separatedPieces[0], 10);
+        const upperBound = parseInt(separatedPieces[1], 10);
         if (upperBound < lowerBound) {
             throw new Error('The range you indicated was a negative range (the second number came before the first number)!');
         }
 
-        var includedNumbers = [];
+        const includedNumbers: number[] = [];
         for (let num = lowerBound; num <= upperBound; ++num) {
             includedNumbers.push(num);
         }
@@ -103,9 +102,9 @@ export abstract class ConfirmRejectCommandBase implements Command {
         return includedNumbers;
     }
 
-    private async performAction(phil : Phil, serverConfig : IServerConfig, channelId : string, number : number) : Promise<PerformResult> {
+    private async performAction(phil: Phil, serverConfig: IServerConfig, channelId: string, confirmNumber: number): Promise<PerformResult> {
         try {
-            const results = await phil.db.query('SELECT prompt_id FROM prompt_confirmation_queue WHERE channel_id = $1 and confirm_number = $2', [channelId, number]);
+            const results = await phil.db.query('SELECT prompt_id FROM prompt_confirmation_queue WHERE channel_id = $1 and confirm_number = $2', [channelId, confirmNumber]);
             if (results.rowCount === 0) {
                 return PerformResult.Skipped;
             }
@@ -116,25 +115,25 @@ export abstract class ConfirmRejectCommandBase implements Command {
                 return PerformResult.Error;
             }
 
-            await this.removeNumberFromConfirmationQueue(phil.db, channelId, number);
+            await this.removeNumberFromConfirmationQueue(phil.db, channelId, confirmNumber);
             return PerformResult.Success;
         } catch {
             return PerformResult.Error;
         }
     }
 
-    private async removeNumberFromConfirmationQueue(db : Database, channelId : string, number : number) : Promise<void> {
-        const results = await db.query('DELETE FROM prompt_confirmation_queue WHERE channel_id = $1 AND confirm_number = $2', [channelId, number]);
+    private async removeNumberFromConfirmationQueue(db: Database, channelId: string, confirmNumber: number) {
+        const results = await db.query('DELETE FROM prompt_confirmation_queue WHERE channel_id = $1 AND confirm_number = $2', [channelId, confirmNumber]);
         if (results.rowCount === 0) {
             throw new Error('Could not remove a prompt from the unconfirmed confirmation queue.');
         }
     }
 
-    private sendCompletionMessage(phil : Phil, serverConfig : IServerConfig, channelId : string, results : ConfirmRejectResults) {
+    private sendCompletionMessage(phil: Phil, serverConfig: IServerConfig, channelId: string, results: IConfirmRejectResults) {
         if (results.numSuccessful === 0) {
             BotUtils.sendErrorMessage({
                 bot: phil.bot,
-                channelId: channelId,
+                channelId,
                 message: this.noPromptsConfirmedMessage.replace(/\{commandPrefix\}/g, serverConfig.commandPrefix)
             });
             return;
@@ -142,7 +141,7 @@ export abstract class ConfirmRejectCommandBase implements Command {
 
         BotUtils.sendSuccessMessage({
             bot: phil.bot,
-            channelId: channelId,
+            channelId,
             message: (results.numSuccessful === 1 ? this.onePromptConfirmedMessage : this.multiplePromptsConfirmedMessage).replace(/\{commandPrefix\}/g, serverConfig.commandPrefix)
         });
     }

@@ -1,16 +1,17 @@
-import { DirectMessageProcessor, IProcessorActiveToken } from './@base';
-import { Phil } from '../phil/phil';
 import { IPrivateMessage } from 'phil';
-import { TimezoneQuestionnaire } from '../phil/timezone-questionnaire';
+import Phil from '../phil/phil';
+import TimezoneQuestionnaire from '../phil/timezones/questionnaire';
+import IStage from '../phil/timezones/questionnaire-stages/@stage';
+import { IDirectMessageProcessor, IProcessorActiveToken } from './@base';
 
-interface TimezoneQuestionnaireToken extends IProcessorActiveToken {
-    readonly currentStage? : TimezoneQuestionnaire.Stage;
+interface ITimezoneQuestionnaireToken extends IProcessorActiveToken {
+    readonly currentStage?: IStage;
 }
 
-export class TimezoneQuestionnaireProcessor implements DirectMessageProcessor {
-    readonly handle = 'timezone-questionnaire';
+export default class TimezoneQuestionnaireProcessor implements IDirectMessageProcessor {
+    public readonly handle = 'timezone-questionnaire';
 
-    async canProcess(phil : Phil, message : IPrivateMessage) : Promise<TimezoneQuestionnaireToken> {
+    public async canProcess(phil: Phil, message: IPrivateMessage): Promise<ITimezoneQuestionnaireToken> {
         const currentStage = await TimezoneQuestionnaire.getStageForUser(phil.db, message.userId);
         if (!currentStage) {
             return {
@@ -18,20 +19,20 @@ export class TimezoneQuestionnaireProcessor implements DirectMessageProcessor {
             };
         }
 
-        if (!TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(currentStage.stage)) {
+        if (!TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(currentStage)) {
             return {
                 isActive: false
             };
         }
 
         return {
-            isActive: true,
-            currentStage: currentStage
+            currentStage,
+            isActive: true
         }
     }
 
-    async process(phil : Phil, message : IPrivateMessage, rawToken : IProcessorActiveToken) {
-        const token = rawToken as TimezoneQuestionnaireToken;
+    public async process(phil: Phil, message: IPrivateMessage, rawToken: IProcessorActiveToken) {
+        const token = rawToken as ITimezoneQuestionnaireToken;
         token.currentStage.processInput(phil, message);
     }
 }

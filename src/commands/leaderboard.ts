@@ -1,20 +1,19 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage } from 'phil';
+import Features from '../phil/features/all-features';
+import { HelpGroup } from '../phil/help-groups';
+import Phil from '../phil/phil';
+import Leaderboard from '../phil/prompts/leaderboard';
+import LeaderboardEntry from '../phil/prompts/leaderboard-entry';
 import { DiscordPromises } from '../promises/discord';
-import { Features } from '../phil/features';
-import { LeaderboardEntry, Leaderboard } from '../phil/prompts/leaderboard';
+import ICommand from './@types';
 
-const RANKING_EMOJI : { [rank : number] : string } = {
+const RANKING_EMOJI: { [rank: number]: string } = {
     1: ':first_place:',
     2: ':second_place:',
     3: ':third_place:'
 };
 
-const RANKING_TEXT : { [rank : number] : string } = {
+const RANKING_TEXT: { [rank: number]: string } = {
     1: '1ˢᵗ',
     2: '2ⁿᵈ',
     3: '3ʳᵈ',
@@ -27,11 +26,11 @@ const RANKING_TEXT : { [rank : number] : string } = {
     10: '10ᵗʰ'
 };
 
-function createLeaderboardMessageEntry(ranking : number, entry : LeaderboardEntry) : string {
-    var emoji = RANKING_EMOJI[ranking];
-    var rankText = RANKING_TEXT[ranking];
+function createLeaderboardMessageEntry(ranking: number, entry: LeaderboardEntry): string {
+    const emoji = RANKING_EMOJI[ranking];
+    const rankText = RANKING_TEXT[ranking];
 
-    var message = (emoji || process.env.CUSTOM_EMOJI_TRANSPARENT);
+    let message = (emoji || process.env.CUSTOM_EMOJI_TRANSPARENT);
     message += ' ';
     message += rankText;
     message += ': **';
@@ -53,8 +52,8 @@ function createLeaderboardMessageEntry(ranking : number, entry : LeaderboardEntr
     return message;
 }
 
-function createLeaderboardMessage(leaderboard : Leaderboard) : string {
-    var leaderboardMessage = '';
+function createLeaderboardMessage(leaderboard: Leaderboard): string {
+    let leaderboardMessage = '';
 
     for (let index = 0; index < leaderboard.entries.length; ++index) {
         if (index > 0) {
@@ -67,28 +66,28 @@ function createLeaderboardMessage(leaderboard : Leaderboard) : string {
     return leaderboardMessage;
 }
 
-export class LeaderboardCommand implements Command {
-    readonly name = 'leaderboard';
-    readonly aliases : string[] = [];
-    readonly feature = Features.Prompts;
+export default class LeaderboardCommand implements ICommand {
+    public readonly name = 'leaderboard';
+    public readonly aliases: ReadonlyArray<string> = [];
+    public readonly feature = Features.Prompts;
 
-    readonly helpGroup = HelpGroup.Prompts;
-    readonly helpDescription = 'Display the leaderboard for prompt submissions on the server, which shows who is in the lead for suggesting discussion prompts.';
+    public readonly helpGroup = HelpGroup.Prompts;
+    public readonly helpDescription = 'Display the leaderboard for prompt submissions on the server, which shows who is in the lead for suggesting discussion prompts.';
 
-    readonly versionAdded = 11;
+    public readonly versionAdded = 11;
 
-    readonly isAdminCommand = false;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = false;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const leaderboard = await Leaderboard.getLeaderboard(phil.bot, phil.db, message.server);
         const reply = createLeaderboardMessage(leaderboard);
 
         DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
             color: 0xB0E0E6,
-            title: 'Hijack Prompt of the Day Leaderboard',
             description: reply,
             footer: {
                 text: 'You can increase your score by submitting prompts! Use ' + message.serverConfig.commandPrefix + 'suggest in a direct message with me!'
-            }
+            },
+            title: 'Hijack Prompt of the Day Leaderboard'
         });
     }
 };
