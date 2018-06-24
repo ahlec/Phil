@@ -1,25 +1,23 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage } from 'phil';
-import { BotUtils } from '../phil/utils';
-import { Features } from '../phil/features';
-import { TimezoneQuestionnaire } from '../phil/timezone-questionnaire';
+import Features from '../phil/features/all-features';
+import { HelpGroup } from '../phil/help-groups';
+import Phil from '../phil/phil';
+import TimezoneQuestionnaire from '../phil/timezones/questionnaire';
+import BotUtils from '../phil/utils';
+import ICommand from './@types';
 
-export class TimezoneCommand implements Command {
-    readonly name = 'timezone';
-    readonly aliases = [ 'timezones', 'tz' ];
-    readonly feature = Features.TimezoneProcessing;
+export default class TimezoneCommand implements ICommand {
+    public readonly name = 'timezone';
+    public readonly aliases = [ 'timezones', 'tz' ];
+    public readonly feature = Features.TimezoneProcessing;
 
-    readonly helpGroup = HelpGroup.Time;
-    readonly helpDescription = 'Begins a private message dialogue with Phil to set your timezone, or to change your current timezone.';
+    public readonly helpGroup = HelpGroup.Time;
+    public readonly helpDescription = 'Begins a private message dialogue with Phil to set your timezone, or to change your current timezone.';
 
-    readonly versionAdded = 8;
+    public readonly versionAdded = 8;
 
-    readonly isAdminCommand = false;
-    processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = false;
+    public processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         return TimezoneQuestionnaire.startQuestionnaire(phil, message.userId, true);
     }
 };

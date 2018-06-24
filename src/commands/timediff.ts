@@ -1,26 +1,24 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage } from 'phil';
-import { BotUtils } from '../phil/utils';
+import Features from '../phil/features/all-features';
+import { HelpGroup } from '../phil/help-groups';
+import Phil from '../phil/phil';
+import UserTimezone from '../phil/timezones/user-timezone';
+import BotUtils from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
-import { Features } from '../phil/features';
-import { UserTimezone } from '../phil/user-timezone';
+import ICommand from './@types';
 
-export class TimediffCommand implements Command {
-    readonly name = 'timediff';
-    readonly aliases : string[] = [];
-    readonly feature = Features.TimezoneProcessing;
+export default class TimediffCommand implements ICommand {
+    public readonly name = 'timediff';
+    public readonly aliases: ReadonlyArray<string> = [];
+    public readonly feature = Features.TimezoneProcessing;
 
-    readonly helpGroup = HelpGroup.Time;
-    readonly helpDescription = 'Tells you the time difference (in hours) between you and the user that you mention with this command.';
+    public readonly helpGroup = HelpGroup.Time;
+    public readonly helpDescription = 'Tells you the time difference (in hours) between you and the user that you mention with this command.';
 
-    readonly versionAdded = 10;
+    public readonly versionAdded = 10;
 
-    readonly isAdminCommand = false;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = false;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         if (message.mentions.length !== 1) {
             throw new Error('In order to use this function, you must mention the user you\'re asking about. For instance, something like `' + message.serverConfig.commandPrefix + 'timediff @Bunnymund#1234`.');
         }
@@ -45,7 +43,7 @@ export class TimediffCommand implements Command {
         return DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
     }
 
-    private composeReply(hoursApart : number, otherUser : string) : string {
+    private composeReply(hoursApart: number, otherUser: string): string {
         if (hoursApart === 0) {
             return 'The two of you are in the same timezone.';
         }
@@ -58,4 +56,4 @@ export class TimediffCommand implements Command {
 
         return otherUser + ' is **' + hoursApart + ' ' + hourNoun + '** ahead of you right now.';
     }
-};
+}

@@ -1,25 +1,23 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage } from 'phil';
+import Feature from '../phil/features/feature';
+import { HelpGroup } from '../phil/help-groups';
+import Phil from '../phil/phil';
 import { DiscordPromises } from '../promises/discord';
-import { Feature } from '../phil/features';
 import { YouTubePromises } from '../promises/youtube';
+import ICommand from './@types';
 
-export class YoutubeCommand implements Command {
-    readonly name = 'youtube';
-    readonly aliases = [ 'yt' ];
-    readonly feature : Feature = null;
+export default class YoutubeCommand implements ICommand {
+    public readonly name = 'youtube';
+    public readonly aliases = [ 'yt' ];
+    public readonly feature: Feature = null;
 
-    readonly helpGroup = HelpGroup.General;
-    readonly helpDescription = 'Searches YouTube for something and posts a link to the first video.';
+    public readonly helpGroup = HelpGroup.General;
+    public readonly helpDescription = 'Searches YouTube for something and posts a link to the first video.';
 
-    readonly versionAdded = 4;
+    public readonly versionAdded = 4;
 
-    readonly isAdminCommand = false;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = false;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const query = commandArgs.join(' ').trim();
         if (query.length === 0) {
             throw new Error('You must provide some text to tell me what to search for.');
