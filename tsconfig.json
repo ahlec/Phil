@@ -1,8 +1,10 @@
 {
     "compilerOptions": {
+        "baseUrl": "./src",
         "module": "commonjs",
         "target": "ES2017",
         "noImplicitAny": true,
+        "noUnusedLocals": true,
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": true,
