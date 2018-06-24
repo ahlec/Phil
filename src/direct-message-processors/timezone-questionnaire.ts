@@ -5,7 +5,7 @@ import IStage from '../phil/timezones/questionnaire-stages/@stage';
 import { IDirectMessageProcessor, IProcessorActiveToken } from './@base';
 
 interface ITimezoneQuestionnaireToken extends IProcessorActiveToken {
-    readonly currentStage? : IStage;
+    readonly currentStage?: IStage;
 }
 
 export default class TimezoneQuestionnaireProcessor implements IDirectMessageProcessor {

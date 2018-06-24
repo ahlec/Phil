@@ -2,7 +2,7 @@ import Database from './phil/database';
 import { ensureNecessaryEnvironmentVariables } from './phil/environment-manager';
 import GlobalConfig from './phil/global-config';
 import Phil from './phil/phil';
-import { WebPortal } from './phil/web-portal';
+import WebPortal from './phil/web-portal';
 
 async function main() {
     try {

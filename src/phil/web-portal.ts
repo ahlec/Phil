@@ -2,7 +2,7 @@ import GlobalConfig from './global-config';
 import { BotUtils } from './utils';
 const express = require('express');
 
-export class WebPortal {
+export default class WebPortal {
     private app: any;
 
     constructor(public readonly globalConfig : GlobalConfig) {

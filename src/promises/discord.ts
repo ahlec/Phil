@@ -1,28 +1,25 @@
-'use strict';
-
 import { Client as DiscordIOClient, Role as DiscordIORole } from 'discord.io';
-import { MessageBuilder } from '../phil/message-builder';
 import { OfficialDiscordEmbed } from 'official-discord';
-import { Delay } from '../phil/utils/delay';
+import MessageBuilder from '../phil/message-builder';
+import Delay from '../phil/utils/delay';
 
-declare interface DiscordIOCallbackError {
-		statusCode?: number,
-		statusMessage?: string,
-		response?: any
+declare interface IDiscordIOCallbackError {
+	statusCode?: number,
+	statusMessage?: string,
+	response?: any
 }
 
 export namespace DiscordPromises {
-
-    export interface EditRoleOptions {
-        name : string;
-        color? : number;
+    export interface IEditRoleOptions {
+        name: string;
+        color?: number;
     }
 
-    export function sendMessage(bot : DiscordIOClient, channelId : string, message : string) : Promise<string> {
+    export function sendMessage(bot: DiscordIOClient, channelId: string, message: string): Promise<string> {
         return new Promise((resolve, reject) => {
             bot.sendMessage({
-                to: channelId,
-                message: message
+                message,
+                to: channelId
             }, (err, response) => {
                 if (err) {
                     reject(err);
@@ -34,21 +31,21 @@ export namespace DiscordPromises {
         });
     }
 
-    export async function sendMessageBuilder(bot : DiscordIOClient, channelId : string, messageBuilder : MessageBuilder) : Promise<string[]> {
+    export async function sendMessageBuilder(bot: DiscordIOClient, channelId: string, messageBuilder: MessageBuilder): Promise<string[]> {
         const messageIds = [];
-        for (let message of messageBuilder.messages) {
-            let messageId = await this.sendMessage(bot, channelId, message);
+        for (const message of messageBuilder.messages) {
+            const messageId = await this.sendMessage(bot, channelId, message);
             messageIds.push(messageId);
         }
 
         return messageIds;
     }
 
-    export function sendEmbedMessage(bot : DiscordIOClient, channelId : string, embedData : any) : Promise<string> {
+    export function sendEmbedMessage(bot: DiscordIOClient, channelId: string, embedData: any): Promise<string> {
         return new Promise((resolve, reject) => {
             bot.sendMessage({
-                to: channelId,
-                embed: embedData
+                embed: embedData,
+                to: channelId
             }, (err, response) => {
                 if (err) {
                     reject(err);
@@ -60,12 +57,12 @@ export namespace DiscordPromises {
         });
     }
 
-    export function editMessage(bot : DiscordIOClient, channelId : string, messageId : string, text : string) : Promise<void> {
+    export function editMessage(bot: DiscordIOClient, channelId: string, messageId: string, text: string): Promise<void> {
         return new Promise((resolve, reject) => {
             bot.editMessage({
                 channelID: channelId,
-                messageID: messageId,
-                message: text
+                message: text,
+                messageID: messageId
             }, (err, response) => {
                 if (err) {
                     reject(err);
@@ -77,7 +74,7 @@ export namespace DiscordPromises {
         });
     }
 
-    export function deleteMessage(bot : DiscordIOClient, channelId : string, messageId : string) : Promise<void> {
+    export function deleteMessage(bot: DiscordIOClient, channelId: string, messageId: string): Promise<void> {
         return new Promise((resolve, reject) => {
             bot.deleteMessage({
                 channelID: channelId,
@@ -93,12 +90,12 @@ export namespace DiscordPromises {
         });
     }
 
-    export function giveRoleToUser(bot : DiscordIOClient, serverId : string, userId : string, roleId : string) : Promise<void> {
+    export function giveRoleToUser(bot: DiscordIOClient, serverId: string, userId: string, roleId: string): Promise<void> {
         return new Promise((resolve, reject) => {
             bot.addToRole({
+                roleID: roleId,
                 serverID: serverId,
-                userID: userId,
-                roleID: roleId
+                userID: userId
             }, (err, response) => {
                 if (err) {
                     reject(err);
@@ -110,12 +107,12 @@ export namespace DiscordPromises {
         });
     }
 
-    export function takeRoleFromUser(bot : DiscordIOClient, serverId : string, userId : string, roleId : string) : Promise<any> {
+    export function takeRoleFromUser(bot: DiscordIOClient, serverId: string, userId: string, roleId: string): Promise<any> {
         return new Promise((resolve, reject) => {
             bot.removeFromRole({
+                roleID: roleId,
                 serverID: serverId,
-                userID: userId,
-                roleID: roleId
+                userID: userId
             }, (err, response) => {
                 if (err) {
                     reject(err);
@@ -127,7 +124,7 @@ export namespace DiscordPromises {
         });
     }
 
-    export function createRole(bot : DiscordIOClient, serverId : string) : Promise<DiscordIORole> {
+    export function createRole(bot: DiscordIOClient, serverId: string): Promise<DiscordIORole> {
         return new Promise((resolve, reject) => {
             bot.createRole(serverId, (err, response) => {
                 if (err) {
@@ -140,17 +137,17 @@ export namespace DiscordPromises {
         });
     }
 
-    export function editRole(bot : DiscordIOClient, serverId : string, roleId : string, changes : EditRoleOptions) : Promise<void> {
+    export function editRole(bot: DiscordIOClient, serverId: string, roleId: string, changes: IEditRoleOptions): Promise<void> {
         return new Promise((resolve, reject) => {
             bot.editRole({
-                serverID: serverId,
-                roleID: roleId,
-                name: changes.name,
                 color: changes.color,
                 hoist: undefined,
-                permissions: undefined,
                 mentionable: undefined,
-                position: undefined
+                name: changes.name,
+                permissions: undefined,
+                position: undefined,
+                roleID: roleId,
+                serverID: serverId
             }, (err, response) => {
                 if (err) {
                     reject(err);
@@ -162,11 +159,11 @@ export namespace DiscordPromises {
         });
     }
 
-    export function deleteRole(bot : DiscordIOClient, serverId : string, roleId : string) : Promise<void> {
+    export function deleteRole(bot: DiscordIOClient, serverId: string, roleId: string): Promise<void> {
         return new Promise((resolve, reject) => {
             bot.deleteRole({
-                serverID: serverId,
-                roleID: roleId
+                roleID: roleId,
+                serverID: serverId
             }, (err, response) => {
                 if (err) {
                     reject(err);
@@ -178,7 +175,7 @@ export namespace DiscordPromises {
         });
     }
 
-    export function pinMessage(bot : DiscordIOClient, channelId : string, messageId : string) : Promise<void> {
+    export function pinMessage(bot: DiscordIOClient, channelId: string, messageId: string): Promise<void> {
         return new Promise((resolve, reject) => {
             bot.pinMessage({
                 channelID: channelId,
@@ -194,14 +191,14 @@ export namespace DiscordPromises {
         });
     }
 
-    export function addReaction(bot : DiscordIOClient, channelId : string, messageId : string, reaction : string) : Promise<void> {
-        const anyBot : any = bot;
+    export function addReaction(bot: DiscordIOClient, channelId: string, messageId: string, reaction: string): Promise<void> {
+        const anyBot: any = bot;
         return new Promise((resolve, reject) => {
             anyBot.addReaction({
                 channelID: channelId,
                 messageID: messageId,
-                reaction: reaction
-            }, (err : DiscordIOCallbackError, response : any) => {
+                reaction
+            }, (err: IDiscordIOCallbackError, response: any) => {
                 if (err) {
                     if (err.statusCode === 429) {
                         const waitTime : number = err.response.retry_after;
@@ -229,9 +226,9 @@ export namespace DiscordPromises {
             anyBot.removeReaction({
                 channelID: channelId,
                 messageID: messageId,
-                userID: bot.id,
-                reaction: reaction
-            }, (err: DiscordIOCallbackError, response: any) => {
+                reaction,
+                userID: bot.id
+            }, (err: IDiscordIOCallbackError, response: any) => {
                 if (err) {
                     if (err.statusCode === 429) {
                         const waitTime: number = err.response.retry_after;

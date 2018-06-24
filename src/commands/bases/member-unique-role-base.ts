@@ -38,7 +38,7 @@ export default abstract class MemberUniqueRoleCommandBase<TData> implements ICom
     protected abstract tryParseInput(input: string): TData;
     protected abstract isRolePartOfUniquePool(role: DiscordIORole): boolean;
     protected abstract doesRoleMatchData(role: DiscordIORole, data: TData): boolean;
-    protected abstract getRoleConfig(data: TData): DiscordPromises.EditRoleOptions;
+    protected abstract getRoleConfig(data: TData): DiscordPromises.IEditRoleOptions;
     protected abstract getSuccessMessage(serverConfig: IServerConfig, data: TData): string;
 
     private getDataFromCommandArgs(serverConfig: IServerConfig, commandArgs: ReadonlyArray<string>): TData {

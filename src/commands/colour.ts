@@ -61,7 +61,7 @@ export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
         return (role.name === data);
     }
 
-    protected getRoleConfig(data: string): DiscordPromises.EditRoleOptions {
+    protected getRoleConfig(data: string): DiscordPromises.IEditRoleOptions {
         const hexColorNumber = parseInt(data.replace('#', '0x'), 16);
         return {
             color: hexColorNumber,

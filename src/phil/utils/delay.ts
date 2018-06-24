@@ -11,3 +11,5 @@ export namespace Delay {
         return new Promise((resolve, reject) => setTimeout(resolve, milliseconds));
     }
 }
+
+export default Delay;

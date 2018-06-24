@@ -22,7 +22,7 @@ function validatePromptSubmission(message: string): IPromptValidateResult {
 }
 
 interface ISuggestSessionListenerToken extends IProcessorActiveToken {
-    readonly currentSession? : SubmissionSession;
+    readonly currentSession?: SubmissionSession;
 }
 
 export default class SuggestSessionListener implements IDirectMessageProcessor {

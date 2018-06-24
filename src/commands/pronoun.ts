@@ -54,7 +54,7 @@ export default class PronounCommand extends MemberUniqueRoleCommandBase<IPronoun
         return (data === rolePronoun);
     }
 
-    protected getRoleConfig(data: IPronoun): DiscordPromises.EditRoleOptions {
+    protected getRoleConfig(data: IPronoun): DiscordPromises.IEditRoleOptions {
         return {
             name: data.roleName
         };

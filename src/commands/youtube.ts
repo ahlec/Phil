@@ -3,7 +3,7 @@ import Feature from '../phil/features/feature';
 import { HelpGroup } from '../phil/help-groups';
 import Phil from '../phil/phil';
 import { DiscordPromises } from '../promises/discord';
-import { YouTubePromises } from '../promises/youtube';
+import YouTubePromises from '../promises/youtube';
 import ICommand from './@types';
 
 export default class YoutubeCommand implements ICommand {

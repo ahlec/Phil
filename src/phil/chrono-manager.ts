@@ -1,8 +1,8 @@
 const util = require('util');
 
 import { QueryResult } from 'pg';
-import { Chrono } from '../chronos/@types';
-import { ChronoLookup } from '../chronos/index';
+import IChrono from '../chronos/@types';
+import ChronoLookup from '../chronos/index';
 import { DiscordPromises } from '../promises/discord';
 import Phil from './phil';
 import ServerConfig from './server-config';
@@ -10,9 +10,9 @@ import ServerDirectory from './server-directory';
 
 export default class ChronoManager {
     private readonly channelsLastMessageTable: { [channelId: string]: Date };
-    private hasBeenStarted : boolean;
+    private hasBeenStarted: boolean;
 
-    constructor(private readonly phil : Phil, private readonly serverDirectory : ServerDirectory) {
+    constructor(private readonly phil: Phil, private readonly serverDirectory: ServerDirectory) {
         this.channelsLastMessageTable = {};
         this.hasBeenStarted = false;
     }
