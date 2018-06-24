@@ -1,26 +1,24 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage } from 'phil';
+import Bucket from '../phil/buckets';
+import Features from '../phil/features/all-features';
+import { HelpGroup } from '../phil/help-groups';
+import Phil from '../phil/phil';
 import { BotUtils } from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
-import { Features } from '../phil/features';
-import { Bucket } from '../phil/buckets';
+import ICommand from './@types';
 
-export class PauseCommand implements Command {
-    readonly name = 'pause';
-    readonly aliases : string[] = [];
-    readonly feature = Features.Prompts;
+export default class PauseCommand implements ICommand {
+    public readonly name = 'pause';
+    public readonly aliases: ReadonlyArray<string> = [];
+    public readonly feature = Features.Prompts;
 
-    readonly helpGroup = HelpGroup.Prompts;
-    readonly helpDescription = 'Pauses a prompt bucket from posting any new prompts.';
+    public readonly helpGroup = HelpGroup.Prompts;
+    public readonly helpDescription = 'Pauses a prompt bucket from posting any new prompts.';
 
-    readonly versionAdded = 11;
+    public readonly versionAdded = 11;
 
-    readonly isAdminCommand = true;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = true;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'bucket', true);
         await bucket.setIsPaused(phil.db, true);
 

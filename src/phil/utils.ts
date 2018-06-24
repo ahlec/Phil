@@ -100,7 +100,7 @@ export namespace BotUtils {
         return (dateA.getUTCDate() === dateB.getUTCDate());
     }
 
-    export function stitchTogetherArray(values: string[]): string {
+    export function stitchTogetherArray(values: ReadonlyArray<string>): string {
         let str = '';
         for (let index = 0; index < values.length; ++index) {
             if (index > 0) {

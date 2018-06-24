@@ -1,29 +1,27 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { Database } from '../phil/database';
-import { HelpGroup } from '../phil/help-groups';
 import { Server as DiscordIOServer } from 'discord.io';
 import { IPublicMessage, IServerConfig } from 'phil';
+import Database from '../phil/database';
+import Features from '../phil/features/all-features';
+import { HelpGroup } from '../phil/help-groups';
+import MessageBuilder from '../phil/message-builder';
+import Phil from '../phil/phil';
+import Requestable from '../phil/requestables';
+import BotUtils from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
-import { Features } from '../phil/features';
-import { BotUtils } from '../phil/utils';
-import { Requestable } from '../phil/requestables';
-import { MessageBuilder } from '../phil/message-builder';
+import ICommand from './@types';
 
-export class RemoveCommand implements Command {
-    readonly name = 'remove';
-    readonly aliases : string[] = [];
-    readonly feature = Features.Requestables;
+export default class RemoveCommand implements ICommand {
+    public readonly name = 'remove';
+    public readonly aliases: ReadonlyArray<string> = [];
+    public readonly feature = Features.Requestables;
 
-    readonly helpGroup = HelpGroup.Roles;
-    readonly helpDescription = 'Asks Phil to take away a requestable role that he has given you.';
+    public readonly helpGroup = HelpGroup.Roles;
+    public readonly helpDescription = 'Asks Phil to take away a requestable role that he has given you.';
 
-    readonly versionAdded = 7;
+    public readonly versionAdded = 7;
 
-    readonly isAdminCommand = false;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = false;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         if (commandArgs.length === 0) {
             return this.processNoCommandArgs(phil, message);
         }
@@ -43,7 +41,7 @@ export class RemoveCommand implements Command {
         });
     }
 
-    private ensureUserHasRole(server : DiscordIOServer, userId : string, requestable : Requestable) {
+    private ensureUserHasRole(server: DiscordIOServer, userId: string, requestable: Requestable) {
         const member = server.members[userId];
 
         if (member.roles.indexOf(requestable.role.id) < 0) {
@@ -53,7 +51,7 @@ export class RemoveCommand implements Command {
         return requestable.role;
     }
 
-    private async processNoCommandArgs(phil : Phil, message : IPublicMessage) : Promise<any> {
+    private async processNoCommandArgs(phil: Phil, message: IPublicMessage): Promise<any> {
         const userRequestables = await this.getAllRequestablesUserHas(phil.db, message.serverConfig, message.userId);
         if (userRequestables.length === 0) {
             throw new Error('I haven\'t given you any requestable roles yet. You use `' + message.serverConfig.commandPrefix + 'request` in order to obtain these roles.');
@@ -63,7 +61,7 @@ export class RemoveCommand implements Command {
         return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, reply);
     }
 
-    private async getAllRequestablesUserHas(db : Database, serverConfig : IServerConfig, userId : string) : Promise<Requestable[]> {
+    private async getAllRequestablesUserHas(db: Database, serverConfig: IServerConfig, userId: string): Promise<Requestable[]> {
         const requestables = await Requestable.getAllRequestables(db, serverConfig.server);
         if (requestables.length === 0) {
             throw new Error('There are no requestable roles defined. An admin should use `' + serverConfig.commandPrefix + 'define` to create some roles.');
@@ -71,7 +69,7 @@ export class RemoveCommand implements Command {
 
         const member = serverConfig.server.members[userId];
         const requestablesUserHas = [];
-        for (let requestable of requestables) {
+        for (const requestable of requestables) {
             if (member.roles.indexOf(requestable.role.id) >= 0) {
                 requestablesUserHas.push(requestable);
             }
@@ -80,11 +78,11 @@ export class RemoveCommand implements Command {
         return requestablesUserHas;
     }
 
-    private composeAllRequestablesList(serverConfig : IServerConfig, requestables : Requestable[]) : MessageBuilder {
+    private composeAllRequestablesList(serverConfig: IServerConfig, requestables: Requestable[]): MessageBuilder {
         const builder = new MessageBuilder();
         builder.append(':snowflake: These are the roles you can remove using `' + serverConfig.commandPrefix + 'remove`:\n');
 
-        for (let requestable of requestables) {
+        for (const requestable of requestables) {
             builder.append(this.composeRequestableListEntry(requestable));
         }
 
@@ -95,8 +93,8 @@ export class RemoveCommand implements Command {
         return builder;
     }
 
-    private composeRequestableListEntry(requestable : Requestable) : string {
-        var entry = '- ';
+    private composeRequestableListEntry(requestable: Requestable): string {
+        let entry = '- ';
         entry += BotUtils.stitchTogetherArray(requestable.requestStrings);
         entry += ' to remove the "' + requestable.role.name + '" role\n';
         return entry;

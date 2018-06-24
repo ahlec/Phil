@@ -1,27 +1,25 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage } from 'phil';
-import { Features } from '../phil/features';
-import { Bucket } from '../phil/buckets';
+import Bucket from '../phil/buckets';
+import Features from '../phil/features/all-features';
+import { HelpGroup } from '../phil/help-groups';
+import Phil from '../phil/phil';
 import { PromptQueue } from '../phil/prompts/queue';
+import ICommand from './@types';
 
 const MAX_QUEUE_DISPLAY_LENGTH = 10;
 
-export class QueueCommand implements Command {
-    readonly name = 'queue';
-    readonly aliases : string[] = [];
-    readonly feature = Features.Prompts;
+export default class QueueCommand implements ICommand {
+    public readonly name = 'queue';
+    public readonly aliases: ReadonlyArray<string> = [];
+    public readonly feature = Features.Prompts;
 
-    readonly helpGroup = HelpGroup.Prompts;
-    readonly helpDescription = 'Displays the current queue of approved prompts that will show up in chat shortly.';
+    public readonly helpGroup = HelpGroup.Prompts;
+    public readonly helpDescription = 'Displays the current queue of approved prompts that will show up in chat shortly.';
 
-    readonly versionAdded = 7;
+    public readonly versionAdded = 7;
 
-    readonly isAdminCommand = true;
-    async processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = true;
+    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'queue', false);
         const queue = await PromptQueue.getPromptQueue(phil.bot, phil.db, bucket, 1, MAX_QUEUE_DISPLAY_LENGTH);
 

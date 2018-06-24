@@ -1,25 +1,23 @@
-'use strict';
-
-import { Command } from './@types';
-import { Phil } from '../phil/phil';
-import { HelpGroup } from '../phil/help-groups';
 import { IPublicMessage } from 'phil';
+import Features from '../phil/features/all-features';
+import { HelpGroup } from '../phil/help-groups';
+import Phil from '../phil/phil';
+import BotUtils from '../phil/utils';
 import { DiscordPromises } from '../promises/discord';
-import { Features } from '../phil/features';
-import { BotUtils } from '../phil/utils';
+import ICommand from './@types';
 
-export class MapCommand implements Command {
-    readonly name = 'map';
-    readonly aliases : string[] = [];
-    readonly feature = Features.FandomMap;
+export default class MapCommand implements ICommand {
+    public readonly name = 'map';
+    public readonly aliases: ReadonlyArray<string> = [];
+    public readonly feature = Features.FandomMap;
 
-    readonly helpGroup = HelpGroup.General;
-    readonly helpDescription = 'Has Phil provide a link to the editable map of the fandom.';
+    public readonly helpGroup = HelpGroup.General;
+    public readonly helpDescription = 'Has Phil provide a link to the editable map of the fandom.';
 
-    readonly versionAdded = 8;
+    public readonly versionAdded = 8;
 
-    readonly isAdminCommand = false;
-    processMessage(phil : Phil, message : IPublicMessage, commandArgs : string[]) : Promise<any> {
+    public readonly isAdminCommand = false;
+    public processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         if (!message.serverConfig.fandomMapLink) {
             return BotUtils.sendErrorMessage({
                 bot: phil.bot,
