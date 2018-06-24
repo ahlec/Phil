@@ -1,8 +1,8 @@
-const countryTimezonesJson = require('../../../data/country-timezones.json');
+const countryTimezonesJson = require('../../../../data/country-timezones.json');
 
 interface ITimezone {
-    readonly name : string;
-    readonly displayName : string;
+    readonly name: string;
+    readonly displayName: string;
 }
 
 export interface ITimezoneData {
