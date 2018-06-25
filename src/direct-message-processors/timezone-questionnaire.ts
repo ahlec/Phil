@@ -1,7 +1,7 @@
-import PrivateMessage from 'messages/private';
-import Phil from 'phil';
-import TimezoneQuestionnaire from 'timezones/questionnaire';
-import IStage from 'timezones/questionnaire-stages/@stage';
+import PrivateMessage from '../messages/private';
+import Phil from '../phil';
+import TimezoneQuestionnaire from '../timezones/questionnaire';
+import IStage from '../timezones/questionnaire-stages/@stage';
 import { IDirectMessageProcessor, IProcessorActiveToken } from './@base';
 
 interface ITimezoneQuestionnaireToken extends IProcessorActiveToken {

@@ -2,10 +2,10 @@ import IStage from './@stage';
 import { CountryTimezones, ITimezoneData } from './@timezone-data';
 import QuestionnaireStageUtils from './@utils';
 
-import Database from 'database';
-import PrivateMessage from 'messages/private';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
+import Database from '../../database';
+import PrivateMessage from '../../messages/private';
+import Phil from '../../phil';
+import { DiscordPromises } from '../../promises/discord';
 
 export default class SpecificationStage implements IStage {
     public readonly stageNumber = 3;

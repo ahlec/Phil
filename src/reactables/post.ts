@@ -1,6 +1,6 @@
-import Database from 'database';
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
-import { DiscordPromises } from 'promises/discord';
+import Database from '../database';
+import { DiscordPromises } from '../promises/discord';
 
 export default class ReactablePost {
     public static async getFromMessageId(bot: DiscordIOClient, db: Database, messageId: string): Promise<ReactablePost> {

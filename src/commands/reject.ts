@@ -1,5 +1,5 @@
-import Phil from 'phil';
-import ServerConfig from 'server-config';
+import Phil from '../phil';
+import ServerConfig from '../server-config';
 import ConfirmRejectCommandBase from './bases/confirm-reject-base';
 
 const successMessageEnd = ' rejected. You may continue using `{commandPrefix}reject` or start over by using `{commandPrefix}unconfirmed`.';

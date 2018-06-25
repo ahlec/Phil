@@ -1,4 +1,4 @@
-import Pronoun from 'pronouns/pronoun';
+import Pronoun from './pronoun';
 
 const TheyPronouns = new Pronoun('they', 'them', 'their', 'theirs', 'themself');
 

@@ -1,9 +1,9 @@
-import Bucket from 'buckets';
 import { Client as DiscordIOClient } from 'discord.io';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import ServerConfig from 'server-config';
-import { BotUtils } from 'utils';
+import Bucket from '../buckets';
+import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
+import ServerConfig from '../server-config';
+import { BotUtils } from '../utils';
 
 export default class Prompt {
     public static async getFromId(phil: Phil, promptId: number): Promise<Prompt> {

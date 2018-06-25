@@ -1,12 +1,12 @@
-import CalendarMonth from 'calendar/calendar-month';
 import { Server as DiscordIOServer } from 'discord.io';
-import Features from 'features/all-features';
-import { HelpGroup } from 'help-groups';
-import MessageBuilder from 'message-builder';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import ServerConfig from 'server-config';
+import CalendarMonth from '../calendar/calendar-month';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import MessageBuilder from '../message-builder';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
+import ServerConfig from '../server-config';
 import ICommand from './@types';
 
 const chronoNode = require('chrono-node');

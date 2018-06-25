@@ -1,18 +1,18 @@
 const assert = require('assert');
-import ChronoManager from 'chrono-manager';
-import CommandRunner from 'command-runner';
-import Database from 'database';
-import DirectMessageDispatcher from 'direct-message-dispatcher';
 import { Client as DiscordIOClient, Member as DiscordIOMember, Server as DiscordIOServer } from 'discord.io';
-import GlobalConfig from 'global-config';
-import { greetNewMember } from 'greeting';
-import { parseMessage } from 'messages/@parsing';
-import MessageBase from 'messages/base';
-import PublicMessage from 'messages/public';
 import { OfficialDiscordMessage, OfficialDiscordPayload, OfficialDiscordReactionEvent } from 'official-discord';
-import ReactableProcessor from 'reactables/processor';
-import ServerDirectory from 'server-directory';
-import { BotUtils } from 'utils';
+import ChronoManager from './chrono-manager';
+import CommandRunner from './command-runner';
+import Database from './database';
+import DirectMessageDispatcher from './direct-message-dispatcher';
+import GlobalConfig from './global-config';
+import { greetNewMember } from './greeting';
+import { parseMessage } from './messages/@parsing';
+import MessageBase from './messages/base';
+import PublicMessage from './messages/public';
+import ReactableProcessor from './reactables/processor';
+import ServerDirectory from './server-directory';
+import { BotUtils } from './utils';
 
 function ignoreDiscordCode(code: number) {
     return (code === 1000); // General disconnect code

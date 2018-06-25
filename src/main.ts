@@ -1,8 +1,8 @@
-import Database from 'database';
-import { ensureNecessaryEnvironmentVariables } from 'environment-manager';
-import GlobalConfig from 'global-config';
-import Phil from 'phil';
-import WebPortal from 'web-portal';
+import Database from './database';
+import { ensureNecessaryEnvironmentVariables } from './environment-manager';
+import GlobalConfig from './global-config';
+import Phil from './phil';
+import WebPortal from './web-portal';
 
 async function main() {
     try {

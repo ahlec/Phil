@@ -1,4 +1,4 @@
-import ServerConfig from 'server-config';
+import ServerConfig from './server-config';
 
 export default class InputMessage {
     public static parseFromMessage(serverConfig: ServerConfig, message: string): InputMessage {

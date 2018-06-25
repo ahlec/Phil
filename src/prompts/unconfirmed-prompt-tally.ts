@@ -1,4 +1,4 @@
-import Database from 'database';
+import Database from '../database';
 
 export default class UnconfirmedPromptTally {
     public static async collectForServer(db: Database, serverId: string) : Promise<UnconfirmedPromptTally[]> {

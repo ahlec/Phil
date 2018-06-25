@@ -2,10 +2,10 @@ import Stages from './@all-stages';
 import IStage from './@stage';
 import QuestionnaireStageUtils from './@utils';
 
-import Database from 'database';
-import PrivateMessage from 'messages/private';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
+import Database from '../../database';
+import PrivateMessage from '../../messages/private';
+import Phil from '../../phil';
+import { DiscordPromises } from '../../promises/discord';
 
 export default class LetsBeginStage implements IStage {
     public readonly stageNumber = 1;

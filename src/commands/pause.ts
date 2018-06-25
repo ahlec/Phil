@@ -1,9 +1,9 @@
-import Bucket from 'buckets';
-import Features from 'features/all-features';
-import { HelpGroup } from 'help-groups';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
+import Bucket from '../buckets';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
 import ICommand from './@types';
 
 export default class PauseCommand implements ICommand {

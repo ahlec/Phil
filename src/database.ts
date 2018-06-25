@@ -1,6 +1,6 @@
-import GlobalConfig from 'global-config';
 import { Pool, QueryResult } from 'pg';
-import Versions from 'versions';
+import GlobalConfig from './global-config';
+import Versions from './versions';
 
 export default class Database {
     private readonly pool: Pool;

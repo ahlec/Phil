@@ -16,7 +16,7 @@ export enum HelpGroup {
     Admin = 999
 }
 
-export function getHeaderForGroup(groupNumber : HelpGroup) : string {
+export function getHeaderForGroup(groupNumber: HelpGroup): string {
     if (groupNumber === HelpGroup.Admin) {
         return ':star2: ADMIN';
     }

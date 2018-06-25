@@ -1,6 +1,6 @@
-import Database from 'database';
-import PrivateMessage from 'messages/private';
-import Phil from 'phil';
+import Database from '../../database';
+import PrivateMessage from '../../messages/private';
+import Phil from '../../phil';
 
 export default interface IStage {
     readonly stageNumber: number;

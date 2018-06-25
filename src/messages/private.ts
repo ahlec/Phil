@@ -1,6 +1,6 @@
-import MessageBase from 'messages/base';
 import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
-import Phil from 'phil';
+import Phil from '../phil';
+import MessageBase from './base';
 
 export class PrivateMessage extends MessageBase {
     constructor(event : OfficialDiscordPayload<OfficialDiscordMessage>, phil : Phil) {

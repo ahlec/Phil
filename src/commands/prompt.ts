@@ -1,9 +1,9 @@
-import Bucket from 'buckets';
-import Features from 'features/all-features';
-import { HelpGroup } from 'help-groups';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import Prompt from 'prompts/prompt';
+import Bucket from '../buckets';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import Prompt from '../prompts/prompt';
 import ICommand from './@types';
 
 export default class PromptCommand implements ICommand {

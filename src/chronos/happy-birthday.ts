@@ -1,9 +1,10 @@
-import Database from 'database';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import { GROUP_PRONOUNS, Pronoun } from 'pronouns';
-import ServerConfig from 'server-config';
-import BotUtils from 'utils';
+import Database from '../database';
+import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
+import { GROUP_PRONOUNS } from '../pronouns/definitions';
+import { Pronoun } from '../pronouns/pronoun';
+import ServerConfig from '../server-config';
+import BotUtils from '../utils';
 import IChrono from './@types';
 
 interface IHappyBirthdayInfo {

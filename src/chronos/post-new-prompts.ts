@@ -1,8 +1,8 @@
-import Bucket from 'buckets';
-import Phil from 'phil';
-import Prompt from 'prompts/prompt';
-import { PromptQueue } from 'prompts/queue'
-import ServerConfig from 'server-config';
+import Bucket from '../buckets';
+import Phil from '../phil';
+import Prompt from '../prompts/prompt';
+import { PromptQueue } from '../prompts/queue'
+import ServerConfig from '../server-config';
 import IChrono from './@types';
 
 export default class PostNewPromptsChrono implements IChrono {

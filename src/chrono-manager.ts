@@ -1,11 +1,11 @@
 const util = require('util');
 
-import ChronoLookup from 'chronos/index';
 import { QueryResult } from 'pg';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import ServerConfig from 'server-config';
-import ServerDirectory from 'server-directory';
+import ChronoLookup from './chronos/index';
+import Phil from './phil';
+import { DiscordPromises } from './promises/discord';
+import ServerConfig from './server-config';
+import ServerDirectory from './server-directory';
 
 export default class ChronoManager {
     private readonly channelsLastMessageTable: { [channelId: string]: Date };

@@ -1,8 +1,8 @@
 import IStage from './@stage';
 
-import Database from 'database';
-import PrivateMessage from 'messages/private';
-import Phil from 'phil';
+import Database from '../../database';
+import PrivateMessage from '../../messages/private';
+import Phil from '../../phil';
 
 export default class FinishedStage implements IStage {
     public readonly stageNumber = 5;

@@ -1,10 +1,10 @@
-import Database from 'database';
 import { Client as DiscordIOClient, Member as DiscordIOMember, User as DiscordIOUser } from 'discord.io';
-import Features from 'features/all-features';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import ServerConfig from 'server-config';
-import { BotUtils } from 'utils';
+import Database from './database';
+import Features from './features/all-features';
+import Phil from './phil';
+import { DiscordPromises } from './promises/discord';
+import ServerConfig from './server-config';
+import { BotUtils } from './utils';
 const util = require('util');
 
 function getUser(bot: DiscordIOClient, member: DiscordIOMember): DiscordIOUser {

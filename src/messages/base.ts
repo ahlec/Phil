@@ -1,6 +1,6 @@
 import { User as DiscordIOUser } from 'discord.io';
 import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
-import Phil from 'phil';
+import Phil from '../phil';
 
 export interface IMention {
     readonly userId: string;

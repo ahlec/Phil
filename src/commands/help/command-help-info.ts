@@ -1,8 +1,8 @@
-import ICommand from 'commands/@types';
-import Feature from 'features/feature';
-import { IBatchFeaturesEnabledLookup } from 'features/feature-utils';
-import { HelpGroup } from 'help-groups';
-import Versions from 'versions';
+import Feature from '../../features/feature';
+import { IBatchFeaturesEnabledLookup } from '../../features/feature-utils';
+import { HelpGroup } from '../../help-groups';
+import Versions from '../../versions';
+import ICommand from '../@types';
 
 export default class CommandHelpInfo {
     public static sort(a: CommandHelpInfo, b: CommandHelpInfo): number {

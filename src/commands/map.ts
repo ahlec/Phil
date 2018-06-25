@@ -1,9 +1,9 @@
-import Features from 'features/all-features';
-import { HelpGroup } from 'help-groups';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import BotUtils from 'utils';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
+import BotUtils from '../utils';
 import ICommand from './@types';
 
 export default class MapCommand implements ICommand {

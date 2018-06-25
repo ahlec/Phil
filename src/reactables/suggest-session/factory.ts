@@ -1,6 +1,6 @@
-import Database from 'database';
 import { Client as DiscordIOClient } from 'discord.io';
-import { IReactableCreateArgsBase, ReactableFactoryBase } from 'reactables/factory-base'
+import Database from '../../database';
+import { IReactableCreateArgsBase, ReactableFactoryBase } from '../factory-base'
 import SuggestSessionReactableShared from './shared';
 
 interface ICreateArgs extends IReactableCreateArgsBase {

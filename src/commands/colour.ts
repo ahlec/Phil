@@ -1,8 +1,8 @@
 import { Role as DiscordIORole } from 'discord.io';
-import Features from 'features/all-features';
-import { DiscordPromises } from 'promises/discord';
-import ServerConfig from 'server-config';
-import { BotUtils } from 'utils';
+import Features from '../features/all-features';
+import { DiscordPromises } from '../promises/discord';
+import ServerConfig from '../server-config';
+import { BotUtils } from '../utils';
 import MemberUniqueRoleCommandBase from './bases/member-unique-role-base';
 
 const decemberLinks = [

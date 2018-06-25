@@ -1,11 +1,11 @@
-import ICommand, { ICommandLookup } from 'commands/@types';
-import Feature from 'features/feature';
-import FeatureUtils from 'features/feature-utils';
-import { HelpGroup } from 'help-groups';
-import MessageBuilder from 'message-builder';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
+import Feature from '../../features/feature';
+import FeatureUtils from '../../features/feature-utils';
+import { HelpGroup } from '../../help-groups';
+import MessageBuilder from '../../message-builder';
+import PublicMessage from '../../messages/public';
+import Phil from '../../phil';
+import { DiscordPromises } from '../../promises/discord';
+import ICommand, { ICommandLookup } from '../@types';
 import CommandHelpInfo from './command-help-info';
 import HelpGroupInfo from './help-group-info';
 

@@ -1,7 +1,7 @@
-import Feature from 'features/feature';
-import { HelpGroup } from 'help-groups';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
+import Feature from '../features/feature';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
 
 export default interface ICommand {
     readonly name: string;

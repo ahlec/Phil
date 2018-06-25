@@ -1,11 +1,11 @@
-import Bucket from 'buckets';
-import Features from 'features/all-features';
-import { HelpGroup } from 'help-groups';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import Prompt from 'prompts/prompt';
-import ServerConfig from 'server-config';
+import Bucket from '../buckets';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
+import Prompt from '../prompts/prompt';
+import ServerConfig from '../server-config';
 import ICommand from './@types';
 
 const MAX_LIST_LENGTH = 10;

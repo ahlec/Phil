@@ -1,10 +1,10 @@
-import Features from 'features/all-features';
-import { HelpGroup } from 'help-groups';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import Leaderboard from 'prompts/leaderboard';
-import LeaderboardEntry from 'prompts/leaderboard-entry';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
+import Leaderboard from '../prompts/leaderboard';
+import LeaderboardEntry from '../prompts/leaderboard-entry';
 import ICommand from './@types';
 
 const RANKING_EMOJI: { [rank: number]: string } = {

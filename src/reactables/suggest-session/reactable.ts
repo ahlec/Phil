@@ -1,9 +1,9 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import SubmissionSession from 'prompts/submission-session';
-import ReactablePost from 'reactables/post';
-import ReactableType from 'reactables/reactable-type';
+import Phil from '../../phil';
+import { DiscordPromises } from '../../promises/discord';
+import SubmissionSession from '../../prompts/submission-session';
+import ReactablePost from '../post';
+import ReactableType from '../reactable-type';
 import SuggestSessionReactableFactory from './factory';
 import SuggestSessionReactableShared from './shared';
 

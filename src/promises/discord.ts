@@ -1,6 +1,6 @@
 import { Client as DiscordIOClient, Role as DiscordIORole } from 'discord.io';
-import MessageBuilder from 'message-builder';
-import Delay from 'utils/delay';
+import MessageBuilder from '../message-builder';
+import Delay from '../utils/delay';
 
 declare interface IDiscordIOCallbackError {
 	statusCode?: number,

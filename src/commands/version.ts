@@ -1,9 +1,9 @@
-import Feature from 'features/feature';
-import { HelpGroup } from 'help-groups';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import Versions from 'versions';
+import Feature from '../features/feature';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
+import Versions from '../versions';
 import ICommand from './@types';
 
 export default class VersionCommand implements ICommand {

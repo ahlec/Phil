@@ -1,9 +1,9 @@
-import Bucket from 'buckets';
-import Features from 'features/all-features';
-import { HelpGroup } from 'help-groups';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import { PromptQueue } from 'prompts/queue';
+import Bucket from '../buckets';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import { PromptQueue } from '../prompts/queue';
 import ICommand from './@types';
 
 const MAX_QUEUE_DISPLAY_LENGTH = 10;

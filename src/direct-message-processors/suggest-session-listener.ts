@@ -1,8 +1,8 @@
-import PrivateMessage from 'messages/private';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import SubmissionSession from 'prompts/submission-session';
-import SuggestSessionReactableFactory from 'reactables/suggest-session/factory';
+import PrivateMessage from '../messages/private';
+import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
+import SubmissionSession from '../prompts/submission-session';
+import SuggestSessionReactableFactory from '../reactables/suggest-session/factory';
 import { IDirectMessageProcessor, IProcessorActiveToken } from './@base';
 
 interface IPromptValidateResult {

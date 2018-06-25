@@ -1,8 +1,8 @@
 import Stages from './@all-stages';
 import IStage from './@stage';
 
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
+import Phil from '../../phil';
+import { DiscordPromises } from '../../promises/discord';
 
 export namespace QuestionnaireStageUtils {
     export async function sendStageMessage(phil: Phil, userId: string, stage: IStage) {

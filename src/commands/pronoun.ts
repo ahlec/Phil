@@ -1,9 +1,11 @@
 import { Role as DiscordIORole } from 'discord.io';
-import Features from 'features/all-features';
-import { DiscordPromises } from 'promises/discord';
-import { AllPronouns, getPronounFromRole, Pronoun } from 'pronouns';
-import ServerConfig from 'server-config';
-import BotUtils from 'utils';
+import Features from '../features/all-features';
+import { DiscordPromises } from '../promises/discord';
+import { AllPronouns } from '../pronouns/definitions';
+import { Pronoun } from '../pronouns/pronoun';
+import { getPronounFromRole } from '../pronouns/utils';
+import ServerConfig from '../server-config';
+import BotUtils from '../utils';
 import MemberUniqueRoleCommandBase from './bases/member-unique-role-base';
 
 const pronounUsageToPronouns: { [pronoun: string]: Pronoun } = {};

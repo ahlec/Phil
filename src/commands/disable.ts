@@ -1,9 +1,9 @@
-import Feature from 'features/feature';
-import FeatureUtils from 'features/feature-utils';
-import { HelpGroup } from 'help-groups';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import { BotUtils } from 'utils';
+import Feature from '../features/feature';
+import FeatureUtils from '../features/feature-utils';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import { BotUtils } from '../utils';
 import ICommand from './@types';
 
 export default class DisableCommand implements ICommand {

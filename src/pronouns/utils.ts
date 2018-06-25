@@ -1,6 +1,6 @@
 import { Role as DiscordIORole } from 'discord.io';
-import { AllPronouns } from 'pronouns/definitions';
-import Pronoun from 'pronouns/pronoun';
+import { AllPronouns } from './definitions';
+import Pronoun from './pronoun';
 
 // -------------------------- Looking up pronouns
 const roleToPronounLookup: { [displayName: string]: Pronoun } = {};

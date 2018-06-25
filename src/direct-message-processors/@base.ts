@@ -1,5 +1,5 @@
-import PrivateMessage from 'messages/private';
-import Phil from 'phil';
+import PrivateMessage from '../messages/private';
+import Phil from '../phil';
 
 export interface IProcessorActiveToken { // TODO: come up with a better name for this
     readonly isActive: boolean;

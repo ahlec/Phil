@@ -1,11 +1,11 @@
-import { IDirectMessageProcessor } from 'direct-message-processors/@base';
+import { IDirectMessageProcessor } from './direct-message-processors/@base';
 
-import SuggestSessionListener from 'direct-message-processors/suggest-session-listener';
-import TimezoneQuestionnaireProcessor from 'direct-message-processors/timezone-questionnaire';
+import SuggestSessionListener from './direct-message-processors/suggest-session-listener';
+import TimezoneQuestionnaireProcessor from './direct-message-processors/timezone-questionnaire';
 
-import PrivateMessage from 'messages/private';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
+import PrivateMessage from './messages/private';
+import Phil from './phil';
+import { DiscordPromises } from './promises/discord';
 const util = require('util');
 
 export default class DirectMessageDispatcher {

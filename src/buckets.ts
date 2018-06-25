@@ -1,8 +1,8 @@
-import Database from 'database';
 import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
-import Phil from 'phil';
-import ServerConfig from 'server-config';
-import BotUtils from 'utils';
+import Database from './database';
+import Phil from './phil';
+import ServerConfig from './server-config';
+import BotUtils from './utils';
 
 const assert = require('assert');
 const moment = require('moment');

@@ -1,12 +1,12 @@
-import Features from 'features/all-features';
-import { HelpGroup } from 'help-groups';
-import MessageBuilder from 'message-builder';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import Requestable from 'requestables';
-import ServerConfig from 'server-config';
-import BotUtils from 'utils';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import MessageBuilder from '../message-builder';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
+import Requestable from '../requestables';
+import ServerConfig from '../server-config';
+import BotUtils from '../utils';
 import ICommand from './@types';
 
 export default class RequestCommand implements ICommand {

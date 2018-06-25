@@ -1,6 +1,6 @@
-import GlobalConfig from 'global-config';
 const express = require('express');
-import { BotUtils } from 'utils';
+import GlobalConfig from './global-config';
+import { BotUtils } from './utils';
 
 export default class WebPortal {
     private app: any;

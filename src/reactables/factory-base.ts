@@ -1,6 +1,6 @@
-import Database from 'database';
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
-import { DiscordPromises } from 'promises/discord';
+import Database from '../database';
+import { DiscordPromises } from '../promises/discord';
 import ReactablePost from './post';
 
 export interface IReactableCreateArgsBase {

@@ -1,9 +1,9 @@
-import Feature from 'features/feature';
-import { HelpGroup } from 'help-groups';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import YouTubePromises from 'promises/youtube';
+import Feature from '../features/feature';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
+import YouTubePromises from '../promises/youtube';
 import ICommand from './@types';
 
 export default class YoutubeCommand implements ICommand {

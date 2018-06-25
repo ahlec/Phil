@@ -1,6 +1,6 @@
-import Database from 'database';
 import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
-import { BotUtils } from 'utils';
+import Database from '../database';
+import { BotUtils } from '../utils';
 import { AllMonths, MonthDefinition } from './month-definition';
 
 

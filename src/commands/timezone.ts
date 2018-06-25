@@ -1,8 +1,8 @@
-import Features from 'features/all-features';
-import { HelpGroup } from 'help-groups';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import TimezoneQuestionnaire from 'timezones/questionnaire';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import TimezoneQuestionnaire from '../timezones/questionnaire';
 import ICommand from './@types';
 
 export default class TimezoneCommand implements ICommand {

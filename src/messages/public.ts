@@ -1,8 +1,8 @@
 import { Server as DiscordIOServer } from 'discord.io';
-import MessageBase from 'messages/base';
 import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
-import Phil from 'phil';
-import ServerConfig from 'server-config';
+import Phil from '../phil';
+import ServerConfig from '../server-config';
+import MessageBase from './base';
 
 export class PublicMessage extends MessageBase {
     public readonly server: DiscordIOServer;

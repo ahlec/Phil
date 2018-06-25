@@ -1,13 +1,13 @@
-import Bucket from 'buckets';
-import Features from 'features/all-features';
-import { HelpGroup } from 'help-groups';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import SubmissionSession from 'prompts/submission-session';
-import SuggestSessionReactableFactory from 'reactables/suggest-session/factory';
-import SuggestSessionReactableShared from 'reactables/suggest-session/shared';
-import ServerConfig from 'server-config';
+import Bucket from '../buckets';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
+import SubmissionSession from '../prompts/submission-session';
+import SuggestSessionReactableFactory from '../reactables/suggest-session/factory';
+import SuggestSessionReactableShared from '../reactables/suggest-session/shared';
+import ServerConfig from '../server-config';
 import ICommand from './@types';
 
 export default class SuggestCommand implements ICommand {

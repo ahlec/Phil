@@ -1,9 +1,9 @@
-import Feature from 'features/feature';
-import { HelpGroup } from 'help-groups';
-import PublicMessage from 'messages/public';
-import Phil from 'phil';
-import { DiscordPromises } from 'promises/discord';
-import BotUtils from 'utils';
+import Feature from '../features/feature';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
+import BotUtils from '../utils';
 import ICommand from './@types';
 
 const apologies = [

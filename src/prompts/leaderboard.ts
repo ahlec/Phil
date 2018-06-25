@@ -1,6 +1,6 @@
-import Database from 'database';
 import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
 import { QueryResult } from 'pg';
+import Database from '../database';
 import LeaderboardEntry from './leaderboard-entry';
 
 const LEADERBOARD_SIZE = 10;

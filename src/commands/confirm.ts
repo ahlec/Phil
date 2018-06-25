@@ -1,7 +1,7 @@
-import Bucket, { BucketFrequency } from 'buckets';
-import Phil from 'phil';
-import Prompt from 'prompts/prompt';
-import ServerConfig from 'server-config';
+import Bucket, { BucketFrequency } from '../buckets';
+import Phil from '../phil';
+import Prompt from '../prompts/prompt';
+import ServerConfig from '../server-config';
 import ConfirmRejectCommandBase from './bases/confirm-reject-base';
 
 const successMessageEnd = ' confirmed. You may continue using `{commandPrefix}confirm` or start over by using `{commandPrefix}unconfirmed`.';

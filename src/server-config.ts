@@ -1,13 +1,13 @@
-import Database from 'database';
 import {
     Channel as DiscordIOChannel,
     Member as DiscordIOMember,
     Role as DiscordIORole,
     Server as DiscordIOServer } from 'discord.io';
-import GlobalConfig from 'global-config';
-import { DEFAULT_PRONOUNS } from 'pronouns/definitions';
-import Pronoun from 'pronouns/pronoun';
-import { getPronounFromRole } from 'pronouns/utils';
+import Database from './database';
+import GlobalConfig from './global-config';
+import { DEFAULT_PRONOUNS } from './pronouns/definitions';
+import Pronoun from './pronouns/pronoun';
+import { getPronounFromRole } from './pronouns/utils';
 const discord = require('discord.io');
 
 function doesRoleHavePermission(role : DiscordIORole, permission : number) : boolean {
