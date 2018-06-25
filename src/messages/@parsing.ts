@@ -1,6 +1,6 @@
-import MessageBase from 'message/base';
-import PrivateMessage from 'message/private';
-import PublicMessage from 'message/public';
+import MessageBase from 'messages/base';
+import PrivateMessage from 'messages/private';
+import PublicMessage from 'messages/public';
 import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
 import Phil from 'phil';
 

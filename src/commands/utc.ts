@@ -1,9 +1,8 @@
-import { IPublicMessage } from 'phil';
-import Features from '../phil/features/all-features';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
-import UserTimezone from '../phil/timezones/user-timezone';
-import BotUtils from '../phil/utils';
+import Features from 'features/all-features';
+import { HelpGroup } from 'help-groups';
+import PublicMessage from 'messages/public';
+import Phil from 'phil';
+import UserTimezone from 'timezones/user-timezone';
 import { DiscordPromises } from '../promises/discord';
 import ICommand from './@types';
 
@@ -25,7 +24,7 @@ export default class UtcCommand implements ICommand {
     public readonly versionAdded = 10;
 
     public readonly isAdminCommand = false;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const inputTime = this.getTimeFromCommandArgs(commandArgs);
         if (!inputTime) {
             throw new Error('You must provide a time to this command so that I know what to convert to UTC. You can try using `' + message.serverConfig.commandPrefix + 'utc 5pm` or `' + message.serverConfig.commandPrefix + 'utc tomorrow at 11:30` to try it out.');

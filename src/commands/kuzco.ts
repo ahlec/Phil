@@ -1,8 +1,8 @@
-import { IPublicMessage } from 'phil';
-import Feature from '../phil/features/feature';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
-import { DiscordPromises } from '../promises/discord';
+import Feature from 'features/feature';
+import { HelpGroup } from 'help-groups';
+import PublicMessage from 'messages/public';
+import Phil from 'phil';
+import { DiscordPromises } from 'promises/discord';
 import ICommand from './@types';
 
 export default class KuzcoCommand implements ICommand {
@@ -16,7 +16,7 @@ export default class KuzcoCommand implements ICommand {
     public readonly versionAdded = 8;
 
     public readonly isAdminCommand = false;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const poison = this.getPoison(commandArgs);
         const reply = this.createReply(poison);
 

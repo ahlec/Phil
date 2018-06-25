@@ -1,9 +1,9 @@
-import { IPublicMessage } from 'phil';
-import Feature from '../phil/features/feature';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
-import { BotUtils } from '../phil/utils';
-import { DiscordPromises } from '../promises/discord';
+import Feature from 'features/feature';
+import { HelpGroup } from 'help-groups';
+import PublicMessage from 'messages/public';
+import Phil from 'phil';
+import { DiscordPromises } from 'promises/discord';
+import BotUtils from 'utils';
 import ICommand from './@types';
 
 const apologies = [
@@ -29,7 +29,7 @@ export default class ApologiseCommand implements ICommand {
     public readonly versionAdded = 3;
 
     public readonly isAdminCommand = false;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const apology = BotUtils.getRandomArrayEntry(apologies);
         return DiscordPromises.sendMessage(phil.bot, message.channelId, apology);
     }

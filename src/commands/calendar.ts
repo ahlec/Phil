@@ -1,13 +1,12 @@
+import CalendarMonth from 'calendar/calendar-month';
 import { Server as DiscordIOServer } from 'discord.io';
-import { IPublicMessage, IServerConfig } from 'phil';
-import CalendarMonth from '../phil/calendar/calendar-month';
-import Database from '../phil/database';
-import Features from '../phil/features/all-features';
-import { HelpGroup } from '../phil/help-groups';
-import MessageBuilder from '../phil/message-builder';
-import Phil from '../phil/phil';
-import { BotUtils } from '../phil/utils';
-import { DiscordPromises } from '../promises/discord';
+import Features from 'features/all-features';
+import { HelpGroup } from 'help-groups';
+import MessageBuilder from 'message-builder';
+import PublicMessage from 'messages/public';
+import Phil from 'phil';
+import { DiscordPromises } from 'promises/discord';
+import ServerConfig from 'server-config';
 import ICommand from './@types';
 
 const chronoNode = require('chrono-node');
@@ -23,14 +22,14 @@ export default class CalendarCommand implements ICommand {
     public readonly versionAdded = 6;
 
     public readonly isAdminCommand = false;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const month = this.determineMonth(message.serverConfig, commandArgs);
         const calendar = await CalendarMonth.getForMonth(phil.bot, phil.db, message.server, month);
         const builder = this.composeMessageFromCalendar(message.server, calendar);
         return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, builder);
     }
 
-    private determineMonth(serverConfig: IServerConfig, commandArgs: ReadonlyArray<string>): number {
+    private determineMonth(serverConfig: ServerConfig, commandArgs: ReadonlyArray<string>): number {
         const input = commandArgs.join(' ').trim();
         if (input === '') {
             const now = new Date();

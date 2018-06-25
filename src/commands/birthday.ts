@@ -1,14 +1,15 @@
-import chronoNode = require('chrono-node');
+import Database from 'database';
+import Feature from 'features/feature';
+import { HelpGroup } from 'help-groups';
+import PublicMessage from 'messages/public';
 import { Moment } from 'moment';
-import momentModuleFunc = require('moment');
-import { IPublicMessage, IServerConfig } from 'phil';
-import Database from '../phil/database';
-import Feature from '../phil/features/feature';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
-import { BotUtils } from '../phil/utils';
-import { DiscordPromises } from '../promises/discord';
+import Phil from 'phil';
+import ServerConfig from 'server-config';
+import BotUtils from 'utils';
 import ICommand from './@types';
+
+import chronoNode = require('chrono-node');
+import momentModuleFunc = require('moment');
 
 export default class BirthdayCommand implements ICommand {
     public readonly name = 'birthday';
@@ -21,7 +22,7 @@ export default class BirthdayCommand implements ICommand {
     public readonly versionAdded = 5;
 
     public readonly isAdminCommand = false;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const birthday = this.getInputFromCommandArgs(message.serverConfig, commandArgs);
 
         await this.setBirthdayInDatabase(phil.db, message.user.username, message.userId, birthday);
@@ -35,7 +36,7 @@ export default class BirthdayCommand implements ICommand {
         });
     }
 
-    private getInputFromCommandArgs(serverConfig: IServerConfig, commandArgs: ReadonlyArray<string>): Moment {
+    private getInputFromCommandArgs(serverConfig: ServerConfig, commandArgs: ReadonlyArray<string>): Moment {
         const birthdayInput = commandArgs.join(' ').trim();
         if (birthdayInput.length === 0) {
             throw new Error('Please tell me what your birthday is, like `' + serverConfig.commandPrefix + 'birthday 05 December`.');

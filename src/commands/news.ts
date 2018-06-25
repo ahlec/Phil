@@ -1,9 +1,8 @@
-import { IPublicMessage } from 'phil';
-import Feature from '../phil/features/feature';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
-import { BotUtils } from '../phil/utils';
-import { DiscordPromises } from '../promises/discord';
+import Feature from 'features/feature';
+import { HelpGroup } from 'help-groups';
+import PublicMessage from 'messages/public';
+import Phil from 'phil';
+import { DiscordPromises } from 'promises/discord';
 import ICommand from './@types';
 
 export default class NewsCommand implements ICommand {
@@ -17,12 +16,12 @@ export default class NewsCommand implements ICommand {
     public readonly versionAdded = 11;
 
     public readonly isAdminCommand = true;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const echoedMessage = this.getEchoedStatementFromCommandArgs(message, commandArgs);
         DiscordPromises.sendMessage(phil.bot, message.serverConfig.newsChannel.id, echoedMessage);
     }
 
-    private getEchoedStatementFromCommandArgs(message: IPublicMessage, commandArgs: ReadonlyArray<string>): string {
+    private getEchoedStatementFromCommandArgs(message: PublicMessage, commandArgs: ReadonlyArray<string>): string {
         let echoedMessage = commandArgs.join(' ').trim();
         echoedMessage = echoedMessage.replace(/`/g, '');
 

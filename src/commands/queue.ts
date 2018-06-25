@@ -1,9 +1,9 @@
-import { IPublicMessage } from 'phil';
-import Bucket from '../phil/buckets';
-import Features from '../phil/features/all-features';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
-import { PromptQueue } from '../phil/prompts/queue';
+import Bucket from 'buckets';
+import Features from 'features/all-features';
+import { HelpGroup } from 'help-groups';
+import PublicMessage from 'messages/public';
+import Phil from 'phil';
+import { PromptQueue } from 'prompts/queue';
 import ICommand from './@types';
 
 const MAX_QUEUE_DISPLAY_LENGTH = 10;
@@ -19,7 +19,7 @@ export default class QueueCommand implements ICommand {
     public readonly versionAdded = 7;
 
     public readonly isAdminCommand = true;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'queue', false);
         const queue = await PromptQueue.getPromptQueue(phil.bot, phil.db, bucket, 1, MAX_QUEUE_DISPLAY_LENGTH);
 

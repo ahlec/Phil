@@ -1,4 +1,4 @@
-import MessageBase from 'message/base';
+import MessageBase from 'messages/base';
 import { OfficialDiscordMessage, OfficialDiscordPayload } from 'official-discord';
 import Phil from 'phil';
 

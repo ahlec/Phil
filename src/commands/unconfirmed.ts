@@ -1,10 +1,11 @@
-import { IPublicMessage, IServerConfig } from 'phil';
-import Bucket from '../phil/buckets';
-import Features from '../phil/features/all-features';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
-import Prompt from '../phil/prompts/prompt';
-import { DiscordPromises } from '../promises/discord';
+import Bucket from 'buckets';
+import Features from 'features/all-features';
+import { HelpGroup } from 'help-groups';
+import PublicMessage from 'messages/public';
+import Phil from 'phil';
+import { DiscordPromises } from 'promises/discord';
+import Prompt from 'prompts/prompt';
+import ServerConfig from 'server-config';
 import ICommand from './@types';
 
 const MAX_LIST_LENGTH = 10;
@@ -20,7 +21,7 @@ export default class UnconfirmedCommand implements ICommand {
     public readonly versionAdded = 1;
 
     public readonly isAdminCommand = true;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         await phil.db.query('DELETE FROM prompt_confirmation_queue WHERE channel_id = $1', [message.channelId]);
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'unconfirmed', false);
 
@@ -41,7 +42,7 @@ export default class UnconfirmedCommand implements ICommand {
         return DiscordPromises.sendMessage(phil.bot, channelId, ':large_blue_diamond: There are no unconfirmed prompts in the queue right now.');
     }
 
-    private outputList(phil: Phil, serverConfig: IServerConfig, channelId: string, prompts: Prompt[]): Promise<string> {
+    private outputList(phil: Phil, serverConfig: ServerConfig, channelId: string, prompts: Prompt[]): Promise<string> {
         const existenceVerb = (prompts.length === 1 ? 'is' : 'are');
         const noun = (prompts.length === 1 ? 'prompt' : 'prompts');
         let message = ':pencil: Here ' + existenceVerb + ' ' + prompts.length + ' unconfirmed ' + noun + '.';

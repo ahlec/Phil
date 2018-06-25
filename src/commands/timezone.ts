@@ -1,9 +1,8 @@
-import { IPublicMessage } from 'phil';
-import Features from '../phil/features/all-features';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
-import TimezoneQuestionnaire from '../phil/timezones/questionnaire';
-import BotUtils from '../phil/utils';
+import Features from 'features/all-features';
+import { HelpGroup } from 'help-groups';
+import PublicMessage from 'messages/public';
+import Phil from 'phil';
+import TimezoneQuestionnaire from 'timezones/questionnaire';
 import ICommand from './@types';
 
 export default class TimezoneCommand implements ICommand {
@@ -17,7 +16,7 @@ export default class TimezoneCommand implements ICommand {
     public readonly versionAdded = 8;
 
     public readonly isAdminCommand = false;
-    public processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         return TimezoneQuestionnaire.startQuestionnaire(phil, message.userId, true);
     }
-};
+}

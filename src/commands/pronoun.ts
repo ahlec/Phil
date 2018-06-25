@@ -1,12 +1,12 @@
 import { Role as DiscordIORole } from 'discord.io';
-import { IPronoun, IServerConfig } from 'phil';
-import Features from '../phil/features/all-features';
-import { AllPronouns, getPronounFromRole } from '../phil/pronouns';
-import BotUtils from '../phil/utils';
-import { DiscordPromises } from '../promises/discord';
+import Features from 'features/all-features';
+import { DiscordPromises } from 'promises/discord';
+import { AllPronouns, getPronounFromRole, Pronoun } from 'pronouns';
+import ServerConfig from 'server-config';
+import BotUtils from 'utils';
 import MemberUniqueRoleCommandBase from './bases/member-unique-role-base';
 
-const pronounUsageToPronouns: { [pronoun: string]: IPronoun } = {};
+const pronounUsageToPronouns: { [pronoun: string]: Pronoun } = {};
 for (const pronoun of AllPronouns) {
     pronounUsageToPronouns[pronoun.subject.toLowerCase()] = pronoun;
     pronounUsageToPronouns[pronoun.object.toLowerCase()] = pronoun;
@@ -15,7 +15,7 @@ for (const pronoun of AllPronouns) {
     pronounUsageToPronouns[pronoun.reflexive.toLowerCase()] = pronoun;
 }
 
-export default class PronounCommand extends MemberUniqueRoleCommandBase<IPronoun> {
+export default class PronounCommand extends MemberUniqueRoleCommandBase<Pronoun> {
     public readonly name = 'pronoun';
     public readonly aliases = ['pronouns'];
     public readonly feature = Features.Pronouns;
@@ -24,18 +24,18 @@ export default class PronounCommand extends MemberUniqueRoleCommandBase<IPronoun
 
     public readonly versionAdded = 13;
 
-    protected getMissingCommandArgsErrorMessage(serverConfig: IServerConfig): string {
+    protected getMissingCommandArgsErrorMessage(serverConfig: ServerConfig): string {
         return 'I will need you to specify which pronouns you would like me ' +
             'to use for you by using it as a command argument.\n\n' +
             this.getUsageMessage(serverConfig);
     }
 
-    protected getInvalidInputErrorMessage(input: string, serverConfig: IServerConfig): string {
+    protected getInvalidInputErrorMessage(input: string, serverConfig: ServerConfig): string {
         return 'I didn\'t understand `' + input + '` as a pronoun that I know ' +
             'how to use.\n\n' + this.getUsageMessage(serverConfig);
     }
 
-    protected tryParseInput(input: string): IPronoun {
+    protected tryParseInput(input: string): Pronoun {
         const pronoun = pronounUsageToPronouns[input.toLowerCase()];
         if (!pronoun) {
             return null;
@@ -49,25 +49,25 @@ export default class PronounCommand extends MemberUniqueRoleCommandBase<IPronoun
         return (pronoun !== null);
     }
 
-    protected doesRoleMatchData(role: DiscordIORole, data: IPronoun): boolean {
+    protected doesRoleMatchData(role: DiscordIORole, data: Pronoun): boolean {
         const rolePronoun = getPronounFromRole(role);
         return (data === rolePronoun);
     }
 
-    protected getRoleConfig(data: IPronoun): DiscordPromises.IEditRoleOptions {
+    protected getRoleConfig(data: Pronoun): DiscordPromises.IEditRoleOptions {
         return {
             name: data.roleName
         };
     }
 
-    protected getSuccessMessage(serverConfig: IServerConfig, data: IPronoun): string {
+    protected getSuccessMessage(serverConfig: ServerConfig, data: Pronoun): string {
         return 'I\'ve changed your pronouns to **' + data.subject + '/' +
             data.object + '/' + data.possessive + '**. If that was undesired, ' +
             'or if your pronouns change in the future, you can easily change ' +
             'them again by using `' + serverConfig.commandPrefix + 'pronoun`.';
     }
 
-    private getUsageMessage(serverConfig: IServerConfig): string {
+    private getUsageMessage(serverConfig: ServerConfig): string {
         let message = 'The pronouns that I know how to use right now are as follows:\n\n';
 
         for (const pronoun of AllPronouns) {
@@ -82,7 +82,7 @@ export default class PronounCommand extends MemberUniqueRoleCommandBase<IPronoun
         return message;
     }
 
-    private getPronounUsage(pronoun: IPronoun): string {
+    private getPronounUsage(pronoun: Pronoun): string {
         let usage = '**' + pronoun.displayName + '**, use: ';
         const uniqueChoices : Set<string> = new Set();
         usage = this.appendUsage(usage, pronoun.subject, uniqueChoices);

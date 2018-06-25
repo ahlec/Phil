@@ -1,8 +1,7 @@
-import { IPublicMessage } from 'phil';
-import Database from '../phil/database';
-import Feature from '../phil/features/feature';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
+import Feature from 'features/feature';
+import { HelpGroup } from 'help-groups';
+import PublicMessage from 'messages/public';
+import Phil from 'phil';
 
 export default interface ICommand {
     readonly name: string;
@@ -14,7 +13,7 @@ export default interface ICommand {
     readonly versionAdded: number;
 
     readonly isAdminCommand: boolean;
-    processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any>;
+    processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any>;
 }
 
 export interface ICommandLookup {
