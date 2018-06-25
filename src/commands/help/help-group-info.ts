@@ -1,6 +1,6 @@
-import { IBatchFeaturesEnabledLookup } from '../../phil/features/feature-utils';
-import { getHeaderForGroup, HelpGroup } from '../../phil/help-groups';
-import MessageBuilder from '../../phil/message-builder';
+import { IBatchFeaturesEnabledLookup } from '../../features/feature-utils';
+import { getHeaderForGroup, HelpGroup } from '../../help-groups';
+import MessageBuilder from '../../message-builder';
 import CommandHelpInfo from './command-help-info';
 
 export default class HelpGroupInfo {

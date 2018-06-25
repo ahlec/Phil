@@ -1,10 +1,10 @@
-import { IPublicMessage } from 'phil';
-import Features from '../phil/features/all-features';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
-import Leaderboard from '../phil/prompts/leaderboard';
-import LeaderboardEntry from '../phil/prompts/leaderboard-entry';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
+import Leaderboard from '../prompts/leaderboard';
+import LeaderboardEntry from '../prompts/leaderboard-entry';
 import ICommand from './@types';
 
 const RANKING_EMOJI: { [rank: number]: string } = {
@@ -77,7 +77,7 @@ export default class LeaderboardCommand implements ICommand {
     public readonly versionAdded = 11;
 
     public readonly isAdminCommand = false;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const leaderboard = await Leaderboard.getLeaderboard(phil.bot, phil.db, message.server);
         const reply = createLeaderboardMessage(leaderboard);
 

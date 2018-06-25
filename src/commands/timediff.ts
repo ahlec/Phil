@@ -1,10 +1,9 @@
-import { IPublicMessage } from 'phil';
-import Features from '../phil/features/all-features';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
-import UserTimezone from '../phil/timezones/user-timezone';
-import BotUtils from '../phil/utils';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
+import UserTimezone from '../timezones/user-timezone';
 import ICommand from './@types';
 
 export default class TimediffCommand implements ICommand {
@@ -18,7 +17,7 @@ export default class TimediffCommand implements ICommand {
     public readonly versionAdded = 10;
 
     public readonly isAdminCommand = false;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         if (message.mentions.length !== 1) {
             throw new Error('In order to use this function, you must mention the user you\'re asking about. For instance, something like `' + message.serverConfig.commandPrefix + 'timediff @Bunnymund#1234`.');
         }

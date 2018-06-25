@@ -1,13 +1,14 @@
 import { Server as DiscordIOServer } from 'discord.io';
-import { IPublicMessage, IServerConfig } from 'phil';
-import Database from '../phil/database';
-import Features from '../phil/features/all-features';
-import { HelpGroup } from '../phil/help-groups';
-import MessageBuilder from '../phil/message-builder';
-import Phil from '../phil/phil';
-import Requestable from '../phil/requestables';
-import BotUtils from '../phil/utils';
+import Database from '../database';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import MessageBuilder from '../message-builder';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
+import Requestable from '../requestables';
+import ServerConfig from '../server-config';
+import BotUtils from '../utils';
 import ICommand from './@types';
 
 export default class RemoveCommand implements ICommand {
@@ -21,7 +22,7 @@ export default class RemoveCommand implements ICommand {
     public readonly versionAdded = 7;
 
     public readonly isAdminCommand = false;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         if (commandArgs.length === 0) {
             return this.processNoCommandArgs(phil, message);
         }
@@ -33,7 +34,7 @@ export default class RemoveCommand implements ICommand {
 
         this.ensureUserHasRole(message.server, message.userId, requestable);
 
-        const result = await DiscordPromises.takeRoleFromUser(phil.bot, message.server.id, message.userId, requestable.role.id);
+        await DiscordPromises.takeRoleFromUser(phil.bot, message.server.id, message.userId, requestable.role.id);
         BotUtils.sendSuccessMessage({
             bot: phil.bot,
             channelId: message.channelId,
@@ -51,7 +52,7 @@ export default class RemoveCommand implements ICommand {
         return requestable.role;
     }
 
-    private async processNoCommandArgs(phil: Phil, message: IPublicMessage): Promise<any> {
+    private async processNoCommandArgs(phil: Phil, message: PublicMessage): Promise<any> {
         const userRequestables = await this.getAllRequestablesUserHas(phil.db, message.serverConfig, message.userId);
         if (userRequestables.length === 0) {
             throw new Error('I haven\'t given you any requestable roles yet. You use `' + message.serverConfig.commandPrefix + 'request` in order to obtain these roles.');
@@ -61,7 +62,7 @@ export default class RemoveCommand implements ICommand {
         return DiscordPromises.sendMessageBuilder(phil.bot, message.channelId, reply);
     }
 
-    private async getAllRequestablesUserHas(db: Database, serverConfig: IServerConfig, userId: string): Promise<Requestable[]> {
+    private async getAllRequestablesUserHas(db: Database, serverConfig: ServerConfig, userId: string): Promise<Requestable[]> {
         const requestables = await Requestable.getAllRequestables(db, serverConfig.server);
         if (requestables.length === 0) {
             throw new Error('There are no requestable roles defined. An admin should use `' + serverConfig.commandPrefix + 'define` to create some roles.');
@@ -78,7 +79,7 @@ export default class RemoveCommand implements ICommand {
         return requestablesUserHas;
     }
 
-    private composeAllRequestablesList(serverConfig: IServerConfig, requestables: Requestable[]): MessageBuilder {
+    private composeAllRequestablesList(serverConfig: ServerConfig, requestables: Requestable[]): MessageBuilder {
         const builder = new MessageBuilder();
         builder.append(':snowflake: These are the roles you can remove using `' + serverConfig.commandPrefix + 'remove`:\n');
 

@@ -1,7 +1,7 @@
-import Feature from '../../phil/features/feature';
-import { IBatchFeaturesEnabledLookup } from '../../phil/features/feature-utils';
-import { HelpGroup } from '../../phil/help-groups';
-import Versions from '../../phil/versions';
+import Feature from '../../features/feature';
+import { IBatchFeaturesEnabledLookup } from '../../features/feature-utils';
+import { HelpGroup } from '../../help-groups';
+import Versions from '../../versions';
 import ICommand from '../@types';
 
 export default class CommandHelpInfo {

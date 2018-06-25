@@ -1,9 +1,9 @@
-import { IPublicMessage } from 'phil';
-import Features from '../phil/features/all-features';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
-import BotUtils from '../phil/utils';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
+import BotUtils from '../utils';
 import ICommand from './@types';
 
 export default class MapCommand implements ICommand {
@@ -17,7 +17,7 @@ export default class MapCommand implements ICommand {
     public readonly versionAdded = 8;
 
     public readonly isAdminCommand = false;
-    public processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         if (!message.serverConfig.fandomMapLink) {
             return BotUtils.sendErrorMessage({
                 bot: phil.bot,

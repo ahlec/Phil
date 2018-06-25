@@ -1,17 +1,17 @@
-import { IPublicMessage, IServerConfig } from 'phil';
-import Bucket from '../phil/buckets';
-import Database from '../phil/database';
-import Features from '../phil/features/all-features';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
-import SubmissionSession from '../phil/prompts/submission-session';
-import SuggestSessionReactableFactory from '../phil/reactables/suggest-session/factory';
-import SuggestSessionReactableShared from '../phil/reactables/suggest-session/shared';
+import Bucket from '../buckets';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
+import SubmissionSession from '../prompts/submission-session';
+import SuggestSessionReactableFactory from '../reactables/suggest-session/factory';
+import SuggestSessionReactableShared from '../reactables/suggest-session/shared';
+import ServerConfig from '../server-config';
 import ICommand from './@types';
 
 export default class SuggestCommand implements ICommand {
-    private static getBeginMessage(phil: Phil, serverConfig: IServerConfig, session: SubmissionSession): string {
+    private static getBeginMessage(phil: Phil, serverConfig: ServerConfig, session: SubmissionSession): string {
         const server = phil.bot.servers[session.bucket.serverId];
         const NOWRAP = '';
         return `For the next **${session.remainingTime.asMinutes()} minutes**, every ${
@@ -35,7 +35,7 @@ export default class SuggestCommand implements ICommand {
     public readonly versionAdded = 1;
 
     public readonly isAdminCommand = false;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig,
             this.name, false);
         if (!bucket.canUserSubmitTo(phil.bot, message.userId)) {
@@ -52,7 +52,7 @@ export default class SuggestCommand implements ICommand {
         this.sendDirectMessage(phil, message.userId, message.serverConfig, session);
     }
 
-    private async sendDirectMessage(phil: Phil, userId: string, serverConfig: IServerConfig, session: SubmissionSession) {
+    private async sendDirectMessage(phil: Phil, userId: string, serverConfig: ServerConfig, session: SubmissionSession) {
         const messageId = await DiscordPromises.sendEmbedMessage(phil.bot, userId, {
             color: 0xB0E0E6,
             description: SuggestCommand.getBeginMessage(phil, serverConfig, session),

@@ -1,6 +1,6 @@
-import Phil from '../phil/phil';
-import ServerConfig from '../phil/server-config';
+import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
+import ServerConfig from '../server-config';
 import IChrono from './@types';
 
 export default class BootyDayChrono implements IChrono {

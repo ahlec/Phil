@@ -1,9 +1,8 @@
-import Bucket from '../phil/buckets';
-import Phil from '../phil/phil';
-import Prompt from '../phil/prompts/prompt';
-import { PromptQueue } from '../phil/prompts/queue'
-import ServerConfig from '../phil/server-config';
-import { DiscordPromises } from '../promises/discord';
+import Bucket from '../buckets';
+import Phil from '../phil';
+import Prompt from '../prompts/prompt';
+import { PromptQueue } from '../prompts/queue'
+import ServerConfig from '../server-config';
 import IChrono from './@types';
 
 export default class PostNewPromptsChrono implements IChrono {

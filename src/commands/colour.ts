@@ -1,8 +1,8 @@
 import { Role as DiscordIORole } from 'discord.io';
-import { IServerConfig } from 'phil';
-import Features from '../phil/features/all-features';
-import { BotUtils } from '../phil/utils';
+import Features from '../features/all-features';
 import { DiscordPromises } from '../promises/discord';
+import ServerConfig from '../server-config';
+import { BotUtils } from '../utils';
 import MemberUniqueRoleCommandBase from './bases/member-unique-role-base';
 
 const decemberLinks = [
@@ -32,14 +32,14 @@ export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
 
     public readonly versionAdded = 3;
 
-    protected getMissingCommandArgsErrorMessage(serverConfig: IServerConfig): string {
+    protected getMissingCommandArgsErrorMessage(serverConfig: ServerConfig): string {
         const decemberLink = BotUtils.getRandomArrayEntry(decemberLinks);
         return 'You must provide a hex code to this function of the colour that you\'d like to use. For example, `'
             + serverConfig.commandPrefix + 'color #FFFFFF`. You could try checking out '
             + decemberLink + ' for some codes.';
     }
 
-    protected getInvalidInputErrorMessage(input: string, serverConfig: IServerConfig): string {
+    protected getInvalidInputErrorMessage(input: string, serverConfig: ServerConfig): string {
         const decemberLink = BotUtils.getRandomArrayEntry(decemberLinks);
         return '`' + input + '` isn\'t a valid hex code. I\'m looking for it in the format of `#RRGGBB`. You can try checking out '
             + decemberLink + ' for some amazing colours.';
@@ -69,7 +69,7 @@ export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
         };
     }
 
-    protected getSuccessMessage(serverConfig: IServerConfig, data: string): string {
+    protected getSuccessMessage(serverConfig: ServerConfig, data: string): string {
         const compliment = BotUtils.getRandomArrayEntry(compliments);
         return 'Your colour has been changed to **' + data + '**. ' + compliment;
     }

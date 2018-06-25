@@ -1,13 +1,10 @@
-import { Client as DiscordIOClient, Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
-import { IPublicMessage, IServerConfig } from 'phil';
-import Database from '../phil/database';
-import Features from '../phil/features/all-features';
-import { HelpGroup } from '../phil/help-groups';
-import MessageBuilder from '../phil/message-builder';
-import Phil from '../phil/phil';
-import Requestable, { IRequestableCreationDefinition } from '../phil/requestables';
-import { BotUtils } from '../phil/utils';
-import { DiscordPromises } from '../promises/discord';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
+import Requestable, { IRequestableCreationDefinition } from '../requestables';
+import ServerConfig from '../server-config';
+import { BotUtils } from '../utils';
 import ICommand from './@types';
 
 export default class DefineCommand implements ICommand {
@@ -21,7 +18,7 @@ export default class DefineCommand implements ICommand {
     public readonly versionAdded = 1;
 
     public readonly isAdminCommand = true;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const definition = this.getDefinitionData(commandArgs, message.serverConfig);
         if (!Requestable.checkIsValidRequestableName(definition.name)) {
             throw new Error('The name you provided isn\'t valid to use as a requestable. It must be at least two characters in length and made up only of alphanumeric characters and dashes.');
@@ -41,7 +38,7 @@ export default class DefineCommand implements ICommand {
         });
     }
 
-    private getDefinitionData(commandArgs: ReadonlyArray<string>, serverConfig: IServerConfig): IRequestableCreationDefinition {
+    private getDefinitionData(commandArgs: ReadonlyArray<string>, serverConfig: ServerConfig): IRequestableCreationDefinition {
         if (commandArgs.length < 2) {
             throw new Error('`' + serverConfig.commandPrefix + 'define` requires two parameters, separated by a space:\n' +
                 '[1] the text to be used by users with `' + serverConfig.commandPrefix + 'request` (cannot contain any spaces)\n' +

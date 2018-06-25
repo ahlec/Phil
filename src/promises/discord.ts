@@ -1,7 +1,6 @@
 import { Client as DiscordIOClient, Role as DiscordIORole } from 'discord.io';
-import { OfficialDiscordEmbed } from 'official-discord';
-import MessageBuilder from '../phil/message-builder';
-import Delay from '../phil/utils/delay';
+import MessageBuilder from '../message-builder';
+import Delay from '../utils/delay';
 
 declare interface IDiscordIOCallbackError {
 	statusCode?: number,

@@ -1,5 +1,5 @@
-import Phil from '../phil/phil';
-import ServerConfig from '../phil/server-config';
+import Phil from '../phil';
+import ServerConfig from '../server-config';
 
 export default interface IChrono {
     readonly handle: string;

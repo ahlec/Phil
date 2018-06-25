@@ -1,20 +1,21 @@
-import { IPronoun, IServerConfig } from 'phil';
-import Database from '../phil/database';
-import Phil from '../phil/phil';
-import { GROUP_PRONOUNS } from '../phil/pronouns';
-import BotUtils from '../phil/utils';
+import Database from '../database';
+import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
+import { GROUP_PRONOUNS } from '../pronouns/definitions';
+import { Pronoun } from '../pronouns/pronoun';
+import ServerConfig from '../server-config';
+import BotUtils from '../utils';
 import IChrono from './@types';
 
 interface IHappyBirthdayInfo {
     readonly names: ReadonlyArray<string>;
-    readonly pronoun: IPronoun;
+    readonly pronoun: Pronoun;
 }
 
 export default class HappyBirthdayChrono implements IChrono {
     public readonly handle = 'happy-birthday';
 
-    public async process(phil: Phil, serverConfig: IServerConfig, now: Date) {
+    public async process(phil: Phil, serverConfig: ServerConfig, now: Date) {
         const userIds = await this.getBirthdayUserIds(phil.db, now);
         const info = this.getInfo(phil, serverConfig, userIds);
         const birthdayWish = this.createBirthdayWish(info);
@@ -38,7 +39,7 @@ export default class HappyBirthdayChrono implements IChrono {
         return userIds;
     }
 
-    private getInfo(phil: Phil, serverConfig: IServerConfig, userIds: string[]): IHappyBirthdayInfo {
+    private getInfo(phil: Phil, serverConfig: ServerConfig, userIds: string[]): IHappyBirthdayInfo {
         const names = [];
         for (const userId of userIds) {
             const user = phil.bot.users[userId];

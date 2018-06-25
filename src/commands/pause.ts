@@ -1,9 +1,8 @@
-import { IPublicMessage } from 'phil';
-import Bucket from '../phil/buckets';
-import Features from '../phil/features/all-features';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
-import { BotUtils } from '../phil/utils';
+import Bucket from '../buckets';
+import Features from '../features/all-features';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import ICommand from './@types';
 
@@ -18,7 +17,7 @@ export default class PauseCommand implements ICommand {
     public readonly versionAdded = 11;
 
     public readonly isAdminCommand = true;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'bucket', true);
         await bucket.setIsPaused(phil.db, true);
 

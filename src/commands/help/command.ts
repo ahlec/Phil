@@ -1,9 +1,9 @@
-import { IPublicMessage } from 'phil';
-import Feature from '../../phil/features/feature';
-import FeatureUtils from '../../phil/features/feature-utils';
-import { HelpGroup } from '../../phil/help-groups';
-import MessageBuilder from '../../phil/message-builder';
-import Phil from '../../phil/phil';
+import Feature from '../../features/feature';
+import FeatureUtils from '../../features/feature-utils';
+import { HelpGroup } from '../../help-groups';
+import MessageBuilder from '../../message-builder';
+import PublicMessage from '../../messages/public';
+import Phil from '../../phil';
 import { DiscordPromises } from '../../promises/discord';
 import ICommand, { ICommandLookup } from '../@types';
 import CommandHelpInfo from './command-help-info';
@@ -35,7 +35,7 @@ export default class HelpCommand implements ICommand {
 
     private helpGroups: ReadonlyArray<HelpGroupInfo> = [];
 
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const isAdminChannel = message.serverConfig.isAdminChannel(message.channelId);
         const featuresEnabledLookup = await FeatureUtils.getServerFeaturesStatus(phil.db, message.server.id);
         const builder = new MessageBuilder();

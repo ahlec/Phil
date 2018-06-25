@@ -1,8 +1,8 @@
-import Phil from '../phil/phil';
-import UnconfirmedPromptTally from '../phil/prompts/unconfirmed-prompt-tally';
-import ServerConfig from '../phil/server-config';
-import BotUtils from '../phil/utils';
+import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
+import UnconfirmedPromptTally from '../prompts/unconfirmed-prompt-tally';
+import ServerConfig from '../server-config';
+import BotUtils from '../utils';
 import IChrono from './@types';
 
 export default class AlertAdminsUnconfirmedPromptsChrono implements IChrono {

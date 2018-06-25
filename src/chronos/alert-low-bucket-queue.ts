@@ -1,8 +1,8 @@
-import Bucket from '../phil/buckets';
-import Phil from '../phil/phil';
-import { PromptQueue } from '../phil/prompts/queue';
-import ServerConfig from '../phil/server-config';
+import Bucket from '../buckets';
+import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
+import { PromptQueue } from '../prompts/queue';
+import ServerConfig from '../server-config';
 import IChrono from './@types';
 
 const PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD_DAYS = 5;

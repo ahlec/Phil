@@ -1,7 +1,7 @@
-import { IPublicMessage } from 'phil';
-import Feature from '../phil/features/feature';
-import { HelpGroup } from '../phil/help-groups';
-import Phil from '../phil/phil';
+import Feature from '../features/feature';
+import { HelpGroup } from '../help-groups';
+import PublicMessage from '../messages/public';
+import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import YouTubePromises from '../promises/youtube';
 import ICommand from './@types';
@@ -17,7 +17,7 @@ export default class YoutubeCommand implements ICommand {
     public readonly versionAdded = 4;
 
     public readonly isAdminCommand = false;
-    public async processMessage(phil: Phil, message: IPublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
+    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const query = commandArgs.join(' ').trim();
         if (query.length === 0) {
             throw new Error('You must provide some text to tell me what to search for.');

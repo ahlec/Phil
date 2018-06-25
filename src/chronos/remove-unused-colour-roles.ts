@@ -1,8 +1,8 @@
 import { Server as DiscordIOServer } from 'discord.io';
-import Phil from '../phil/phil';
-import ServerConfig from '../phil/server-config';
-import { BotUtils } from '../phil/utils';
+import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
+import ServerConfig from '../server-config';
+import { BotUtils } from '../utils';
 import IChrono from './@types';
 
 interface IRoleInfo {
