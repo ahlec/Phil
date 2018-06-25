@@ -1,5 +1,5 @@
-import { IPrivateMessage } from 'phil';
-import Phil from '../phil/phil';
+import PrivateMessage from 'messages/private';
+import Phil from 'phil';
 
 export interface IProcessorActiveToken { // TODO: come up with a better name for this
     readonly isActive: boolean;
@@ -7,6 +7,6 @@ export interface IProcessorActiveToken { // TODO: come up with a better name for
 
 export interface IDirectMessageProcessor {
     readonly handle: string;
-    canProcess(phil: Phil, message: IPrivateMessage): Promise<IProcessorActiveToken>;
-    process(phil: Phil, message: IPrivateMessage, token: IProcessorActiveToken): Promise<void>;
+    canProcess(phil: Phil, message: PrivateMessage): Promise<IProcessorActiveToken>;
+    process(phil: Phil, message: PrivateMessage, token: IProcessorActiveToken): Promise<void>;
 }

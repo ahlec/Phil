@@ -1,8 +1,8 @@
-import Feature from '../../phil/features/feature';
-import { IBatchFeaturesEnabledLookup } from '../../phil/features/feature-utils';
-import { HelpGroup } from '../../phil/help-groups';
-import Versions from '../../phil/versions';
-import ICommand from '../@types';
+import ICommand from 'commands/@types';
+import Feature from 'features/feature';
+import { IBatchFeaturesEnabledLookup } from 'features/feature-utils';
+import { HelpGroup } from 'help-groups';
+import Versions from 'versions';
 
 export default class CommandHelpInfo {
     public static sort(a: CommandHelpInfo, b: CommandHelpInfo): number {

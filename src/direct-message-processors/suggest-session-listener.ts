@@ -1,8 +1,8 @@
-import { IPrivateMessage } from 'phil';
-import Phil from '../phil/phil';
-import SubmissionSession from '../phil/prompts/submission-session';
-import SuggestSessionReactableFactory from '../phil/reactables/suggest-session/factory';
-import { DiscordPromises } from '../promises/discord';
+import PrivateMessage from 'messages/private';
+import Phil from 'phil';
+import { DiscordPromises } from 'promises/discord';
+import SubmissionSession from 'prompts/submission-session';
+import SuggestSessionReactableFactory from 'reactables/suggest-session/factory';
 import { IDirectMessageProcessor, IProcessorActiveToken } from './@base';
 
 interface IPromptValidateResult {
@@ -28,7 +28,7 @@ interface ISuggestSessionListenerToken extends IProcessorActiveToken {
 export default class SuggestSessionListener implements IDirectMessageProcessor {
     public readonly handle = 'suggest-session-listener';
 
-    public async canProcess(phil: Phil, message: IPrivateMessage): Promise<ISuggestSessionListenerToken> {
+    public async canProcess(phil: Phil, message: PrivateMessage): Promise<ISuggestSessionListenerToken> {
         const currentSession = await SubmissionSession.getActiveSession(phil, message.userId);
         if (!currentSession) {
             return {
@@ -42,7 +42,7 @@ export default class SuggestSessionListener implements IDirectMessageProcessor {
         }
     }
 
-    public async process(phil: Phil, message: IPrivateMessage, rawToken: IProcessorActiveToken) {
+    public async process(phil: Phil, message: PrivateMessage, rawToken: IProcessorActiveToken) {
         const token = rawToken as ISuggestSessionListenerToken;
         const validationResults = validatePromptSubmission(message.content);
         if (!validationResults.isValid) {
