@@ -1,6 +1,5 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
-import Phil from '../phil';
-import BotUtils from '../utils';
+import Phil from 'phil';
 import { ReactableTypeRegistry } from './@registry';
 import ReactablePost from './post';
 

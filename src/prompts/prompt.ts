@@ -1,10 +1,9 @@
-import { Client as DiscordIOClient, Server as DiscordIOServer } from 'discord.io';
-import { QueryResult } from 'pg';
-import { IServerConfig } from 'phil';
-import { DiscordPromises } from '../../promises/discord';
-import Bucket from '../buckets';
-import Phil from '../phil';
-import { BotUtils } from '../utils';
+import Bucket from 'buckets';
+import { Client as DiscordIOClient } from 'discord.io';
+import Phil from 'phil';
+import { DiscordPromises } from 'promises/discord';
+import ServerConfig from 'server-config';
+import { BotUtils } from 'utils';
 
 export default class Prompt {
     public static async getFromId(phil: Phil, promptId: number): Promise<Prompt> {
@@ -65,7 +64,7 @@ export default class Prompt {
         this.bucketId = parseInt(dbRow.bucket_id, 10);
     }
 
-    public sendToChannel(phil: Phil, serverConfig: IServerConfig, channelId: string, bucket: Bucket, promptNumber: number): Promise<string> {
+    public sendToChannel(phil: Phil, serverConfig: ServerConfig, channelId: string, bucket: Bucket, promptNumber: number): Promise<string> {
         return DiscordPromises.sendEmbedMessage(phil.bot, channelId, {
             color: 0xB0E0E6,
             description: this.text,
@@ -76,7 +75,7 @@ export default class Prompt {
         });
     }
 
-    public async postAsNewPrompt(phil: Phil, serverConfig: IServerConfig, now: Date) {
+    public async postAsNewPrompt(phil: Phil, serverConfig: ServerConfig, now: Date) {
         const bucket = await Bucket.getFromId(phil.bot, phil.db, this.bucketId);
         const nextPromptNumberResults = await phil.db.query('SELECT prompt_number FROM prompts WHERE has_been_posted = E\'1\' AND bucket_id = $1 ORDER BY prompt_number DESC LIMIT 1', [bucket.id]);
         const promptNumber = (nextPromptNumberResults.rowCount > 0 ?
@@ -90,7 +89,7 @@ export default class Prompt {
         await this.postNewPromptToChannel(phil, serverConfig, bucket, promptNumber);
     }
 
-    private getPromptMessageFooter(serverConfig: IServerConfig): string {
+    private getPromptMessageFooter(serverConfig: ServerConfig): string {
         let footer = 'This was suggested ';
 
         if (this.submittedAnonymously) {
@@ -106,7 +105,7 @@ export default class Prompt {
         return footer;
     }
 
-    private postNewPromptToChannel(phil: Phil, serverConfig: IServerConfig, bucket: Bucket, promptNumber: number): Promise<string> {
+    private postNewPromptToChannel(phil: Phil, serverConfig: ServerConfig, bucket: Bucket, promptNumber: number): Promise<string> {
         return this.sendToChannel(phil, serverConfig, bucket.channelId, bucket, promptNumber);
     }
 }

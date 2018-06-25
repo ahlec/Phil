@@ -1,10 +1,10 @@
-import { Client as DiscordIOClient, Server as DiscordIOServer, User as DiscordIOUser } from 'discord.io';
+import Bucket from 'buckets';
+import Database from 'database';
+import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
 import { OfficialDiscordEmbed } from 'official-discord';
 import { QueryResult } from 'pg';
-import { DiscordPromises } from '../../promises/discord';
-import Bucket from '../buckets';
-import Database from '../database';
-import { PromptQueueReactableFactory } from '../reactables/prompt-queue/factory';
+import { DiscordPromises } from 'promises/discord';
+import { PromptQueueReactableFactory } from 'reactables/prompt-queue/factory';
 import Prompt from './prompt';
 
 export interface IPromptQueueEntry {

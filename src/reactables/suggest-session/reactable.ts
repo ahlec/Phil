@@ -1,11 +1,9 @@
-import { Client as DiscordIOClient } from 'discord.io';
 import { OfficialDiscordReactionEvent } from 'official-discord';
-import { DiscordPromises } from '../../../promises/discord';
-import Database from '../../database';
-import Phil from '../../phil';
-import SubmissionSession from '../../prompts/submission-session';
-import ReactablePost from '../post';
-import ReactableType from '../reactable-type';
+import Phil from 'phil';
+import { DiscordPromises } from 'promises/discord';
+import SubmissionSession from 'prompts/submission-session';
+import ReactablePost from 'reactables/post';
+import ReactableType from 'reactables/reactable-type';
 import SuggestSessionReactableFactory from './factory';
 import SuggestSessionReactableShared from './shared';
 

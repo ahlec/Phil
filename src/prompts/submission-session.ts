@@ -1,7 +1,7 @@
+import Bucket from 'buckets';
 import { Duration, Moment } from 'moment';
 import momentModule = require('moment');
-import Bucket from '../buckets';
-import Phil from '../phil';
+import Phil from 'phil';
 
 const SESSION_LENGTH_IN_MINUTES : number = 10;
 

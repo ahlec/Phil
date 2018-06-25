@@ -1,6 +1,6 @@
+import Database from 'database';
 import moment = require('moment-timezone');
 import { QueryResult } from 'pg';
-import Database from '../database';
 import TimezoneQuestionnaire from './questionnaire';
 import Stages from './questionnaire-stages/@all-stages';
 import IStage from './questionnaire-stages/@stage';

@@ -2,8 +2,8 @@ import Stages from './questionnaire-stages/@all-stages';
 import IStage from './questionnaire-stages/@stage';
 import QuestionnaireStageUtils from './questionnaire-stages/@utils';
 
-import Database from '../database';
-import Phil from '../phil';
+import Database from 'database';
+import Phil from 'phil';
 
 async function canStartQuestionnaire(db: Database, userId: string, manuallyStartedQuestionnaire: boolean): Promise<boolean> {
     if (manuallyStartedQuestionnaire) {

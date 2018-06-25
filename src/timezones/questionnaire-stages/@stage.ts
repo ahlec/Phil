@@ -1,9 +1,9 @@
-import { IPrivateMessage, IPublicMessage, IServerConfig } from 'phil';
-import Database from '../../database';
-import Phil from '../../phil';
+import Database from 'database';
+import PrivateMessage from 'messages/private';
+import Phil from 'phil';
 
 export default interface IStage {
     readonly stageNumber: number;
     getMessage(db: Database, userId: string): Promise<string>;
-    processInput(phil: Phil, message: IPrivateMessage): Promise<any>;
+    processInput(phil: Phil, message: PrivateMessage): Promise<any>;
 }

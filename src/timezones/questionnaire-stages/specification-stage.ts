@@ -1,12 +1,11 @@
-import Stages from './@all-stages';
 import IStage from './@stage';
 import { CountryTimezones, ITimezoneData } from './@timezone-data';
 import QuestionnaireStageUtils from './@utils';
 
-import { IPrivateMessage, IPublicMessage, IServerConfig } from 'phil';
-import { DiscordPromises } from '../../../promises/discord';
-import Database from '../../database';
-import Phil from '../../phil';
+import Database from 'database';
+import PrivateMessage from 'messages/private';
+import Phil from 'phil';
+import { DiscordPromises } from 'promises/discord';
 
 export default class SpecificationStage implements IStage {
     public readonly stageNumber = 3;
@@ -16,7 +15,7 @@ export default class SpecificationStage implements IStage {
         return this.getSpecificationList(timezoneData, 'Okay!');
     }
 
-    public async processInput(phil: Phil, message: IPrivateMessage): Promise<any> {
+    public async processInput(phil: Phil, message: PrivateMessage): Promise<any> {
         const timezoneData = await this.getTimezoneDataFromCountryDb(phil.db, message.userId);
         let input = parseInt(message.content, 10);
         if (isNaN(input)) {
