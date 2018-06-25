@@ -1,6 +1,6 @@
+import Database from 'database';
 import { Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
 import { QueryResult } from 'pg';
-import Database from './database';
 
 export interface IRequestableCreationDefinition {
     name: string;

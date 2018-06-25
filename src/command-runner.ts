@@ -1,12 +1,11 @@
+import ICommand from 'commands/@types';
+import { CommandLookup } from 'commands/index';
+import Database from 'database';
 import { Client as DiscordIOClient } from 'discord.io';
-import { IPublicMessage } from 'phil';
-import ICommand from '../commands/@types';
-import { CommandLookup } from '../commands/index';
-import Database from './database';
-import Feature from './features/feature';
-import InputMessage from './input-message';
-import Phil from './phil';
-import BotUtils from './utils';
+import InputMessage from 'input-message';
+import IPublicMessage from 'messages/public';
+import Phil from 'phil';
+import BotUtils from 'utils';
 
 const util = require('util');
 

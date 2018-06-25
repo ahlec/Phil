@@ -1,22 +1,22 @@
-'use strict';
-
+import Database from 'database';
 import {
     Channel as DiscordIOChannel,
     Member as DiscordIOMember,
     Role as DiscordIORole,
     Server as DiscordIOServer } from 'discord.io';
-    import { QueryResult } from 'pg';
-import { IPronoun, IServerConfig, IValidateResult } from 'phil';
-import Database from './database';
-import GlobalConfig from './global-config';
-import { DEFAULT_PRONOUNS, getPronounFromRole } from './pronouns';
+import GlobalConfig from 'global-config';
+import { DEFAULT_PRONOUNS } from 'pronouns/definitions';
+import Pronoun from 'pronouns/pronoun';
+import { getPronounFromRole } from 'pronouns/utils';
 const discord = require('discord.io');
 
 function doesRoleHavePermission(role : DiscordIORole, permission : number) : boolean {
     // TODO: Return to this function and determine if it's actually working?
+    /* tslint:disable:no-bitwise */
     const binary = (role.permissions >>> 0).toString(2).split('');
+    /* tslint:enable:no-bitwise */
     for (const strBit of binary) {
-        const bit = parseInt(strBit);
+        const bit = parseInt(strBit, 10);
         if (bit === permission) {
             return true;
         }
@@ -24,7 +24,12 @@ function doesRoleHavePermission(role : DiscordIORole, permission : number) : boo
     return false;
 }
 
-export default class ServerConfig implements IServerConfig {
+interface IValidateResult {
+    isValid: boolean;
+    invalidReason: string | null;
+}
+
+export class ServerConfig {
     public static async getFromId(db: Database, server: DiscordIOServer, globalConfig: GlobalConfig): Promise<ServerConfig> {
         const results = await db.query('SELECT * FROM server_configs WHERE server_id = $1', [server.id]);
         if (results.rowCount === 0) {
@@ -90,7 +95,7 @@ export default class ServerConfig implements IServerConfig {
         return (this.botControlChannel.id === channelId || this.adminChannel.id === channelId);
     }
 
-    public getPronounsForMember(member: DiscordIOMember): IPronoun {
+    public getPronounsForMember(member: DiscordIOMember): Pronoun {
         for (const roleId of member.roles) {
             const role = this.server.roles[roleId];
             if (!role) {
@@ -140,7 +145,7 @@ export default class ServerConfig implements IServerConfig {
         return this.server.channels[0]; // If we don't have ANY channels, got a lot bigger problems.
     }
 
-    private getOptionalString(str : string) : string | null {
+    private getOptionalString(str: string): string | null {
         if (!str || str.length === 0) {
             return null;
         }
@@ -148,3 +153,5 @@ export default class ServerConfig implements IServerConfig {
         return str;
     }
 }
+
+export default ServerConfig;

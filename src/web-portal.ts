@@ -1,11 +1,11 @@
-import GlobalConfig from './global-config';
-import { BotUtils } from './utils';
+import GlobalConfig from 'global-config';
 const express = require('express');
+import { BotUtils } from 'utils';
 
 export default class WebPortal {
     private app: any;
 
-    constructor(public readonly globalConfig : GlobalConfig) {
+    constructor(public readonly globalConfig: GlobalConfig) {
         this.app = express();
         this.app.set('view engine', 'ejs');
         this.app.use(express.static('../assets'));

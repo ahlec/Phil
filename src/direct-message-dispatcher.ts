@@ -1,11 +1,11 @@
-import { IDirectMessageProcessor, IProcessorActiveToken } from '../direct-message-processors/@base';
+import { IDirectMessageProcessor } from 'direct-message-processors/@base';
 
-import SuggestSessionListener from '../direct-message-processors/suggest-session-listener';
-import TimezoneQuestionnaireProcessor from '../direct-message-processors/timezone-questionnaire';
+import SuggestSessionListener from 'direct-message-processors/suggest-session-listener';
+import TimezoneQuestionnaireProcessor from 'direct-message-processors/timezone-questionnaire';
 
-import { IPrivateMessage } from 'phil';
-import { DiscordPromises } from '../promises/discord';
-import Phil from './phil';
+import PrivateMessage from 'messages/private';
+import Phil from 'phil';
+import { DiscordPromises } from 'promises/discord';
 const util = require('util');
 
 export default class DirectMessageDispatcher {
@@ -17,7 +17,7 @@ export default class DirectMessageDispatcher {
     constructor(private readonly phil: Phil) {
     }
 
-    public async process(message: IPrivateMessage) {
+    public async process(message: PrivateMessage) {
         for (const processor of this.processorsInPriorityOrder) {
             try {
                 const token = await processor.canProcess(this.phil, message);

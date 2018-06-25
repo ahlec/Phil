@@ -1,5 +1,3 @@
-const discord = require('discord.io');
-const assert = require('assert');
 const url = require('url');
 const http = require('http');
 const https = require('https');
@@ -9,7 +7,7 @@ import { Client as DiscordIOClient,
          Role as DiscordIORole,
          Server as DiscordIOServer,
          User as DiscordIOUser } from 'discord.io';
-import { DiscordPromises } from '../promises/discord';
+import { DiscordPromises } from 'promises/discord';
 
 interface ISendErrorMessageOpts {
     readonly bot: DiscordIOClient;

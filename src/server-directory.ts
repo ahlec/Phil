@@ -1,6 +1,6 @@
 import { Server as DiscordIOServer } from 'discord.io';
-import Phil from './phil';
-import ServerConfig from './server-config';
+import Phil from 'phil';
+import ServerConfig from 'server-config';
 
 interface IConfigCache {
     [serverId: string]: ServerConfig;

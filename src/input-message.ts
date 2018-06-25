@@ -1,7 +1,7 @@
-import { IServerConfig } from 'phil';
+import ServerConfig from 'server-config';
 
 export default class InputMessage {
-    public static parseFromMessage(serverConfig: IServerConfig, message: string): InputMessage {
+    public static parseFromMessage(serverConfig: ServerConfig, message: string): InputMessage {
         if (!message || message === '') {
             return null;
         }
