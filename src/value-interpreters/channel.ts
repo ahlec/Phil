@@ -1,10 +1,9 @@
-import { Channel as DiscordIOChannel } from 'discord.io';
 import Phil from '../phil';
 import ServerConfig from '../server-config';
 import { IValueInterpreter, ParseResult } from './@value-interpreter';
 
-export default class ChannelValueInterpreter implements IValueInterpreter<DiscordIOChannel> {
-    public tryParse(input: string, phil: Phil, serverConfig: ServerConfig): ParseResult<DiscordIOChannel> {
+class ChannelValueInterpreterImplementation implements IValueInterpreter {
+    public tryParse(input: string, phil: Phil, serverConfig: ServerConfig): ParseResult {
         if (!input || !input.trim()) {
             return {
                 errorMessage: 'Input was undefined, null, empty, or whitespace',
@@ -31,25 +30,25 @@ export default class ChannelValueInterpreter implements IValueInterpreter<Discor
             };
         }
 
-        const channel = serverConfig.server.channels[channelId];
-        if (!channel) {
-            return {
-                errorMessage: 'There is no channel on this server with the provided channel ID',
-                wasSuccessful: false
-            };
-        }
-
         return {
-            parsedValue: channel,
+            parsedValue: channelId,
             wasSuccessful: true
         };
     }
 
-    public isValid(value: DiscordIOChannel, phil: Phil, serverConfig: ServerConfig): boolean {
+    public isValid(value: string, phil: Phil, serverConfig: ServerConfig): boolean {
         if (!value) {
             return false;
         }
 
-        return (value.guild_id === serverConfig.serverId);
+        const channel = serverConfig.server.channels[value];
+        if (!channel) {
+            return false;
+        }
+
+        return (channel.guild_id === serverConfig.serverId);
     }
 }
+
+export const ChannelValueInterpreter = new ChannelValueInterpreterImplementation();
+export default ChannelValueInterpreter;

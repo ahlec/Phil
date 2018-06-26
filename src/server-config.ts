@@ -42,12 +42,12 @@ export class ServerConfig {
     public readonly serverId: string;
     public readonly commandPrefix: string;
     public readonly botControlChannel: DiscordIOChannel;
-    public readonly adminChannel: DiscordIOChannel;
     public readonly introductionsChannel: DiscordIOChannel;
     public readonly newsChannel: DiscordIOChannel;
     public readonly adminRole?: DiscordIORole;
     public readonly welcomeMessage: string;
     public readonly fandomMapLink: string;
+    private adminChannelInternal: DiscordIOChannel;
 
     private constructor(public readonly server : DiscordIOServer,
         private readonly globalConfig : GlobalConfig,
@@ -55,7 +55,7 @@ export class ServerConfig {
         this.serverId = dbRow.server_id;
         this.commandPrefix = dbRow.command_prefix;
         this.botControlChannel = this.getChannel(dbRow.bot_control_channel_id);
-        this.adminChannel = this.getChannel(dbRow.admin_channel_id);
+        this.adminChannelInternal = this.getChannel(dbRow.admin_channel_id);
         this.introductionsChannel = this.getChannel(dbRow.introductions_channel_id);
         this.newsChannel = this.getChannel(dbRow.news_channel_id);
         this.welcomeMessage = this.getOptionalString(dbRow.welcome_message);
@@ -64,6 +64,23 @@ export class ServerConfig {
         if (dbRow.admin_role_id) {
             this.adminRole = this.server.roles[dbRow.admin_role_id];
         }
+    }
+
+    // -----------------------------------------------------------------------------
+    // Accessors and mutators
+    // -----------------------------------------------------------------------------
+
+    public get adminChannel(): DiscordIOChannel {
+        return this.adminChannelInternal;
+    }
+
+    public async setAdminChannel(channelId: string, database: Database): Promise<boolean> {
+        const result = await this.setChannelInDatabase(channelId, database, 'admin_channel_id');
+        if (!result) {
+            return false;
+        }
+
+        this.adminChannelInternal = this.server.channels[channelId];
     }
 
     public isAdmin(member: DiscordIOMember): boolean {
@@ -151,6 +168,13 @@ export class ServerConfig {
         }
 
         return str;
+    }
+
+    private async setChannelInDatabase(channelId: string, database: Database, dbColumn: string): Promise<boolean> {
+        const query = 'UPDATE server_configs SET ' + dbColumn + ' = $1 WHERE server_id = $2';
+        const result = await database.query(query, [channelId, this.serverId]);
+        console.log(result.rowCount);
+        return (result.rowCount !== 0);
     }
 }
 

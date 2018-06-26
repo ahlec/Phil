@@ -1,9 +1,9 @@
 import Phil from '../phil';
 import ServerConfig from '../server-config';
 
-interface IParseSuccess<TType> {
+interface IParseSuccess {
     wasSuccessful: true;
-    parsedValue: TType;
+    parsedValue: string;
 }
 
 interface IParseFailure {
@@ -11,9 +11,9 @@ interface IParseFailure {
     errorMessage: string;
 }
 
-export type ParseResult<TType> = IParseSuccess<TType> | IParseFailure;
+export type ParseResult = IParseSuccess | IParseFailure;
 
-export interface IValueInterpreter<TType> {
-    tryParse(input: string, phil: Phil, serverConfig: ServerConfig): ParseResult<TType>;
-    isValid(value: TType, phil: Phil, serverConfig: ServerConfig): boolean;
+export interface IValueInterpreter {
+    tryParse(input: string, phil: Phil, serverConfig: ServerConfig): ParseResult;
+    isValid(value: string, phil: Phil, serverConfig: ServerConfig): boolean;
 }
