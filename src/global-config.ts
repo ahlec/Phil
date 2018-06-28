@@ -18,7 +18,7 @@ function getRequiredNumber(key : string): number {
     return value;
 }
 
-export default class GlobalConfig {
+class GlobalConfigClass {
     public readonly discordBotToken: string;
     public readonly port: number;
     public readonly databaseUrl: string;
@@ -34,3 +34,6 @@ export default class GlobalConfig {
         this.botManagerUserId = getRequiredString('BOT_MANAGER_USER_ID');
     }
 }
+
+export const GlobalConfig = new GlobalConfigClass();
+export default GlobalConfig;

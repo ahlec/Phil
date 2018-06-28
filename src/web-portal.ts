@@ -5,7 +5,7 @@ import { BotUtils } from './utils';
 export default class WebPortal {
     private app: any;
 
-    constructor(public readonly globalConfig: GlobalConfig) {
+    constructor() {
         this.app = express();
         this.app.set('view engine', 'ejs');
         this.app.use(express.static('../assets'));
@@ -13,7 +13,7 @@ export default class WebPortal {
     }
 
     public start() {
-        this.app.listen(this.globalConfig.port, this.onListen.bind(this));
+        this.app.listen(GlobalConfig.port, this.onListen.bind(this));
     }
 
     public beginKeepAliveHeartbeat() {
@@ -22,7 +22,7 @@ export default class WebPortal {
     }
 
     public onListen() {
-        console.log('Web portal is running on port ' + this.globalConfig.port);
+        console.log('Web portal is running on port ' + GlobalConfig.port);
     }
 
     public receiveWebRequest(request: any, response: any) {

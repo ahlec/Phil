@@ -5,8 +5,8 @@ import Versions from './versions';
 export default class Database {
     private readonly pool: Pool;
 
-    constructor(globalConfig : GlobalConfig) {
-        this.pool = new Pool({ connectionString: globalConfig.databaseUrl });
+    constructor() {
+        this.pool = new Pool({ connectionString: GlobalConfig.databaseUrl });
     }
 
     public async checkIsCurrentVersion() {

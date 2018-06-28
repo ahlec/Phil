@@ -3,6 +3,7 @@ import { IDirectMessageProcessor } from './direct-message-processors/@base';
 import SuggestSessionListener from './direct-message-processors/suggest-session-listener';
 import TimezoneQuestionnaireProcessor from './direct-message-processors/timezone-questionnaire';
 
+import GlobalConfig from './global-config';
 import PrivateMessage from './messages/private';
 import Phil from './phil';
 import { DiscordPromises } from './promises/discord';
@@ -36,7 +37,7 @@ export default class DirectMessageDispatcher {
     private reportError(err: Error, processor: IDirectMessageProcessor) {
         console.error(err);
 
-        DiscordPromises.sendEmbedMessage(this.phil.bot, this.phil.globalConfig.botManagerUserId, {
+        DiscordPromises.sendEmbedMessage(this.phil.bot, GlobalConfig.botManagerUserId, {
             color: 0xCD5555,
             description: util.inspect(err),
             footer: {

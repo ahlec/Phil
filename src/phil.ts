@@ -31,8 +31,8 @@ export default class Phil {
     private readonly reactableProcessor: ReactableProcessor;
     private shouldSendDisconnectedMessage: boolean;
 
-    constructor(public readonly db: Database, public readonly globalConfig: GlobalConfig) {
-        this.bot = new DiscordIOClient({ token: globalConfig.discordBotToken, autorun: true });
+    constructor(public readonly db: Database) {
+        this.bot = new DiscordIOClient({ token: GlobalConfig.discordBotToken, autorun: true });
         this.serverDirectory = new ServerDirectory(this);
         this.commandRunner = new CommandRunner(this, this.bot, this.db);
         this.chronoManager = new ChronoManager(this, this.serverDirectory);
@@ -72,7 +72,7 @@ export default class Phil {
         if (this.shouldSendDisconnectedMessage) {
             BotUtils.sendErrorMessage({
                 bot: this.bot,
-                channelId: this.globalConfig.botManagerUserId,
+                channelId: GlobalConfig.botManagerUserId,
                 message: 'I experienced an unexpected shutdown. The logs should be in Heroku. I\'ve recovered and connected again.'
             });
             this.shouldSendDisconnectedMessage = false;
