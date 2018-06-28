@@ -36,6 +36,7 @@ export interface IConfigProperty<TModel> {
     readonly typeDefinition: ITypeDefinition;
 
     getValue(model: TModel): string;
+    getRandomExampleValue(model: TModel): string;
     setValue(phil: Phil, model: TModel, newValue: string): Promise<boolean>;
 }
 
@@ -159,7 +160,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
     private async processDisplayRequest(phil: Phil, message: PublicMessage, model: TModel): Promise<any> {
         const fields: IEmbedField[] = [];
         for (const property of this.orderedProperties) {
-            fields.push(this.getDisplayRequestField(model, property));
+            fields.push(this.getDisplayRequestField(model, property, message.serverConfig));
         }
 
         return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
@@ -169,9 +170,9 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
         });
     }
 
-    private getDisplayRequestField(model: TModel, property: IConfigProperty<TModel>): IEmbedField {
+    private getDisplayRequestField(model: TModel, property: IConfigProperty<TModel>, serverConfig: ServerConfig): IEmbedField {
         const currentValue = property.getValue(model);
-        const displayValue = property.typeDefinition.toDisplayFormat(currentValue);
+        const displayValue = property.typeDefinition.toDisplayFormat(currentValue, serverConfig);
         return {
             name: `:small_blue_diamond: ${property.displayName} [key: \`${property.key}\`]`,
             value: displayValue
@@ -186,7 +187,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
         }
 
         if (action === Action.Info) {
-            return this.processInfoRequest(phil, message, property);
+            return this.processInfoRequest(phil, message, property, model);
         }
 
         const newValue = this.getNewValue(phil, message.serverConfig, property, action,
@@ -199,8 +200,34 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
         return this.sendMutateSuccessMessage(phil, message);
     }
 
-    private async processInfoRequest(phil: Phil, message: PublicMessage, property: IConfigProperty<TModel>): Promise<any> {
-        return DiscordPromises.sendMessage(phil.bot, message.channelId, 'TODO: Info'); // TODO
+    private async processInfoRequest(phil: Phil, message: PublicMessage, property: IConfigProperty<TModel>, model: TModel): Promise<any> {
+        const currentValue = property.getValue(model);
+        const displayValue = property.typeDefinition.toDisplayFormat(currentValue, message.serverConfig);
+        const displayDefaultValue = property.typeDefinition.toDisplayFormat(property.defaultValue, message.serverConfig);
+        let response = `${property.description}${
+            NEWLINE}${
+            NEWLINE}Current Value: **${displayValue}**${
+            NEWLINE}Default Value: ${displayDefaultValue}${
+            NEWLINE}${
+            NEWLINE}**RULES**\`\`\``;
+
+        for (const rule of property.typeDefinition.rules) {
+            response += `● ${rule}\n`;
+        }
+
+        const randomExample = property.getRandomExampleValue(model);
+        const randomDisplayValue = property.typeDefinition.toMultilineCodeblockDisplayFormat(randomExample, message.serverConfig);
+        response += `\`\`\`${
+            NEWLINE}**EXAMPLES**${
+            NEWLINE}\`\`\`${message.serverConfig.commandPrefix}${this.name} set ${property.key} ${
+            randomDisplayValue}${
+            NEWLINE}${message.serverConfig.commandPrefix}${this.name} reset ${property.key}\`\`\``;
+
+        return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+            color: 0xB0E0E6,
+            description: response,
+            title: `${this.titleCaseConfigurationFor} Configuration: ${property.displayName}`
+        });
     }
 
     private determineAction(mutableArgs: string[]): Action | undefined {

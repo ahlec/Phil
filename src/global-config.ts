@@ -24,6 +24,7 @@ class GlobalConfigClass {
     public readonly databaseUrl: string;
     public readonly youtubeApiKey: string;
     public readonly botManagerUserId: string;
+    public readonly minCommandPrefixLength = 2;
     public readonly maxCommandPrefixLength = 5;
 
     constructor() {

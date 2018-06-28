@@ -4,6 +4,7 @@ import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
 import ServerConfig from '../server-config';
+import BotUtils from '../utils';
 import { ConfigCommandBase, IConfigProperty } from './bases/config-command-base';
 
 import ChannelTypeDefinition from '../type-definition/channel';
@@ -21,6 +22,11 @@ function getChannelId(channel: DiscordIOChannel): string {
     return channel.id;
 }
 
+function getRandomChannelId(serverConfig: ServerConfig): string {
+    const channelIds = Object.keys(serverConfig.server.channels);
+    return BotUtils.getRandomArrayEntry(channelIds);
+}
+
 // -----------------------------------------------------------------------------------
 // Properties
 // -----------------------------------------------------------------------------------
@@ -33,6 +39,7 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
         key: 'bot-control-channel',
         typeDefinition: ChannelTypeDefinition,
 
+        getRandomExampleValue: getRandomChannelId,
         getValue: (model: ServerConfig) => getChannelId(model.botControlChannel),
         setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
             model.setBotControlChannel(newValue, phil.db)
@@ -44,6 +51,7 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
         key: 'admin-channel',
         typeDefinition: ChannelTypeDefinition,
 
+        getRandomExampleValue: getRandomChannelId,
         getValue: (model: ServerConfig) => getChannelId(model.adminChannel),
         setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
             model.setAdminChannel(newValue, phil.db)
@@ -55,6 +63,7 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
         key: 'introductions-channel',
         typeDefinition: ChannelTypeDefinition,
 
+        getRandomExampleValue: getRandomChannelId,
         getValue: (model: ServerConfig) => getChannelId(model.introductionsChannel),
         setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
             model.setIntroductionsChannel(newValue, phil.db)
@@ -66,6 +75,7 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
         key: 'news-channel',
         typeDefinition: ChannelTypeDefinition,
 
+        getRandomExampleValue: getRandomChannelId,
         getValue: (model: ServerConfig) => getChannelId(model.newsChannel),
         setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
             model.setNewsChannel(newValue, phil.db)
@@ -77,6 +87,7 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
         key: 'command-prefix',
         typeDefinition: CommandPrefixTypeDefinition,
 
+        getRandomExampleValue: (model: ServerConfig) => 'p!',
         getValue: (model: ServerConfig) => model.commandPrefix,
         setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
             model.setCommandPrefix(newValue, phil.db)

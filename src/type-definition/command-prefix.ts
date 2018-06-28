@@ -6,19 +6,50 @@ import { ITypeDefinition, ParseResult, ValidityResultType } from './@type-defini
 interface IInvalidPrefixCharacterDefinition {
     character: string;
     name: string;
+    indefiniteArticle: string;
 }
 
 const InvalidPrefixCharacters: ReadonlyArray<IInvalidPrefixCharacterDefinition> = [
-    { character: '`', name: 'tilde' },
-    { character: '#', name: 'hash' },
-    { character: '@', name: 'at sign' }
+    { character: '`', name: 'tilde', indefiniteArticle: 'a' },
+    { character: '#', name: 'hash symbol', indefiniteArticle: 'a' },
+    { character: '@', name: 'at sign', indefiniteArticle: 'an' }
 ];
 
+const Rules = [
+    `Must be between ${GlobalConfig.minCommandPrefixLength} and ${
+        GlobalConfig.maxCommandPrefixLength} characters in length.`,
+    'May not contain any whitespace characters.'
+];
+
+for (const invalidCharacter of InvalidPrefixCharacters) {
+    Rules.push(`May not contain ${invalidCharacter.indefiniteArticle} ${invalidCharacter.name} (${
+        invalidCharacter.character}).`);
+}
+
 class CommandPrefixTypeDefinitionImplementation implements ITypeDefinition {
+    public readonly rules = Rules;
+
     public tryParse(input: string): ParseResult {
         if (!input) {
             return {
-                errorMessage: 'A command prefix must be at least one character in length.',
+                errorMessage: 'No text was provided.',
+                wasSuccessful: false
+            };
+        }
+
+        if (input.length < GlobalConfig.minCommandPrefixLength ||
+            input.length > GlobalConfig.maxCommandPrefixLength) {
+            return {
+                errorMessage: `A command prefix must be between ${
+                    GlobalConfig.minCommandPrefixLength} and ${GlobalConfig.maxCommandPrefixLength
+                    } characters in length.`,
+                wasSuccessful: false
+            };
+        }
+
+        if (/\s/g.test(input)) {
+            return {
+                errorMessage: 'A command prefix may not contain any whitespace characters.',
                 wasSuccessful: false
             };
         }
@@ -35,13 +66,6 @@ class CommandPrefixTypeDefinitionImplementation implements ITypeDefinition {
             };
         }
 
-        if (input.length > GlobalConfig.maxCommandPrefixLength) {
-            return {
-                errorMessage: 'A command prefix cannot be longer than ' + GlobalConfig.maxCommandPrefixLength + ' characters.',
-                wasSuccessful: false
-            };
-        }
-
         return {
             parsedValue: input,
             wasSuccessful: true
@@ -54,7 +78,11 @@ class CommandPrefixTypeDefinitionImplementation implements ITypeDefinition {
         };
     }
 
-    public toDisplayFormat(value: string): string {
+    public toDisplayFormat(value: string, serverConfig: ServerConfig): string {
+        return value;
+    }
+
+    public toMultilineCodeblockDisplayFormat(value: string, serverConfig: ServerConfig): string {
         return value;
     }
 }

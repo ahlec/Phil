@@ -25,7 +25,9 @@ interface IInvalidResult {
 export type ValidityResultType = IValidResult | IInvalidResult;
 
 export interface ITypeDefinition {
+    readonly rules: ReadonlyArray<string>;
     tryParse(input: string): ParseResult;
     isValid(value: string, phil: Phil, serverConfig: ServerConfig): ValidityResultType;
-    toDisplayFormat(value: string): string;
+    toDisplayFormat(value: string, serverConfig: ServerConfig): string;
+    toMultilineCodeblockDisplayFormat(value: string, serverConfig: ServerConfig): string;
 }

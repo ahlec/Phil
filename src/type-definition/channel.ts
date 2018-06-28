@@ -3,6 +3,11 @@ import ServerConfig from '../server-config';
 import { ITypeDefinition, ParseResult, ValidityResultType } from './@type-definition';
 
 class ChannelTypeDefinitionImplementation implements ITypeDefinition {
+    public readonly rules = [
+        'Must be a link to an existing channel on the server.',
+        'Must be a channel that Phil has permissions to access and know about.'
+    ];
+
     public tryParse(input: string): ParseResult {
         if (!input || !input.trim()) {
             return {
@@ -57,8 +62,22 @@ class ChannelTypeDefinitionImplementation implements ITypeDefinition {
         };
     }
 
-    public toDisplayFormat(value: string): string {
+    public toDisplayFormat(value: string, serverConfig: ServerConfig): string {
+        const channel = serverConfig.server.channels[value];
+        if (!channel) {
+            return '(None)';
+        }
+
         return '<#' + value + '>';
+    }
+
+    public toMultilineCodeblockDisplayFormat(value: string, serverConfig: ServerConfig): string {
+        const channel = serverConfig.server.channels[value];
+        if (!channel) {
+            return '(None)';
+        }
+
+        return '#' + channel.name;
     }
 }
 
