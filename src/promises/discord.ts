@@ -8,6 +8,33 @@ declare interface IDiscordIOCallbackError {
 	response?: any
 }
 
+export interface IEmbedField {
+    name: string,
+    value?: string,
+    inline?: boolean
+}
+
+export interface IEmbedData {
+    author?: {
+        icon_url?: string,
+        name: string,
+        url?: string
+    },
+    color?: number,
+    description?: string,
+    fields?: IEmbedField[],
+    thumbnail?: {
+        url: string
+    },
+    title: string,
+    timestamp?: Date
+    url?: string,
+    footer?: {
+        icon_url?: string,
+        text: string
+    }
+}
+
 export namespace DiscordPromises {
     export interface IEditRoleOptions {
         name: string;
@@ -40,10 +67,20 @@ export namespace DiscordPromises {
         return messageIds;
     }
 
-    export function sendEmbedMessage(bot: DiscordIOClient, channelId: string, embedData: any): Promise<string> {
+    export function sendEmbedMessage(bot: DiscordIOClient, channelId: string, embedData: IEmbedData): Promise<string> {
         return new Promise((resolve, reject) => {
             bot.sendMessage({
-                embed: embedData,
+                embed: {
+                    author: embedData.author,
+                    color: embedData.color,
+                    description: embedData.description,
+                    fields: embedData.fields as [IEmbedField],
+                    footer: embedData.footer,
+                    thumbnail: embedData.thumbnail,
+                    timestamp: embedData.timestamp,
+                    title: embedData.title,
+                    url: embedData.url
+                },
                 to: channelId
             }, (err, response) => {
                 if (err) {

@@ -113,13 +113,16 @@ export default class ChronoManager {
         console.error('[CHRONOS]     error running %s for server %s', chronoHandle, serverConfig.server.id);
         console.error(err);
 
+        let errorStr;
         if (typeof(err) !== 'string') {
-            err = util.inspect(err);
+            errorStr = util.inspect(err);
+        } else {
+            errorStr = err;
         }
 
         return DiscordPromises.sendEmbedMessage(this.phil.bot, serverConfig.botControlChannel.id, {
             color: 0xCD5555,
-            description: err,
+            description: errorStr,
             footer: {
                 text: 'chrono: ' + chronoHandle
             },

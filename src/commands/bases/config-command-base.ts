@@ -2,9 +2,9 @@ import Feature from '../../features/feature';
 import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
 import Phil from '../../phil';
-import { DiscordPromises } from '../../promises/discord';
+import { DiscordPromises, IEmbedField } from '../../promises/discord';
 import ServerConfig from '../../server-config';
-import { IValueInterpreter, ParseResult } from '../../value-interpreters/@value-interpreter';
+import { ITypeDefinition, ParseResult } from '../../type-definition/@type-definition';
 import ICommand from '../@types';
 
 enum PropertyInteraction {
@@ -23,10 +23,11 @@ const PropertyVerbs: { [verb: string]: PropertyInteraction } = {
 
 export interface IConfigProperty<TModel> {
     readonly defaultValue: string;
+    readonly description: string;
     readonly displayName: string;
     readonly isClearable: boolean;
     readonly key: string;
-    readonly valueInterpreter: IValueInterpreter;
+    readonly typeDefinition: ITypeDefinition;
 
     getValue(model: TModel): string;
     setValue(phil: Phil, model: TModel, newValue: string): Promise<boolean>;
@@ -48,9 +49,11 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
 
     public readonly isAdminCommand = true;
 
+    private readonly orderedProperties: ReadonlyArray<IConfigProperty<TModel>>;
     private readonly propertiesLookup: {[key: string]: IConfigProperty<TModel>};
 
     constructor(properties: ReadonlyArray<IConfigProperty<TModel>>) {
+        this.orderedProperties = properties.slice().sort(this.compareConfigProperties);
         this.propertiesLookup = {};
         for (const property of properties) {
             this.propertiesLookup[property.key.toLowerCase()] = property;
@@ -69,8 +72,38 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
 
     protected abstract getModel(phil: Phil, message: PublicMessage, mutableArgs: string[]): Promise<TModel>;
 
+    private compareConfigProperties(a: IConfigProperty<TModel>, b: IConfigProperty<TModel>): number {
+        const aKey = a.displayName.toUpperCase();
+        const bKey = b.displayName.toUpperCase();
+        if (aKey === bKey) {
+            return 0;
+        }
+
+        return (aKey < bKey ? -1 : 1);
+    }
+
     private async processDisplayRequest(phil: Phil, message: PublicMessage, model: TModel): Promise<any> {
-        return DiscordPromises.sendMessage(phil.bot, message.channelId, 'TODO: Display'); // TODO
+        const fields: IEmbedField[] = [];
+        for (let index = 0; index < this.orderedProperties.length; ++index) {
+            fields.push(this.getDisplayRequestField(model, this.orderedProperties[index],
+                (index === this.orderedProperties.length - 1)));
+        }
+
+        return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+            color: 0xB0E0E6,
+            fields,
+            title: '// TODO TITLE \\\\'
+        });
+    }
+
+    private getDisplayRequestField(model: TModel, property: IConfigProperty<TModel>, isLast: boolean): IEmbedField {
+        const currentValue = property.getValue(model);
+        const displayValue = property.typeDefinition.toDisplayFormat(currentValue);
+        return {
+            name: ':small_blue_diamond: ' + property.displayName,
+            value: property.description + '\n\nKey: `' + property.key +
+                '`\nCurrent Value: ' + displayValue + (isLast ? '\n' : '')
+        };
     }
 
     private async processPropertyRequest(phil: Phil, message: PublicMessage, mutableArgs: string[], model: TModel): Promise<any> {
@@ -158,14 +191,15 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
             };
         }
 
-        const result = property.valueInterpreter.tryParse(rawInput, phil, serverConfig);
+        const result = property.typeDefinition.tryParse(rawInput);
         if (result.wasSuccessful === false) {
             return result;
         }
 
-        if (!property.valueInterpreter.isValid(result.parsedValue, phil, serverConfig)) {
+        const validityResult = property.typeDefinition.isValid(result.parsedValue, phil, serverConfig);
+        if (validityResult.isValid === false) {
             return {
-                errorMessage: 'The value provided is invalid for use on the server.',
+                errorMessage: validityResult.errorMessage,
                 wasSuccessful: false
             };
         }

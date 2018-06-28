@@ -36,13 +36,9 @@ export default class DirectMessageDispatcher {
     private reportError(err: Error, processor: IDirectMessageProcessor) {
         console.error(err);
 
-        if (typeof(err) !== 'string') {
-            err = util.inspect(err);
-        }
-
         DiscordPromises.sendEmbedMessage(this.phil.bot, this.phil.globalConfig.botManagerUserId, {
             color: 0xCD5555,
-            description: err,
+            description: util.inspect(err),
             footer: {
                 text: 'processor: ' + processor.handle
             },

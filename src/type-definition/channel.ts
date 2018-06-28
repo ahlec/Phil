@@ -1,9 +1,9 @@
 import Phil from '../phil';
 import ServerConfig from '../server-config';
-import { IValueInterpreter, ParseResult } from './@value-interpreter';
+import { ITypeDefinition, ParseResult, ValidityResultType } from './@type-definition';
 
-class ChannelValueInterpreterImplementation implements IValueInterpreter {
-    public tryParse(input: string, phil: Phil, serverConfig: ServerConfig): ParseResult {
+class ChannelTypeDefinitionImplementation implements ITypeDefinition {
+    public tryParse(input: string): ParseResult {
         if (!input || !input.trim()) {
             return {
                 errorMessage: 'Input was undefined, null, empty, or whitespace',
@@ -36,19 +36,31 @@ class ChannelValueInterpreterImplementation implements IValueInterpreter {
         };
     }
 
-    public isValid(value: string, phil: Phil, serverConfig: ServerConfig): boolean {
+    public isValid(value: string, phil: Phil, serverConfig: ServerConfig): ValidityResultType {
         if (!value) {
-            return false;
+            return {
+                errorMessage: 'No channel ID was provided.',
+                isValid: false
+            };
         }
 
         const channel = serverConfig.server.channels[value];
-        if (!channel) {
-            return false;
+        if (!channel || channel.guild_id !== serverConfig.serverId) {
+            return {
+                errorMessage: 'No channel with that provided ID exists within this server (at least that I have permissions to know about).',
+                isValid: false
+            };
         }
 
-        return (channel.guild_id === serverConfig.serverId);
+        return {
+            isValid: true
+        };
+    }
+
+    public toDisplayFormat(value: string): string {
+        return '<#' + value + '>';
     }
 }
 
-export const ChannelValueInterpreter = new ChannelValueInterpreterImplementation();
-export default ChannelValueInterpreter;
+export const ChannelTypeDefinition = new ChannelTypeDefinitionImplementation();
+export default ChannelTypeDefinition;
