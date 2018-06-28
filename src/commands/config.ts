@@ -7,6 +7,7 @@ import ServerConfig from '../server-config';
 import { ConfigCommandBase, IConfigProperty } from './bases/config-command-base';
 
 import ChannelTypeDefinition from '../type-definition/channel';
+import CommandPrefixTypeDefinition from '../type-definition/command-prefix';
 
 // -----------------------------------------------------------------------------------
 // Utilities
@@ -29,7 +30,6 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
         defaultValue: null,
         description: 'This is an optional channel for admins intended for performing admin bot commands in. If provided, Phil will also send all admin-intended messages to this channel.',
         displayName: 'Bot Control Channel',
-        isClearable: true,
         key: 'bot-control-channel',
         typeDefinition: ChannelTypeDefinition,
 
@@ -41,7 +41,6 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
         defaultValue: null,
         description: 'This is the optional designated admin channel for this server.',
         displayName: 'Admin Channel',
-        isClearable: true,
         key: 'admin-channel',
         typeDefinition: ChannelTypeDefinition,
 
@@ -53,7 +52,6 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
         defaultValue: null,
         description: 'This is the optional channel where Phil will post welcome messages for new users, if configured to do so.',
         displayName: 'Introductions Channel',
-        isClearable: true,
         key: 'introductions-channel',
         typeDefinition: ChannelTypeDefinition,
 
@@ -65,13 +63,23 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
         defaultValue: null,
         description: 'This is the optional channel where Phil will post calendar and birthday notifications, and where the `news` command will echo output to.',
         displayName: 'News Channel',
-        isClearable: true,
         key: 'news-channel',
         typeDefinition: ChannelTypeDefinition,
 
         getValue: (model: ServerConfig) => getChannelId(model.newsChannel),
         setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
             model.setNewsChannel(newValue, phil.db)
+    },
+    {
+        defaultValue: 'p!',
+        description: 'This is the prefix that is required at the start of all commands for Phil to recognize as his own.',
+        displayName: 'Command Prefix',
+        key: 'command-prefix',
+        typeDefinition: CommandPrefixTypeDefinition,
+
+        getValue: (model: ServerConfig) => model.commandPrefix,
+        setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
+            model.setCommandPrefix(newValue, phil.db)
     }
 ];
 

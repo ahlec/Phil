@@ -25,7 +25,6 @@ export interface IConfigProperty<TModel> {
     readonly defaultValue: string;
     readonly description: string;
     readonly displayName: string;
-    readonly isClearable: boolean;
     readonly key: string;
     readonly typeDefinition: ITypeDefinition;
 
@@ -170,13 +169,6 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
 
     private getNewValue(phil: Phil, serverConfig: ServerConfig, property: IConfigProperty<TModel>, interactionType: PropertyInteraction.Clear | PropertyInteraction.Set, mutableArgs: string[]): ParseResult {
         if (interactionType === PropertyInteraction.Clear) {
-            if (!property.isClearable) {
-                return {
-                    errorMessage: 'This property cannot be cleared.',
-                    wasSuccessful: false
-                };
-            }
-
             return {
                 parsedValue: property.defaultValue,
                 wasSuccessful: true

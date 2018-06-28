@@ -4,7 +4,6 @@ import {
     Role as DiscordIORole,
     Server as DiscordIOServer } from 'discord.io';
 import Database from './database';
-import GlobalConfig from './global-config';
 import { DEFAULT_PRONOUNS } from './pronouns/definitions';
 import Pronoun from './pronouns/pronoun';
 import { getPronounFromRole } from './pronouns/utils';
@@ -24,40 +23,33 @@ function doesRoleHavePermission(role : DiscordIORole, permission : number) : boo
     return false;
 }
 
-interface IValidateResult {
-    isValid: boolean;
-    invalidReason: string | null;
-}
-
 export class ServerConfig {
-    public static async getFromId(db: Database, server: DiscordIOServer, globalConfig: GlobalConfig): Promise<ServerConfig> {
+    public static async getFromId(db: Database, server: DiscordIOServer): Promise<ServerConfig> {
         const results = await db.query('SELECT * FROM server_configs WHERE server_id = $1', [server.id]);
         if (results.rowCount === 0) {
             return null;
         }
 
-        return new ServerConfig(server, globalConfig, results.rows[0]);
+        return new ServerConfig(server, results.rows[0]);
     }
 
     public readonly serverId: string;
-    public readonly commandPrefix: string;
-    public readonly botControlChannel: DiscordIOChannel;
-    public readonly introductionsChannel: DiscordIOChannel;
-    public readonly newsChannel: DiscordIOChannel;
     public readonly adminRole?: DiscordIORole;
     public readonly welcomeMessage: string;
     public readonly fandomMapLink: string;
+    private commandPrefixInternal: string;
+    private botControlChannelInternal: DiscordIOChannel;
     private adminChannelInternal: DiscordIOChannel;
+    private introductionsChannelInternal: DiscordIOChannel;
+    private newsChannelInternal: DiscordIOChannel;
 
-    private constructor(public readonly server : DiscordIOServer,
-        private readonly globalConfig : GlobalConfig,
-        dbRow : any) {
+    private constructor(public readonly server : DiscordIOServer, dbRow : any) {
         this.serverId = dbRow.server_id;
-        this.commandPrefix = dbRow.command_prefix;
-        this.botControlChannel = this.getChannel(dbRow.bot_control_channel_id);
+        this.commandPrefixInternal = dbRow.command_prefix;
+        this.botControlChannelInternal = this.getChannel(dbRow.bot_control_channel_id);
         this.adminChannelInternal = this.getChannel(dbRow.admin_channel_id);
-        this.introductionsChannel = this.getChannel(dbRow.introductions_channel_id);
-        this.newsChannel = this.getChannel(dbRow.news_channel_id);
+        this.introductionsChannelInternal = this.getChannel(dbRow.introductions_channel_id);
+        this.newsChannelInternal = this.getChannel(dbRow.news_channel_id);
         this.welcomeMessage = this.getOptionalString(dbRow.welcome_message);
         this.fandomMapLink = this.getOptionalString(dbRow.fandom_map_link);
 
@@ -70,18 +62,74 @@ export class ServerConfig {
     // Accessors and mutators
     // -----------------------------------------------------------------------------
 
+    public get commandPrefix(): string {
+        return this.commandPrefixInternal;
+    }
+
+    public async setCommandPrefix(prefix: string, database: Database): Promise<boolean> {
+        const result = await this.setFieldInDatabase(prefix, database, 'command_prefix');
+        if (!result) {
+            return false;
+        }
+
+        this.commandPrefixInternal = prefix;
+    }
+
+    public get botControlChannel(): DiscordIOChannel {
+        return this.botControlChannelInternal;
+    }
+
+    public async setBotControlChannel(channelId: string, database: Database): Promise<boolean> {
+        const result = await this.setFieldInDatabase(channelId, database, 'bot_control_channel_id');
+        if (!result) {
+            return false;
+        }
+
+        this.botControlChannelInternal = this.server.channels[channelId];
+    }
+
     public get adminChannel(): DiscordIOChannel {
         return this.adminChannelInternal;
     }
 
     public async setAdminChannel(channelId: string, database: Database): Promise<boolean> {
-        const result = await this.setChannelInDatabase(channelId, database, 'admin_channel_id');
+        const result = await this.setFieldInDatabase(channelId, database, 'admin_channel_id');
         if (!result) {
             return false;
         }
 
         this.adminChannelInternal = this.server.channels[channelId];
     }
+
+    public get introductionsChannel(): DiscordIOChannel {
+        return this.introductionsChannelInternal;
+    }
+
+    public async setIntroductionsChannel(channelId: string, database: Database): Promise<boolean> {
+        const result = await this.setFieldInDatabase(channelId, database, 'introductions_channel_id');
+        if (!result) {
+            return false;
+        }
+
+        this.introductionsChannelInternal = this.server.channels[channelId];
+    }
+
+    public get newsChannel(): DiscordIOChannel {
+        return this.newsChannelInternal;
+    }
+
+    public async setNewsChannel(channelId: string, database: Database): Promise<boolean> {
+        const result = await this.setFieldInDatabase(channelId, database, 'news_channel_id');
+        if (!result) {
+            return false;
+        }
+
+        this.newsChannelInternal = this.server.channels[channelId];
+    }
+
+    // -----------------------------------------------------------------------------
+    // Utility functions
+    // -----------------------------------------------------------------------------
 
     public isAdmin(member: DiscordIOMember): boolean {
         for (const memberRoleId of member.roles) {
@@ -128,27 +176,6 @@ export class ServerConfig {
         return DEFAULT_PRONOUNS;
     }
 
-    public validateCommandPrefix(commandPrefix: string): IValidateResult {
-        if (!commandPrefix || commandPrefix.length === 0) {
-            return {
-                invalidReason: "A command prefix must be at least one character in length.",
-                isValid: false
-            };
-        }
-
-        if (commandPrefix.length > this.globalConfig.maxCommandPrefixLength) {
-            return {
-                invalidReason: "A command prefix cannot be longer than " + this.globalConfig.maxCommandPrefixLength + " characters.",
-                isValid: false
-            };
-        }
-
-        return {
-            invalidReason: null,
-            isValid: true
-        };
-    }
-
     private getChannel(channelId: string): DiscordIOChannel {
         if (channelId && this.server.channels[channelId]) {
             return this.server.channels[channelId];
@@ -170,9 +197,9 @@ export class ServerConfig {
         return str;
     }
 
-    private async setChannelInDatabase(channelId: string, database: Database, dbColumn: string): Promise<boolean> {
+    private async setFieldInDatabase(value: string, database: Database, dbColumn: string): Promise<boolean> {
         const query = 'UPDATE server_configs SET ' + dbColumn + ' = $1 WHERE server_id = $2';
-        const result = await database.query(query, [channelId, this.serverId]);
+        const result = await database.query(query, [value, this.serverId]);
         console.log(result.rowCount);
         return (result.rowCount !== 0);
     }
