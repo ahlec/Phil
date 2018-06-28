@@ -99,6 +99,8 @@ export default class ConfigCommand extends ConfigCommandBase<ServerConfig> {
 
     public readonly isAdminCommand = true;
 
+    protected readonly configurationFor = 'server';
+
     constructor() {
         super(properties);
     }
