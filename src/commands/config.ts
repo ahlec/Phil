@@ -31,10 +31,15 @@ function getRandomChannelId(serverConfig: ServerConfig): string {
 // Properties
 // -----------------------------------------------------------------------------------
 
+const NOWRAP = '';
+
 const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
     {
         defaultValue: null,
-        description: 'This is an optional channel for admins intended for performing admin bot commands in. If provided, Phil will also send all admin-intended messages to this channel.',
+        description: `This is an optional channel for admins intended for performing admin bot ${
+            NOWRAP}commands in. If provided, Phil will also send all admin-intended messages to ${
+            NOWRAP}this channel. This can be a channel that is used for other properties/purposes ${
+            NOWRAP}or one that is unique to this purpose.`,
         displayName: 'Bot Control Channel',
         key: 'bot-control-channel',
         typeDefinition: ChannelTypeDefinition,
@@ -46,7 +51,9 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
     },
     {
         defaultValue: null,
-        description: 'This is the optional designated admin channel for this server.',
+        description: `This is the optional designated admin channel for this server. This can be ${
+            NOWRAP}a channel that is used for other properties/purposes or one that is unique to ${
+            NOWRAP}this purpose.`,
         displayName: 'Admin Channel',
         key: 'admin-channel',
         typeDefinition: ChannelTypeDefinition,
@@ -58,7 +65,9 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
     },
     {
         defaultValue: null,
-        description: 'This is the optional channel where Phil will post welcome messages for new users, if configured to do so.',
+        description: `This is the optional channel where Phil will post welcome messages for new ${
+            NOWRAP}users, if configured to do so. This can be a channel that is used for other ${
+            NOWRAP}properties/purposes or one that is unique to this purpose.`,
         displayName: 'Introductions Channel',
         key: 'introductions-channel',
         typeDefinition: ChannelTypeDefinition,
@@ -70,7 +79,10 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
     },
     {
         defaultValue: null,
-        description: 'This is the optional channel where Phil will post calendar and birthday notifications, and where the `news` command will echo output to.',
+        description: `This is the optional channel where Phil will post calendar and birthday ${
+            NOWRAP}notifications, and where the \`news\` command will echo output to. This can be ${
+            NOWRAP}a channel that is used for other properties/purposes or one that is unique to ${
+            NOWRAP}this purpose.`,
         displayName: 'News Channel',
         key: 'news-channel',
         typeDefinition: ChannelTypeDefinition,
@@ -82,7 +94,8 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
     },
     {
         defaultValue: 'p!',
-        description: 'This is the prefix that is required at the start of all commands for Phil to recognize as his own.',
+        description: `This is the prefix that is required at the start of all commands for Phil ${
+            NOWRAP}to recognize as his own.`,
         displayName: 'Command Prefix',
         key: 'command-prefix',
         typeDefinition: CommandPrefixTypeDefinition,

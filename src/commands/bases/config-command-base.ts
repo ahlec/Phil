@@ -114,7 +114,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
             this.name}\` are as follows:\`\`\`${
             NEWLINE}● [display] - view all of the current values of all of the configuration ${
             NOWRAP}properties at a glance;${
-            NEWLINE}● [info] - see detailed information about a configuration property as well ${
+            NEWLINE}● [explain] - see detailed information about a configuration property as well ${
             NOWRAP}its current value;${
             NEWLINE}● [reset] - resets the value of the property to Phil's default for that ${
             NOWRAP}property;${
@@ -137,7 +137,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
             NEWLINE}Using this command is a matter of combining an action and a property ${
             NOWRAP} (if appropriate), like so:${
             NEWLINE}\`\`\`${message.serverConfig.commandPrefix}${this.name} display${
-            NEWLINE}${message.serverConfig.commandPrefix}${this.name} info ${demoProp.key}${
+            NEWLINE}${message.serverConfig.commandPrefix}${this.name} explain ${demoProp.key}${
             NEWLINE}${message.serverConfig.commandPrefix}${this.name} reset ${demoProp.key}${
             NEWLINE}${message.serverConfig.commandPrefix}${this.name} set ${demoProp.key} ${
             demoProp.defaultValue}\`\`\`As you can see from the above examples, the action (eg ${
