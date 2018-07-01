@@ -1,4 +1,5 @@
 import { Server as DiscordIOServer } from 'discord.io';
+import EmbedColor from '../embed-color';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import ServerConfig from '../server-config';
@@ -26,7 +27,7 @@ export default class RemoveUnusedColorRolesChrono implements IChrono {
         }
 
         DiscordPromises.sendEmbedMessage(phil.bot, serverConfig.botControlChannel.id, {
-            color: 0xB0E0E6,
+            color: EmbedColor.Info,
             description: message,
             title: ':scroll: Unused Colour Roles Removed'
         });

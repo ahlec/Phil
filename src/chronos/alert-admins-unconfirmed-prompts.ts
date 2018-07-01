@@ -1,3 +1,4 @@
+import EmbedColor from '../embed-color';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import UnconfirmedPromptTally from '../prompts/unconfirmed-prompt-tally';
@@ -16,7 +17,7 @@ export default class AlertAdminsUnconfirmedPromptsChrono implements IChrono {
         }
 
         DiscordPromises.sendEmbedMessage(phil.bot, serverConfig.botControlChannel.id, {
-            color: 0xB0E0E6,
+            color: EmbedColor.Info,
             description: reply,
             title: ':ballot_box: Unconfirmed Prompt Submissions'
         });

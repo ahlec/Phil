@@ -1,3 +1,4 @@
+import EmbedColor from '../../embed-color';
 import Feature from '../../features/feature';
 import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
@@ -8,10 +9,10 @@ import { ITypeDefinition, ParseResult } from '../../type-definition/@type-defini
 import ICommand from '../@types';
 
 enum Action {
-    Display = 1,
-    Set = 2,
-    Clear = 3,
-    Info = 4
+    Display = 'display',
+    Set = 'set',
+    Clear = 'reset',
+    Info = 'explain'
 }
 
 type MutatingPropertyAction = Action.Set | Action.Clear;
@@ -110,15 +111,16 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
             NOWRAP}needs.${
             NEWLINE}${
             NEWLINE}**ACTIONS**${
-            NEWLINE}The various actions that you can take with \`${message.serverConfig.commandPrefix}${
-            this.name}\` are as follows:\`\`\`${
-            NEWLINE}● [display] - view all of the current values of all of the configuration ${
-            NOWRAP}properties at a glance;${
-            NEWLINE}● [explain] - see detailed information about a configuration property as well ${
-            NOWRAP}its current value;${
-            NEWLINE}● [reset] - resets the value of the property to Phil's default for that ${
-            NOWRAP}property;${
-            NEWLINE}● [set] - sets the value of the property to a valid value of your choosing.${
+            NEWLINE}The various actions that you can take with \`${
+            message.serverConfig.commandPrefix}${this.name}\` are as follows:\`\`\`${
+            NEWLINE}● [${Action.Display}] - view all of the current values of all of the ${
+            NOWRAP}configuration properties at a glance;${
+            NEWLINE}● [${Action.Info}] - see detailed information about a configuration property ${
+            NOWRAP}as well its current value;${
+            NEWLINE}● [${Action.Clear}] - resets the value of the property to Phil's default for ${
+            NOWRAP}that property;${
+            NEWLINE}● [${Action.Set}] - sets the value of the property to a valid value of your ${
+            NOWRAP}choosing.${
             NEWLINE}\`\`\`${
             NEWLINE}**PROPERTIES**${
             NEWLINE}These are the various properties that are part of ${this.configurationFor}${
@@ -137,21 +139,21 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
             NEWLINE}Using this command is a matter of combining an action and a property ${
             NOWRAP} (if appropriate), like so:${
             NEWLINE}\`\`\`${message.serverConfig.commandPrefix}${this.name} display${
-            NEWLINE}${message.serverConfig.commandPrefix}${this.name} explain ${demoProp.key}${
-            NEWLINE}${message.serverConfig.commandPrefix}${this.name} reset ${demoProp.key}${
-            NEWLINE}${message.serverConfig.commandPrefix}${this.name} set ${demoProp.key} ${
+            NEWLINE}${message.serverConfig.commandPrefix}${this.name} ${Action.Info} ${demoProp.key}${
+            NEWLINE}${message.serverConfig.commandPrefix}${this.name} ${Action.Clear} ${demoProp.key}${
+            NEWLINE}${message.serverConfig.commandPrefix}${this.name} ${Action.Set} ${demoProp.key} ${
             demoProp.defaultValue}\`\`\`As you can see from the above examples, the action (eg ${
-            NOWRAP}**info**) comes before the property key (eg **${demoProp.key}**). All actions ${
-            NOWRAP}require a property key except for **display**, since it shows all properties.${
+            NOWRAP}**${Action.Info}**) comes before the property key (eg **${demoProp.key}**). All actions ${
+            NOWRAP}require a property key except for **${Action.Display}**, since it shows all properties.${
             NEWLINE}${
-            NEWLINE}It is in the special case of the **set** action that you need to provide an ${
+            NEWLINE}It is in the special case of the **${Action.Set}** action that you need to provide an ${
             NOWRAP}extra final piece of information at the end: the desired new value. You can ${
-            NOWRAP}use the **info** action to see rules for what a valid value should look like ${
+            NOWRAP}use the **${Action.Info}** action to see rules for what a valid value should look like ${
             NOWRAP}and what the property does, in order to understand what to change the value to.`;
 
         console.log(response.length);
         return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-            color: 0xB0E0E6,
+            color: EmbedColor.Info,
             description: response,
             title: this.titleCaseConfigurationFor + ' Configuration'
         });
@@ -164,7 +166,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
         }
 
         return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-            color: 0xB0E0E6,
+            color: EmbedColor.Info,
             fields,
             title: this.titleCaseConfigurationFor + ' Configuration: Overview'
         });
@@ -193,11 +195,11 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
         const newValue = this.getNewValue(phil, message.serverConfig, property, action,
             mutableArgs);
         if (newValue.wasSuccessful === false) {
-            return this.sendInvalidInputResponse(phil, message, newValue.errorMessage);
+            return this.sendInvalidInputResponse(phil, message, property, newValue.errorMessage);
         }
 
         await property.setValue(phil, model, newValue.parsedValue);
-        return this.sendMutateSuccessMessage(phil, message);
+        return this.sendMutateSuccessMessage(phil, message, property);
     }
 
     private async processInfoRequest(phil: Phil, message: PublicMessage, property: IConfigProperty<TModel>, model: TModel): Promise<any> {
@@ -209,22 +211,20 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
             NEWLINE}Current Value: **${displayValue}**${
             NEWLINE}Default Value: ${displayDefaultValue}${
             NEWLINE}${
-            NEWLINE}**RULES**\`\`\``;
+            NEWLINE}**RULES**${this.getPropertyRulesDisplayList(property)}`;
 
-        for (const rule of property.typeDefinition.rules) {
-            response += `● ${rule}\n`;
-        }
 
         const randomExample = property.getRandomExampleValue(model);
         const randomDisplayValue = property.typeDefinition.toMultilineCodeblockDisplayFormat(randomExample, message.serverConfig);
-        response += `\`\`\`${
+        response += `${
             NEWLINE}**EXAMPLES**${
-            NEWLINE}\`\`\`${message.serverConfig.commandPrefix}${this.name} set ${property.key} ${
-            randomDisplayValue}${
-            NEWLINE}${message.serverConfig.commandPrefix}${this.name} reset ${property.key}\`\`\``;
+            NEWLINE}\`\`\`${message.serverConfig.commandPrefix}${this.name} ${Action.Set} ${
+            property.key} ${randomDisplayValue}${
+            NEWLINE}${message.serverConfig.commandPrefix}${this.name} ${Action.Clear} ${
+            property.key}\`\`\``;
 
         return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-            color: 0xB0E0E6,
+            color: EmbedColor.Info,
             description: response,
             title: `${this.titleCaseConfigurationFor} Configuration: ${property.displayName}`
         });
@@ -290,11 +290,37 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
         return result;
     }
 
-    private async sendInvalidInputResponse(phil: Phil, message: PublicMessage, errorMessage: string): Promise<any> {
-        return DiscordPromises.sendMessage(phil.bot, message.channelId, 'TODO: Invalid input'); // TODO
+    private async sendInvalidInputResponse(phil: Phil, message: PublicMessage, property: IConfigProperty<TModel>, errorMessage: string): Promise<any> {
+        const response = `The value you attempted to set the ${property.displayName} property to ${
+            NOWRAP}is invalid.${
+            NEWLINE}${
+            NEWLINE}**${errorMessage}**${
+            NEWLINE}${
+            NEWLINE}Proper values for the ${property.displayName} property must obey the ${
+            NOWRAP}following rules:${this.getPropertyRulesDisplayList(property)}${
+            NEWLINE}${
+            NEWLINE}To learn more about this property, including viewing example values you can ${
+            NOWRAP}use for your server, use the command \`${message.serverConfig.commandPrefix}${
+            this.name} ${Action.Info} ${property.key}\`.`;
+
+        return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+            color: EmbedColor.Error,
+            description: response,
+            title: `${property.displayName}: Invalid Input`
+        });
     }
 
-    private async sendMutateSuccessMessage(phil: Phil, message: PublicMessage): Promise<any> {
+    private async sendMutateSuccessMessage(phil: Phil, message: PublicMessage, property: IConfigProperty<TModel>,): Promise<any> {
         return DiscordPromises.sendMessage(phil.bot, message.channelId, 'TODO: Success'); // TODO
+    }
+
+    private getPropertyRulesDisplayList(property: IConfigProperty<TModel>): string {
+        let response = '```';
+        for (const rule of property.typeDefinition.rules) {
+            response += `● ${rule}\n`;
+        }
+
+        response += '```';
+        return response;
     }
 }

@@ -1,4 +1,5 @@
 import Bucket from '../buckets';
+import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
@@ -32,7 +33,7 @@ function formatChannel(bucket: Bucket, value: string): string {
 
 function sendBucketToChannel(phil: Phil, channelId: string, bucket: Bucket): Promise<string> {
     return DiscordPromises.sendEmbedMessage(phil.bot, channelId, {
-        color: 0xB0E0E6,
+        color: EmbedColor.Info,
         fields: [
             createField(bucket, 'Reference Handle', bucket.handle),
             createField(bucket, 'Display Name', bucket.displayName),

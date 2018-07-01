@@ -1,5 +1,6 @@
 import { Client as DiscordIOClient } from 'discord.io';
 import Bucket from '../buckets';
+import EmbedColor from '../embed-color';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import ServerConfig from '../server-config';
@@ -66,7 +67,7 @@ export default class Prompt {
 
     public sendToChannel(phil: Phil, serverConfig: ServerConfig, channelId: string, bucket: Bucket, promptNumber: number): Promise<string> {
         return DiscordPromises.sendEmbedMessage(phil.bot, channelId, {
-            color: 0xB0E0E6,
+            color: EmbedColor.Info,
             description: this.text,
             footer: {
                 text: this.getPromptMessageFooter(serverConfig)

@@ -1,4 +1,5 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
+import EmbedColor from '../../embed-color';
 import Phil from '../../phil';
 import { DiscordPromises } from '../../promises/discord';
 import SubmissionSession from '../../prompts/submission-session';
@@ -34,7 +35,7 @@ export default class SuggestSessionReactable extends ReactableType {
 
         await session.end(phil);
         await DiscordPromises.sendEmbedMessage(phil.bot, post.user.id, {
-            color: 0xB0E0E6,
+            color: EmbedColor.Info,
             description: this.getWrapupMessage(session),
             title: ':ribbon: Suggestions Session Ended :ribbon:'
         });
@@ -67,7 +68,7 @@ export default class SuggestSessionReactable extends ReactableType {
         await session.makeAnonymous(phil);
         const NOWRAP = '';
         const messageId = await DiscordPromises.sendEmbedMessage(phil.bot, post.user.id, {
-            color: 0xB0E0E6,
+            color: EmbedColor.Info,
             description: `All submissions you send during this session will be anonymous. Don't ${
                 NOWRAP}worry though! You'll still get credit for them on the server leaderboard!`,
             title: ':spy: Anonymous Session Begun :spy:'

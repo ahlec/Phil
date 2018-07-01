@@ -2,6 +2,7 @@ const util = require('util');
 
 import { QueryResult } from 'pg';
 import ChronoLookup from './chronos/index';
+import EmbedColor from './embed-color';
 import Phil from './phil';
 import { DiscordPromises } from './promises/discord';
 import ServerConfig from './server-config';
@@ -121,7 +122,7 @@ export default class ChronoManager {
         }
 
         return DiscordPromises.sendEmbedMessage(this.phil.bot, serverConfig.botControlChannel.id, {
-            color: 0xCD5555,
+            color: EmbedColor.Error,
             description: errorStr,
             footer: {
                 text: 'chrono: ' + chronoHandle

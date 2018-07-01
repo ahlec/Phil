@@ -1,4 +1,5 @@
 import Bucket from '../buckets';
+import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
@@ -55,7 +56,7 @@ export default class SuggestCommand implements ICommand {
 
     private async sendDirectMessage(phil: Phil, userId: string, serverConfig: ServerConfig, session: SubmissionSession) {
         const messageId = await DiscordPromises.sendEmbedMessage(phil.bot, userId, {
-            color: 0xB0E0E6,
+            color: EmbedColor.Info,
             description: SuggestCommand.getBeginMessage(phil, serverConfig, session),
             title: ':pencil: Begin Sending Suggestions :incoming_envelope:'
         });

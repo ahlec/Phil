@@ -1,3 +1,4 @@
+import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
@@ -38,7 +39,7 @@ export default class UtcCommand implements ICommand {
 
         const reply = this.createReply(inputTime, timezone);
         return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-            color: 0x7A378B,
+            color: EmbedColor.Timezone,
             description: reply,
             footer: {
                 text: 'Converted from user\'s local timezone to UTC. If the time provided is incorrect, your timezone might need to be updated. Use ' + message.serverConfig.commandPrefix + 'timezone to change/set.'

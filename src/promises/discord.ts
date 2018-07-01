@@ -1,4 +1,5 @@
 import { Client as DiscordIOClient, Role as DiscordIORole } from 'discord.io';
+import EmbedColor, { getColorValue } from '../embed-color';
 import MessageBuilder from '../message-builder';
 import Delay from '../utils/delay';
 
@@ -20,7 +21,7 @@ export interface IEmbedData {
         name: string,
         url?: string
     },
-    color?: number,
+    color: EmbedColor,
     description?: string,
     fields?: IEmbedField[],
     thumbnail?: {
@@ -72,7 +73,7 @@ export namespace DiscordPromises {
             bot.sendMessage({
                 embed: {
                     author: embedData.author,
-                    color: embedData.color,
+                    color: getColorValue(embedData.color),
                     description: embedData.description,
                     fields: embedData.fields as [IEmbedField],
                     footer: embedData.footer,

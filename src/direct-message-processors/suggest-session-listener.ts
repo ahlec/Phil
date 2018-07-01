@@ -1,3 +1,4 @@
+import EmbedColor from '../embed-color';
 import PrivateMessage from '../messages/private';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
@@ -55,7 +56,7 @@ export default class SuggestSessionListener implements IDirectMessageProcessor {
         const NOWRAP = '';
         const numSubmissions = token.currentSession.getNumberSubmissions();
         const messageId = await DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-            color: 0xB0E0E6,
+            color: EmbedColor.Info,
             description: `**${validationResults.validatedMessage}** has been sent to the admins ${
                 NOWRAP}for approval.`,
             footer: {

@@ -1,9 +1,9 @@
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
-import { OfficialDiscordEmbed } from 'official-discord';
 import { QueryResult } from 'pg';
 import Bucket from '../buckets';
 import Database from '../database';
-import { DiscordPromises } from '../promises/discord';
+import EmbedColor from '../embed-color';
+import { DiscordPromises, IEmbedData } from '../promises/discord';
 import { PromptQueueReactableFactory } from '../reactables/prompt-queue/factory';
 import Prompt from './prompt';
 
@@ -95,9 +95,9 @@ export class PromptQueue {
         return messageId;
     }
 
-    private asEmbedObject(): OfficialDiscordEmbed {
+    private asEmbedObject(): IEmbedData {
         return {
-            color: 0xB0E0E6,
+            color: EmbedColor.Info,
             description: this.makeBodyFromQueue(),
             footer: this.makeFooterFromQueue(),
             title: "Prompt Queue for " + this.bucket.displayName
