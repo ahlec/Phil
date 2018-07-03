@@ -6,6 +6,7 @@ import Phil from '../../phil';
 import { DiscordPromises, IEmbedField } from '../../promises/discord';
 import ServerConfig from '../../server-config';
 import { ITypeDefinition, ParseResult } from '../../type-definition/@type-definition';
+import BotUtils from '../../utils';
 import ICommand from '../@types';
 
 enum Action {
@@ -105,51 +106,12 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
     }
 
     private async processNoAction(phil: Phil, message: PublicMessage, model: TModel): Promise<any> {
-        let response = `This is the command for changing ${this.configurationFor} configuration. ${
+        const response = `This is the command for changing ${this.configurationFor} configuration. ${
             NOWRAP}Within this command, there are numerous actions you can take to allow you to ${
             NOWRAP}understand Phil, his configuration, and how you can make him fit your server's ${
             NOWRAP}needs.${
             NEWLINE}${
-            NEWLINE}**ACTIONS**${
-            NEWLINE}The various actions that you can take with \`${
-            message.serverConfig.commandPrefix}${this.name}\` are as follows:\`\`\`${
-            NEWLINE}● [${Action.Display}] - view all of the current values of all of the ${
-            NOWRAP}configuration properties at a glance;${
-            NEWLINE}● [${Action.Info}] - see detailed information about a configuration property ${
-            NOWRAP}as well its current value;${
-            NEWLINE}● [${Action.Clear}] - resets the value of the property to Phil's default for ${
-            NOWRAP}that property;${
-            NEWLINE}● [${Action.Set}] - sets the value of the property to a valid value of your ${
-            NOWRAP}choosing.${
-            NEWLINE}\`\`\`${
-            NEWLINE}**PROPERTIES**${
-            NEWLINE}These are the various properties that are part of ${this.configurationFor}${
-            NOWRAP} configuration.\`\`\``;
-
-        let demoProp;
-        for (const property of this.orderedProperties) {
-            response += `● ${property.displayName} [key: ${property.key}]\n`;
-            if (property.defaultValue) {
-                demoProp = property;
-            }
-        }
-
-        response += `\`\`\`${
-            NEWLINE}**USAGE**${
-            NEWLINE}Using this command is a matter of combining an action and a property ${
-            NOWRAP} (if appropriate), like so:${
-            NEWLINE}\`\`\`${message.serverConfig.commandPrefix}${this.name} display${
-            NEWLINE}${message.serverConfig.commandPrefix}${this.name} ${Action.Info} ${demoProp.key}${
-            NEWLINE}${message.serverConfig.commandPrefix}${this.name} ${Action.Clear} ${demoProp.key}${
-            NEWLINE}${message.serverConfig.commandPrefix}${this.name} ${Action.Set} ${demoProp.key} ${
-            demoProp.defaultValue}\`\`\`As you can see from the above examples, the action (eg ${
-            NOWRAP}**${Action.Info}**) comes before the property key (eg **${demoProp.key}**). All actions ${
-            NOWRAP}require a property key except for **${Action.Display}**, since it shows all properties.${
-            NEWLINE}${
-            NEWLINE}It is in the special case of the **${Action.Set}** action that you need to provide an ${
-            NOWRAP}extra final piece of information at the end: the desired new value. You can ${
-            NOWRAP}use the **${Action.Info}** action to see rules for what a valid value should look like ${
-            NOWRAP}and what the property does, in order to understand what to change the value to.`;
+            NEWLINE}${this.getActionsExplanation(message.serverConfig)}`;
 
         console.log(response.length);
         return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
@@ -241,7 +203,15 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
     }
 
     private async sendUnknownActionResponse(phil: Phil, message: PublicMessage): Promise<any> {
-        return DiscordPromises.sendMessage(phil.bot, message.channelId, 'TODO: Unknown action'); // TODO
+        const response = `You attempted to use an unrecognized action with this command.${
+            NEWLINE}${
+            NEWLINE}${this.getActionsExplanation(message.serverConfig)}`;
+
+        return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+            color: EmbedColor.Error,
+            description: response,
+            title: `${this.titleCaseConfigurationFor} Configuration: Unknown action`
+        });
     }
 
     private getSpecifiedProperty(mutableArgs: string[]): IConfigProperty<TModel> {
@@ -312,6 +282,36 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
 
     private async sendMutateSuccessMessage(phil: Phil, message: PublicMessage, property: IConfigProperty<TModel>,): Promise<any> {
         return DiscordPromises.sendMessage(phil.bot, message.channelId, 'TODO: Success'); // TODO
+    }
+
+    private getActionsExplanation(serverConfig: ServerConfig): string {
+        const demoProp = BotUtils.getRandomArrayEntry(this.orderedProperties);
+        return `**ACTIONS**${
+            NEWLINE}The various actions that you can take with \`${
+            serverConfig.commandPrefix}${this.name}\` are as follows:\`\`\`${
+            NEWLINE}● [${Action.Display}] - view all of the configuration properties at a glance;${
+            NEWLINE}● [${Action.Info}] - see detailed information about a configuration property ${
+            NOWRAP}as well its current value;${
+            NEWLINE}● [${Action.Clear}] - resets the value of the property to Phil's default for ${
+            NOWRAP}that property;${
+            NEWLINE}● [${Action.Set}] - sets the value of the property to a valid value of your ${
+            NOWRAP}choosing.${
+            NEWLINE}\`\`\`${
+            NEWLINE}**USAGE**${
+            NEWLINE}Using this command is a matter of combining an action and a property ${
+            NOWRAP} (if appropriate), like so:${
+            NEWLINE}\`\`\`${serverConfig.commandPrefix}${this.name} display${
+            NEWLINE}${serverConfig.commandPrefix}${this.name} ${Action.Info} ${demoProp.key}${
+            NEWLINE}${serverConfig.commandPrefix}${this.name} ${Action.Clear} ${demoProp.key}${
+            NEWLINE}${serverConfig.commandPrefix}${this.name} ${Action.Set} ${demoProp.key} ${
+            demoProp.defaultValue}\`\`\`As you can see from the above examples, the action (eg ${
+            NOWRAP}**${Action.Info}**) comes before the property key (eg **${demoProp.key}**). All actions ${
+            NOWRAP}require a property key except for **${Action.Display}**, since it shows all properties.${
+            NEWLINE}${
+            NEWLINE}It is in the special case of the **${Action.Set}** action that you need to provide an ${
+            NOWRAP}extra final piece of information at the end: the desired new value. You can ${
+            NOWRAP}use the **${Action.Info}** action to see rules for what a valid value should look like ${
+            NOWRAP}and what the property does, in order to understand what to change the value to.`;
     }
 
     private getPropertyRulesDisplayList(property: IConfigProperty<TModel>): string {
