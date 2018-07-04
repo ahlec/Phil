@@ -7,6 +7,11 @@ import ServerConfig from '../server-config';
 import BotUtils from '../utils';
 import { ConfigCommandBase, IConfigProperty } from './bases/config-command-base';
 
+import ClearConfigAction from './bases/config-actions/clear';
+import DisplayConfigAction from './bases/config-actions/display';
+import InfoConfigAction from './bases/config-actions/info';
+import SetConfigAction from './bases/config-actions/set';
+
 import ChannelTypeDefinition from '../type-definition/channel';
 import CommandPrefixTypeDefinition from '../type-definition/command-prefix';
 
@@ -126,7 +131,12 @@ export default class ConfigCommand extends ConfigCommandBase<ServerConfig> {
     protected readonly configurationFor = 'server';
 
     constructor() {
-        super(properties);
+        super([
+            new DisplayConfigAction<ServerConfig>(),
+            new InfoConfigAction<ServerConfig>(),
+            new SetConfigAction<ServerConfig>(),
+            new ClearConfigAction<ServerConfig>()
+        ], properties);
     }
 
     protected async getModel(phil: Phil, message: PublicMessage, mutableArgs: string[]): Promise<ServerConfig> {
