@@ -8,7 +8,7 @@ import ServerConfig from '../../server-config';
 import { ITypeDefinition } from '../../type-definition/@type-definition';
 import BotUtils from '../../utils';
 import ICommand from '../@types';
-import { IConfigAction } from './config-actions/@action';
+import { ConfigActionParameterType, IConfigAction } from './config-actions/@action';
 
 export interface IConfigProperty<TModel> {
     readonly defaultValue: string;
@@ -24,6 +24,10 @@ export interface IConfigProperty<TModel> {
 
 const NOWRAP = '';
 const NEWLINE = '\n';
+
+function NEVER(x: never) {
+    throw new Error('Should not be here -- switch case not handled.');
+}
 
 export abstract class ConfigCommandBase<TModel> implements ICommand {
     public abstract readonly name: string;
@@ -74,7 +78,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
 
         const action = this.determineAction(mutableArgs);
         if (!action) {
-            return this.sendUnknownActionResponse(phil, message);
+            return this.sendUnknownActionResponse(phil, message, model);
         }
 
         return this.processAction(phil, message, mutableArgs, model, action);
@@ -108,7 +112,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
             NOWRAP}understand Phil, his configuration, and how you can make him fit your server's ${
             NOWRAP}needs.${
             NEWLINE}${
-            NEWLINE}${this.getActionsExplanation(message.serverConfig)}`;
+            NEWLINE}${this.getActionsExplanation(message.serverConfig, model)}`;
 
         console.log(response.length);
         return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
@@ -128,10 +132,11 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
         return this.actionsLookup[verb];
     }
 
-    private async sendUnknownActionResponse(phil: Phil, message: PublicMessage): Promise<any> {
+    private async sendUnknownActionResponse(phil: Phil, message: PublicMessage,
+        model: TModel): Promise<any> {
         const response = `You attempted to use an unrecognized action with this command.${
             NEWLINE}${
-            NEWLINE}${this.getActionsExplanation(message.serverConfig)}`;
+            NEWLINE}${this.getActionsExplanation(message.serverConfig, model)}`;
 
         return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
             color: EmbedColor.Error,
@@ -167,48 +172,46 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
         return DiscordPromises.sendMessage(phil.bot, message.channelId, 'TODO: Properties'); // TODO
     }
 
-    private getActionsExplanation(serverConfig: ServerConfig): string {
-        const demoAction = BotUtils.getRandomArrayEntry(this.orderedActions);
+    private getActionsExplanation(serverConfig: ServerConfig, model: TModel): string {
         const demoProp = BotUtils.getRandomArrayEntry(this.orderedProperties);
         let explanation = `**ACTIONS**${
             NEWLINE}The various actions that you can take with \`${
             serverConfig.commandPrefix}${this.name}\` are as follows:\`\`\``;
-        let usageExample = '';
+        const usageExamples: string[] = [];
         let specialUsageNotes = '';
 
-        const exampleInvocation = serverConfig.commandPrefix + this.name;
         for (let index = 0; index < this.orderedActions.length; ++index) {
-            const property = this.orderedActions[index];
+            const action = this.orderedActions[index];
             let lineEnd = ';\n';
             if (index === this.orderedActions.length - 1) {
                 lineEnd = '.';
             }
 
-            explanation += `● [${property.primaryKey}] - ${property.description}${lineEnd}`;
+            explanation += `● [${action.primaryKey}] - ${action.description}${lineEnd}`;
 
-            let parameters = '';
-            if (property.isPropertyRequired) {
-                parameters = ' ' + demoProp.key;
-            }
+            usageExamples.push(this.createActionExampleUse(serverConfig, action, demoProp, model));
 
-            usageExample += `${exampleInvocation} ${property.primaryKey}${parameters}${NEWLINE}`;
-
-            if (property.specialUsageNotes) {
+            if (action.specialUsageNotes) {
                 if (specialUsageNotes) {
                     specialUsageNotes += '\n\n';
                 }
 
-                specialUsageNotes += property.specialUsageNotes;
+                specialUsageNotes += action.specialUsageNotes;
             }
         }
+
+        let demoActionRequiringProperty: IConfigAction<TModel>;
+        do {
+            demoActionRequiringProperty = BotUtils.getRandomArrayEntry(this.orderedActions);
+        } while(!demoActionRequiringProperty.isPropertyRequired);
 
         explanation += `\`\`\`${
             NEWLINE}**USAGE**${
             NEWLINE}Using this command is a matter of combining an action and a property ${
             NOWRAP} (if appropriate), like so:${
-            NEWLINE}\`\`\`${usageExample}\`\`\`As you can see from the above examples, the action (eg ${
-            NOWRAP}**${demoAction.primaryKey}**) comes before the property key (eg **${
-            demoProp.key}**).`;
+            NEWLINE}\`\`\`${usageExamples.join('\n')}\`\`\`As you can see from the above ${
+            NOWRAP}examples, the action (eg **${demoActionRequiringProperty.primaryKey}**) comes ${
+            NOWRAP}before the property key (eg **${demoProp.key}**).`;
 
         if (specialUsageNotes) {
             explanation += '\n\n' + specialUsageNotes;
@@ -216,4 +219,34 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
 
         return explanation;
     }
+
+    private createActionExampleUse(serverConfig: ServerConfig,
+        action: IConfigAction<TModel>, demoProperty: IConfigProperty<TModel>,
+        model: TModel): string {
+        let example = `${serverConfig.commandPrefix}${this.name} ${action.primaryKey}`;
+
+        for (const parameter of action.parameters) {
+            example += ' ';
+            example += this.getActionParameterExampleValue(serverConfig, parameter, demoProperty,
+                model);
+        }
+
+        return example;
+    }
+
+    private getActionParameterExampleValue(serverConfig: ServerConfig,
+        parameterType: ConfigActionParameterType, demoProperty: IConfigProperty<TModel>,
+        model: TModel): string {
+            switch (parameterType) {
+                case ConfigActionParameterType.PropertyKey:
+                    return demoProperty.key;
+                case ConfigActionParameterType.NewPropertyValue: {
+                    const randomValue = demoProperty.getRandomExampleValue(model);
+                    return demoProperty.typeDefinition
+                        .toMultilineCodeblockDisplayFormat(randomValue, serverConfig);
+                }
+            }
+
+            NEVER(parameterType);
+        }
 }
