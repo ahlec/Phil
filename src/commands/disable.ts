@@ -2,6 +2,7 @@ import Feature from '../features/feature';
 import FeatureUtils from '../features/feature-utils';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { BotUtils } from '../utils';
 import ICommand from './@types';
@@ -10,13 +11,13 @@ export default class DisableCommand implements ICommand {
     public readonly name = 'disable';
     public readonly aliases: ReadonlyArray<string> = [];
     public readonly feature: Feature = null;
+    public readonly permissionLevel = PermissionLevel.AdminOnly;
 
     public readonly helpGroup = HelpGroup.Admin;
     public readonly helpDescription = 'Disables a feature of Phil\'s.';
 
     public readonly versionAdded = 9;
 
-    public readonly isAdminCommand = true;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         if (commandArgs.length < 1) {
             throw new Error('This function requires specifying the name of the feature that you wish disabled.');

@@ -4,10 +4,15 @@ import { CommandLookup } from './commands/index';
 import Database from './database';
 import InputMessage from './input-message';
 import IPublicMessage from './messages/public';
+import PermissionLevel from './permission-level';
 import Phil from './phil';
 import BotUtils from './utils';
 
 const util = require('util');
+
+function NEVER(x: never) {
+    throw new Error('Reached an unreachable location in code');
+}
 
 export default class CommandRunner {
     constructor(private readonly phil: Phil,
@@ -73,12 +78,19 @@ export default class CommandRunner {
     }
 
     private canUserUseCommand(command: ICommand, message: IPublicMessage): boolean {
-        if (!command.isAdminCommand) {
-            return true;
+        switch (command.permissionLevel) {
+            case PermissionLevel.General:
+                return true;
+            case PermissionLevel.AdminOnly: {
+                const member = message.server.members[message.userId];
+                return message.serverConfig.isAdmin(member);
+            }
+            case PermissionLevel.BotManagerOnly: {
+                return (message.userId === this.phil.globalConfig.botManagerUserId);
+            }
         }
 
-        const member = message.server.members[message.userId];
-        return message.serverConfig.isAdmin(member);
+        NEVER(command.permissionLevel);
     }
 
     private reportCannotUseCommand(message: IPublicMessage, command: ICommand, input: InputMessage) {

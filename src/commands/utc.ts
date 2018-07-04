@@ -1,6 +1,7 @@
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import UserTimezone from '../timezones/user-timezone';
@@ -17,13 +18,13 @@ export default class UtcCommand implements ICommand {
     public readonly name = 'utc';
     public readonly aliases = [ 'gmt' ];
     public readonly feature = Features.TimezoneProcessing;
+    public readonly permissionLevel = PermissionLevel.General;
 
     public readonly helpGroup = HelpGroup.Time;
     public readonly helpDescription = 'Converts a time from your local timezone to UTC.';
 
     public readonly versionAdded = 10;
 
-    public readonly isAdminCommand = false;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const inputTime = this.getTimeFromCommandArgs(commandArgs);
         if (!inputTime) {

@@ -4,6 +4,7 @@ import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import Requestable from '../requestables';
@@ -15,13 +16,13 @@ export default class RemoveCommand implements ICommand {
     public readonly name = 'remove';
     public readonly aliases: ReadonlyArray<string> = [];
     public readonly feature = Features.Requestables;
+    public readonly permissionLevel = PermissionLevel.General;
 
     public readonly helpGroup = HelpGroup.Roles;
     public readonly helpDescription = 'Asks Phil to take away a requestable role that he has given you.';
 
     public readonly versionAdded = 7;
 
-    public readonly isAdminCommand = false;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         if (commandArgs.length === 0) {
             return this.processNoCommandArgs(phil, message);

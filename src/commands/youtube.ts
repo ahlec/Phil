@@ -1,6 +1,7 @@
 import Feature from '../features/feature';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import YouTubePromises from '../promises/youtube';
@@ -10,13 +11,13 @@ export default class YoutubeCommand implements ICommand {
     public readonly name = 'youtube';
     public readonly aliases = [ 'yt' ];
     public readonly feature: Feature = null;
+    public readonly permissionLevel = PermissionLevel.General;
 
     public readonly helpGroup = HelpGroup.General;
     public readonly helpDescription = 'Searches YouTube for something and posts a link to the first video.';
 
     public readonly versionAdded = 4;
 
-    public readonly isAdminCommand = false;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const query = commandArgs.join(' ').trim();
         if (query.length === 0) {

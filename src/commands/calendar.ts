@@ -4,6 +4,7 @@ import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import ServerConfig from '../server-config';
@@ -15,13 +16,13 @@ export default class CalendarCommand implements ICommand {
     public readonly name = 'calendar';
     public readonly aliases: ReadonlyArray<string> = [];
     public readonly feature = Features.Calendar;
+    public readonly permissionLevel = PermissionLevel.General;
 
     public readonly helpGroup = HelpGroup.General;
     public readonly helpDescription = 'Has Phil display the calendar of server events for the month in question.';
 
     public readonly versionAdded = 6;
 
-    public readonly isAdminCommand = false;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const month = this.determineMonth(message.serverConfig, commandArgs);
         const calendar = await CalendarMonth.getForMonth(phil.bot, phil.db, message.server, month);

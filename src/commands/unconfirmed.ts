@@ -2,6 +2,7 @@ import Bucket from '../buckets';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import Prompt from '../prompts/prompt';
@@ -14,13 +15,13 @@ export default class UnconfirmedCommand implements ICommand {
     public readonly name = 'unconfirmed';
     public readonly aliases: ReadonlyArray<string> = [];
     public readonly feature = Features.Prompts;
+    public readonly permissionLevel = PermissionLevel.AdminOnly;
 
     public readonly helpGroup = HelpGroup.Prompts;
     public readonly helpDescription = 'Creates a list of some of the unconfirmed prompts that are awaiting admin approval before being added to the prompt queue.';
 
     public readonly versionAdded = 1;
 
-    public readonly isAdminCommand = true;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         await phil.db.query('DELETE FROM prompt_confirmation_queue WHERE channel_id = $1', [message.channelId]);
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'unconfirmed', false);

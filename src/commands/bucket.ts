@@ -2,6 +2,7 @@ import Bucket from '../buckets';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import ICommand from './@types';
@@ -50,13 +51,13 @@ export default class BucketCommand implements ICommand {
     public readonly name = 'bucket';
     public readonly aliases: ReadonlyArray<string> = [];
     public readonly feature = Features.Prompts;
+    public readonly permissionLevel = PermissionLevel.AdminOnly;
 
     public readonly helpGroup = HelpGroup.Prompts;
     public readonly helpDescription = 'Displays all of the configuration information for a prompt bucket.';
 
     public readonly versionAdded = 11;
 
-    public readonly isAdminCommand = true;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig, 'bucket', true);
         return sendBucketToChannel(phil, message.channelId, bucket);

@@ -1,6 +1,7 @@
 import Feature from '../features/feature';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import BotUtils from '../utils';
@@ -22,13 +23,13 @@ export default class ApologiseCommand implements ICommand {
     public readonly name = 'apologise';
     public readonly aliases = ['apologize'];
     public readonly feature: Feature = null;
+    public readonly permissionLevel = PermissionLevel.General;
 
     public readonly helpGroup = HelpGroup.None;
     public readonly helpDescription = 'Makes Phil apologise for making a mistake.';
 
     public readonly versionAdded = 3;
 
-    public readonly isAdminCommand = false;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const apology = BotUtils.getRandomArrayEntry(apologies);
         return DiscordPromises.sendMessage(phil.bot, message.channelId, apology);

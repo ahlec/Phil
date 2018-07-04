@@ -1,6 +1,7 @@
 import Feature from '../../features/feature';
 import { IBatchFeaturesEnabledLookup } from '../../features/feature-utils';
 import { HelpGroup } from '../../help-groups';
+import PermissionLevel from '../../permission-level';
 import Versions from '../../versions';
 import ICommand from '../@types';
 
@@ -10,8 +11,8 @@ export default class CommandHelpInfo {
             return 0;
         }
 
-        if (a.isAdminFunction !== b.isAdminFunction) {
-            return (a.isAdminFunction ? 1 : -1); // Admin functions should always come after non-admin functions
+        if (a.permissionLevel !== b.permissionLevel) {
+            return (a.permissionLevel - b.permissionLevel);
         }
 
         return (a.name < b.name ? -1 : 1);
@@ -23,7 +24,7 @@ export default class CommandHelpInfo {
 
     public readonly name: string;
     public readonly helpGroup: HelpGroup;
-    public readonly isAdminFunction: boolean;
+    public readonly permissionLevel: PermissionLevel;
     public readonly message: string;
     private readonly isNew: boolean;
     private readonly aliases: ReadonlyArray<string>;
@@ -33,7 +34,7 @@ export default class CommandHelpInfo {
     constructor(command: ICommand) {
         this.name = command.name;
         this.helpGroup = command.helpGroup;
-        this.isAdminFunction = (command.isAdminCommand === true);
+        this.permissionLevel = command.permissionLevel;
         this.helpDescription = command.helpDescription;
         this.isNew = CommandHelpInfo.isVersionNew(command.versionAdded);
         this.aliases = command.aliases;
@@ -43,7 +44,11 @@ export default class CommandHelpInfo {
     }
 
     public shouldDisplay(isAdminChannel: boolean, featuresEnabledLookup: IBatchFeaturesEnabledLookup): boolean {
-        if (!isAdminChannel && this.isAdminFunction) {
+        if (this.permissionLevel === PermissionLevel.BotManagerOnly) {
+            return false;
+        }
+
+        if (!isAdminChannel && (this.permissionLevel === PermissionLevel.AdminOnly)) {
             return false;
         }
 
@@ -55,7 +60,8 @@ export default class CommandHelpInfo {
     }
 
     private createHelpMessage(): string {
-        let message = (this.isAdminFunction ? ':small_orange_diamond:' : ':small_blue_diamond:');
+        let message = (this.permissionLevel === PermissionLevel.AdminOnly ?
+            ':small_orange_diamond:' : ':small_blue_diamond:');
 
         if (this.isNew) {
             message += ':new:';

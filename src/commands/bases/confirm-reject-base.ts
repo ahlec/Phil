@@ -2,6 +2,7 @@ import Database from '../../database';
 import Features from '../../features/all-features';
 import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
+import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
 import ServerConfig from '../../server-config';
 import { BotUtils } from '../../utils';
@@ -22,13 +23,12 @@ export default abstract class ConfirmRejectCommandBase implements ICommand {
     public abstract readonly name: string;
     public abstract readonly aliases: ReadonlyArray<string>;
     public readonly feature = Features.Prompts;
+    public readonly permissionLevel = PermissionLevel.AdminOnly;
 
     public readonly helpGroup = HelpGroup.None;
     public readonly helpDescription: string = null;
 
     public abstract readonly versionAdded: number;
-
-    public readonly isAdminCommand = true;
 
     protected abstract readonly noPromptsConfirmedMessage: string;
     protected abstract readonly onePromptConfirmedMessage: string;

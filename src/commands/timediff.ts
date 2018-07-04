@@ -1,6 +1,7 @@
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import UserTimezone from '../timezones/user-timezone';
@@ -10,13 +11,13 @@ export default class TimediffCommand implements ICommand {
     public readonly name = 'timediff';
     public readonly aliases: ReadonlyArray<string> = [];
     public readonly feature = Features.TimezoneProcessing;
+    public readonly permissionLevel = PermissionLevel.General;
 
     public readonly helpGroup = HelpGroup.Time;
     public readonly helpDescription = 'Tells you the time difference (in hours) between you and the user that you mention with this command.';
 
     public readonly versionAdded = 10;
 
-    public readonly isAdminCommand = false;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         if (message.mentions.length !== 1) {
             throw new Error('In order to use this function, you must mention the user you\'re asking about. For instance, something like `' + message.serverConfig.commandPrefix + 'timediff @Bunnymund#1234`.');

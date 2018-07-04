@@ -3,6 +3,7 @@ import FeatureUtils from '../../features/feature-utils';
 import { HelpGroup } from '../../help-groups';
 import MessageBuilder from '../../message-builder';
 import PublicMessage from '../../messages/public';
+import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
 import { DiscordPromises } from '../../promises/discord';
 import ICommand, { ICommandLookup } from '../@types';
@@ -25,13 +26,12 @@ export default class HelpCommand implements ICommand {
     public readonly name = 'help';
     public readonly aliases: ReadonlyArray<string> = [];
     public readonly feature: Feature = null;
+    public readonly permissionLevel = PermissionLevel.General;
 
     public readonly helpGroup = HelpGroup.General;
     public readonly helpDescription = 'Find out about all of the commands that Phil has available.';
 
     public readonly versionAdded = 3;
-
-    public readonly isAdminCommand = false;
 
     private helpGroups: ReadonlyArray<HelpGroupInfo> = [];
 

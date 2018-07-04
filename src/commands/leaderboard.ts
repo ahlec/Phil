@@ -1,6 +1,7 @@
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import Leaderboard from '../prompts/leaderboard';
@@ -70,13 +71,13 @@ export default class LeaderboardCommand implements ICommand {
     public readonly name = 'leaderboard';
     public readonly aliases: ReadonlyArray<string> = [];
     public readonly feature = Features.Prompts;
+    public readonly permissionLevel = PermissionLevel.General;
 
     public readonly helpGroup = HelpGroup.Prompts;
     public readonly helpDescription = 'Display the leaderboard for prompt submissions on the server, which shows who is in the lead for suggesting discussion prompts.';
 
     public readonly versionAdded = 11;
 
-    public readonly isAdminCommand = false;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const leaderboard = await Leaderboard.getLeaderboard(phil.bot, phil.db, message.server);
         const reply = createLeaderboardMessage(leaderboard);

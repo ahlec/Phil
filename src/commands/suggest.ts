@@ -2,6 +2,7 @@ import Bucket from '../buckets';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import SubmissionSession from '../prompts/submission-session';
@@ -28,13 +29,13 @@ export default class SuggestCommand implements ICommand {
     public readonly name = 'suggest';
     public readonly aliases: ReadonlyArray<string> = [];
     public readonly feature = Features.Prompts;
+    public readonly permissionLevel = PermissionLevel.General;
 
     public readonly helpGroup = HelpGroup.Prompts;
     public readonly helpDescription = 'Suggests a new prompt to Phil.';
 
     public readonly versionAdded = 1;
 
-    public readonly isAdminCommand = false;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const bucket = await Bucket.retrieveFromCommandArgs(phil, commandArgs, message.serverConfig,
             this.name, false);

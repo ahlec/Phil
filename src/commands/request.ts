@@ -2,6 +2,7 @@ import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import Requestable from '../requestables';
@@ -13,13 +14,13 @@ export default class RequestCommand implements ICommand {
     public readonly name = 'request';
     public readonly aliases = ['giveme'];
     public readonly feature = Features.Requestables;
+    public readonly permissionLevel = PermissionLevel.General;
 
     public readonly helpGroup = HelpGroup.Roles;
     public readonly helpDescription = 'Asks Phil to give you a role. Using the command by itself will show you all of the roles he can give you.';
 
     public readonly versionAdded = 1;
 
-    public readonly isAdminCommand = false;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         if (commandArgs.length === 0) {
             return this.processNoCommandArgs(phil, message);

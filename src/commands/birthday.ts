@@ -3,6 +3,7 @@ import Database from '../database';
 import Feature from '../features/feature';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
@@ -15,13 +16,13 @@ export default class BirthdayCommand implements ICommand {
     public readonly name = 'birthday';
     public readonly aliases: ReadonlyArray<string> = [];
     public readonly feature: Feature = null;
+    public readonly permissionLevel = PermissionLevel.General;
 
     public readonly helpGroup = HelpGroup.General;
     public readonly helpDescription = 'Tell Phil when your birthday is so he can share your birthday with the server.';
 
     public readonly versionAdded = 5;
 
-    public readonly isAdminCommand = false;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const birthday = this.getInputFromCommandArgs(message.serverConfig, commandArgs);
 

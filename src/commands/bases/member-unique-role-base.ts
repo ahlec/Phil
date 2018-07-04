@@ -2,6 +2,7 @@ import { Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
 import Feature from '../../features/feature';
 import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
+import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
 import { DiscordPromises } from '../../promises/discord';
 import ServerConfig from '../../server-config';
@@ -12,13 +13,13 @@ export default abstract class MemberUniqueRoleCommandBase<TData> implements ICom
     public abstract readonly name: string;
     public abstract readonly aliases: ReadonlyArray<string>;
     public abstract readonly feature: Feature;
+    public readonly permissionLevel = PermissionLevel.General;
 
     public readonly helpGroup = HelpGroup.Roles;
     public abstract readonly helpDescription: string;
 
     public abstract readonly versionAdded: number;
 
-    public readonly isAdminCommand = false;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const data = this.getDataFromCommandArgs(message.serverConfig, commandArgs);
         const newRole = await this.getRoleFromData(phil, message.server, data);

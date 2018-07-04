@@ -1,6 +1,7 @@
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
+import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import Requestable, { IRequestableCreationDefinition } from '../requestables';
 import ServerConfig from '../server-config';
@@ -11,13 +12,13 @@ export default class DefineCommand implements ICommand {
     public readonly name = 'define';
     public readonly aliases: ReadonlyArray<string> = [];
     public readonly feature = Features.Requestables;
+    public readonly permissionLevel = PermissionLevel.AdminOnly;
 
     public readonly helpGroup = HelpGroup.Roles;
     public readonly helpDescription = 'Creates a new requestable role that users can use with the request command.';
 
     public readonly versionAdded = 1;
 
-    public readonly isAdminCommand = true;
     public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
         const definition = this.getDefinitionData(commandArgs, message.serverConfig);
         if (!Requestable.checkIsValidRequestableName(definition.name)) {
