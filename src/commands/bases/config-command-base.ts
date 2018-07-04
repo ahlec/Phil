@@ -4,7 +4,7 @@ import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
 import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
-import { DiscordPromises } from '../../promises/discord';
+import { DiscordPromises, IEmbedField } from '../../promises/discord';
 import ServerConfig from '../../server-config';
 import { ITypeDefinition } from '../../type-definition/@type-definition';
 import BotUtils from '../../utils';
@@ -151,7 +151,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
         if (action.isPropertyRequired) {
             property = this.getSpecifiedProperty(mutableArgs);
             if (!property) {
-                return this.sendPropertiesListAsResponse(phil, message);
+                return this.sendUnknownPropertyResponse(phil, message, action, model);
             }
         }
 
@@ -168,8 +168,31 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
         return this.propertiesLookup[specifiedKey];
     }
 
-    private async sendPropertiesListAsResponse(phil: Phil, message: PublicMessage): Promise<any> {
-        return DiscordPromises.sendMessage(phil.bot, message.channelId, 'TODO: Properties'); // TODO
+    private async sendUnknownPropertyResponse(phil: Phil, message: PublicMessage,
+        action: IConfigAction<TModel>, model: TModel): Promise<any> {
+        const response = `You attempted to use an unknown property with the **${
+            action.primaryKey}** action.${
+            NEWLINE}${
+            NEWLINE}**PROPERTIES**${
+            NEWLINE}The following are all of the properties that are recognized with the ${
+            message.serverConfig.commandPrefix}${this.name} command:`;
+
+        const fields: IEmbedField[] = [];
+        for (const property of this.orderedProperties) {
+            const exampleUse = this.createActionExampleUse(message.serverConfig, action,
+                property, model);
+            fields.push({
+                name: `**${property.displayName}** [key: ${property.key}]`,
+                value: `\`${exampleUse}\``
+            });
+        }
+
+        return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+            color: EmbedColor.Error,
+            description: response,
+            fields,
+            title: `${this.titleCaseConfigurationFor} Configuration: Unknown property`
+        });
     }
 
     private getActionsExplanation(serverConfig: ServerConfig, model: TModel): string {
