@@ -18,6 +18,8 @@ export default abstract class MutateConfigActionBase<TModel> implements IConfigA
     public readonly isPropertyRequired = true;
     public abstract readonly parameters: ReadonlyArray<ConfigActionParameterType>;
 
+    protected abstract readonly pastTenseVerb: string;
+
     public async process(command: ConfigCommandBase<TModel>, phil: Phil, message: PublicMessage,
         mutableArgs: string[], property: IConfigProperty<TModel>, model: TModel): Promise<any> {
         const newValue = this.getNewValue(phil, message.serverConfig, property, mutableArgs);
@@ -27,7 +29,7 @@ export default abstract class MutateConfigActionBase<TModel> implements IConfigA
         }
 
         await property.setValue(phil, model, newValue.parsedValue);
-        return this.sendMutateSuccessMessage(phil, message, property);
+        return this.sendMutateSuccessMessage(phil, message, property, newValue.parsedValue);
     }
 
     protected abstract getNewValue(phil: Phil, serverConfig: ServerConfig,
@@ -55,10 +57,12 @@ export default abstract class MutateConfigActionBase<TModel> implements IConfigA
     }
 
     private async sendMutateSuccessMessage(phil: Phil, message: PublicMessage,
-        property: IConfigProperty<TModel>): Promise<any> {
+        property: IConfigProperty<TModel>, newValue: string): Promise<any> {
         return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
             color: EmbedColor.Success,
-            description: 'TODO: Success',
+            description: `The value of the **${property.displayName.toLowerCase()}** has been ${
+                this.pastTenseVerb} successfully to now be \`${
+                property.typeDefinition.toDisplayFormat(newValue, message.serverConfig)}\`.`,
             title: `${property.displayName} Changed Successfully`
         })
     }

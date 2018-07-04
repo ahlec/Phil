@@ -6,10 +6,13 @@ import ServerConfig from '../../../server-config';
 import { ConfigCommandBase, IConfigProperty } from '../config-command-base';
 import { ConfigActionParameterType, ConfigActionPrimaryKey, IConfigAction } from './@action';
 
+const NOWRAP = '';
+
 export default class DisplayConfigAction<TModel> implements IConfigAction<TModel> {
     public readonly primaryKey = ConfigActionPrimaryKey.Display;
     public readonly aliases = ['show'];
-    public readonly description = 'view all of the configuration properties at a glance';
+    public readonly description = `view a list of all of the configuration properties as well as ${
+        NOWRAP} their current values`;
     public readonly isPropertyRequired = false;
     public readonly parameters: ReadonlyArray<ConfigActionParameterType> = [];
 

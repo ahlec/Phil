@@ -18,6 +18,8 @@ export default class ClearConfigAction<TModel> extends MutateConfigActionBase<TM
         ConfigActionParameterType.PropertyKey
     ];
 
+    protected readonly pastTenseVerb = 'reset';
+
     protected getNewValue(phil: Phil, serverConfig: ServerConfig, property: IConfigProperty<TModel>,
         mutableArgs: string[]): ParseResult {
         return {

@@ -23,6 +23,8 @@ export default class SetConfigAction<TModel> extends MutateConfigActionBase<TMod
         ConfigActionParameterType.NewPropertyValue
     ];
 
+    protected readonly pastTenseVerb = 'set';
+
     protected getNewValue(phil: Phil, serverConfig: ServerConfig, property: IConfigProperty<TModel>,
         mutableArgs: string[]): ParseResult {
         const rawInput = mutableArgs.shift();
