@@ -2,6 +2,7 @@ import EmbedColor from '../../embed-color';
 import Feature from '../../features/feature';
 import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
+import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
 import { DiscordPromises } from '../../promises/discord';
 import ServerConfig from '../../server-config';
@@ -33,13 +34,12 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
     public abstract readonly name: string;
     public abstract readonly aliases: ReadonlyArray<string>;
     public abstract readonly feature: Feature;
+    public readonly permissionLevel = PermissionLevel.AdminOnly;
 
     public abstract readonly helpGroup: HelpGroup;
     public abstract readonly helpDescription: string;
 
     public abstract readonly versionAdded: number;
-
-    public readonly isAdminCommand = true;
 
     public readonly orderedProperties: ReadonlyArray<IConfigProperty<TModel>>;
     public get titleCaseConfigurationFor(): string {

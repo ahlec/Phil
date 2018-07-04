@@ -2,6 +2,7 @@ import { Client as DiscordIOClient } from 'discord.io';
 import ICommand from './commands/@types';
 import { CommandLookup } from './commands/index';
 import Database from './database';
+import GlobalConfig from './global-config';
 import InputMessage from './input-message';
 import IPublicMessage from './messages/public';
 import PermissionLevel from './permission-level';
@@ -86,7 +87,7 @@ export default class CommandRunner {
                 return message.serverConfig.isAdmin(member);
             }
             case PermissionLevel.BotManagerOnly: {
-                return (message.userId === this.phil.globalConfig.botManagerUserId);
+                return (message.userId === GlobalConfig.botManagerUserId);
             }
         }
 
