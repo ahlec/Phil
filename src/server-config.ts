@@ -34,7 +34,6 @@ export class ServerConfig {
     }
 
     public readonly serverId: string;
-    public readonly adminRole?: DiscordIORole;
     public readonly welcomeMessage: string;
     public readonly fandomMapLink: string;
     private commandPrefixInternal: string;
@@ -42,6 +41,7 @@ export class ServerConfig {
     private adminChannelInternal: DiscordIOChannel;
     private introductionsChannelInternal: DiscordIOChannel;
     private newsChannelInternal: DiscordIOChannel;
+    private adminRoleInternal: DiscordIORole;
 
     private constructor(public readonly server : DiscordIOServer, dbRow : any) {
         this.serverId = dbRow.server_id;
@@ -54,7 +54,7 @@ export class ServerConfig {
         this.fandomMapLink = this.getOptionalString(dbRow.fandom_map_link);
 
         if (dbRow.admin_role_id) {
-            this.adminRole = this.server.roles[dbRow.admin_role_id];
+            this.adminRoleInternal = this.server.roles[dbRow.admin_role_id];
         }
     }
 
@@ -125,6 +125,19 @@ export class ServerConfig {
         }
 
         this.newsChannelInternal = this.server.channels[channelId];
+    }
+
+    public get adminRole(): DiscordIORole {
+        return this.adminRoleInternal;
+    }
+
+    public async setAdminRole(roleId: string, database: Database): Promise<boolean> {
+        const result = await this.setFieldInDatabase(roleId, database, 'admin_role_id');
+        if (!result) {
+            return false;
+        }
+
+        this.adminRoleInternal = this.server.roles[roleId];
     }
 
     // -----------------------------------------------------------------------------

@@ -14,6 +14,7 @@ import SetConfigAction from './bases/config-actions/set';
 
 import ChannelTypeDefinition from '../type-definition/channel';
 import CommandPrefixTypeDefinition from '../type-definition/command-prefix';
+import RoleTypeDefinition from '../type-definition/role';
 
 // -----------------------------------------------------------------------------------
 // Utilities
@@ -37,6 +38,7 @@ function getRandomChannelId(serverConfig: ServerConfig): string {
 // -----------------------------------------------------------------------------------
 
 const NOWRAP = '';
+const NEWLINE = '\n';
 
 const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
     {
@@ -109,6 +111,33 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
         getValue: (model: ServerConfig) => model.commandPrefix,
         setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
             model.setCommandPrefix(newValue, phil.db)
+    },
+    {
+        defaultValue: null,
+        description: `This is a role that a user must have in order to make use of any of the ${
+            NOWRAP}admin-only commands. The server owner is capable of making use of the admin-${
+            NOWRAP}only commands at all times, but for all other members of the server, they must ${
+            NOWRAP}have the role specified here in order to user the higher privilege commands.${
+            NEWLINE}${
+            NEWLINE}Note that while admin commands may be used in any channel within the server, ${
+            NOWRAP}admin-only commands will only appear in the \`help\` command list if you use ${
+            NOWRAP}the command within the **Admin Channel** (property key: \`admin-channel\`) or ${
+            NOWRAP}within the **Bot Control Channel** (property key: \`bot-control-channel\`).`,
+        displayName: 'Admin Role',
+        key: 'admin-role',
+        typeDefinition: RoleTypeDefinition,
+
+        getRandomExampleValue: (model: ServerConfig) =>
+            BotUtils.getRandomArrayEntry(Object.keys(model.server.roles)),
+        getValue: (model: ServerConfig) => {
+            if (!model.adminRole) {
+                return null;
+            }
+
+            return model.adminRole.id;
+        },
+        setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
+            model.setAdminRole(newValue, phil.db)
     }
 ];
 
