@@ -16,7 +16,7 @@ export default class HappyBirthdayChrono implements IChrono {
     public readonly handle = 'happy-birthday';
 
     public async process(phil: Phil, serverConfig: ServerConfig, now: Date) {
-        const userIds = await this.getBirthdayUserIds(phil.db, now);
+        const userIds = await this.getBirthdayUserIds(phil.db, serverConfig, now);
         const info = this.getInfo(phil, serverConfig, userIds);
         const birthdayWish = this.createBirthdayWish(info);
         if (birthdayWish === '') {
@@ -26,14 +26,20 @@ export default class HappyBirthdayChrono implements IChrono {
         DiscordPromises.sendMessage(phil.bot, serverConfig.newsChannel.id, birthdayWish);
     }
 
-    private async getBirthdayUserIds(db: Database, now: Date): Promise<string[]> {
+    private async getBirthdayUserIds(db: Database, serverConfig: ServerConfig, now: Date): Promise<string[]> {
         const day = now.getUTCDate();
         const month = now.getUTCMonth() + 1;
 
         const results = await db.query('SELECT userid FROM birthdays WHERE birthday_day = $1 AND birthday_month = $2', [day, month]);
         const userIds = [];
         for (let index = 0; index < results.rowCount; ++index) {
-            userIds.push(results.rows[index].userid);
+            const userId = results.rows[index].userid;
+            const member = serverConfig.server.members[userId];
+            if (!member) {
+                continue;
+            }
+
+            userIds.push(userId);
         }
 
         return userIds;
