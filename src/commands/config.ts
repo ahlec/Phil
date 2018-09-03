@@ -15,6 +15,7 @@ import SetConfigAction from './bases/config-actions/set';
 import ChannelTypeDefinition from '../type-definition/channel';
 import CommandPrefixTypeDefinition from '../type-definition/command-prefix';
 import RoleTypeDefinition from '../type-definition/role';
+import WelcomeMessageTypeDefinition from '../type-definition/welcome-message';
 
 // -----------------------------------------------------------------------------------
 // Utilities
@@ -138,6 +139,24 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
         },
         setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
             model.setAdminRole(newValue, phil.db)
+    },
+    {
+        defaultValue: null,
+        description: `The welcome message that is posted to the introductions channel ${
+            NOWRAP}(config key: \`introductions-channel\`) whenever a new user joins the server. ${
+            NOWRAP}You are capable of previewing the welcome message at any time using the ${
+            NOWRAP}\`welcome\` admin command.${
+            NEWLINE}${
+            NEWLINE}Instances of \`{user}\` within the welcome message will be replaced with the ${
+            NOWRAP}new user's name.`,
+        displayName: 'Welcome Message',
+        key: 'welcome-message',
+        typeDefinition: WelcomeMessageTypeDefinition,
+
+        getRandomExampleValue: (model: ServerConfig) => 'Welcome to our server, {user}!',
+        getValue: (model: ServerConfig) => model.welcomeMessage,
+        setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
+            model.setWelcomeMessage(newValue, phil.db)
     }
 ];
 

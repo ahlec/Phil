@@ -62,7 +62,7 @@ export default abstract class MutateConfigActionBase<TModel> implements IConfigA
             color: EmbedColor.Success,
             description: `The value of the **${property.displayName.toLowerCase()}** has been ${
                 this.pastTenseVerb} successfully to now be \`${
-                property.typeDefinition.toDisplayFormat(newValue, message.serverConfig)}\`.`,
+                property.typeDefinition.toMultilineCodeblockDisplayFormat(newValue, phil, message.serverConfig)}\`.`,
             title: `${property.displayName} Changed Successfully`
         })
     }

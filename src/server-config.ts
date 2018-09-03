@@ -34,7 +34,6 @@ export class ServerConfig {
     }
 
     public readonly serverId: string;
-    public readonly welcomeMessage: string;
     public readonly fandomMapLink: string;
     private commandPrefixInternal: string;
     private botControlChannelInternal: DiscordIOChannel;
@@ -42,6 +41,7 @@ export class ServerConfig {
     private introductionsChannelInternal: DiscordIOChannel;
     private newsChannelInternal: DiscordIOChannel;
     private adminRoleInternal: DiscordIORole;
+    private welcomeMessageInternal: string;
 
     private constructor(public readonly server : DiscordIOServer, dbRow : any) {
         this.serverId = dbRow.server_id;
@@ -50,7 +50,7 @@ export class ServerConfig {
         this.adminChannelInternal = this.getChannel(dbRow.admin_channel_id);
         this.introductionsChannelInternal = this.getChannel(dbRow.introductions_channel_id);
         this.newsChannelInternal = this.getChannel(dbRow.news_channel_id);
-        this.welcomeMessage = this.getOptionalString(dbRow.welcome_message);
+        this.welcomeMessageInternal = this.getOptionalString(dbRow.welcome_message);
         this.fandomMapLink = this.getOptionalString(dbRow.fandom_map_link);
 
         if (dbRow.admin_role_id) {
@@ -138,6 +138,19 @@ export class ServerConfig {
         }
 
         this.adminRoleInternal = this.server.roles[roleId];
+    }
+
+    public get welcomeMessage(): string {
+        return this.welcomeMessageInternal;
+    }
+
+    public async setWelcomeMessage(message: string, database: Database): Promise<boolean> {
+        const result = await this.setFieldInDatabase(message, database, 'welcome_message');
+        if (!result) {
+            return false;
+        }
+
+        this.welcomeMessageInternal = message;
     }
 
     // -----------------------------------------------------------------------------

@@ -1,8 +1,10 @@
 import Phil from '../phil';
 import ServerConfig from '../server-config';
+import BotUtils from '../utils';
 import { ITypeDefinition, ParseResult, ValidityResultType } from './@type-definition';
 
 const MAX_CHARACTER_LIMIT = 1800; // Limit is actually 2000, but need to leave room to account for character names
+const DISPLAY_CHARACTER_LIMIT = 200;
 
 class WelcomeMessageTypeDefinitionImplementation implements ITypeDefinition {
     public readonly rules = [
@@ -42,15 +44,17 @@ class WelcomeMessageTypeDefinitionImplementation implements ITypeDefinition {
             return '(None)';
         }
 
-        return value;
+        let truncated = BotUtils.truncateString(value, DISPLAY_CHARACTER_LIMIT);
+        const omittedTextLength = value.length - truncated.length;
+        if (omittedTextLength > 0) {
+            truncated += `... (and ${omittedTextLength} more character${omittedTextLength !== 1 && 's'})`;
+        }
+
+        return truncated;
     }
 
     public toMultilineCodeblockDisplayFormat(value: string, phil: Phil, serverConfig: ServerConfig): string {
-        if (!value) {
-            return '(None)';
-        }
-
-        return value;
+        return this.toDisplayFormat(value, serverConfig);
     }
 }
 

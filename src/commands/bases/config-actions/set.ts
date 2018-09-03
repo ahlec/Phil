@@ -27,7 +27,7 @@ export default class SetConfigAction<TModel> extends MutateConfigActionBase<TMod
 
     protected getNewValue(phil: Phil, serverConfig: ServerConfig, property: IConfigProperty<TModel>,
         mutableArgs: string[]): ParseResult {
-        const rawInput = mutableArgs.shift();
+        const rawInput = mutableArgs.join(' ');
         if (!rawInput) {
             return {
                 errorMessage: 'You must provide a value when setting a property value.',
