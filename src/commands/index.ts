@@ -30,6 +30,7 @@ import UnconfirmedCommand from './unconfirmed';
 import UnpauseCommand from './unpause';
 import UtcCommand from './utc';
 import VersionCommand from './version';
+import WelcomeCommand from './welcome';
 import YoutubeCommand from './youtube';
 
 export const CommandLookup: ICommandLookup = {};
@@ -75,6 +76,7 @@ registerCommand(new UnconfirmedCommand());
 registerCommand(new UnpauseCommand());
 registerCommand(new UtcCommand());
 registerCommand(new VersionCommand());
+registerCommand(new WelcomeCommand());
 registerCommand(new YoutubeCommand());
 
 helpCommand.saveCommandDefinitions(CommandLookup);

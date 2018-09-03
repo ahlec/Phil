@@ -17,7 +17,7 @@ function getUser(bot: DiscordIOClient, member: DiscordIOMember): DiscordIOUser {
     return user;
 }
 
-function makeGreetingMessage(serverConfig: ServerConfig, user: DiscordIOUser): string {
+export function makeGreetingMessage(serverConfig: ServerConfig, user: DiscordIOUser): string {
     const displayName = BotUtils.getUserDisplayName(user, serverConfig.server);
     return serverConfig.welcomeMessage.replace(/\{user\}/g, '<@' + user.id + '>')
         .replace(/\{name\}/g, displayName);
