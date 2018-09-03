@@ -112,7 +112,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
             NOWRAP}understand Phil, his configuration, and how you can make him fit your server's ${
             NOWRAP}needs.${
             NEWLINE}${
-            NEWLINE}${this.getActionsExplanation(message.serverConfig, model)}`;
+            NEWLINE}${this.getActionsExplanation(phil, message.serverConfig, model)}`;
 
         console.log(response.length);
         return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
@@ -136,7 +136,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
         model: TModel): Promise<any> {
         const response = `You attempted to use an unrecognized action with this command.${
             NEWLINE}${
-            NEWLINE}${this.getActionsExplanation(message.serverConfig, model)}`;
+            NEWLINE}${this.getActionsExplanation(phil, message.serverConfig, model)}`;
 
         return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
             color: EmbedColor.Error,
@@ -179,7 +179,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
 
         const fields: IEmbedField[] = [];
         for (const property of this.orderedProperties) {
-            const exampleUse = this.createActionExampleUse(message.serverConfig, action,
+            const exampleUse = this.createActionExampleUse(phil, message.serverConfig, action,
                 property, model);
             fields.push({
                 name: `**${property.displayName}** [key: ${property.key}]`,
@@ -195,7 +195,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
         });
     }
 
-    private getActionsExplanation(serverConfig: ServerConfig, model: TModel): string {
+    private getActionsExplanation(phil: Phil, serverConfig: ServerConfig, model: TModel): string {
         const demoProp = BotUtils.getRandomArrayEntry(this.orderedProperties);
         let explanation = `**ACTIONS**${
             NEWLINE}The various actions that you can take with \`${
@@ -212,7 +212,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
 
             explanation += `● [${action.primaryKey}] - ${action.description}${lineEnd}`;
 
-            usageExamples.push(this.createActionExampleUse(serverConfig, action, demoProp, model));
+            usageExamples.push(this.createActionExampleUse(phil, serverConfig, action, demoProp, model));
 
             if (action.specialUsageNotes) {
                 if (specialUsageNotes) {
@@ -243,21 +243,21 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
         return explanation;
     }
 
-    private createActionExampleUse(serverConfig: ServerConfig,
+    private createActionExampleUse(phil: Phil, serverConfig: ServerConfig,
         action: IConfigAction<TModel>, demoProperty: IConfigProperty<TModel>,
         model: TModel): string {
         let example = `${serverConfig.commandPrefix}${this.name} ${action.primaryKey}`;
 
         for (const parameter of action.parameters) {
             example += ' ';
-            example += this.getActionParameterExampleValue(serverConfig, parameter, demoProperty,
+            example += this.getActionParameterExampleValue(phil, serverConfig, parameter, demoProperty,
                 model);
         }
 
         return example;
     }
 
-    private getActionParameterExampleValue(serverConfig: ServerConfig,
+    private getActionParameterExampleValue(phil: Phil, serverConfig: ServerConfig,
         parameterType: ConfigActionParameterType, demoProperty: IConfigProperty<TModel>,
         model: TModel): string {
             switch (parameterType) {
@@ -266,7 +266,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
                 case ConfigActionParameterType.NewPropertyValue: {
                     const randomValue = demoProperty.getRandomExampleValue(model);
                     return demoProperty.typeDefinition
-                        .toMultilineCodeblockDisplayFormat(randomValue, serverConfig);
+                        .toMultilineCodeblockDisplayFormat(randomValue, phil, serverConfig);
                 }
             }
 

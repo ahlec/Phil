@@ -34,7 +34,7 @@ export default class InfoConfigAction<TModel> implements IConfigAction<TModel> {
 
             const randomExample = property.getRandomExampleValue(model);
             const randomDisplayValue = property.typeDefinition.toMultilineCodeblockDisplayFormat(
-                randomExample, message.serverConfig);
+                randomExample, phil, message.serverConfig);
             response += `${
                 NEWLINE}**EXAMPLES**${
                 NEWLINE}\`\`\`${message.serverConfig.commandPrefix}${command.name} ${

@@ -75,7 +75,7 @@ class RoleTypeDefinitionImplementation implements ITypeDefinition {
         return ROLE_LINK_PREFIX + value + ROLE_LINK_SUFFIX;
     }
 
-    public toMultilineCodeblockDisplayFormat(value: string, serverConfig: ServerConfig): string {
+    public toMultilineCodeblockDisplayFormat(value: string, phil: Phil, serverConfig: ServerConfig): string {
         const role = serverConfig.server.roles[value];
         if (!role) {
             return '(None)';

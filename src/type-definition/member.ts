@@ -1,11 +1,11 @@
 import Phil from '../phil';
 import ServerConfig from '../server-config';
+import BotUtils from '../utils';
 import { ITypeDefinition, ParseResult, ValidityResultType } from './@type-definition';
 
-class ChannelTypeDefinitionImplementation implements ITypeDefinition {
+class MemberTypeDefinitionImplementation implements ITypeDefinition {
     public readonly rules = [
-        'Must be a link to an existing channel on the server.',
-        'Must be a channel that Phil has permissions to access and know about.'
+        'Must be a mention of a user on the server.'
     ];
 
     public tryParse(input: string): ParseResult {
@@ -19,24 +19,24 @@ class ChannelTypeDefinitionImplementation implements ITypeDefinition {
         const trimmedInput = input.trim();
         if (trimmedInput.length < 4 ||
             trimmedInput[0] !== '<' ||
-            trimmedInput[1] !== '#' ||
+            trimmedInput[1] !== '@' ||
             trimmedInput[trimmedInput.length - 1] !== '>') {
             return {
-                errorMessage: 'Input was not a channel ID link',
+                errorMessage: 'Input was not a user ID link',
                 wasSuccessful: false
             };
         }
 
-        const channelId = trimmedInput.substr(2, trimmedInput.length - 3);
-        if (!channelId) {
+        const userId = trimmedInput.substr(2, trimmedInput.length - 3);
+        if (!userId) {
             return {
-                errorMessage: 'Provided channel ID link was empty',
+                errorMessage: 'Provided user ID link was empty',
                 wasSuccessful: false
             };
         }
 
         return {
-            parsedValue: channelId,
+            parsedValue: userId,
             wasSuccessful: true
         };
     }
@@ -44,15 +44,15 @@ class ChannelTypeDefinitionImplementation implements ITypeDefinition {
     public isValid(value: string, phil: Phil, serverConfig: ServerConfig): ValidityResultType {
         if (!value) {
             return {
-                errorMessage: 'No channel ID was provided.',
+                errorMessage: 'No user ID was provided.',
                 isValid: false
             };
         }
 
-        const channel = serverConfig.server.channels[value];
-        if (!channel || channel.guild_id !== serverConfig.serverId) {
+        const member = serverConfig.server.members[value];
+        if (!member) {
             return {
-                errorMessage: 'No channel with that provided ID exists within this server (at least that I have permissions to know about).',
+                errorMessage: 'There is no member of this server with that user ID.',
                 isValid: false
             };
         }
@@ -63,23 +63,20 @@ class ChannelTypeDefinitionImplementation implements ITypeDefinition {
     }
 
     public toDisplayFormat(value: string, serverConfig: ServerConfig): string {
-        const channel = serverConfig.server.channels[value];
-        if (!channel) {
+        const member = serverConfig.server.members[value];
+        if (!member) {
             return '(None)';
         }
 
-        return '<#' + value + '>';
+        return '<@' + value + '>';
     }
 
     public toMultilineCodeblockDisplayFormat(value: string, phil: Phil, serverConfig: ServerConfig): string {
-        const channel = serverConfig.server.channels[value];
-        if (!channel) {
-            return '(None)';
-        }
-
-        return '#' + channel.name;
+        const user = phil.bot.users[value];
+        const displayName = BotUtils.getUserDisplayName(user, serverConfig.server);
+        return displayName || '(None)';
     }
 }
 
-export const ChannelTypeDefinition = new ChannelTypeDefinitionImplementation();
-export default ChannelTypeDefinition;
+export const MemberTypeDefinition = new MemberTypeDefinitionImplementation();
+export default MemberTypeDefinition;

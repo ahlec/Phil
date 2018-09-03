@@ -29,5 +29,5 @@ export interface ITypeDefinition {
     tryParse(input: string): ParseResult;
     isValid(value: string, phil: Phil, serverConfig: ServerConfig): ValidityResultType;
     toDisplayFormat(value: string, serverConfig: ServerConfig): string;
-    toMultilineCodeblockDisplayFormat(value: string, serverConfig: ServerConfig): string;
+    toMultilineCodeblockDisplayFormat(value: string, phil: Phil, serverConfig: ServerConfig): string;
 }

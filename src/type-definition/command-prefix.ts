@@ -82,7 +82,7 @@ class CommandPrefixTypeDefinitionImplementation implements ITypeDefinition {
         return value;
     }
 
-    public toMultilineCodeblockDisplayFormat(value: string, serverConfig: ServerConfig): string {
+    public toMultilineCodeblockDisplayFormat(value: string, phil: Phil, serverConfig: ServerConfig): string {
         return value;
     }
 }
