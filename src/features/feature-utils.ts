@@ -3,69 +3,44 @@ import AllFeatures from './all-features';
 import Feature from './feature';
 
 interface IFeaturesLookup {
-    [key: string]: Feature;
+  [key: string]: Feature;
 }
 
 const featuresLookup = AllFeatures as IFeaturesLookup;
 
 export interface IBatchFeaturesEnabledLookup {
-    [featureId: number]: boolean;
+  [featureId: number]: boolean;
 }
 
 export namespace FeatureUtils {
-    export function getByName(name: string): Feature {
-        for (const key in featuresLookup) {
-            if (!featuresLookup.hasOwnProperty(key)) {
-                continue;
-            }
+  export async function getServerFeaturesStatus(
+    db: Database,
+    serverId: string
+  ): Promise<IBatchFeaturesEnabledLookup> {
+    const results = await db.query(
+      'SELECT feature_id, is_enabled FROM server_features WHERE server_id = $1',
+      [serverId]
+    );
+    const lookup: IBatchFeaturesEnabledLookup = {};
 
-            const feature = featuresLookup[key];
-            if (feature.is(name)) {
-                return feature;
-            }
-        }
+    for (const key in featuresLookup) {
+      if (!featuresLookup.hasOwnProperty(key)) {
+        continue;
+      }
 
-        return null;
+      const featureId = featuresLookup[key].id;
+      lookup[featureId] = true;
     }
 
-    export function getUnknownFeatureNameErrorMessage(providedName: string): string {
-        let message = 'There is no feature with the name `' + providedName + '`. The features that I know about are as follows:\n\n';
+    for (const row of results.rows) {
+      const featureId = parseInt(row.feature_id, 10);
+      const isEnabled = parseInt(row.is_enabled, 10);
 
-        for (const key in featuresLookup) {
-            if (!featuresLookup.hasOwnProperty(key)) {
-                continue;
-            }
-
-            const feature = featuresLookup[key];
-            message += feature.getInformationalDisplayLine();
-            message += '\n';
-        }
-
-        return message.trimRight();
+      lookup[featureId] = isEnabled !== 0;
     }
 
-    export async function getServerFeaturesStatus(db: Database, serverId: string): Promise<IBatchFeaturesEnabledLookup> {
-        const results = await db.query('SELECT feature_id, is_enabled FROM server_features WHERE server_id = $1', [serverId]);
-        const lookup: IBatchFeaturesEnabledLookup = {};
-
-        for (const key in featuresLookup) {
-            if (!featuresLookup.hasOwnProperty(key)) {
-                continue;
-            }
-
-            const featureId = featuresLookup[key].id;
-            lookup[featureId] = true;
-        }
-
-        for (const row of results.rows) {
-            const featureId = parseInt(row.feature_id, 10);
-            const isEnabled = parseInt(row.is_enabled, 10);
-
-            lookup[featureId] = (isEnabled !== 0);
-        }
-
-        return lookup;
-    }
+    return lookup;
+  }
 }
 
 export default FeatureUtils;
