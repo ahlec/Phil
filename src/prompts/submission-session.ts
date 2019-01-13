@@ -2,7 +2,7 @@ import * as moment from 'moment';
 import Bucket from '../buckets';
 import Phil from '../phil';
 
-const SESSION_LENGTH_IN_MINUTES: number = 10;
+const SESSION_LENGTH_IN_MINUTES: number = 25;
 
 export default class SubmissionSession {
   public static async getActiveSession(
