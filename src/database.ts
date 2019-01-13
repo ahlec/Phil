@@ -67,4 +67,9 @@ export default class Database {
 
     return row;
   }
+
+  public async execute(text: string, values?: any[]): Promise<number> {
+    const { rowCount = 0 } = await this.query(text, values);
+    return rowCount;
+  }
 }

@@ -56,3 +56,13 @@ ON
   p.suggesting_userid = s.suggesting_userid
 WHERE
   p.has_been_posted = E'1';
+
+ALTER TABLE prompt_confirmation_queue RENAME TO submission_confirmation_queue;
+ALTER TABLE submission_confirmation_queue RENAME COLUMN prompt_id TO submission_id;
+
+UPDATE
+  chronos
+SET
+  chrono_handle = 'alert-admins-unconfirmed-submissions'
+WHERE
+  chrono_handle = 'alert-admins-unconfirmed-prompts';

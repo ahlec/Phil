@@ -3,6 +3,15 @@ import * as moment from 'moment';
 import Database from '../database';
 import Bucket from '../buckets';
 
+export interface SubmissionDatabaseSchema {
+  submission_id: number;
+  suggesting_userid: string;
+  date_suggested: number;
+  approved_by_admin: '0' | '1';
+  submitted_anonymously: '0' | '1';
+  submission_text: string;
+}
+
 export default class Submission {
   public static async getFromId(
     client: DiscordIOClient,
@@ -32,6 +41,52 @@ export default class Submission {
 
     const bucket = await Bucket.getFromId(client, db, result.bucket_id);
     return new Submission(bucket, result);
+  }
+
+  public static async getFromBatchIds(
+    client: DiscordIOClient,
+    db: Database,
+    ids: ReadonlySet<number>
+  ): Promise<{ [id: number]: Submission | undefined }> {
+    const returnValue: { [id: number]: Submission | undefined } = {};
+    if (!ids.size) {
+      return returnValue;
+    }
+
+    const result = await db.query(
+      `SELECT
+        submission_id,
+        bucket_id,
+        suggesting_userid,
+        date_suggested,
+        approved_by_admin,
+        submitted_anonymously,
+        submission_text
+      FROM
+        submission
+      WHERE
+        submission_id = ANY($1::int[])`,
+      [...ids]
+    );
+
+    if (!result.rowCount) {
+      return returnValue;
+    }
+
+    const bucketIds = new Set<number>();
+    result.rows.forEach(({ bucket_id }) =>
+      bucketIds.add(parseInt(bucket_id, 10))
+    );
+
+    const buckets = await Bucket.getFromBatchIds(client, db, bucketIds);
+    result.rows.forEach(row => {
+      const bucketId = parseInt(row.bucket_id, 10);
+      const bucket = buckets[bucketId];
+      const submission = new Submission(bucket, row);
+      returnValue[submission.id] = submission;
+    });
+
+    return returnValue;
   }
 
   public static async getUnconfirmed(
@@ -69,7 +124,10 @@ export default class Submission {
   public readonly submittedAnonymously: boolean;
   public readonly submissionText: string;
 
-  private constructor(public readonly bucket: Bucket, dbRow: any) {
+  private constructor(
+    public readonly bucket: Bucket,
+    dbRow: SubmissionDatabaseSchema
+  ) {
     this.id = dbRow.submission_id;
     this.suggestingUserId = dbRow.suggesting_userid;
     this.dateSuggested = moment(dbRow.date_suggested);

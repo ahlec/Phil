@@ -8,6 +8,12 @@ import { DiscordPromises } from '../promises/discord';
 import ServerConfig from '../server-config';
 import { BotUtils } from '../utils';
 
+export interface PromptDatabaseSchema {
+  prompt_id: string;
+  prompt_number: string;
+  prompt_date: string | null;
+}
+
 export default class Prompt {
   public static async getFromId(
     client: DiscordIOClient,
@@ -38,6 +44,53 @@ export default class Prompt {
       result.submission_id
     );
     return new Prompt(submission, result);
+  }
+
+  public static async getFromBatchIds(
+    client: DiscordIOClient,
+    db: Database,
+    ids: ReadonlySet<number>
+  ): Promise<{ [id: number]: Prompt | undefined }> {
+    const returnValue: { [id: number]: Prompt | undefined } = {};
+    if (!ids.size) {
+      return returnValue;
+    }
+
+    const result = await db.query(
+      `SELECT
+          prompt_id,
+          submission_id,
+          prompt_number,
+          prompt_date
+        FROM
+          prompt_v2
+        WHERE
+          prompt_id = ANY($1::int[])`,
+      [...ids]
+    );
+
+    if (!result.rowCount) {
+      return returnValue;
+    }
+
+    const submissionIds = new Set<number>();
+    result.rows.forEach(({ submission_id }) =>
+      submissionIds.add(parseInt(submission_id, 10))
+    );
+
+    const submissions = await Submission.getFromBatchIds(
+      client,
+      db,
+      submissionIds
+    );
+    result.rows.forEach(row => {
+      const submissionId = parseInt(row.submission_id, 10);
+      const submission = submissions[submissionId];
+      const prompt = new Prompt(submission, row);
+      returnValue[prompt.id] = prompt;
+    });
+
+    return returnValue;
   }
 
   public static async getCurrentPrompt(
@@ -80,12 +133,21 @@ export default class Prompt {
 
   public readonly id: number;
   public readonly promptNumber: number;
-  public readonly promptDate: moment.Moment | null;
+  private _promptDateInternal: moment.Moment | null;
 
-  constructor(public readonly submission: Submission, dbRow: any) {
+  public constructor(
+    public readonly submission: Submission,
+    dbRow: PromptDatabaseSchema
+  ) {
     this.id = parseInt(dbRow.prompt_id, 10);
     this.promptNumber = parseInt(dbRow.prompt_number, 10);
-    this.promptDate = dbRow.prompt_date ? moment(dbRow.prompt_date) : null;
+    this._promptDateInternal = dbRow.prompt_date
+      ? moment(dbRow.prompt_date)
+      : null;
+  }
+
+  public get promptDate(): moment.Moment | null {
+    return this._promptDateInternal;
   }
 
   public sendToChannel(
@@ -105,6 +167,39 @@ export default class Prompt {
       },
       title: promptTitleFormat.replace(/\{0\}/g, this.promptNumber.toString()),
     });
+  }
+
+  public async publish(
+    client: DiscordIOClient,
+    db: Database,
+    serverConfig: ServerConfig
+  ): Promise<void> {
+    if (this.promptDate) {
+      throw new Error('This prompt has already been published.');
+    }
+
+    this._promptDateInternal = moment.utc();
+    try {
+      const rowsUpdated = await db.execute(
+        `UPDATE
+          prompt_v2
+        SET
+          prompt_date = $1
+        WHERE
+          prompt_id = $2
+        LIMIT 1`,
+        [this._promptDateInternal, this.id]
+      );
+
+      if (rowsUpdated <= 0) {
+        throw new Error('Could not publish the prompt in the database.');
+      }
+    } catch (e) {
+      this._promptDateInternal = null;
+      throw e;
+    }
+
+    await this.sendToChannel(client, serverConfig);
   }
 
   // public async postAsNewPrompt(

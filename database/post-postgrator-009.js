@@ -108,7 +108,8 @@ async function main() {
       p.prompt_text = s.submission_text AND
       p.suggesting_userid = s.suggesting_userid
     WHERE
-      p.has_been_posted = E'0'
+      p.has_been_posted = E'0' AND
+      p.approved_by_admin = E'1'
   `);
 
   const { rows } = unpublishedPrompts;

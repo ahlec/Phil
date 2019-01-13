@@ -29,7 +29,7 @@ export default class UnconfirmedCommand implements ICommand {
     commandArgs: ReadonlyArray<string>
   ): Promise<any> {
     await phil.db.query(
-      'DELETE FROM prompt_confirmation_queue WHERE channel_id = $1',
+      'DELETE FROM submission_confirmation_queue WHERE channel_id = $1',
       [message.channelId]
     );
     const bucket = await Bucket.retrieveFromCommandArgs(
@@ -46,13 +46,13 @@ export default class UnconfirmedCommand implements ICommand {
       MAX_LIST_LENGTH
     );
     if (submissions.length === 0) {
-      return this.outputNoUnconfirmedPrompts(phil, message.channelId);
+      return this.outputNoUnconfirmedSubmissions(phil, message.channelId);
     }
 
     for (let index = 0; index < submissions.length; ++index) {
       const submission = submissions[index];
       await phil.db.query(
-        'INSERT INTO prompt_confirmation_queue VALUES($1, $2, $3)',
+        'INSERT INTO submission_confirmation_queue VALUES($1, $2, $3)',
         [message.channelId, submission.id, index]
       );
     }
@@ -65,14 +65,14 @@ export default class UnconfirmedCommand implements ICommand {
     );
   }
 
-  private outputNoUnconfirmedPrompts(
+  private outputNoUnconfirmedSubmissions(
     phil: Phil,
     channelId: string
   ): Promise<string> {
     return DiscordPromises.sendMessage(
       phil.bot,
       channelId,
-      ':large_blue_diamond: There are no unconfirmed prompts in the queue right now.'
+      ':large_blue_diamond: There are no unconfirmed submissions in this bucket right now.'
     );
   }
 
