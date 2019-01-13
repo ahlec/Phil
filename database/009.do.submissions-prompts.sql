@@ -13,7 +13,7 @@ CREATE TABLE prompt_v2(
   submission_id INTEGER NOT NULL REFERENCES submission(submission_id),
   prompt_number INTEGER NOT NULL,
   prompt_date DATE NULL DEFAULT NULL,
-  has_been_posted BIT(1) NOT NULL DEFAULT E'0'
+  repetition_number INTEGER NOT NULL DEFAULT 0
 );
 
 INSERT INTO
@@ -39,14 +39,12 @@ INSERT INTO
   prompt_v2(
     submission_id,
     prompt_number,
-    prompt_date,
-    has_been_posted
+    prompt_date
   )
 SELECT
   s.submission_id,
   p.prompt_number,
-  p.prompt_date,
-  E'1'
+  p.prompt_date
 FROM
   prompts AS p
 JOIN

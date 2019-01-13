@@ -12,6 +12,7 @@ export interface PromptDatabaseSchema {
   prompt_id: string;
   prompt_number: string;
   prompt_date: string | null;
+  repetition_number: string;
 }
 
 export default class Prompt {
@@ -25,7 +26,8 @@ export default class Prompt {
         prompt_id,
         submission_id,
         prompt_number,
-        prompt_date
+        prompt_date,
+        repetition_number
       FROM
         prompt_v2
       WHERE
@@ -61,12 +63,13 @@ export default class Prompt {
           prompt_id,
           submission_id,
           prompt_number,
-          prompt_date
+          prompt_date,
+          repetition_number
         FROM
           prompt_v2
         WHERE
           prompt_id = ANY($1::int[])`,
-      [...ids]
+      [[...ids]]
     );
 
     if (!result.rowCount) {
@@ -103,7 +106,8 @@ export default class Prompt {
         p.prompt_id,
         p.submission_id,
         p.prompt_number,
-        p.prompt_date
+        p.prompt_date,
+        p.repetition_number
       FROM
         prompt_v2 AS p
       JOIN
@@ -131,8 +135,69 @@ export default class Prompt {
     return new Prompt(submission, result);
   }
 
+  public static async queueSubscription(
+    db: Database,
+    submission: Submission
+  ): Promise<Prompt> {
+    const lastPromptInBucket = await db.querySingle(
+      `SELECT
+        p.prompt_number
+      FROM
+        prompt_v2 AS p
+      JOIN
+        submission AS s
+      ON
+        p.submission_id = s.submission_id
+      WHERE
+        s.bucket_id = $1
+      ORDER BY
+        p.prompt_number DESC
+      LIMIT 1`,
+      [submission.bucket.id]
+    );
+    const nextPromptNumber =
+      (lastPromptInBucket
+        ? parseInt(lastPromptInBucket.prompt_number, 10)
+        : 0) + 1;
+
+    const { count: repetitionNumber } = await db.querySingle(
+      `SELECT
+        count(*)
+      FROM
+        prompt_v2
+      WHERE
+        submission_id = $1`,
+      [submission.id]
+    );
+
+    const creation = await db.query(
+      `INSERT INTO
+          prompt_v2(
+            submission_id,
+            prompt_number,
+            repetition_number
+          )
+        VALUES
+          ($1, $2, $3)
+        RETURNING
+          prompt_id,
+          submission_id,
+          prompt_number,
+          prompt_date,
+          repetition_number`,
+      [submission.id, nextPromptNumber, repetitionNumber]
+    );
+
+    if (!creation.rowCount) {
+      return null;
+    }
+
+    return new Prompt(submission, creation.rows[0]);
+  }
+
   public readonly id: number;
   public readonly promptNumber: number;
+  public readonly repetitionNumber: number;
   private _promptDateInternal: moment.Moment | null;
 
   public constructor(
@@ -144,6 +209,7 @@ export default class Prompt {
     this._promptDateInternal = dbRow.prompt_date
       ? moment(dbRow.prompt_date)
       : null;
+    this.repetitionNumber = parseInt(dbRow.repetition_number, 10);
   }
 
   public get promptDate(): moment.Moment | null {
@@ -186,8 +252,7 @@ export default class Prompt {
         SET
           prompt_date = $1
         WHERE
-          prompt_id = $2
-        LIMIT 1`,
+          prompt_id = $2`,
         [this._promptDateInternal, this.id]
       );
 
@@ -202,39 +267,6 @@ export default class Prompt {
     await this.sendToChannel(client, serverConfig);
   }
 
-  // public async postAsNewPrompt(
-  //   client: DiscordIOClient,
-  //   serverConfig: ServerConfig,
-  //   now: Date
-  // ) {
-  //   const nextPromptNumberResults = await phil.db.query(
-  //     "SELECT prompt_number FROM prompts WHERE has_been_posted = E'1' AND bucket_id = $1 ORDER BY prompt_number DESC LIMIT 1",
-  //     [bucket.id]
-  //   );
-  //   const promptNumber =
-  //     nextPromptNumberResults.rowCount > 0
-  //       ? nextPromptNumberResults.rows[0].prompt_number + 1
-  //       : 1;
-  //
-  //   const updateResults = await phil.db.query(
-  //     "UPDATE prompts SET has_been_posted = E'1', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3",
-  //     [promptNumber, now, this.promptId]
-  //   );
-  //   if (updateResults.rowCount === 0) {
-  //     throw new Error(
-  //       "We found a prompt in the queue, but we couldn't update it to mark it as being posted."
-  //     );
-  //   }
-  //
-  //   await this.sendToChannel(
-  //     phil,
-  //     serverConfig,
-  //     bucket.channelId,
-  //     bucket,
-  //     promptNumber
-  //   );
-  // }
-
   private getPromptMessageFooter(
     client: DiscordIOClient,
     serverConfig: ServerConfig
@@ -248,16 +280,20 @@ export default class Prompt {
       const user = client.users[this.submission.suggestingUserId];
       const displayName = BotUtils.getUserDisplayName(user, server);
 
-      footer += 'by ' + displayName;
+      footer += `by ${displayName}`;
       if (!server.members[this.submission.suggestingUserId]) {
         footer += ' (who is no longer in server)';
       }
     }
 
-    footer +=
-      '. You can suggest your own by using ' +
-      serverConfig.commandPrefix +
-      'suggest.';
+    if (this.repetitionNumber > 0) {
+      const times = this.repetitionNumber === 1 ? 'time' : 'times';
+      footer += ` and has been shown ${this.repetitionNumber} ${times} before`;
+    }
+
+    footer += `. You can suggest your own by using ${
+      serverConfig.commandPrefix
+    }suggest.`;
     return footer;
   }
 }

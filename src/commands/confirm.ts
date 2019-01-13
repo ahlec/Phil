@@ -1,6 +1,7 @@
-import Bucket, { BucketFrequency } from '../buckets';
+import { BucketFrequency } from '../buckets';
 import Phil from '../phil';
 import Prompt from '../prompts/prompt';
+import Submission from '../prompts/submission';
 import ServerConfig from '../server-config';
 import ConfirmRejectCommandBase from './bases/confirm-reject-base';
 
@@ -39,63 +40,23 @@ export default class ConfirmCommand extends ConfirmRejectCommandBase {
       return false;
     }
 
-    const { bucket_id } = await phil.db.querySingle(
-      `SELECT
-        bucket_id
-      FROM
-        submission
-      WHERE
-        submission_id = $1`,
-      [submissionId]
+    const submission = await Submission.getFromId(
+      phil.bot,
+      phil.db,
+      submissionId
     );
 
-    const lastPromptInBucket = await phil.db.querySingle(
-      `SELECT
-        p.prompt_number
-      FROM
-        prompt_v2 AS p
-      JOIN
-        submission AS s
-      ON
-        p.submission_id = s.submission_id
-      WHERE
-        s.bucket_id = $1
-      ORDER BY
-        p.prompt_number DESC
-      LIMIT 1`,
-      [bucket_id]
-    );
-    const nextPromptNumber =
-      (lastPromptInBucket
-        ? parseInt(lastPromptInBucket.prompt_number, 10)
-        : 0) + 1;
-
-    const promptCreation = await phil.db.query(
-      `INSERT INTO
-        prompt_v2(
-          submission_id,
-          prompt_number
-        )
-      VALUES
-        ($1, $2)
-      RETURNING
-        prompt_id`,
-      [submissionId, nextPromptNumber]
-    );
-
-    if (!promptCreation.rowCount) {
+    const prompt = await Prompt.queueSubscription(phil.db, submission);
+    if (!prompt) {
       return false;
     }
 
-    const { prompt_id } = promptCreation.rows[0];
-    console.log('submission #', submissionId, '=> prompt #', prompt_id);
+    console.log('submission #', submissionId, '=> prompt #', prompt.id);
 
-    const bucket = await Bucket.getFromId(phil.bot, phil.db, bucket_id);
-    if (bucket.frequency !== BucketFrequency.Immediately) {
+    if (submission.bucket.frequency !== BucketFrequency.Immediately) {
       return true;
     }
 
-    const prompt = await Prompt.getFromId(phil.bot, phil.db, prompt_id);
     await prompt.publish(phil.bot, phil.db, serverConfig);
     return true;
   }

@@ -66,7 +66,7 @@ export default class Submission {
         submission
       WHERE
         submission_id = ANY($1::int[])`,
-      [...ids]
+      [[...ids]]
     );
 
     if (!result.rowCount) {
@@ -111,6 +111,45 @@ export default class Submission {
       ORDER BY
         date_suggested ASC
       LIMIT $2`,
+      [bucket.id, maxNumResults]
+    );
+
+    return rows.map(dbRow => new Submission(bucket, dbRow));
+  }
+
+  // @description Gets the submission(s) from the provided bucket that were approved
+  // by an admin and which have already been posted before, ordered so that the first
+  // return entry is the oldest submission that hasn't been repeated yet ("the dustiest").
+  // Not a great name but I don't want a function with 90 words in it.
+  public static async getDustiestSubmissions(
+    db: Database,
+    bucket: Bucket,
+    maxNumResults: number
+  ): Promise<Submission[]> {
+    const { rows } = await db.query(
+      `SELECT
+          s.submission_id,
+          MAX(s.bucket_id) AS "bucket_id",
+          MAX(s.suggesting_userid) AS "suggesting_userid",
+          MAX(s.date_suggested) AS "date_suggested",
+          BIT_AND(s.approved_by_admin) AS "approved_by_admin",
+          BIT_AND(s.submitted_anonymously) AS "submitted_anonymously",
+          MAX(s.submission_text) AS "submission_text",
+          MAX(p.prompt_date) AS "date_last_posted"
+        FROM
+          prompt_v2 AS p
+        JOIN
+          submission AS s
+        ON
+          p.submission_id = s.submission_id
+        WHERE
+          p.prompt_date IS NOT NULL AND
+          s.bucket_id = $1
+        GROUP BY
+          s.submission_id
+        ORDER BY
+          date_last_posted ASC
+        LIMIT $2`,
       [bucket.id, maxNumResults]
     );
 

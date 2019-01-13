@@ -117,7 +117,7 @@ export default class Bucket {
         prompt_buckets
       WHERE
         bucket_id = ANY($1::int[])`,
-      [...ids]
+      [[...ids]]
     );
 
     result.rows.forEach(row => {

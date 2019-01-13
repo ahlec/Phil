@@ -63,11 +63,10 @@ async function addUnpublishedPrompt(submissionId, bucketId) {
       `INSERT INTO
         prompt_v2(
           submission_id,
-          prompt_number,
-          has_been_posted
+          prompt_number
         )
-     VALUES($1, $2, $3)`,
-      [submissionId, lastPromptNumber + 1, 0]
+     VALUES($1, $2)`,
+      [submissionId, lastPromptNumber + 1]
     );
   } catch (e2) {
     console.log('e2');
