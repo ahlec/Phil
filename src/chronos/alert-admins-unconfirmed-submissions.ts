@@ -2,7 +2,7 @@ import { Moment } from 'moment';
 import EmbedColor from '../embed-color';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
-import UnconfirmedPromptTally from '../prompts/unconfirmed-prompt-tally';
+import UnconfirmedSubmissionTally from '../prompts/unconfirmed-submission-tally';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
 import Chrono from './@types';
@@ -11,7 +11,7 @@ export default class AlertAdminsUnconfirmedSubmissionsChrono implements Chrono {
   public readonly handle = 'alert-admins-unconfirmed-submissions';
 
   public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
-    const unconfirmedTally = await UnconfirmedPromptTally.collectForServer(
+    const unconfirmedTally = await UnconfirmedSubmissionTally.collectForServer(
       phil.db,
       serverConfig.server.id
     );
@@ -36,7 +36,7 @@ export default class AlertAdminsUnconfirmedSubmissionsChrono implements Chrono {
 
   private getUnconfimedPromptsMessage(
     serverConfig: ServerConfig,
-    unconfirmedTallies: UnconfirmedPromptTally[]
+    unconfirmedTallies: UnconfirmedSubmissionTally[]
   ): string {
     if (!unconfirmedTallies || unconfirmedTallies.length === 0) {
       return '';
@@ -59,7 +59,7 @@ export default class AlertAdminsUnconfirmedSubmissionsChrono implements Chrono {
     return message;
   }
 
-  private getMessageForTally(tally: UnconfirmedPromptTally): string {
+  private getMessageForTally(tally: UnconfirmedSubmissionTally): string {
     if (tally.numUnconfirmed === 1) {
       return (
         'There is **1** unconfirmed submission waiting in bucket `' +
