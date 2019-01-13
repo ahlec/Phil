@@ -4,7 +4,7 @@ const chalk = require('chalk');
 const path = require('path');
 
 const postgrator = new Postgrator({
-  migrationDirectory: path.resolve(__dirname, '../database'),
+  migrationPattern: `${path.resolve(__dirname, '../database')}/!(_)*.sql`,
   driver: 'pg',
   connectionString: process.env.DATABASE_URL,
 });

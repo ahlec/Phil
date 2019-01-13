@@ -63,5 +63,10 @@
     "httyd",
     "dreamworks"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "prettier": {
+    "singleQuote": true,
+    "printWidth": 80,
+    "trailingComma": "es5"
+  }
 }
