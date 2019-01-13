@@ -1,6 +1,5 @@
 import Database from './database';
 import { ensureNecessaryEnvironmentVariables } from './environment-manager';
-import GlobalConfig from './global-config';
 import Phil from './phil';
 import WebPortal from './web-portal';
 
@@ -8,14 +7,13 @@ async function main() {
     try {
         ensureNecessaryEnvironmentVariables();
 
-        const globalConfig = new GlobalConfig();
-        const db = new Database(globalConfig);
+        const db = new Database();
         await db.checkIsCurrentVersion();
 
-        const phil = new Phil(db, globalConfig);
+        const phil = new Phil(db);
         phil.start();
 
-        const webPortal = new WebPortal(globalConfig);
+        const webPortal = new WebPortal();
         webPortal.start();
         webPortal.beginKeepAliveHeartbeat();
     } catch (err) {

@@ -1,3 +1,4 @@
+import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
@@ -83,7 +84,7 @@ export default class LeaderboardCommand implements ICommand {
         const reply = createLeaderboardMessage(leaderboard);
 
         DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-            color: 0xB0E0E6,
+            color: EmbedColor.Info,
             description: reply,
             footer: {
                 text: 'You can increase your score by submitting prompts! Use ' + message.serverConfig.commandPrefix + 'suggest in a direct message with me!'

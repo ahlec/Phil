@@ -127,6 +127,31 @@ export namespace BotUtils {
 
         return user.username;
     }
+
+    export function truncateString(message: string, maxCharacters: number): string {
+        if (!message) {
+            return '';
+        }
+
+        if (maxCharacters <= 0) {
+            return '';
+        }
+
+        if (maxCharacters >= message.length) {
+            return message;
+        }
+
+        const finalSpace = message.lastIndexOf(' ', maxCharacters);
+        const finalTab = message.lastIndexOf('\t', maxCharacters);
+        const finalNewline = message.lastIndexOf('\n', maxCharacters);
+
+        let finalIndex = Math.max(finalSpace, finalTab, finalNewline);
+        if (finalIndex < 0) {
+            finalIndex = maxCharacters;
+        }
+
+        return message.substr(0, finalIndex);
+    }
 }
 
 export default BotUtils;

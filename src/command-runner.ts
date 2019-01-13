@@ -2,9 +2,10 @@ import { Client as DiscordIOClient } from 'discord.io';
 import ICommand from './commands/@types';
 import { CommandLookup } from './commands/index';
 import Database from './database';
+import GlobalConfig from './global-config';
 import InputMessage from './input-message';
 import IPublicMessage from './messages/public';
-import PermissionLevel from './permission-level';
+import PermissionLevel, { getPermissionLevelName } from './permission-level';
 import Phil from './phil';
 import BotUtils from './utils';
 
@@ -13,6 +14,8 @@ const util = require('util');
 function NEVER(x: never) {
     throw new Error('Reached an unreachable location in code');
 }
+
+const NOWRAP = '';
 
 export default class CommandRunner {
     constructor(private readonly phil: Phil,
@@ -86,7 +89,7 @@ export default class CommandRunner {
                 return message.serverConfig.isAdmin(member);
             }
             case PermissionLevel.BotManagerOnly: {
-                return (message.userId === this.phil.globalConfig.botManagerUserId);
+                return (message.userId === GlobalConfig.botManagerUserId);
             }
         }
 
@@ -94,10 +97,12 @@ export default class CommandRunner {
     }
 
     private reportCannotUseCommand(message: IPublicMessage, command: ICommand, input: InputMessage) {
+        const permissionLevelName = getPermissionLevelName(command.permissionLevel);
         BotUtils.sendErrorMessage({
             bot: this.bot,
             channelId: message.channelId,
-            message: `The \`${message.serverConfig.commandPrefix}${input.commandName}\` command requires admin privileges to use here.`
+            message: `The \`${message.serverConfig.commandPrefix}${input.commandName}\` command ${
+                NOWRAP}requires ${permissionLevelName} privileges to use here.`
         });
     }
 

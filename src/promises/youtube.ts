@@ -7,12 +7,12 @@ export interface IYoutubeVideo {
 }
 
 export namespace YouTubePromises {
-    export function search(globalConfig: GlobalConfig, query: string): Promise<IYoutubeVideo[]> {
+    export function search(query: string): Promise<IYoutubeVideo[]> {
          // Their typing definition for search is wrong, and the repo seems dead.
          // Unlikely that I can submit a fix and have it get pushed live.
 
         const youtubeApi: any = new YouTube();
-        youtubeApi.setKey(globalConfig.youtubeApiKey);
+        youtubeApi.setKey(GlobalConfig.youtubeApiKey);
 
         return new Promise((resolve, reject) => {
             youtubeApi.search(query, 1, (err: Error, result: any) => {

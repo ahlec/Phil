@@ -1,3 +1,4 @@
+import EmbedColor from '../embed-color';
 import Feature from '../features/feature';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
@@ -28,7 +29,7 @@ export default class EvalCommand implements ICommand {
         const result = this.evaluateJavascript(phil, javascript);
 
         return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-            color: 0x61B329,
+            color: EmbedColor.Success,
             description: `**Evaluated:**${
                 NEWLINE}${javascript}${
                 NEWLINE}${

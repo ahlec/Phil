@@ -1,12 +1,13 @@
+import { Moment } from 'moment';
 import Phil from '../phil';
 import ServerConfig from '../server-config';
 
-export default interface IChrono {
-    readonly handle: string;
+export default interface Chrono {
+  readonly handle: string;
 
-    process(phil: Phil, serverConfig: ServerConfig, now: Date): Promise<void>;
+  process(phil: Phil, serverConfig: ServerConfig, now: Moment): Promise<void>;
 }
 
-export interface IChronoLookup {
-    [chronoHandle: string]: IChrono;
+export interface ChronoLookup {
+  [chronoHandle: string]: Chrono;
 }

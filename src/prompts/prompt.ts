@@ -1,111 +1,299 @@
 import { Client as DiscordIOClient } from 'discord.io';
+import * as moment from 'moment';
+import Submission from './submission';
 import Bucket from '../buckets';
-import Phil from '../phil';
+import EmbedColor from '../embed-color';
+import Database from '../database';
 import { DiscordPromises } from '../promises/discord';
 import ServerConfig from '../server-config';
 import { BotUtils } from '../utils';
 
+export interface PromptDatabaseSchema {
+  prompt_id: string;
+  prompt_number: string;
+  prompt_date: string | null;
+  repetition_number: string;
+}
+
 export default class Prompt {
-    public static async getFromId(phil: Phil, promptId: number): Promise<Prompt> {
-        const results = await phil.db.query(`SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_date, prompt_text, submitted_anonymously, bucket_id
-                FROM prompts
-                WHERE prompt_id = $1`, [promptId]);
+  public static async getFromId(
+    client: DiscordIOClient,
+    db: Database,
+    promptId: number
+  ): Promise<Prompt> {
+    const result = await db.querySingle(
+      `SELECT
+        prompt_id,
+        submission_id,
+        prompt_number,
+        prompt_date,
+        repetition_number
+      FROM
+        prompt_v2
+      WHERE
+        prompt_id = $1
+      LIMIT 1`,
+      [promptId]
+    );
 
-        if (results.rowCount === 0) {
-            return null;
-        }
-
-        const bucket = await Bucket.getFromId(phil.bot, phil.db, results.rows[0].bucket_id);
-        return new Prompt(phil.bot, bucket, results.rows[0]);
+    if (!result) {
+      return null;
     }
 
-    public static async getCurrentPrompt(phil: Phil, bucket: Bucket): Promise<Prompt> {
-        const results = await phil.db.query(`SELECT prompt_id, suggesting_user, suggesting_userid, prompt_number, prompt_date, prompt_text, submitted_anonymously, bucket_id
-                FROM prompts
-                WHERE bucket_id = $1 AND has_been_posted = E'1'
-                ORDER BY prompt_date DESC
-                LIMIT 1`, [bucket.id]);
-        if (results.rowCount === 0) {
-            return null;
-        }
+    const submission = await Submission.getFromId(
+      client,
+      db,
+      result.submission_id
+    );
+    return new Prompt(submission, result);
+  }
 
-        return new Prompt(phil.bot, bucket, results.rows[0]);
+  public static async getFromBatchIds(
+    client: DiscordIOClient,
+    db: Database,
+    ids: ReadonlySet<number>
+  ): Promise<{ [id: number]: Prompt | undefined }> {
+    const returnValue: { [id: number]: Prompt | undefined } = {};
+    if (!ids.size) {
+      return returnValue;
     }
 
-    public static async getUnconfirmedPrompts(phil: Phil, bucket: Bucket, maxNumResults: number): Promise<Prompt[]> {
-        const results = await phil.db.query('SELECT prompt_id, suggesting_user, suggesting_userid, -1 as "prompt_number", NULL as prompt_date, prompt_text, submitted_anonymously, bucket_id FROM prompts WHERE bucket_id = $1 AND approved_by_admin = E\'0\' ORDER BY date_suggested ASC LIMIT $2', [bucket.id, maxNumResults])
-        return results.rows.map(row => new Prompt(phil.bot, bucket, row));
+    const result = await db.query(
+      `SELECT
+          prompt_id,
+          submission_id,
+          prompt_number,
+          prompt_date,
+          repetition_number
+        FROM
+          prompt_v2
+        WHERE
+          prompt_id = ANY($1::int[])`,
+      [[...ids]]
+    );
+
+    if (!result.rowCount) {
+      return returnValue;
     }
 
-    public readonly userId: string;
-    public readonly displayName: string;
-    public readonly isStillInServer: boolean;
-    public readonly promptId: number;
-    public readonly datePosted: Date | null;
-    public readonly promptNumber: number | null;
-    public readonly text: string;
-    public readonly submittedAnonymously: boolean;
-    public readonly bucketId: number;
+    const submissionIds = new Set<number>();
+    result.rows.forEach(({ submission_id }) =>
+      submissionIds.add(parseInt(submission_id, 10))
+    );
 
-    constructor(bot: DiscordIOClient, bucket: Bucket, dbRow: any) {
-        const server = bot.servers[bucket.serverId];
-        const userId = dbRow.suggesting_userid;
-        const user = bot.users[userId];
-        const currentUserDisplayName = BotUtils.getUserDisplayName(user, server);
+    const submissions = await Submission.getFromBatchIds(
+      client,
+      db,
+      submissionIds
+    );
+    result.rows.forEach(row => {
+      const submissionId = parseInt(row.submission_id, 10);
+      const submission = submissions[submissionId];
+      const prompt = new Prompt(submission, row);
+      returnValue[prompt.id] = prompt;
+    });
 
-        this.userId = userId;
-        this.displayName = (currentUserDisplayName || dbRow.suggesting_user);
-        this.isStillInServer = (server.members[userId] != null);
-        this.promptId = dbRow.prompt_id;
-        this.datePosted = (dbRow.prompt_date ? new Date(dbRow.prompt_date) : null);
-        this.promptNumber = dbRow.prompt_number;
-        this.text = dbRow.prompt_text;
-        this.submittedAnonymously = (parseInt(dbRow.submitted_anonymously, 10) === 1);
-        this.bucketId = parseInt(dbRow.bucket_id, 10);
+    return returnValue;
+  }
+
+  public static async getCurrentPrompt(
+    client: DiscordIOClient,
+    db: Database,
+    bucket: Bucket
+  ): Promise<Prompt> {
+    const result = await db.querySingle(
+      `SELECT
+        p.prompt_id,
+        p.submission_id,
+        p.prompt_number,
+        p.prompt_date,
+        p.repetition_number
+      FROM
+        prompt_v2 AS p
+      JOIN
+        submission AS s
+      ON
+        p.submission_id = s.submission_id
+      WHERE
+        s.bucket_id = $1 AND
+        p.prompt_date IS NOT NULL
+      ORDER BY
+        p.prompt_date DESC
+      LIMIT 1`,
+      [bucket.id]
+    );
+
+    if (!result) {
+      return null;
     }
 
-    public sendToChannel(phil: Phil, serverConfig: ServerConfig, channelId: string, bucket: Bucket, promptNumber: number): Promise<string> {
-        return DiscordPromises.sendEmbedMessage(phil.bot, channelId, {
-            color: 0xB0E0E6,
-            description: this.text,
-            footer: {
-                text: this.getPromptMessageFooter(serverConfig)
-            },
-            title: bucket.promptTitleFormat.replace(/\{0\}/g, promptNumber.toString())
-        });
+    const submission = await Submission.getFromId(
+      client,
+      db,
+      result.submission_id
+    );
+    return new Prompt(submission, result);
+  }
+
+  public static async queueSubscription(
+    db: Database,
+    submission: Submission
+  ): Promise<Prompt> {
+    const lastPromptInBucket = await db.querySingle(
+      `SELECT
+        p.prompt_number
+      FROM
+        prompt_v2 AS p
+      JOIN
+        submission AS s
+      ON
+        p.submission_id = s.submission_id
+      WHERE
+        s.bucket_id = $1
+      ORDER BY
+        p.prompt_number DESC
+      LIMIT 1`,
+      [submission.bucket.id]
+    );
+    const nextPromptNumber =
+      (lastPromptInBucket
+        ? parseInt(lastPromptInBucket.prompt_number, 10)
+        : 0) + 1;
+
+    const { count: repetitionNumber } = await db.querySingle(
+      `SELECT
+        count(*)
+      FROM
+        prompt_v2
+      WHERE
+        submission_id = $1`,
+      [submission.id]
+    );
+
+    const creation = await db.query(
+      `INSERT INTO
+          prompt_v2(
+            submission_id,
+            prompt_number,
+            repetition_number
+          )
+        VALUES
+          ($1, $2, $3)
+        RETURNING
+          prompt_id,
+          submission_id,
+          prompt_number,
+          prompt_date,
+          repetition_number`,
+      [submission.id, nextPromptNumber, repetitionNumber]
+    );
+
+    if (!creation.rowCount) {
+      return null;
     }
 
-    public async postAsNewPrompt(phil: Phil, serverConfig: ServerConfig, now: Date) {
-        const bucket = await Bucket.getFromId(phil.bot, phil.db, this.bucketId);
-        const nextPromptNumberResults = await phil.db.query('SELECT prompt_number FROM prompts WHERE has_been_posted = E\'1\' AND bucket_id = $1 ORDER BY prompt_number DESC LIMIT 1', [bucket.id]);
-        const promptNumber = (nextPromptNumberResults.rowCount > 0 ?
-            nextPromptNumberResults.rows[0].prompt_number + 1 : 1);
+    return new Prompt(submission, creation.rows[0]);
+  }
 
-        const updateResults = await phil.db.query('UPDATE prompts SET has_been_posted = E\'1\', prompt_number = $1, prompt_date = $2 WHERE prompt_id = $3', [promptNumber, now, this.promptId])
-        if (updateResults.rowCount === 0) {
-            throw new Error('We found a prompt in the queue, but we couldn\'t update it to mark it as being posted.');
-        }
+  public readonly id: number;
+  public readonly promptNumber: number;
+  public readonly repetitionNumber: number;
+  private _promptDateInternal: moment.Moment | null;
 
-        await this.postNewPromptToChannel(phil, serverConfig, bucket, promptNumber);
+  public constructor(
+    public readonly submission: Submission,
+    dbRow: PromptDatabaseSchema
+  ) {
+    this.id = parseInt(dbRow.prompt_id, 10);
+    this.promptNumber = parseInt(dbRow.prompt_number, 10);
+    this._promptDateInternal = dbRow.prompt_date
+      ? moment(dbRow.prompt_date)
+      : null;
+    this.repetitionNumber = parseInt(dbRow.repetition_number, 10);
+  }
+
+  public get promptDate(): moment.Moment | null {
+    return this._promptDateInternal;
+  }
+
+  public sendToChannel(
+    client: DiscordIOClient,
+    serverConfig: ServerConfig
+  ): Promise<string> {
+    const {
+      bucket: { promptTitleFormat, channelId },
+      submissionText,
+    } = this.submission;
+
+    return DiscordPromises.sendEmbedMessage(client, channelId, {
+      color: EmbedColor.Info,
+      description: submissionText,
+      footer: {
+        text: this.getPromptMessageFooter(client, serverConfig),
+      },
+      title: promptTitleFormat.replace(/\{0\}/g, this.promptNumber.toString()),
+    });
+  }
+
+  public async publish(
+    client: DiscordIOClient,
+    db: Database,
+    serverConfig: ServerConfig
+  ): Promise<void> {
+    if (this.promptDate) {
+      throw new Error('This prompt has already been published.');
     }
 
-    private getPromptMessageFooter(serverConfig: ServerConfig): string {
-        let footer = 'This was suggested ';
+    this._promptDateInternal = moment.utc();
+    try {
+      const rowsUpdated = await db.execute(
+        `UPDATE
+          prompt_v2
+        SET
+          prompt_date = $1
+        WHERE
+          prompt_id = $2`,
+        [this._promptDateInternal, this.id]
+      );
 
-        if (this.submittedAnonymously) {
-            footer += 'anonymously';
-        } else {
-            footer += 'by ' + this.displayName;
-            if (!this.isStillInServer) {
-                footer += ' (who is no longer in server)';
-            }
-        }
-
-        footer += '. You can suggest your own by using ' + serverConfig.commandPrefix + 'suggest.';
-        return footer;
+      if (rowsUpdated <= 0) {
+        throw new Error('Could not publish the prompt in the database.');
+      }
+    } catch (e) {
+      this._promptDateInternal = null;
+      throw e;
     }
 
-    private postNewPromptToChannel(phil: Phil, serverConfig: ServerConfig, bucket: Bucket, promptNumber: number): Promise<string> {
-        return this.sendToChannel(phil, serverConfig, bucket.channelId, bucket, promptNumber);
+    await this.sendToChannel(client, serverConfig);
+  }
+
+  private getPromptMessageFooter(
+    client: DiscordIOClient,
+    serverConfig: ServerConfig
+  ): string {
+    let footer = 'This was suggested ';
+
+    if (this.submission.submittedAnonymously) {
+      footer += 'anonymously';
+    } else {
+      const server = client.servers[this.submission.bucket.serverId];
+      const user = client.users[this.submission.suggestingUserId];
+      const displayName = BotUtils.getUserDisplayName(user, server);
+
+      footer += `by ${displayName}`;
+      if (!server.members[this.submission.suggestingUserId]) {
+        footer += ' (who is no longer in server)';
+      }
     }
+
+    if (this.repetitionNumber > 0) {
+      const times = this.repetitionNumber === 1 ? 'time' : 'times';
+      footer += ` and has been shown ${this.repetitionNumber} ${times} before`;
+    }
+
+    footer += `. You can suggest your own by using ${
+      serverConfig.commandPrefix
+    }suggest.`;
+    return footer;
+  }
 }

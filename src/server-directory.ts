@@ -22,7 +22,7 @@ export default class ServerDirectory {
             return cached;
         }
 
-        const serverConfig = await ServerConfig.getFromId(this.phil.db, server, this.phil.globalConfig);
+        const serverConfig = await ServerConfig.getFromId(this.phil.db, server);
         this.configCache[server.id] = serverConfig;
         return serverConfig;
     }
