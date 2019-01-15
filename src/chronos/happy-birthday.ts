@@ -37,7 +37,7 @@ export default class HappyBirthdayChrono implements Chrono {
     now: Moment
   ): Promise<string[]> {
     const day = now.date();
-    const month = now.months() + 1;
+    const month = now.month() + 1;
 
     const results = await db.query(
       'SELECT userid FROM birthdays WHERE birthday_day = $1 AND birthday_month = $2',

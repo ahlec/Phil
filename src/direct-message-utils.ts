@@ -18,7 +18,10 @@ export async function endOngoingDirectMessageProcesses(
     phil.db,
     userId
   );
-  if (TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(questionnaireStage)) {
+  if (
+    questionnaireStage &&
+    TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(questionnaireStage)
+  ) {
     await TimezoneQuestionnaire.endQuestionnaire(phil.db, userId);
   }
 }
