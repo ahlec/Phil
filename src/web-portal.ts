@@ -1,35 +1,93 @@
-const express = require('express');
+import {
+  createServer as createHttpServer,
+  get as getHttp,
+  Server as HttpServer,
+  ClientRequest,
+  IncomingMessage,
+  ServerResponse,
+} from 'http';
+import {
+  createServer as createHttpsServer,
+  get as getHttps,
+  Server as HttpsServer,
+} from 'https';
+import { parse, resolve } from 'url';
+import Loggable from './Loggable';
 import GlobalConfig from './global-config';
-import { BotUtils } from './utils';
 
-export default class WebPortal {
-    private app: any;
+// Abstract away protocol from here forward.
+const serverProtocol = parse(GlobalConfig.webportalUrl).protocol.slice(0, -1);
+type CreateServerResponseListener = (
+  request: IncomingMessage,
+  response: ServerResponse
+) => void;
+let createServer: (
+  responseListener: CreateServerResponseListener
+) => HttpServer | HttpsServer;
+let get: (url: string) => ClientRequest;
+switch (serverProtocol) {
+  case 'http': {
+    createServer = createHttpServer;
+    get = getHttp;
+    break;
+  }
+  case 'https': {
+    createServer = (responseListener: CreateServerResponseListener) =>
+      createHttpsServer({}, responseListener);
+    get = getHttps;
+    break;
+  }
+  default:
+    throw new Error(
+      `Unrecognized protocol for webportal url: '${serverProtocol}'`
+    );
+}
 
-    constructor() {
-        this.app = express();
-        this.app.set('view engine', 'ejs');
-        this.app.use(express.static('../assets'));
-        this.app.get('/', this.receiveWebRequest.bind(this));
-    }
+// Utility functions
+function getEndpoint(endpoint: string): Promise<string> {
+  const url = resolve(GlobalConfig.webportalUrl, endpoint);
+  return new Promise((resolve, reject) => {
+    const request = get(url);
+    request.on('error', err => reject(err));
+    request.on('response', (response: IncomingMessage) => {
+      response.on('error', err => reject(err));
+      response.on('data', (chunk: string | Buffer) =>
+        resolve(chunk.toString())
+      );
+    });
+  });
+}
 
-    public start() {
-        this.app.listen(GlobalConfig.port, this.onListen.bind(this));
-    }
+// Class itself
+export default class WebPortal extends Loggable {
+  private server: HttpServer | HttpsServer;
 
-    public beginKeepAliveHeartbeat() {
-        // Ping the server every 12 minutes so that the Heroku dynos won't fall asleep
-        setInterval(this.onKeepAliveHeartbeat.bind(this), 1000 * 60 * 12);
-    }
+  constructor() {
+    super('Web Portal');
+  }
 
-    public onListen() {
-        console.log('Web portal is running on port ' + GlobalConfig.port);
-    }
+  public start() {
+    this.server = createServer(this.onRequest);
 
-    public receiveWebRequest(request: any, response: any) {
-        response.render('index');
-    }
+    this.write(`Creating an ${serverProtocol} server.`);
 
-    public onKeepAliveHeartbeat() {
-        BotUtils.getUrl(process.env.PUBLIC_APP_URL);
-    }
-};
+    this.server.listen(GlobalConfig.webportalPort);
+    this.write(`Web server is running on port ${GlobalConfig.webportalPort}.`);
+  }
+
+  public beginKeepAliveHeartbeat() {
+    // Ping the server every 12 minutes so that the Heroku dynos won't fall asleep
+    setInterval(this.onKeepAliveHeartbeat, 1000 * 60 * 12);
+  }
+
+  private onRequest = (_: IncomingMessage, response: ServerResponse) => {
+    response.writeHead(200, { 'Content-Type': 'text/plain' });
+    response.write('Phil.');
+    response.end();
+  };
+
+  private onKeepAliveHeartbeat = async () => {
+    const response = await getEndpoint('/');
+    this.write(`Heartbeat response: '${response}'`);
+  };
+}

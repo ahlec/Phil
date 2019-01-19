@@ -2,13 +2,10 @@
   "extends": ["tslint:recommended", "tslint-config-prettier"],
   "rules": {
     "no-debugger": false,
-    "no-console": false,
     "no-namespace": false,
     "no-var-requires": false
   },
   "linterOptions": {
-    "exclude": [
-      "node_modules/**/*.ts"
-    ]
+    "exclude": ["node_modules/**/*.ts"]
   }
 }
