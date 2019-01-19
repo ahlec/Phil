@@ -1,5 +1,4 @@
 import EmbedColor from '../embed-color';
-import Feature from '../features/feature';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
@@ -15,7 +14,7 @@ const NOWRAP = '';
 export default class EvalCommand implements ICommand {
   public readonly name = 'eval';
   public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature: Feature = null;
+  public readonly feature = null;
   public readonly permissionLevel = PermissionLevel.BotManagerOnly;
 
   public readonly helpGroup = HelpGroup.General;

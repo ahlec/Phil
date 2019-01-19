@@ -1,5 +1,4 @@
 import { Channel as DiscordIOChannel } from 'discord.io';
-import Feature from '../features/feature';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
@@ -24,7 +23,7 @@ import WelcomeMessageTypeDefinition from '../type-definition/welcome-message';
 // Utilities
 // -----------------------------------------------------------------------------------
 
-function getChannelId(channel: DiscordIOChannel): string {
+function getChannelId(channel: DiscordIOChannel): string | null {
   if (!channel) {
     return null;
   }
@@ -100,7 +99,7 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
     key: 'command-prefix',
     typeDefinition: CommandPrefixTypeDefinition,
 
-    getRandomExampleValue: (model: ServerConfig) => 'p!',
+    getRandomExampleValue: (_: ServerConfig) => 'p!',
     getValue: (model: ServerConfig) => model.commandPrefix,
     setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
       model.setCommandPrefix(newValue, phil.db),
@@ -131,7 +130,7 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
     key: 'welcome-message',
     typeDefinition: WelcomeMessageTypeDefinition,
 
-    getRandomExampleValue: (model: ServerConfig) =>
+    getRandomExampleValue: (_: ServerConfig) =>
       'Welcome to our server, {user}!',
     getValue: (model: ServerConfig) => model.welcomeMessage,
     setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
@@ -146,7 +145,7 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
 export default class ConfigCommand extends ConfigCommandBase<ServerConfig> {
   public readonly name = 'config';
   public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature: Feature = null;
+  public readonly feature = null;
 
   public readonly helpGroup = HelpGroup.Admin;
   public readonly helpDescription =

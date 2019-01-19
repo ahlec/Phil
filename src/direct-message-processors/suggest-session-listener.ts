@@ -6,17 +6,15 @@ import SubmissionSession from '../prompts/submission-session';
 import SuggestSessionReactableFactory from '../reactables/suggest-session/factory';
 import { IDirectMessageProcessor, IProcessorActiveToken } from './@base';
 
-interface PromptValidateResult {
-  isValid: boolean;
-  invalidReason?: string;
-  validatedMessage?: string;
-}
+type PromptValidateResult =
+  | { isValid: true; validatedMessage: string }
+  | { isValid: false; invalidReason: string };
 
 function validatePromptSubmission(message: string): PromptValidateResult {
   if (!message) {
     return {
-      isValid: false,
       invalidReason: 'The input was just an empty message.',
+      isValid: false,
     };
   }
 
@@ -59,7 +57,7 @@ export default class SuggestSessionListener implements IDirectMessageProcessor {
   ) {
     const token = rawToken as SuggestSessionListenerToken;
     const validationResults = validatePromptSubmission(message.content);
-    if (!validationResults.isValid) {
+    if (!validationResults.isValid || !token.currentSession) {
       // TODO
       return;
     }

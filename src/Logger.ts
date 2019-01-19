@@ -1,24 +1,8 @@
 /* tslint:disable no-console max-classes-per-file */
 
-class LoggerDefinition {
-  public readonly prefix: string;
+import LoggerDefinition from './LoggerDefinition';
 
-  public constructor(name: string, parent?: LoggerDefinition) {
-    this.prefix = `${parent ? parent.prefix : null}[${name}]`;
-  }
-}
-
-export namespace LoggerDefinitions {
-  export const WebPortal = new LoggerDefinition('Web Portal');
-
-  export const ChronoManager = new LoggerDefinition('Chrono Manager');
-  export const PostNewPromptsChrono = new LoggerDefinition(
-    'post-new-prompts',
-    ChronoManager
-  );
-}
-
-export abstract class Logger {
+export default abstract class Logger {
   protected constructor(private readonly definition: LoggerDefinition) {}
 
   protected async write(msg: string) {

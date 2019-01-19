@@ -18,7 +18,7 @@ export interface IConfigAction<TModel> {
   readonly primaryKey: ConfigActionPrimaryKey;
   readonly aliases: ReadonlyArray<string>;
   readonly description: string;
-  readonly specialUsageNotes?: string;
+  readonly specialUsageNotes: string | null;
   readonly isPropertyRequired: boolean;
   readonly parameters: ReadonlyArray<ConfigActionParameterType>;
 
@@ -27,7 +27,7 @@ export interface IConfigAction<TModel> {
     phil: Phil,
     message: PublicMessage,
     mutableArgs: string[],
-    property: IConfigProperty<TModel>,
+    property: IConfigProperty<TModel> | null,
     model: TModel
   ): Promise<any>;
 }

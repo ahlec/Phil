@@ -73,7 +73,7 @@ export class PromptQueue {
     );
     const batchPrompts = await Prompt.getFromBatchIds(client, db, promptIds);
     const orderedPrompts: Prompt[] = promptResults.rows.map(
-      ({ prompt_id }) => batchPrompts[parseInt(prompt_id, 10)]
+      ({ prompt_id }) => batchPrompts[parseInt(prompt_id, 10)]!
     );
 
     const countResults = await db.query(

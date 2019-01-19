@@ -1,4 +1,3 @@
-import Feature from '../features/feature';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
@@ -9,7 +8,7 @@ import ICommand from './@types';
 export default class NewsCommand implements ICommand {
   public readonly name = 'news';
   public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature: Feature = null;
+  public readonly feature = null;
   public readonly permissionLevel = PermissionLevel.AdminOnly;
 
   public readonly helpGroup = HelpGroup.Admin;

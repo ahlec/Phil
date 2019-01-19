@@ -1,7 +1,7 @@
 import Database from './database';
 import { ensureNecessaryEnvironmentVariables } from './environment-manager';
 import Phil from './phil';
-import WebPortal from './web-portal';
+import WebPortal from './WebPortal';
 
 async function main() {
   try {

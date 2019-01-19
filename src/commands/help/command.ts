@@ -1,4 +1,3 @@
-import Feature from '../../features/feature';
 import FeatureUtils from '../../features/feature-utils';
 import { HelpGroup } from '../../help-groups';
 import MessageBuilder from '../../message-builder';
@@ -25,7 +24,7 @@ function isVisibleCommand(commandName: string, command: ICommand): boolean {
 export default class HelpCommand implements ICommand {
   public readonly name = 'help';
   public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature: Feature = null;
+  public readonly feature = null;
   public readonly permissionLevel = PermissionLevel.General;
 
   public readonly helpGroup = HelpGroup.General;

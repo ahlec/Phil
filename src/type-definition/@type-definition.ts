@@ -3,7 +3,7 @@ import ServerConfig from '../server-config';
 
 interface IParseSuccess {
   wasSuccessful: true;
-  parsedValue: string;
+  parsedValue: string | null;
 }
 
 interface IParseFailure {
@@ -32,7 +32,7 @@ export interface ITypeDefinition {
     phil: Phil,
     serverConfig: ServerConfig
   ): ValidityResultType;
-  toDisplayFormat(value: string, serverConfig: ServerConfig): string;
+  toDisplayFormat(value: string | null, serverConfig: ServerConfig): string;
   toMultilineCodeblockDisplayFormat(
     value: string,
     phil: Phil,

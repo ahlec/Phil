@@ -52,7 +52,7 @@ export default class PronounCommand extends MemberUniqueRoleCommandBase<
     );
   }
 
-  protected tryParseInput(input: string): Pronoun {
+  protected tryParseInput(input: string): Pronoun | null {
     const pronoun = pronounUsageToPronouns[input.toLowerCase()];
     if (!pronoun) {
       return null;

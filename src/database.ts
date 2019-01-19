@@ -42,7 +42,7 @@ export default class Database {
           return;
         }
 
-        client.query(text, values, (err, result) => {
+        client.query(text, values, (err: Error, result: QueryResult) => {
           done();
 
           if (err) {

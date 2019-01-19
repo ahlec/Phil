@@ -17,6 +17,20 @@ export async function parseMessage(
   }
 
   const server = phil.getServerFromChannelId(event.d.channel_id);
+  if (!server) {
+    throw new Error(
+      `Received a message in channel ${
+        event.d.channel_id
+      }, which is not a server I'm in.`
+    );
+  }
+
   const serverConfig = await phil.serverDirectory.getServerConfig(server);
+  if (!serverConfig) {
+    throw new Error(
+      `A member of server ${server.id} but do not have server config for it.`
+    );
+  }
+
   return new PublicMessage(event, phil, serverConfig);
 }

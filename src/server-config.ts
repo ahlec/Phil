@@ -5,6 +5,8 @@ import {
   Server as DiscordIOServer,
 } from 'discord.io';
 import Database from './database';
+import Logger from './Logger';
+import LoggerDefinition from './LoggerDefinition';
 import { DEFAULT_PRONOUNS } from './pronouns/definitions';
 import Pronoun from './pronouns/pronoun';
 import { getPronounFromRole } from './pronouns/utils';
@@ -27,11 +29,11 @@ function doesRoleHavePermission(
   return false;
 }
 
-export class ServerConfig {
+export class ServerConfig extends Logger {
   public static async getFromId(
     db: Database,
     server: DiscordIOServer
-  ): Promise<ServerConfig> {
+  ): Promise<ServerConfig | null> {
     const results = await db.query(
       'SELECT * FROM server_configs WHERE server_id = $1',
       [server.id]
@@ -44,16 +46,18 @@ export class ServerConfig {
   }
 
   public readonly serverId: string;
-  public readonly fandomMapLink: string;
+  public readonly fandomMapLink: string | null;
   private commandPrefixInternal: string;
   private botControlChannelInternal: DiscordIOChannel;
   private adminChannelInternal: DiscordIOChannel;
   private introductionsChannelInternal: DiscordIOChannel;
   private newsChannelInternal: DiscordIOChannel;
   private adminRoleInternal: DiscordIORole;
-  private welcomeMessageInternal: string;
+  private welcomeMessageInternal: string | null;
 
   private constructor(public readonly server: DiscordIOServer, dbRow: any) {
+    super(new LoggerDefinition('Server Config'));
+
     this.serverId = dbRow.server_id;
     this.commandPrefixInternal = dbRow.command_prefix;
     this.botControlChannelInternal = this.getChannel(
@@ -94,6 +98,7 @@ export class ServerConfig {
     }
 
     this.commandPrefixInternal = prefix;
+    return true;
   }
 
   public get botControlChannel(): DiscordIOChannel {
@@ -114,6 +119,7 @@ export class ServerConfig {
     }
 
     this.botControlChannelInternal = this.server.channels[channelId];
+    return true;
   }
 
   public get adminChannel(): DiscordIOChannel {
@@ -134,6 +140,7 @@ export class ServerConfig {
     }
 
     this.adminChannelInternal = this.server.channels[channelId];
+    return true;
   }
 
   public get introductionsChannel(): DiscordIOChannel {
@@ -154,6 +161,7 @@ export class ServerConfig {
     }
 
     this.introductionsChannelInternal = this.server.channels[channelId];
+    return true;
   }
 
   public get newsChannel(): DiscordIOChannel {
@@ -174,6 +182,7 @@ export class ServerConfig {
     }
 
     this.newsChannelInternal = this.server.channels[channelId];
+    return true;
   }
 
   public get adminRole(): DiscordIORole {
@@ -194,9 +203,10 @@ export class ServerConfig {
     }
 
     this.adminRoleInternal = this.server.roles[roleId];
+    return true;
   }
 
-  public get welcomeMessage(): string {
+  public get welcomeMessage(): string | null {
     return this.welcomeMessageInternal;
   }
 
@@ -214,6 +224,7 @@ export class ServerConfig {
     }
 
     this.welcomeMessageInternal = message;
+    return true;
   }
 
   // -----------------------------------------------------------------------------
@@ -301,11 +312,15 @@ export class ServerConfig {
     database: Database,
     dbColumn: string
   ): Promise<boolean> {
-    const query =
-      'UPDATE server_configs SET ' + dbColumn + ' = $1 WHERE server_id = $2';
-    const result = await database.query(query, [value, this.serverId]);
-    console.log(result.rowCount);
-    return result.rowCount !== 0;
+    try {
+      const query =
+        'UPDATE server_configs SET ' + dbColumn + ' = $1 WHERE server_id = $2';
+      const result = await database.query(query, [value, this.serverId]);
+      return result.rowCount !== 0;
+    } catch (err) {
+      this.error(err);
+      return false;
+    }
   }
 }
 

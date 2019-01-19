@@ -18,6 +18,7 @@ export default class DisplayConfigAction<TModel>
   public readonly aliases = ['show'];
   public readonly description = `view a list of all of the configuration properties as well as ${NOWRAP} their current values`;
   public readonly isPropertyRequired = false;
+  public readonly specialUsageNotes = null;
   public readonly parameters: ReadonlyArray<ConfigActionParameterType> = [];
 
   public async process(

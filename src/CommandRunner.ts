@@ -4,25 +4,25 @@ import { CommandLookup } from './commands/index';
 import Database from './database';
 import GlobalConfig from './global-config';
 import InputMessage from './input-message';
+import Logger from './Logger';
+import LoggerDefinition from './LoggerDefinition';
 import IPublicMessage from './messages/public';
 import PermissionLevel, { getPermissionLevelName } from './permission-level';
 import Phil from './phil';
 import BotUtils from './utils';
 
-const util = require('util');
-
-function NEVER(x: never) {
+function NEVER(_: never) {
   throw new Error('Reached an unreachable location in code');
 }
 
-const NOWRAP = '';
-
-export default class CommandRunner {
+export default class CommandRunner extends Logger {
   constructor(
     private readonly phil: Phil,
     private readonly bot: DiscordIOClient,
     private readonly db: Database
-  ) {}
+  ) {
+    super(new LoggerDefinition('Command Runner'));
+  }
 
   public isCommand(message: IPublicMessage): boolean {
     const input = InputMessage.parseFromMessage(
@@ -68,12 +68,10 @@ export default class CommandRunner {
   }
 
   private logInputReceived(message: IPublicMessage, input: InputMessage) {
-    console.log(
-      "user '%s#%d' used command '%s%s'",
-      message.user.username,
-      message.user.discriminator,
-      message.serverConfig.commandPrefix,
-      input.commandName
+    this.write(
+      `user ${message.user.username}${
+        message.user.discriminator
+      } used command ${message.serverConfig.commandPrefix}${input.commandName}`
     );
   }
 
@@ -124,7 +122,7 @@ export default class CommandRunner {
       channelId: message.channelId,
       message: `The \`${message.serverConfig.commandPrefix}${
         input.commandName
-      }\` command ${NOWRAP}requires ${permissionLevelName} privileges to use here.`,
+      }\` command requires ${permissionLevelName} privileges to use here.`,
     });
   }
 
@@ -141,7 +139,7 @@ export default class CommandRunner {
   }
 
   private async reportCommandError(err: Error, channelId: string) {
-    console.error(util.inspect(err));
+    this.error(err);
     BotUtils.sendErrorMessage({
       bot: this.bot,
       channelId,

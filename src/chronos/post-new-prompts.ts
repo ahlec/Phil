@@ -1,6 +1,8 @@
 import { Moment } from 'moment';
 import Bucket from '../buckets';
-import { Logger, LoggerDefinitions } from '../Logger';
+import { Definition } from '../ChronoManager';
+import Logger from '../Logger';
+import LoggerDefinition from '../LoggerDefinition';
 import Phil from '../phil';
 import Prompt from '../prompts/prompt';
 import { PromptQueue } from '../prompts/queue';
@@ -8,11 +10,12 @@ import Submission from '../prompts/submission';
 import ServerConfig from '../server-config';
 import Chrono from './@types';
 
+const HANDLE = 'post-new-prompts';
 export default class PostNewPromptsChrono extends Logger implements Chrono {
-  public readonly handle = 'post-new-prompts';
+  public readonly handle = HANDLE;
 
   public constructor() {
-    super(LoggerDefinitions.PostNewPromptsChrono);
+    super(new LoggerDefinition(HANDLE, Definition));
   }
 
   public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
@@ -112,7 +115,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
   }
 
   private isCurrentPromptOutdated(
-    currentPrompt: Prompt,
+    currentPrompt: Prompt | null,
     now: Moment,
     bucket: Bucket
   ) {

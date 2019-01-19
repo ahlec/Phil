@@ -26,7 +26,7 @@ export default abstract class ConfirmRejectCommandBase implements ICommand {
   public readonly permissionLevel = PermissionLevel.AdminOnly;
 
   public readonly helpGroup = HelpGroup.None;
-  public readonly helpDescription: string = null;
+  public readonly helpDescription = null;
 
   public abstract readonly versionAdded: number;
 

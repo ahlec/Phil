@@ -7,7 +7,7 @@ export default class ReactablePost {
     bot: DiscordIOClient,
     db: Database,
     messageId: string
-  ): Promise<ReactablePost> {
+  ): Promise<ReactablePost | null> {
     const results = await db.query(
       'SELECT * FROM reactable_posts WHERE message_id = $1 LIMIT 1',
       [messageId]
@@ -57,6 +57,8 @@ export default class ReactablePost {
     if (!this.user) {
       return false;
     }
+
+    return true;
   }
 
   public async remove(db: Database): Promise<void> {

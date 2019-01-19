@@ -93,7 +93,7 @@ export default class UtcCommand implements ICommand {
     let reply = formatTimeToString(inputTime) + ' local time is **';
 
     const timezoneOffset = moment()
-      .tz(timezone.timezoneName)
+      .tz(timezone.timezoneName!)
       .utcOffset();
     inputTime.utcOffset(timezoneOffset);
     const utcTime = inputTime.tz('Etc/UTC');

@@ -34,7 +34,7 @@ export abstract class MessageBase {
 
     this.id = event.d.id;
     this.channelId = event.d.channel_id;
-    this.userId = event.d.author.id;
+    this.userId = event.d.author!.id;
     this.user = phil.bot.users[this.userId];
     this.content = event.d.content;
   }

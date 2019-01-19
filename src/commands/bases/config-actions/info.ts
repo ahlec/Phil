@@ -17,6 +17,7 @@ export default class InfoConfigAction<TModel> implements IConfigAction<TModel> {
   public readonly aliases = ['show'];
   public readonly description = `see detailed information about a configuration property ${NOWRAP}as well its current value`;
   public readonly isPropertyRequired = true;
+  public readonly specialUsageNotes = null;
   public readonly parameters = [ConfigActionParameterType.PropertyKey];
 
   public async process(

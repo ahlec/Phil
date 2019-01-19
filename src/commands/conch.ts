@@ -1,4 +1,3 @@
-import Feature from '../features/feature';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
@@ -24,7 +23,7 @@ const conchReplies = [
 export default class ConchCommand implements ICommand {
   public readonly name = 'conch';
   public readonly aliases = ['magicconch', 'mc'];
-  public readonly feature: Feature = null;
+  public readonly feature = null;
   public readonly permissionLevel = PermissionLevel.General;
 
   public readonly helpGroup = HelpGroup.Memes;

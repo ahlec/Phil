@@ -1,12 +1,12 @@
 import { Client as DiscordIOClient } from 'discord.io';
 import * as moment from 'moment';
-import Submission from './submission';
 import Bucket from '../buckets';
-import EmbedColor from '../embed-color';
 import Database from '../database';
+import EmbedColor from '../embed-color';
 import { DiscordPromises } from '../promises/discord';
 import ServerConfig from '../server-config';
 import { BotUtils } from '../utils';
+import Submission from './submission';
 
 export interface PromptDatabaseSchema {
   prompt_id: string;
@@ -20,7 +20,7 @@ export default class Prompt {
     client: DiscordIOClient,
     db: Database,
     promptId: number
-  ): Promise<Prompt> {
+  ): Promise<Prompt | null> {
     const result = await db.querySingle(
       `SELECT
         prompt_id,
@@ -45,6 +45,10 @@ export default class Prompt {
       db,
       result.submission_id
     );
+    if (!submission) {
+      return null;
+    }
+
     return new Prompt(submission, result);
   }
 
@@ -89,6 +93,10 @@ export default class Prompt {
     result.rows.forEach(row => {
       const submissionId = parseInt(row.submission_id, 10);
       const submission = submissions[submissionId];
+      if (!submission) {
+        return;
+      }
+
       const prompt = new Prompt(submission, row);
       returnValue[prompt.id] = prompt;
     });
@@ -100,7 +108,7 @@ export default class Prompt {
     client: DiscordIOClient,
     db: Database,
     bucket: Bucket
-  ): Promise<Prompt> {
+  ): Promise<Prompt | null> {
     const result = await db.querySingle(
       `SELECT
         p.prompt_id,
@@ -132,13 +140,17 @@ export default class Prompt {
       db,
       result.submission_id
     );
+    if (!submission) {
+      return null;
+    }
+
     return new Prompt(submission, result);
   }
 
   public static async queueSubscription(
     db: Database,
     submission: Submission
-  ): Promise<Prompt> {
+  ): Promise<Prompt | null> {
     const lastPromptInBucket = await db.querySingle(
       `SELECT
         p.prompt_number

@@ -60,7 +60,7 @@ export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
     );
   }
 
-  protected tryParseInput(input: string): string {
+  protected tryParseInput(input: string): string | null {
     if (!BotUtils.isValidHexColor(input)) {
       return null;
     }

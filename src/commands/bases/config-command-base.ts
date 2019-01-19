@@ -15,13 +15,13 @@ import {
 } from './config-actions/@action';
 
 export interface IConfigProperty<TModel> {
-  readonly defaultValue: string;
+  readonly defaultValue: string | null;
   readonly description: string;
   readonly displayName: string;
   readonly key: string;
   readonly typeDefinition: ITypeDefinition;
 
-  getValue(model: TModel): string;
+  getValue(model: TModel): string | null;
   getRandomExampleValue(model: TModel): string;
   setValue(phil: Phil, model: TModel, newValue: string): Promise<boolean>;
 }
@@ -29,14 +29,14 @@ export interface IConfigProperty<TModel> {
 const NOWRAP = '';
 const NEWLINE = '\n';
 
-function NEVER(x: never) {
+function NEVER(_: never) {
   throw new Error('Should not be here -- switch case not handled.');
 }
 
 export abstract class ConfigCommandBase<TModel> implements ICommand {
   public abstract readonly name: string;
   public abstract readonly aliases: ReadonlyArray<string>;
-  public abstract readonly feature: Feature;
+  public abstract readonly feature: Feature | null;
   public readonly permissionLevel = PermissionLevel.AdminOnly;
 
   public abstract readonly helpGroup: HelpGroup;
@@ -142,7 +142,6 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
       model
     )}`;
 
-    console.log(response.length);
     return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Info,
       description: response,
@@ -150,10 +149,10 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
     });
   }
 
-  private determineAction(mutableArgs: string[]): IConfigAction<TModel> {
+  private determineAction(mutableArgs: string[]): IConfigAction<TModel> | null {
     let verb = mutableArgs.shift();
     if (!verb) {
-      return undefined;
+      return null;
     }
 
     verb = verb.toLowerCase();
@@ -185,7 +184,7 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
     model: TModel,
     action: IConfigAction<TModel>
   ): Promise<any> {
-    let property: IConfigProperty<TModel>;
+    let property: IConfigProperty<TModel> | null = null;
     if (action.isPropertyRequired) {
       property = this.getSpecifiedProperty(mutableArgs);
       if (!property) {
@@ -196,7 +195,9 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
     return action.process(this, phil, message, mutableArgs, property, model);
   }
 
-  private getSpecifiedProperty(mutableArgs: string[]): IConfigProperty<TModel> {
+  private getSpecifiedProperty(
+    mutableArgs: string[]
+  ): IConfigProperty<TModel> | null {
     let specifiedKey = mutableArgs.shift();
     if (!specifiedKey) {
       return null;

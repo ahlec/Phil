@@ -55,7 +55,7 @@ export default abstract class MemberUniqueRoleCommandBase<TData>
     input: string,
     serverConfig: ServerConfig
   ): string;
-  protected abstract tryParseInput(input: string): TData;
+  protected abstract tryParseInput(input: string): TData | null;
   protected abstract isRolePartOfUniquePool(role: DiscordIORole): boolean;
   protected abstract doesRoleMatchData(
     role: DiscordIORole,

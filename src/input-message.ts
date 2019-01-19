@@ -4,7 +4,7 @@ export default class InputMessage {
   public static parseFromMessage(
     serverConfig: ServerConfig,
     message: string
-  ): InputMessage {
+  ): InputMessage | null {
     if (!message || message === '') {
       return null;
     }

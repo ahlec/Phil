@@ -19,7 +19,7 @@ export default abstract class MutateConfigActionBase<TModel>
   public abstract readonly primaryKey: ConfigActionPrimaryKey;
   public abstract readonly aliases: ReadonlyArray<string>;
   public abstract readonly description: string;
-  public abstract readonly specialUsageNotes: string;
+  public abstract readonly specialUsageNotes: string | null;
   public readonly isPropertyRequired = true;
   public abstract readonly parameters: ReadonlyArray<ConfigActionParameterType>;
 

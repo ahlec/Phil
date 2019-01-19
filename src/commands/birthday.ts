@@ -1,6 +1,5 @@
 import { Moment } from 'moment';
 import Database from '../database';
-import Feature from '../features/feature';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
@@ -15,7 +14,7 @@ import momentModuleFunc = require('moment');
 export default class BirthdayCommand implements ICommand {
   public readonly name = 'birthday';
   public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature: Feature = null;
+  public readonly feature = null;
   public readonly permissionLevel = PermissionLevel.General;
 
   public readonly helpGroup = HelpGroup.General;

@@ -45,6 +45,9 @@ export default class ConfirmCommand extends ConfirmRejectCommandBase {
       phil.db,
       submissionId
     );
+    if (!submission) {
+      return false;
+    }
 
     const prompt = await Prompt.queueSubscription(phil.db, submission);
     if (!prompt) {

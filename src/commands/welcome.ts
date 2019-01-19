@@ -1,11 +1,9 @@
 import { User as DiscordIOUser } from 'discord.io';
-import Feature from '../features/feature';
-import { makeGreetingMessage } from '../greeting';
+import Greeting from '../greeting';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
 import { BotUtils } from '../utils';
 import ICommand from './@types';
 
@@ -20,7 +18,7 @@ const NOWRAP = '';
 export default class WelcomeCommand implements ICommand {
   public readonly name = 'welcome';
   public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature: Feature = null;
+  public readonly feature = null;
   public readonly permissionLevel = PermissionLevel.AdminOnly;
 
   public readonly helpGroup = HelpGroup.Admin;
@@ -53,16 +51,14 @@ export default class WelcomeCommand implements ICommand {
     }
 
     const { user } = result;
-    const welcomeMessage = makeGreetingMessage(message.serverConfig, user);
-    if (!welcomeMessage) {
-      return DiscordPromises.sendMessage(phil.bot, message.channelId, 'ERROR?');
-    }
-
-    return DiscordPromises.sendMessage(
+    const member = message.serverConfig.server.members[user.id];
+    const greeting = new Greeting(
       phil.bot,
-      message.channelId,
-      welcomeMessage
+      phil.db,
+      message.serverConfig,
+      member
     );
+    await greeting.send(message.channelId);
   }
 
   private getUser(

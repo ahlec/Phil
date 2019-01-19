@@ -43,7 +43,7 @@ export default class Requestable {
     db: Database,
     server: DiscordIOServer,
     requestString: string
-  ): Promise<Requestable> {
+  ): Promise<Requestable | null> {
     requestString = requestString.toLowerCase();
     const results = await db.query(
       'SELECT role_id FROM requestable_roles WHERE request_string = $1 AND server_id = $2',

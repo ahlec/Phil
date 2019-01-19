@@ -1,4 +1,3 @@
-const assert = require('assert');
 import {
   Client as DiscordIOClient,
   Member as DiscordIOMember,
@@ -10,11 +9,13 @@ import {
   OfficialDiscordReactionEvent,
 } from 'official-discord';
 import ChronoManager from './ChronoManager';
-import CommandRunner from './command-runner';
+import CommandRunner from './CommandRunner';
 import Database from './database';
 import DirectMessageDispatcher from './direct-message-dispatcher';
 import GlobalConfig from './global-config';
-import { greetNewMember } from './greeting';
+import Greeting from './greeting';
+import Logger from './Logger';
+import LoggerDefinition from './LoggerDefinition';
 import { parseMessage } from './messages/@parsing';
 import MessageBase from './messages/base';
 import PublicMessage from './messages/public';
@@ -30,7 +31,7 @@ function isPublicMessage(object: MessageBase): object is PublicMessage {
   return 'serverConfig' in object;
 }
 
-export default class Phil {
+export default class Phil extends Logger {
   public readonly bot: DiscordIOClient;
   public readonly serverDirectory: ServerDirectory;
   private readonly commandRunner: CommandRunner;
@@ -40,9 +41,11 @@ export default class Phil {
   private shouldSendDisconnectedMessage: boolean;
 
   constructor(public readonly db: Database) {
+    super(new LoggerDefinition('Phil'));
+
     this.bot = new DiscordIOClient({
-      token: GlobalConfig.discordBotToken,
       autorun: true,
+      token: GlobalConfig.discordBotToken,
     });
     this.serverDirectory = new ServerDirectory(this);
     this.commandRunner = new CommandRunner(this, this.bot, this.db);
@@ -54,11 +57,11 @@ export default class Phil {
   public start() {
     this.shouldSendDisconnectedMessage = false;
 
-    this.bot.on('ready', this.onReady.bind(this));
-    this.bot.on('message', this.onMessage.bind(this));
-    this.bot.on('disconnect', this.onDisconnect.bind(this));
-    this.bot.on('guildMemberAdd', this.onMemberAdd.bind(this));
-    this.bot.on('any', this.onRawWebSocketEvent.bind(this));
+    this.bot.on('ready', this.onReady);
+    this.bot.on('message', this.onMessage);
+    this.bot.on('disconnect', this.onDisconnect);
+    this.bot.on('guildMemberAdd', this.onMemberAdd);
+    this.bot.on('any', this.onRawWebSocketEvent);
   }
 
   public getServerFromChannelId(channelId: string): DiscordIOServer | null {
@@ -75,8 +78,8 @@ export default class Phil {
     return server;
   }
 
-  private onReady() {
-    console.log('Logged in as %s - %s\n', this.bot.username, this.bot.id);
+  private onReady = () => {
+    this.write(`Logged in as ${this.bot.username} - ${this.bot.id}`);
 
     this.chronoManager.start();
 
@@ -89,15 +92,15 @@ export default class Phil {
       });
       this.shouldSendDisconnectedMessage = false;
     }
-  }
+  };
 
-  private async onMessage(
+  private onMessage = async (
     user: string,
     userId: string,
     channelId: string,
     msg: string,
     event: OfficialDiscordPayload<OfficialDiscordMessage>
-  ) {
+  ) => {
     const message = await parseMessage(this, event);
 
     if (this.isMessageFromPhil(message)) {
@@ -121,7 +124,7 @@ export default class Phil {
       this.directMessageDispatcher.process(message);
       return;
     }
-  }
+  };
 
   private isMessageFromPhil(message: MessageBase): boolean {
     return message.userId === this.bot.id;
@@ -150,44 +153,67 @@ export default class Phil {
 
     // I dislike those messages that say 'Phil has pinned a message to this channel.'
     // So Phil is going to delete his own when he encounters them.
-    console.log(
-      'Phil posted an empty message (id %s) to channel %s. deleting.',
-      event.d.id,
-      event.d.channel_id
+    this.write(
+      `Posted an empty message (id ${event.d.id}) to channel ${
+        event.d.channel_id
+      }. Deleting.`
     );
-    this.bot.deleteMessage({
-      channelID: event.d.channel_id,
-      messageID: event.d.id,
-    });
+    try {
+      this.bot.deleteMessage({
+        channelID: event.d.channel_id,
+        messageID: event.d.id,
+      });
+    } catch (err) {
+      this.error(`Could not delete empty message ${event.d.id}.`);
+      this.error(err);
+    }
   }
 
-  private onDisconnect(err: Error, code: number) {
-    console.error('Discord.io disconnected of its own accord.');
-    console.error('Code: ' + code);
-    if (err) {
-      console.error(err);
-    }
-
-    console.error('Reconnecting now...');
+  private onDisconnect = (err: Error, code: number) => {
+    this.error(`Discord.io disconnected of its own accord. (Code: ${code})`);
+    this.error(err);
+    this.write('Attempting to reconnect now...');
     this.shouldSendDisconnectedMessage = !ignoreDiscordCode(code);
     this.bot.connect();
-  }
+  };
 
-  private async onMemberAdd(member: DiscordIOMember, event: any) {
-    console.log('A new member has joined the server.');
+  private onMemberAdd = async (member: DiscordIOMember, event: any) => {
     const serverId = (member as any).guild_id; // special field for this event
     const server = this.bot.servers[serverId];
-    assert(server);
+    this.write(`A new member (${member.id}) has joined server ${serverId}.`);
+    if (!server) {
+      this.error(`I do not recognize server ${serverId} as existing.`);
+      return;
+    }
 
     const serverConfig = await this.serverDirectory.getServerConfig(server);
-    await greetNewMember(this, serverConfig, member);
-  }
+    if (!serverConfig) {
+      this.error(
+        `I wanted to greet new member ${member.id} in server ${
+          server.id
+        }, but I do not have server config for there.`
+      );
+      return;
+    }
 
-  private onRawWebSocketEvent(event: OfficialDiscordPayload<any>) {
+    try {
+      const greeting = new Greeting(this.bot, this.db, serverConfig, member);
+      await greeting.send(serverConfig.introductionsChannel.id);
+    } catch (err) {
+      this.error(
+        `Uncaught exception when trying to greet new member ${
+          member.id
+        } in server ${server.id}.`
+      );
+      this.error(err);
+    }
+  };
+
+  private onRawWebSocketEvent = (event: OfficialDiscordPayload<any>) => {
     if (event.t === 'MESSAGE_REACTION_ADD') {
       this.reactableProcessor.processReactionAdded(
         event.d as OfficialDiscordReactionEvent
       );
     }
-  }
+  };
 }

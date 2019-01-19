@@ -56,7 +56,10 @@ export default class SuggestCommand implements ICommand {
       this.name,
       false
     );
-    if (!bucket.canUserSubmitTo(phil.bot, message.userId)) {
+    if (
+      bucket.requiredRoleId &&
+      !bucket.canUserSubmitTo(phil.bot, message.userId)
+    ) {
       const role = message.server.roles[bucket.requiredRoleId];
       throw new Error(
         'In order to be able to submit a prompt to this bucket, you must have \

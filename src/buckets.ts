@@ -7,7 +7,6 @@ import Phil from './phil';
 import ServerConfig from './server-config';
 import BotUtils from './utils';
 import * as moment from 'moment';
-import * as assert from 'assert';
 
 export enum BucketFrequency {
   Daily = 0,
@@ -21,19 +20,19 @@ const frequencyDisplayStrings = {
   [BucketFrequency.Immediately]: 'Immediately',
 };
 
-const frequencyFromStrings: { [name: string]: BucketFrequency } = {
+const frequencyFromStrings: { [name: string]: BucketFrequency | undefined } = {
   daily: BucketFrequency.Daily,
   immediately: BucketFrequency.Immediately,
   weekly: BucketFrequency.Weekly,
 };
 
-function throwMultipleUnspecifiedBucketsError(
+function multipleUnspecifiedBucketsError(
   serverConfig: ServerConfig,
   serverBuckets: Bucket[],
   commandName: string
-) {
+): Error {
   if (serverBuckets.length === 0) {
-    throw new Error('There are no prompt buckets configured on this server.');
+    return new Error('There are no prompt buckets configured on this server.');
   }
 
   let message =
@@ -59,7 +58,7 @@ function throwMultipleUnspecifiedBucketsError(
     ' ' +
     randomBucket.handle +
     '`.';
-  throw new Error(message);
+  return new Error(message);
 }
 
 function getOnlyBucketOnServer(
@@ -75,7 +74,7 @@ function getOnlyBucketOnServer(
     return serverBuckets[0];
   }
 
-  throwMultipleUnspecifiedBucketsError(
+  throw multipleUnspecifiedBucketsError(
     serverConfig,
     serverBuckets,
     commandName
@@ -87,16 +86,15 @@ export default class Bucket {
     bot: DiscordIOClient,
     db: Database,
     bucketId: number
-  ): Promise<Bucket> {
+  ): Promise<Bucket | null> {
     const results = await db.query(
       'SELECT * FROM prompt_buckets WHERE bucket_id = $1',
       [bucketId]
     );
-    if (results.rowCount === 0) {
+    if (results.rowCount !== 1) {
       return null;
     }
 
-    assert(results.rowCount === 1);
     return new Bucket(bot, results.rows[0]);
   }
 
@@ -132,16 +130,15 @@ export default class Bucket {
     bot: DiscordIOClient,
     db: Database,
     channelId: string
-  ): Promise<Bucket> {
+  ): Promise<Bucket | null> {
     const results = await db.query(
       'SELECT * FROM prompt_buckets WHERE channel_id = $1',
       [channelId]
     );
-    if (results.rowCount === 0) {
+    if (results.rowCount !== 1) {
       return null;
     }
 
-    assert(results.rowCount === 1);
     return new Bucket(bot, results.rows[0]);
   }
 
@@ -150,16 +147,15 @@ export default class Bucket {
     db: Database,
     server: DiscordIOServer,
     referenceHandle: string
-  ): Promise<Bucket> {
+  ): Promise<Bucket | null> {
     const results = await db.query(
       'SELECT * FROM prompt_buckets WHERE server_id = $1 AND reference_handle = $2',
       [server.id, referenceHandle]
     );
-    if (results.rowCount === 0) {
+    if (results.rowCount !== 1) {
       return null;
     }
 
-    assert(results.rowCount === 1);
     return new Bucket(bot, results.rows[0]);
   }
 
@@ -209,7 +205,7 @@ export default class Bucket {
         phil.db,
         serverConfig.server.id
       );
-      throwMultipleUnspecifiedBucketsError(
+      throw multipleUnspecifiedBucketsError(
         serverConfig,
         serverBuckets,
         commandName
@@ -256,8 +252,10 @@ export default class Bucket {
 
   private constructor(bot: DiscordIOClient, dbRow: any) {
     const isValid = Bucket.determineIsBucketValid(bot, dbRow);
-    const bucketFrequency = frequencyFromStrings[dbRow.frequency];
-    assert(bucketFrequency !== undefined && bucketFrequency !== null);
+    let bucketFrequency = frequencyFromStrings[dbRow.frequency];
+    if (bucketFrequency === undefined) {
+      bucketFrequency = BucketFrequency.Daily;
+    }
 
     this.id = parseInt(dbRow.bucket_id, 10);
     this.serverId = dbRow.server_id;
@@ -274,17 +272,15 @@ export default class Bucket {
   }
 
   public async setIsPaused(db: Database, isPaused: boolean) {
-    const results = await db.query(
+    const rowsModified = await db.execute(
       'UPDATE prompt_buckets SET is_paused = $1 WHERE bucket_id = $2',
       [isPaused ? 1 : 0, this.id]
     );
-    if (results.rowCount === 0) {
+    if (rowsModified !== 1) {
       throw new Error(
         'Unable to update the status of the prompt bucket in the database.'
       );
     }
-
-    assert(results.rowCount === 1);
   }
 
   public isFrequencyMet(

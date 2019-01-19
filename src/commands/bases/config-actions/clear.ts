@@ -13,7 +13,7 @@ export default class ClearConfigAction<TModel> extends MutateConfigActionBase<
   public readonly primaryKey = ConfigActionPrimaryKey.Clear;
   public readonly aliases = ['reset'];
   public readonly description = `resets the value of the property to the default for that ${NOWRAP}property`;
-  public readonly specialUsageNotes: string = null;
+  public readonly specialUsageNotes = null;
   public readonly isPropertyRequired = true;
   public readonly parameters = [ConfigActionParameterType.PropertyKey];
 

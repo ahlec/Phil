@@ -11,7 +11,7 @@ function assertVariableExists(variableName: string) {
 function assertCustomEmoji(variableName: string) {
   assertVariableExists(variableName);
 
-  const envVariable = process.env[variableName];
+  const envVariable = process.env[variableName]!;
   assert.ok(
     /<:[a-zA-Z0-9_]{2,}:[0-9]{10,}>/.test(envVariable),
     'The environment variable `' +

@@ -244,7 +244,7 @@ export namespace DiscordPromises {
           roleID: roleId,
           serverID: serverId,
         },
-        (err, response) => {
+        (err: Error, response: any) => {
           if (err) {
             reject(err);
             return;

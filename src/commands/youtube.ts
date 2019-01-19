@@ -1,4 +1,3 @@
-import Feature from '../features/feature';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
@@ -10,7 +9,7 @@ import ICommand from './@types';
 export default class YoutubeCommand implements ICommand {
   public readonly name = 'youtube';
   public readonly aliases = ['yt'];
-  public readonly feature: Feature = null;
+  public readonly feature = null;
   public readonly permissionLevel = PermissionLevel.General;
 
   public readonly helpGroup = HelpGroup.General;

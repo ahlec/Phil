@@ -28,8 +28,8 @@ export default class CommandHelpInfo {
   public readonly message: string;
   private readonly isNew: boolean;
   private readonly aliases: ReadonlyArray<string>;
-  private readonly helpDescription: string;
-  private readonly feature: Feature;
+  private readonly helpDescription: string | null;
+  private readonly feature: Feature | null;
 
   constructor(command: ICommand) {
     this.name = command.name;

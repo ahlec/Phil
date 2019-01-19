@@ -7,11 +7,11 @@ import Phil from '../phil';
 export default interface ICommand {
   readonly name: string;
   readonly aliases: ReadonlyArray<string>;
-  readonly feature?: Feature;
+  readonly feature: Feature | null;
   readonly permissionLevel: PermissionLevel;
 
   readonly helpGroup: HelpGroup;
-  readonly helpDescription: string;
+  readonly helpDescription: string | null;
   readonly versionAdded: number;
 
   processMessage(

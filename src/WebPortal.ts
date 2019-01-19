@@ -13,7 +13,8 @@ import {
 } from 'https';
 import { parse, resolve } from 'url';
 import GlobalConfig from './global-config';
-import { Logger, LoggerDefinitions } from './Logger';
+import Logger from './Logger';
+import LoggerDefinition from './LoggerDefinition';
 
 // Abstract away protocol from here forward.
 const serverProtocol = parse(GlobalConfig.webportalUrl).protocol!.slice(0, -1);
@@ -63,7 +64,7 @@ export default class WebPortal extends Logger {
   private server: HttpServer | HttpsServer;
 
   constructor() {
-    super(LoggerDefinitions.WebPortal);
+    super(new LoggerDefinition('Web Portal'));
   }
 
   public start() {

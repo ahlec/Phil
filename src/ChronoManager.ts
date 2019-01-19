@@ -3,11 +3,14 @@ import { QueryResult } from 'pg';
 import { inspect } from 'util';
 import Chronos from './chronos/index';
 import EmbedColor from './embed-color';
-import { Logger, LoggerDefinitions } from './Logger';
+import Logger from './Logger';
+import LoggerDefinition from './LoggerDefinition';
 import Phil from './phil';
 import { DiscordPromises } from './promises/discord';
 import ServerConfig from './server-config';
 import ServerDirectory from './server-directory';
+
+export const Definition = new LoggerDefinition('Chrono Manager');
 
 export default class ChronoManager extends Logger {
   private readonly channelsLastMessageTable: { [channelId: string]: Date };
@@ -17,7 +20,7 @@ export default class ChronoManager extends Logger {
     private readonly phil: Phil,
     private readonly serverDirectory: ServerDirectory
   ) {
-    super(LoggerDefinitions.ChronoManager);
+    super(Definition);
     this.channelsLastMessageTable = {};
     this.hasBeenStarted = false;
   }
