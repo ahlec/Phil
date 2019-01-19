@@ -5,34 +5,45 @@ import IStage from '../timezones/questionnaire-stages/@stage';
 import { IDirectMessageProcessor, IProcessorActiveToken } from './@base';
 
 interface ITimezoneQuestionnaireToken extends IProcessorActiveToken {
-    readonly currentStage?: IStage;
+  readonly currentStage?: IStage;
 }
 
-export default class TimezoneQuestionnaireProcessor implements IDirectMessageProcessor {
-    public readonly handle = 'timezone-questionnaire';
+export default class TimezoneQuestionnaireProcessor
+  implements IDirectMessageProcessor {
+  public readonly handle = 'timezone-questionnaire';
 
-    public async canProcess(phil: Phil, message: PrivateMessage): Promise<ITimezoneQuestionnaireToken> {
-        const currentStage = await TimezoneQuestionnaire.getStageForUser(phil.db, message.userId);
-        if (!currentStage) {
-            return {
-                isActive: false
-            };
-        }
-
-        if (!TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(currentStage)) {
-            return {
-                isActive: false
-            };
-        }
-
-        return {
-            currentStage,
-            isActive: true
-        }
+  public async canProcess(
+    phil: Phil,
+    message: PrivateMessage
+  ): Promise<ITimezoneQuestionnaireToken> {
+    const currentStage = await TimezoneQuestionnaire.getStageForUser(
+      phil.db,
+      message.userId
+    );
+    if (!currentStage) {
+      return {
+        isActive: false,
+      };
     }
 
-    public async process(phil: Phil, message: PrivateMessage, rawToken: IProcessorActiveToken) {
-        const token = rawToken as ITimezoneQuestionnaireToken;
-        token.currentStage.processInput(phil, message);
+    if (!TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(currentStage)) {
+      return {
+        isActive: false,
+      };
     }
+
+    return {
+      currentStage,
+      isActive: true,
+    };
+  }
+
+  public async process(
+    phil: Phil,
+    message: PrivateMessage,
+    rawToken: IProcessorActiveToken
+  ) {
+    const token = rawToken as ITimezoneQuestionnaireToken;
+    token.currentStage.processInput(phil, message);
+  }
 }

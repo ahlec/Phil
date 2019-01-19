@@ -37,10 +37,10 @@ export const CommandLookup: ICommandLookup = {};
 export default CommandLookup;
 
 function registerCommand(command: ICommand) {
-    CommandLookup[command.name] = command;
-    for (const alias of command.aliases) {
-        CommandLookup[alias] = command;
-    }
+  CommandLookup[command.name] = command;
+  for (const alias of command.aliases) {
+    CommandLookup[alias] = command;
+  }
 }
 
 const helpCommand = new HelpCommand();

@@ -6,14 +6,14 @@ import Pronoun from './pronoun';
 const roleToPronounLookup: { [displayName: string]: Pronoun } = {};
 
 for (const pronoun of AllPronouns) {
-    roleToPronounLookup[pronoun.roleName] = pronoun;
+  roleToPronounLookup[pronoun.roleName] = pronoun;
 }
 
 export function getPronounFromRole(role: DiscordIORole): Pronoun | null {
-    const pronoun = roleToPronounLookup[role.name];
-    if (pronoun) {
-        return pronoun;
-    }
+  const pronoun = roleToPronounLookup[role.name];
+  if (pronoun) {
+    return pronoun;
+  }
 
-    return null;
+  return null;
 }
