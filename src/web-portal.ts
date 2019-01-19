@@ -1,9 +1,9 @@
 import {
+  ClientRequest,
   createServer as createHttpServer,
   get as getHttp,
-  Server as HttpServer,
-  ClientRequest,
   IncomingMessage,
+  Server as HttpServer,
   ServerResponse,
 } from 'http';
 import {
@@ -12,11 +12,11 @@ import {
   Server as HttpsServer,
 } from 'https';
 import { parse, resolve } from 'url';
-import Loggable from './Loggable';
 import GlobalConfig from './global-config';
+import { Logger, LoggerDefinitions } from './Logger';
 
 // Abstract away protocol from here forward.
-const serverProtocol = parse(GlobalConfig.webportalUrl).protocol.slice(0, -1);
+const serverProtocol = parse(GlobalConfig.webportalUrl).protocol!.slice(0, -1);
 type CreateServerResponseListener = (
   request: IncomingMessage,
   response: ServerResponse
@@ -46,24 +46,24 @@ switch (serverProtocol) {
 // Utility functions
 function getEndpoint(endpoint: string): Promise<string> {
   const url = resolve(GlobalConfig.webportalUrl, endpoint);
-  return new Promise((resolve, reject) => {
+  return new Promise((resolvePromise, reject) => {
     const request = get(url);
     request.on('error', err => reject(err));
     request.on('response', (response: IncomingMessage) => {
       response.on('error', err => reject(err));
       response.on('data', (chunk: string | Buffer) =>
-        resolve(chunk.toString())
+        resolvePromise(chunk.toString())
       );
     });
   });
 }
 
 // Class itself
-export default class WebPortal extends Loggable {
+export default class WebPortal extends Logger {
   private server: HttpServer | HttpsServer;
 
   constructor() {
-    super('Web Portal');
+    super(LoggerDefinitions.WebPortal);
   }
 
   public start() {

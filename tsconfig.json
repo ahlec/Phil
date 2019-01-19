@@ -1,28 +1,25 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "target": "ES2017",
-        "noImplicitAny": true,
-        "noUnusedLocals": true,
-        "removeComments": true,
-        "preserveConstEnums": true,
-        "sourceMap": true,
-        "outDir": "build",
-        "types": [
-            "node",
-            "pg",
-            "discord.io",
-            "official-discord",
-            "chrono-node",
-            "moment",
-            "moment-timezone"
-        ],
-        "typeRoots": ["node_modules/@types", "./types"]
-    },
-    "include": [
-        "src/**/*"
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2017",
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "outDir": "build",
+    "types": [
+      "node",
+      "pg",
+      "discord.io",
+      "official-discord",
+      "chrono-node",
+      "moment",
+      "moment-timezone"
     ],
-    "exclude": [
-        "**/@types.ts"
-    ]
+    "typeRoots": ["node_modules/@types", "./types"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["**/@types.ts"]
 }
