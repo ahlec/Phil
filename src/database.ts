@@ -2,6 +2,8 @@ import { Pool, QueryResult } from 'pg';
 import GlobalConfig from './global-config';
 import Versions from './versions';
 
+const EMPTY_ARRAY: any[] = [];
+
 export default class Database {
   private readonly pool: Pool;
 
@@ -42,16 +44,20 @@ export default class Database {
           return;
         }
 
-        client.query(text, values, (err: Error, result: QueryResult) => {
-          done();
+        client.query(
+          text,
+          values || EMPTY_ARRAY,
+          (err: Error, result: QueryResult) => {
+            done();
 
-          if (err) {
-            reject(err);
-            return;
+            if (err) {
+              reject(err);
+              return;
+            }
+
+            resolve(result);
           }
-
-          resolve(result);
-        });
+        );
       });
     });
   }

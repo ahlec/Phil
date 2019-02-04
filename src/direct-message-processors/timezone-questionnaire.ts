@@ -44,6 +44,10 @@ export default class TimezoneQuestionnaireProcessor
     rawToken: IProcessorActiveToken
   ) {
     const token = rawToken as ITimezoneQuestionnaireToken;
+    if (!token.currentStage) {
+      throw new Error('Cannot process an ongoing questionnaire');
+    }
+
     token.currentStage.processInput(phil, message);
   }
 }

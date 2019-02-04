@@ -1,9 +1,8 @@
 import Phil from '../../../phil';
 import ServerConfig from '../../../server-config';
-import { ParseResult } from '../../../type-definition/@type-definition';
 import { IConfigProperty } from '../config-command-base';
 import { ConfigActionParameterType, ConfigActionPrimaryKey } from './@action';
-import MutateConfigActionBase from './@mutate-base';
+import MutateConfigActionBase, { GetNewValueResult } from './@mutate-base';
 
 const NOWRAP = '';
 
@@ -30,7 +29,7 @@ export default class SetConfigAction<TModel> extends MutateConfigActionBase<
     serverConfig: ServerConfig,
     property: IConfigProperty<TModel>,
     mutableArgs: string[]
-  ): ParseResult {
+  ): GetNewValueResult {
     const rawInput = mutableArgs.join(' ');
     if (!rawInput) {
       return {

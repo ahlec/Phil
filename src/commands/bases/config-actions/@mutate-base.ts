@@ -3,7 +3,6 @@ import PublicMessage from '../../../messages/public';
 import Phil from '../../../phil';
 import { DiscordPromises } from '../../../promises/discord';
 import ServerConfig from '../../../server-config';
-import { ParseResult } from '../../../type-definition/@type-definition';
 import { ConfigCommandBase, IConfigProperty } from '../config-command-base';
 import {
   ConfigActionParameterType,
@@ -13,6 +12,10 @@ import {
 
 const NEWLINE = '\n';
 const NOWRAP = '';
+
+export type GetNewValueResult =
+  | { wasSuccessful: false; errorMessage: string }
+  | { wasSuccessful: true; parsedValue: string | null };
 
 export default abstract class MutateConfigActionBase<TModel>
   implements IConfigAction<TModel> {
@@ -63,7 +66,7 @@ export default abstract class MutateConfigActionBase<TModel>
     serverConfig: ServerConfig,
     property: IConfigProperty<TModel>,
     mutableArgs: string[]
-  ): ParseResult;
+  ): GetNewValueResult;
 
   private async sendInvalidInputResponse(
     command: ConfigCommandBase<TModel>,
@@ -93,7 +96,7 @@ export default abstract class MutateConfigActionBase<TModel>
     phil: Phil,
     message: PublicMessage,
     property: IConfigProperty<TModel>,
-    newValue: string
+    newValue: string | null
   ): Promise<any> {
     return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Success,

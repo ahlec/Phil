@@ -80,7 +80,14 @@ class RoleTypeDefinitionImplementation implements ITypeDefinition {
     };
   }
 
-  public toDisplayFormat(value: string, serverConfig: ServerConfig): string {
+  public toDisplayFormat(
+    value: string | null,
+    serverConfig: ServerConfig
+  ): string {
+    if (!value) {
+      return '(None)';
+    }
+
     const role = serverConfig.server.roles[value];
     if (!role) {
       return '(None)';
@@ -90,10 +97,14 @@ class RoleTypeDefinitionImplementation implements ITypeDefinition {
   }
 
   public toMultilineCodeblockDisplayFormat(
-    value: string,
+    value: string | null,
     phil: Phil,
     serverConfig: ServerConfig
   ): string {
+    if (!value) {
+      return '(None)';
+    }
+
     const role = serverConfig.server.roles[value];
     if (!role) {
       return '(None)';

@@ -19,7 +19,7 @@
   "dependencies": {
     "chalk": "^2.4.2",
     "chrono-node": "1.3.5",
-    "discord.io": "github:woor/discord.io#gateway_v6",
+    "discord.io": "github:ahlec/discord.io#gateway_v6",
     "moment-timezone": "0.5.23",
     "node-cache": "^4.2.0",
     "pg": "7.8.0",

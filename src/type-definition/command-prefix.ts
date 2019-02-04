@@ -96,16 +96,19 @@ class CommandPrefixTypeDefinitionImplementation implements ITypeDefinition {
     };
   }
 
-  public toDisplayFormat(value: string, serverConfig: ServerConfig): string {
-    return value;
+  public toDisplayFormat(
+    value: string | null,
+    serverConfig: ServerConfig
+  ): string {
+    return value || '';
   }
 
   public toMultilineCodeblockDisplayFormat(
-    value: string,
+    value: string | null,
     phil: Phil,
     serverConfig: ServerConfig
   ): string {
-    return value;
+    return value || '';
   }
 }
 

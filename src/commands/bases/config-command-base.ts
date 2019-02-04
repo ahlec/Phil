@@ -23,7 +23,11 @@ export interface IConfigProperty<TModel> {
 
   getValue(model: TModel): string | null;
   getRandomExampleValue(model: TModel): string;
-  setValue(phil: Phil, model: TModel, newValue: string): Promise<boolean>;
+  setValue(
+    phil: Phil,
+    model: TModel,
+    newValue: string | null
+  ): Promise<boolean>;
 }
 
 const NOWRAP = '';

@@ -127,7 +127,7 @@ export namespace BotUtils {
   export function getUserDisplayName(
     user: DiscordIOUser,
     server: DiscordIOServer
-  ): string {
+  ): string | null {
     if (!user) {
       return null;
     }

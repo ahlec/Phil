@@ -9,15 +9,6 @@
     "sourceMap": true,
     "strictNullChecks": true,
     "outDir": "build",
-    "types": [
-      "node",
-      "pg",
-      "discord.io",
-      "official-discord",
-      "chrono-node",
-      "moment",
-      "moment-timezone"
-    ],
     "typeRoots": ["node_modules/@types", "./types"]
   },
   "include": ["src/**/*"],

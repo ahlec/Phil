@@ -70,7 +70,14 @@ class MemberTypeDefinitionImplementation implements ITypeDefinition {
     };
   }
 
-  public toDisplayFormat(value: string, serverConfig: ServerConfig): string {
+  public toDisplayFormat(
+    value: string | null,
+    serverConfig: ServerConfig
+  ): string {
+    if (!value) {
+      return '(None)';
+    }
+
     const member = serverConfig.server.members[value];
     if (!member) {
       return '(None)';
@@ -80,10 +87,14 @@ class MemberTypeDefinitionImplementation implements ITypeDefinition {
   }
 
   public toMultilineCodeblockDisplayFormat(
-    value: string,
+    value: string | null,
     phil: Phil,
     serverConfig: ServerConfig
   ): string {
+    if (!value) {
+      return '(None)';
+    }
+
     const user = phil.bot.users[value];
     const displayName = BotUtils.getUserDisplayName(user, serverConfig.server);
     return displayName || '(None)';

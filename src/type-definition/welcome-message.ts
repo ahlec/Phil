@@ -46,7 +46,10 @@ class WelcomeMessageTypeDefinitionImplementation implements ITypeDefinition {
     };
   }
 
-  public toDisplayFormat(value: string, serverConfig: ServerConfig): string {
+  public toDisplayFormat(
+    value: string | null,
+    serverConfig: ServerConfig
+  ): string {
     if (!value) {
       return '(None)';
     }
@@ -62,7 +65,7 @@ class WelcomeMessageTypeDefinitionImplementation implements ITypeDefinition {
   }
 
   public toMultilineCodeblockDisplayFormat(
-    value: string,
+    value: string | null,
     phil: Phil,
     serverConfig: ServerConfig
   ): string {

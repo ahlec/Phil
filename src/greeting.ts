@@ -66,7 +66,7 @@ export default class Greeting extends Logger {
     );
     return this.serverConfig.welcomeMessage
       .replace(/\{user\}/g, '<@' + this.user.id + '>')
-      .replace(/\{name\}/g, displayName);
+      .replace(/\{name\}/g, displayName || 'new member');
   }
 
   private async shouldWelcomeMember(): Promise<boolean> {
