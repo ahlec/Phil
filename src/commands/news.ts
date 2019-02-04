@@ -3,19 +3,18 @@ import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
-export default class NewsCommand implements ICommand {
-  public readonly name = 'news';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = null;
-  public readonly permissionLevel = PermissionLevel.AdminOnly;
-
-  public readonly helpGroup = HelpGroup.Admin;
-  public readonly helpDescription =
-    'Has Phil echo the message provided in the news channel.';
-
-  public readonly versionAdded = 11;
+export default class NewsCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('news', parentDefinition, {
+      helpDescription:
+        'Has Phil echo the message provided in the news channel.',
+      helpGroup: HelpGroup.Admin,
+      permissionLevel: PermissionLevel.AdminOnly,
+      versionAdded: 11,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

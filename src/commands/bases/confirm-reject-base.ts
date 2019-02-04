@@ -6,7 +6,7 @@ import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
 import ServerConfig from '../../server-config';
 import { BotUtils } from '../../utils';
-import ICommand from '../@types';
+import Command, { LoggerDefinition } from '../@types';
 
 interface ConfirmRejectResults {
   numSuccessful: number;
@@ -19,20 +19,36 @@ enum PerformResult {
   Success,
 }
 
-export default abstract class ConfirmRejectCommandBase implements ICommand {
-  public abstract readonly name: string;
-  public abstract readonly aliases: ReadonlyArray<string>;
-  public readonly feature = Features.Prompts;
-  public readonly permissionLevel = PermissionLevel.AdminOnly;
+interface ConfirmRejectCommandBaseDetails {
+  aliases?: ReadonlyArray<string>;
+  noItemsConfirmedMessage: string;
+  oneItemConfirmedMessage: string;
+  multipleItemsConfirmedMessage: string;
+  versionAdded: number;
+}
 
-  public readonly helpGroup = HelpGroup.None;
-  public readonly helpDescription = null;
+export default abstract class ConfirmRejectCommandBase extends Command {
+  private readonly noItemsConfirmedMessage: string;
+  private readonly oneItemConfirmedMessage: string;
+  private readonly multipleItemsConfirmedMessage: string;
 
-  public abstract readonly versionAdded: number;
+  protected constructor(
+    name: string,
+    parentDefinition: LoggerDefinition,
+    details: ConfirmRejectCommandBaseDetails
+  ) {
+    super(name, parentDefinition, {
+      aliases: details.aliases,
+      feature: Features.Prompts,
+      helpGroup: HelpGroup.None,
+      permissionLevel: PermissionLevel.AdminOnly,
+      versionAdded: details.versionAdded,
+    });
 
-  protected abstract readonly noItemsConfirmedMessage: string;
-  protected abstract readonly oneItemConfirmedMessage: string;
-  protected abstract readonly multipleItemsConfirmedMessage: string;
+    this.noItemsConfirmedMessage = details.noItemsConfirmedMessage;
+    this.oneItemConfirmedMessage = details.oneItemConfirmedMessage;
+    this.multipleItemsConfirmedMessage = details.multipleItemsConfirmedMessage;
+  }
 
   public async processMessage(
     phil: Phil,

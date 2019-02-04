@@ -6,6 +6,15 @@ import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 
+export type CommandDetails = {
+  aliases?: ReadonlyArray<string>;
+  feature?: Feature;
+  permissionLevel?: PermissionLevel;
+  versionAdded: number;
+} & (
+  | { helpGroup: HelpGroup.None }
+  | { helpGroup?: HelpGroup; helpDescription: string });
+
 export default abstract class Command extends Logger {
   public readonly aliases: ReadonlyArray<string>;
   public readonly feature: Feature | null;
@@ -17,14 +26,7 @@ export default abstract class Command extends Logger {
   protected constructor(
     public readonly name: string,
     parentDefinition: LoggerDefinition,
-    properties: {
-      aliases?: ReadonlyArray<string>;
-      feature?: Feature;
-      permissionLevel?: PermissionLevel;
-      versionAdded: number;
-    } & (
-      | { helpGroup: HelpGroup.None }
-      | { helpGroup?: HelpGroup; helpDescription: string })
+    properties: CommandDetails
   ) {
     super(new LoggerDefinition(name, parentDefinition));
 
@@ -47,8 +49,7 @@ export default abstract class Command extends Logger {
 }
 
 export interface CommandLookup {
-  [handle: string]: Command | undefined;
+  [handle: string]: Command;
 }
 
-export { default as Logger } from '../Logger';
 export { default as LoggerDefinition } from '../LoggerDefinition';

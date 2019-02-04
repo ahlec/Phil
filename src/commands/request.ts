@@ -2,25 +2,24 @@ import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import Requestable from '../requestables';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
-export default class RequestCommand implements ICommand {
-  public readonly name = 'request';
-  public readonly aliases = ['giveme'];
-  public readonly feature = Features.Requestables;
-  public readonly permissionLevel = PermissionLevel.General;
-
-  public readonly helpGroup = HelpGroup.Roles;
-  public readonly helpDescription =
-    'Asks Phil to give you a role. Using the command by itself will show you all of the roles he can give you.';
-
-  public readonly versionAdded = 1;
+export default class RequestCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('request', parentDefinition, {
+      aliases: ['giveme'],
+      feature: Features.Requestables,
+      helpDescription:
+        'Asks Phil to give you a role. Using the command by itself will show you all of the roles he can give you.',
+      helpGroup: HelpGroup.Roles,
+      versionAdded: 1,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

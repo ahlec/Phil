@@ -1,9 +1,9 @@
 import { Channel as DiscordIOChannel } from 'discord.io';
-import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
+import { LoggerDefinition } from './@types';
 import {
   ConfigCommandBase,
   IConfigProperty,
@@ -143,30 +143,20 @@ const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
 // -----------------------------------------------------------------------------------
 
 export default class ConfigCommand extends ConfigCommandBase<ServerConfig> {
-  public readonly name = 'config';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = null;
-
-  public readonly helpGroup = HelpGroup.Admin;
-  public readonly helpDescription =
-    'Displays or changes the configuration settings for this server.';
-
-  public readonly versionAdded = 14;
-
-  public readonly isAdminCommand = true;
-
-  protected readonly configurationFor = 'server';
-
-  constructor() {
-    super(
-      [
+  constructor(parentDefinition: LoggerDefinition) {
+    super('config', parentDefinition, {
+      configurationFor: 'server',
+      helpDescription:
+        'Displays or changes the configuration settings for this server.',
+      orderedActions: [
         new DisplayConfigAction<ServerConfig>(),
         new InfoConfigAction<ServerConfig>(),
         new SetConfigAction<ServerConfig>(),
         new ClearConfigAction<ServerConfig>(),
       ],
-      properties
-    );
+      properties,
+      versionAdded: 14,
+    });
   }
 
   protected async getModel(

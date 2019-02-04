@@ -1,5 +1,4 @@
 import EmbedColor from '../../embed-color';
-import Feature from '../../features/feature';
 import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
 import PermissionLevel from '../../permission-level';
@@ -8,7 +7,7 @@ import { DiscordPromises, IEmbedField } from '../../promises/discord';
 import ServerConfig from '../../server-config';
 import { ITypeDefinition } from '../../type-definition/@type-definition';
 import BotUtils from '../../utils';
-import ICommand from '../@types';
+import Command, { LoggerDefinition } from '../@types';
 import {
   ConfigActionParameterType,
   IConfigAction,
@@ -33,40 +32,39 @@ export interface IConfigProperty<TModel> {
 const NOWRAP = '';
 const NEWLINE = '\n';
 
-function NEVER(_: never) {
-  throw new Error('Should not be here -- switch case not handled.');
+interface ConfigCommandBaseDetails<TModel> {
+  configurationFor: string;
+  helpDescription: string;
+  orderedActions: ReadonlyArray<IConfigAction<TModel>>;
+  properties: ReadonlyArray<IConfigProperty<TModel>>;
+  versionAdded: number;
 }
 
-export abstract class ConfigCommandBase<TModel> implements ICommand {
-  public abstract readonly name: string;
-  public abstract readonly aliases: ReadonlyArray<string>;
-  public abstract readonly feature: Feature | null;
-  public readonly permissionLevel = PermissionLevel.AdminOnly;
-
-  public abstract readonly helpGroup: HelpGroup;
-  public abstract readonly helpDescription: string;
-
-  public abstract readonly versionAdded: number;
-
+export abstract class ConfigCommandBase<TModel> extends Command {
+  public readonly orderedActions: ReadonlyArray<IConfigAction<TModel>>;
   public readonly orderedProperties: ReadonlyArray<IConfigProperty<TModel>>;
-  public get titleCaseConfigurationFor(): string {
-    return (
-      this.configurationFor[0].toUpperCase() +
-      this.configurationFor.slice(1).toLowerCase()
-    );
-  }
 
-  protected abstract configurationFor: string;
-
+  private readonly configurationFor: string;
   private readonly actionsLookup: { [verb: string]: IConfigAction<TModel> };
   private readonly propertiesLookup: { [key: string]: IConfigProperty<TModel> };
 
-  constructor(
-    public readonly orderedActions: ReadonlyArray<IConfigAction<TModel>>,
-    properties: ReadonlyArray<IConfigProperty<TModel>>
+  protected constructor(
+    name: string,
+    parentDefinition: LoggerDefinition,
+    details: ConfigCommandBaseDetails<TModel>
   ) {
+    super(name, parentDefinition, {
+      helpDescription: details.helpDescription,
+      helpGroup: HelpGroup.Admin,
+      permissionLevel: PermissionLevel.AdminOnly,
+      versionAdded: details.versionAdded,
+    });
+
+    this.orderedActions = details.orderedActions;
+    this.configurationFor = details.configurationFor;
+
     this.actionsLookup = {};
-    for (const action of orderedActions) {
+    for (const action of details.orderedActions) {
       this.actionsLookup[action.primaryKey] = action;
 
       for (const alias of action.aliases) {
@@ -74,13 +72,20 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
       }
     }
 
-    this.orderedProperties = properties
+    this.orderedProperties = details.properties
       .slice()
       .sort(this.compareConfigProperties);
     this.propertiesLookup = {};
-    for (const property of properties) {
+    for (const property of details.properties) {
       this.propertiesLookup[property.key.toLowerCase()] = property;
     }
+  }
+
+  public get titleCaseConfigurationFor(): string {
+    return (
+      this.configurationFor[0].toUpperCase() +
+      this.configurationFor.slice(1).toLowerCase()
+    );
   }
 
   public async processMessage(
@@ -349,6 +354,6 @@ export abstract class ConfigCommandBase<TModel> implements ICommand {
       }
     }
 
-    NEVER(parameterType);
+    return parameterType;
   }
 }

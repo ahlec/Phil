@@ -2,14 +2,13 @@ import FeatureUtils from '../../features/feature-utils';
 import { HelpGroup } from '../../help-groups';
 import MessageBuilder from '../../message-builder';
 import PublicMessage from '../../messages/public';
-import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
 import { DiscordPromises } from '../../promises/discord';
-import ICommand, { CommandLookup, Logger, LoggerDefinition } from '../@types';
+import Command, { CommandLookup, LoggerDefinition } from '../@types';
 import CommandHelpInfo from './command-help-info';
 import HelpGroupInfo from './help-group-info';
 
-function isVisibleCommand(commandName: string, command: ICommand): boolean {
+function isVisibleCommand(commandName: string, command: Command): boolean {
   if (command.aliases.indexOf(commandName) >= 0) {
     return false;
   }
@@ -80,25 +79,18 @@ function groupCommands(
   return helpGroups;
 }
 
-export default class HelpCommand extends Logger implements ICommand {
-  public readonly name = 'help';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = null;
-  public readonly permissionLevel = PermissionLevel.General;
-
-  public readonly helpGroup = HelpGroup.General;
-  public readonly helpDescription =
-    'Find out about all of the commands that Phil has available.';
-
-  public readonly versionAdded = 3;
-
+export default class HelpCommand extends Command {
   private readonly helpGroups: ReadonlyArray<HelpGroupInfo>;
 
   public constructor(
     parentDefinition: LoggerDefinition,
     lookup: CommandLookup
   ) {
-    super(new LoggerDefinition('help', parentDefinition));
+    super('help', parentDefinition, {
+      helpDescription:
+        'Find out about all of the commands that Phil has available.',
+      versionAdded: 3,
+    });
 
     const allHelpInfo = getAllCommandHelpInfo(lookup, this);
     this.helpGroups = groupCommands(allHelpInfo);

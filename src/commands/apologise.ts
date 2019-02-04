@@ -1,10 +1,9 @@
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import BotUtils from '../utils';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
 const apologies = [
   'I am incredibly sorry for my mistake.',
@@ -18,17 +17,14 @@ const apologies = [
   'On my Yeti honour and pride, I shall never do this again.',
 ];
 
-export default class ApologiseCommand implements ICommand {
-  public readonly name = 'apologise';
-  public readonly aliases = ['apologize'];
-  public readonly feature = null;
-  public readonly permissionLevel = PermissionLevel.General;
-
-  public readonly helpGroup = HelpGroup.None;
-  public readonly helpDescription =
-    'Makes Phil apologise for making a mistake.';
-
-  public readonly versionAdded = 3;
+export default class ApologiseCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('apologise', parentDefinition, {
+      aliases: ['apologize'],
+      helpGroup: HelpGroup.None,
+      versionAdded: 3,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

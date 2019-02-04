@@ -2,24 +2,35 @@ import { Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
 import Feature from '../../features/feature';
 import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
-import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
 import { DiscordPromises } from '../../promises/discord';
 import ServerConfig from '../../server-config';
 import { BotUtils } from '../../utils';
-import ICommand from '../@types';
+import Command, { LoggerDefinition } from '../@types';
 
-export default abstract class MemberUniqueRoleCommandBase<TData>
-  implements ICommand {
-  public abstract readonly name: string;
-  public abstract readonly aliases: ReadonlyArray<string>;
-  public abstract readonly feature: Feature;
-  public readonly permissionLevel = PermissionLevel.General;
+interface MemberUniqueRoleCommandBaseDetails {
+  aliases?: ReadonlyArray<string>;
+  feature?: Feature;
+  helpDescription: string;
+  versionAdded: number;
+}
 
-  public readonly helpGroup = HelpGroup.Roles;
-  public abstract readonly helpDescription: string;
-
-  public abstract readonly versionAdded: number;
+export default abstract class MemberUniqueRoleCommandBase<
+  TData
+> extends Command {
+  public constructor(
+    name: string,
+    parentDefinition: LoggerDefinition,
+    details: MemberUniqueRoleCommandBaseDetails
+  ) {
+    super(name, parentDefinition, {
+      aliases: details.aliases,
+      feature: details.feature,
+      helpDescription: details.helpDescription,
+      helpGroup: HelpGroup.Roles,
+      versionAdded: details.versionAdded,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

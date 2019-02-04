@@ -2,12 +2,11 @@ import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import Leaderboard from '../prompts/leaderboard';
 import LeaderboardEntry from '../prompts/leaderboard-entry';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
 const RANKING_EMOJI: { [rank: number]: string } = {
   1: ':first_place:',
@@ -74,17 +73,16 @@ function createLeaderboardMessage(leaderboard: Leaderboard): string {
   return leaderboardMessage;
 }
 
-export default class LeaderboardCommand implements ICommand {
-  public readonly name = 'leaderboard';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = Features.Prompts;
-  public readonly permissionLevel = PermissionLevel.General;
-
-  public readonly helpGroup = HelpGroup.Prompts;
-  public readonly helpDescription =
-    'Display the leaderboard for prompt submissions on the server, which shows who is in the lead for suggesting discussion prompts.';
-
-  public readonly versionAdded = 11;
+export default class LeaderboardCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('leaderboard', parentDefinition, {
+      feature: Features.Prompts,
+      helpDescription:
+        'Display the leaderboard for prompt submissions on the server, which shows who is in the lead for suggesting discussion prompts.',
+      helpGroup: HelpGroup.Prompts,
+      versionAdded: 11,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

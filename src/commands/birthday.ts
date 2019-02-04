@@ -1,27 +1,22 @@
 import { Moment } from 'moment';
 import Database from '../database';
-import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
 import chronoNode = require('chrono-node');
 import momentModuleFunc = require('moment');
 
-export default class BirthdayCommand implements ICommand {
-  public readonly name = 'birthday';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = null;
-  public readonly permissionLevel = PermissionLevel.General;
-
-  public readonly helpGroup = HelpGroup.General;
-  public readonly helpDescription =
-    'Tell Phil when your birthday is so he can share your birthday with the server.';
-
-  public readonly versionAdded = 5;
+export default class BirthdayCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('birthday', parentDefinition, {
+      helpDescription:
+        'Tell Phil when your birthday is so he can share your birthday with the server.',
+      versionAdded: 5,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

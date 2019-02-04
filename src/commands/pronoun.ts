@@ -6,6 +6,7 @@ import { Pronoun } from '../pronouns/pronoun';
 import { getPronounFromRole } from '../pronouns/utils';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
+import { LoggerDefinition } from './@types';
 import MemberUniqueRoleCommandBase from './bases/member-unique-role-base';
 
 const pronounUsageToPronouns: { [pronoun: string]: Pronoun } = {};
@@ -20,14 +21,14 @@ for (const pronoun of AllPronouns) {
 export default class PronounCommand extends MemberUniqueRoleCommandBase<
   Pronoun
 > {
-  public readonly name = 'pronoun';
-  public readonly aliases = ['pronouns'];
-  public readonly feature = Features.Pronouns;
-
-  public readonly helpDescription =
-    'Changes the pronouns that Phil uses to refer to you.';
-
-  public readonly versionAdded = 13;
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('pronoun', parentDefinition, {
+      aliases: ['pronouns'],
+      feature: Features.Pronouns,
+      helpDescription: 'Changes the pronouns that Phil uses to refer to you.',
+      versionAdded: 13,
+    });
+  }
 
   protected getMissingCommandArgsErrorMessage(
     serverConfig: ServerConfig

@@ -1,28 +1,24 @@
 import { Server as DiscordIOServer } from 'discord.io';
 import CalendarMonth from '../calendar/calendar-month';
 import Features from '../features/all-features';
-import { HelpGroup } from '../help-groups';
 import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import ServerConfig from '../server-config';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
 const chronoNode = require('chrono-node');
 
-export default class CalendarCommand implements ICommand {
-  public readonly name = 'calendar';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = Features.Calendar;
-  public readonly permissionLevel = PermissionLevel.General;
-
-  public readonly helpGroup = HelpGroup.General;
-  public readonly helpDescription =
-    'Has Phil display the calendar of server events for the month in question.';
-
-  public readonly versionAdded = 6;
+export default class CalendarCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('calendar', parentDefinition, {
+      feature: Features.Calendar,
+      helpDescription:
+        'Has Phil display the calendar of server events for the month in question.',
+      versionAdded: 6,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

@@ -6,19 +6,19 @@ import Phil from '../phil';
 import Requestable, { IRequestableCreationDefinition } from '../requestables';
 import ServerConfig from '../server-config';
 import { BotUtils } from '../utils';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
-export default class DefineCommand implements ICommand {
-  public readonly name = 'define';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = Features.Requestables;
-  public readonly permissionLevel = PermissionLevel.AdminOnly;
-
-  public readonly helpGroup = HelpGroup.Roles;
-  public readonly helpDescription =
-    'Creates a new requestable role that users can use with the request command.';
-
-  public readonly versionAdded = 1;
+export default class DefineCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('define', parentDefinition, {
+      feature: Features.Requestables,
+      helpDescription:
+        'Creates a new requestable role that users can use with the request command.',
+      helpGroup: HelpGroup.Roles,
+      permissionLevel: PermissionLevel.AdminOnly,
+      versionAdded: 1,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

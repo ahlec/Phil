@@ -3,6 +3,7 @@ import Features from '../features/all-features';
 import { DiscordPromises } from '../promises/discord';
 import ServerConfig from '../server-config';
 import { BotUtils } from '../utils';
+import { LoggerDefinition } from './@types';
 import MemberUniqueRoleCommandBase from './bases/member-unique-role-base';
 
 const decemberLinks = [
@@ -24,14 +25,15 @@ const compliments = [
 
 // TData = valid string hex code (ie #000000)
 export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
-  public readonly name = 'colour';
-  public readonly aliases = ['color'];
-  public readonly feature = Features.Colour;
-
-  public readonly helpDescription =
-    'Asks Phil to change your username colour to a hex code of your choosing.';
-
-  public readonly versionAdded = 3;
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('colour', parentDefinition, {
+      aliases: ['color'],
+      feature: Features.Colour,
+      helpDescription:
+        'Asks Phil to change your username colour to a hex code of your choosing.',
+      versionAdded: 3,
+    });
+  }
 
   protected getMissingCommandArgsErrorMessage(
     serverConfig: ServerConfig

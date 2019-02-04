@@ -1,4 +1,5 @@
 import { Client as DiscordIOClient } from 'discord.io';
+import { sortBy, uniqBy, values } from 'lodash';
 import Command, { CommandLookup } from './commands/@types';
 import { instantiateCommands } from './commands/index';
 import Database from './database';
@@ -23,6 +24,15 @@ export default class CommandRunner extends Logger {
   ) {
     super(definition);
     this.commands = instantiateCommands(definition);
+
+    this.write('Starting runner.');
+    const orderedCommands = sortBy(
+      uniqBy(values(this.commands), ({ name }) => name),
+      ({ name }) => name
+    );
+    for (const command of orderedCommands) {
+      this.logCommandRegistered(command);
+    }
   }
 
   public isCommand(message: IPublicMessage): boolean {
@@ -66,6 +76,14 @@ export default class CommandRunner extends Logger {
     }
 
     await this.runCommand(message, command, input);
+  }
+
+  private logCommandRegistered(command: Command) {
+    const aliases =
+      command.aliases && command.aliases.length
+        ? ` (aliases: ${command.aliases.map(alias => `'${alias}'`).join(', ')})`
+        : '';
+    this.write(` > Registered '${command.name}'${aliases}`);
   }
 
   private logInputReceived(message: IPublicMessage, input: InputMessage) {

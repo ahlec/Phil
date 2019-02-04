@@ -3,23 +3,22 @@ import Phil from '../phil';
 import Prompt from '../prompts/prompt';
 import Submission from '../prompts/submission';
 import ServerConfig from '../server-config';
+import { LoggerDefinition } from './@types';
 import ConfirmRejectCommandBase from './bases/confirm-reject-base';
 
 const successMessageEnd =
   ' confirmed. You may continue using `{commandPrefix}confirm` or start over by using `{commandPrefix}unconfirmed`.';
 
 export default class ConfirmCommand extends ConfirmRejectCommandBase {
-  public readonly name = 'confirm';
-  public readonly aliases: string[] = [];
-
-  public readonly versionAdded = 1;
-
-  protected readonly noItemsConfirmedMessage =
-    'No submissions were confirmed. This is probably because they were already confirmed. You can start over by using `{commandPrefix}unconfirmed` to see all of the still-unconfirmed submissions.';
-  protected readonly oneItemConfirmedMessage =
-    'Submission was' + successMessageEnd;
-  protected readonly multipleItemsConfirmedMessage =
-    'Submissions were' + successMessageEnd;
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('confirm', parentDefinition, {
+      multipleItemsConfirmedMessage: `Submissions were ${successMessageEnd}`,
+      noItemsConfirmedMessage:
+        'No submissions were confirmed. This is probably because they were already confirmed. You can start over by using `{commandPrefix}unconfirmed` to see all of the still-unconfirmed submissions.',
+      oneItemConfirmedMessage: `Submission was ${successMessageEnd}`,
+      versionAdded: 1,
+    });
+  }
 
   protected async performActionOnSubmission(
     phil: Phil,
@@ -54,7 +53,7 @@ export default class ConfirmCommand extends ConfirmRejectCommandBase {
       return false;
     }
 
-    console.log('submission #', submissionId, '=> prompt #', prompt.id);
+    this.write(`submission #${submissionId} => prompt #${prompt.id}`);
 
     if (submission.bucket.frequency !== BucketFrequency.Immediately) {
       return true;

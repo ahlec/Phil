@@ -4,25 +4,23 @@ import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import Requestable from '../requestables';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
-export default class RemoveCommand implements ICommand {
-  public readonly name = 'remove';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = Features.Requestables;
-  public readonly permissionLevel = PermissionLevel.General;
-
-  public readonly helpGroup = HelpGroup.Roles;
-  public readonly helpDescription =
-    'Asks Phil to take away a requestable role that he has given you.';
-
-  public readonly versionAdded = 7;
+export default class RemoveCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('remove', parentDefinition, {
+      feature: Features.Requestables,
+      helpDescription:
+        'Asks Phil to take away a requestable role that he has given you.',
+      helpGroup: HelpGroup.Roles,
+      versionAdded: 7,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

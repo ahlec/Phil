@@ -6,7 +6,7 @@ import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
 type FieldTransformFunc<T> = (bucket: Bucket, value: T) => string;
 
@@ -61,17 +61,17 @@ function sendBucketToChannel(
   });
 }
 
-export default class BucketCommand implements ICommand {
-  public readonly name = 'bucket';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = Features.Prompts;
-  public readonly permissionLevel = PermissionLevel.AdminOnly;
-
-  public readonly helpGroup = HelpGroup.Prompts;
-  public readonly helpDescription =
-    'Displays all of the configuration information for a prompt bucket.';
-
-  public readonly versionAdded = 11;
+export default class BucketCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('bucket', parentDefinition, {
+      feature: Features.Prompts,
+      helpDescription:
+        'Displays all of the configuration information for a prompt bucket.',
+      helpGroup: HelpGroup.Prompts,
+      permissionLevel: PermissionLevel.AdminOnly,
+      versionAdded: 11,
+    });
+  }
 
   public async processMessage(
     phil: Phil,
