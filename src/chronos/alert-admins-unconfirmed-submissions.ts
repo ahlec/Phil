@@ -5,10 +5,16 @@ import { DiscordPromises } from '../promises/discord';
 import UnconfirmedSubmissionTally from '../prompts/unconfirmed-submission-tally';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
-import Chrono from './@types';
+import Chrono, { Logger, LoggerDefinition } from './@types';
 
-export default class AlertAdminsUnconfirmedSubmissionsChrono implements Chrono {
-  public readonly handle = 'alert-admins-unconfirmed-submissions';
+const HANDLE = 'alert-admins-unconfirmed-submissions';
+export default class AlertAdminsUnconfirmedSubmissionsChrono extends Logger
+  implements Chrono {
+  public readonly handle = HANDLE;
+
+  public constructor(parentDefinition: LoggerDefinition) {
+    super(new LoggerDefinition(HANDLE, parentDefinition));
+  }
 
   public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
     const unconfirmedTally = await UnconfirmedSubmissionTally.collectForServer(

@@ -6,15 +6,20 @@ import { GROUP_PRONOUNS } from '../pronouns/definitions';
 import { Pronoun } from '../pronouns/pronoun';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
-import Chrono from './@types';
+import Chrono, { Logger, LoggerDefinition } from './@types';
 
 interface HappyBirthdayInfo {
   readonly names: ReadonlyArray<string>;
   readonly pronoun: Pronoun;
 }
 
-export default class HappyBirthdayChrono implements Chrono {
-  public readonly handle = 'happy-birthday';
+const HANDLE = 'happy-birthday';
+export default class HappyBirthdayChrono extends Logger implements Chrono {
+  public readonly handle = HANDLE;
+
+  public constructor(parentDefinition: LoggerDefinition) {
+    super(new LoggerDefinition(HANDLE, parentDefinition));
+  }
 
   public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
     const userIds = await this.getBirthdayUserIds(phil.db, serverConfig, now);

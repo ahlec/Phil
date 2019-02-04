@@ -1,4 +1,4 @@
-/* tslint:disable no-console max-classes-per-file */
+/* tslint:disable no-console */
 
 import LoggerDefinition from './LoggerDefinition';
 

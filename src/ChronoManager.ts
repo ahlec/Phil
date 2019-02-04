@@ -1,7 +1,7 @@
 import * as moment from 'moment';
 import { QueryResult } from 'pg';
 import { inspect } from 'util';
-import Chronos from './chronos/index';
+import Chronos, { Chrono } from './chronos/index';
 import EmbedColor from './embed-color';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
@@ -10,11 +10,12 @@ import { DiscordPromises } from './promises/discord';
 import ServerConfig from './server-config';
 import ServerDirectory from './server-directory';
 
-export const Definition = new LoggerDefinition('Chrono Manager');
+const Definition = new LoggerDefinition('Chrono Manager');
 
 export default class ChronoManager extends Logger {
   private readonly channelsLastMessageTable: { [channelId: string]: Date };
   private hasBeenStarted: boolean;
+  private readonly chronos: { [handle: string]: Chrono | undefined } = {};
 
   constructor(
     private readonly phil: Phil,
@@ -32,6 +33,13 @@ export default class ChronoManager extends Logger {
 
     this.hasBeenStarted = true;
     this.write('Starting system.');
+
+    for (const constructor of Chronos) {
+      const chrono = new constructor(Definition);
+      this.chronos[chrono.handle] = chrono;
+      this.write(` > Registered '${chrono.handle}'.`);
+    }
+
     setInterval(this.processChronos, 1000 * 60 * 15); // Run every 15 minutes
     this.processChronos(); // Also run at startup to make sure you get anything that ran earlier that day
   }
@@ -110,7 +118,7 @@ export default class ChronoManager extends Logger {
       return;
     }
 
-    const chronoDefinition = Chronos[chronoHandle];
+    const chronoDefinition = this.chronos[chronoHandle];
     if (!chronoDefinition) {
       this.error(`there is no chrono with the handle ${chronoHandle}`);
       return;

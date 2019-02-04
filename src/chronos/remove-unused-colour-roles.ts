@@ -1,19 +1,25 @@
-import { Moment } from 'moment';
 import { Server as DiscordIOServer } from 'discord.io';
+import { Moment } from 'moment';
 import EmbedColor from '../embed-color';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import ServerConfig from '../server-config';
 import { BotUtils } from '../utils';
-import Chrono from './@types';
+import Chrono, { Logger, LoggerDefinition } from './@types';
 
 interface IRoleInfo {
   id: string;
   name: string;
 }
 
-export default class RemoveUnusedColorRolesChrono implements Chrono {
-  public readonly handle = 'remove-unused-colour-roles';
+const HANDLE = 'remove-unused-colour-roles';
+export default class RemoveUnusedColorRolesChrono extends Logger
+  implements Chrono {
+  public readonly handle = HANDLE;
+
+  public constructor(parentDefinition: LoggerDefinition) {
+    super(new LoggerDefinition(HANDLE, parentDefinition));
+  }
 
   public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
     const unusedColorRoles = this.getAllUnusedColorRoleIds(serverConfig.server);

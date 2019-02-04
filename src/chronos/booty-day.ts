@@ -2,14 +2,19 @@ import { Moment } from 'moment';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import ServerConfig from '../server-config';
-import Chrono from './@types';
+import Chrono, { Logger, LoggerDefinition } from './@types';
 
-export default class BootyDayChrono implements Chrono {
-  public readonly handle = 'booty-day';
+const HANDLE = 'booty-day';
+export default class BootyDayChrono extends Logger implements Chrono {
+  public readonly handle = HANDLE;
+
+  public constructor(parentDefinition: LoggerDefinition) {
+    super(new LoggerDefinition(HANDLE, parentDefinition));
+  }
 
   public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
     if (now.date() !== 3) {
-      console.log("Today isn't booty day.");
+      this.write("Today isn't booty day.");
       return;
     }
 

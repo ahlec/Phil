@@ -4,12 +4,18 @@ import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import { PromptQueue } from '../prompts/queue';
 import ServerConfig from '../server-config';
-import Chrono from './@types';
+import Chrono, { Logger, LoggerDefinition } from './@types';
 
 const PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD_DAYS = 5;
 
-export default class AlertLowBucketQueueChrono implements Chrono {
-  public readonly handle = 'alert-low-bucket-queue';
+const HANDLE = 'alert-low-bucket-queue';
+export default class AlertLowBucketQueueChrono extends Logger
+  implements Chrono {
+  public readonly handle = HANDLE;
+
+  public constructor(parentDefinition: LoggerDefinition) {
+    super(new LoggerDefinition(HANDLE, parentDefinition));
+  }
 
   public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
     const serverBuckets = await Bucket.getAllForServer(

@@ -1,21 +1,18 @@
 import { Moment } from 'moment';
 import Bucket from '../buckets';
-import { Definition } from '../ChronoManager';
-import Logger from '../Logger';
-import LoggerDefinition from '../LoggerDefinition';
 import Phil from '../phil';
 import Prompt from '../prompts/prompt';
 import { PromptQueue } from '../prompts/queue';
 import Submission from '../prompts/submission';
 import ServerConfig from '../server-config';
-import Chrono from './@types';
+import Chrono, { Logger, LoggerDefinition } from './@types';
 
 const HANDLE = 'post-new-prompts';
 export default class PostNewPromptsChrono extends Logger implements Chrono {
   public readonly handle = HANDLE;
 
-  public constructor() {
-    super(new LoggerDefinition(HANDLE, Definition));
+  public constructor(parentDefinition: LoggerDefinition) {
+    super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
   public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
