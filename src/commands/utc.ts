@@ -3,11 +3,10 @@ import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import UserTimezone from '../timezones/user-timezone';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
 import chronoNode = require('chrono-node');
 
@@ -15,17 +14,16 @@ function formatTimeToString(time: moment.Moment): string {
   return time.format('HH:mm (h:mm A)');
 }
 
-export default class UtcCommand implements ICommand {
-  public readonly name = 'utc';
-  public readonly aliases = ['gmt'];
-  public readonly feature = Features.TimezoneProcessing;
-  public readonly permissionLevel = PermissionLevel.General;
-
-  public readonly helpGroup = HelpGroup.Time;
-  public readonly helpDescription =
-    'Converts a time from your local timezone to UTC.';
-
-  public readonly versionAdded = 10;
+export default class UtcCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('utc', parentDefinition, {
+      aliases: ['gmt'],
+      feature: Features.TimezoneProcessing,
+      helpDescription: 'Converts a time from your local timezone to UTC.',
+      helpGroup: HelpGroup.Time,
+      versionAdded: 10,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

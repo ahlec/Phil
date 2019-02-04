@@ -1,20 +1,18 @@
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
-export default class KuzcoCommand implements ICommand {
-  public readonly name = 'kuzco';
-  public readonly aliases = ['poison'];
-  public readonly feature = null;
-  public readonly permissionLevel = PermissionLevel.General;
-
-  public readonly helpGroup = HelpGroup.Memes;
-  public readonly helpDescription = 'Oh right, the poison.';
-
-  public readonly versionAdded = 8;
+export default class KuzcoCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('kuzco', parentDefinition, {
+      aliases: ['poison'],
+      helpDescription: 'Oh right, the poison.',
+      helpGroup: HelpGroup.Memes,
+      versionAdded: 8,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

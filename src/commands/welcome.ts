@@ -5,7 +5,7 @@ import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { BotUtils } from '../utils';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
 import MemberTypeDefinition from '../type-definition/member';
 
@@ -15,16 +15,15 @@ type GetUserResult =
 
 const NOWRAP = '';
 
-export default class WelcomeCommand implements ICommand {
-  public readonly name = 'welcome';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = null;
-  public readonly permissionLevel = PermissionLevel.AdminOnly;
-
-  public readonly helpGroup = HelpGroup.Admin;
-  public readonly helpDescription = 'Tests the welcome message for the server.';
-
-  public readonly versionAdded = 14;
+export default class WelcomeCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('welcome', parentDefinition, {
+      helpDescription: 'Tests the welcome message for the server.',
+      helpGroup: HelpGroup.Admin,
+      permissionLevel: PermissionLevel.AdminOnly,
+      versionAdded: 14,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

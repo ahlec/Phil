@@ -5,7 +5,7 @@ import PublicMessage from '../../messages/public';
 import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
 import { DiscordPromises } from '../../promises/discord';
-import ICommand, { ICommandLookup } from '../@types';
+import ICommand, { CommandLookup, Logger, LoggerDefinition } from '../@types';
 import CommandHelpInfo from './command-help-info';
 import HelpGroupInfo from './help-group-info';
 
@@ -21,7 +21,66 @@ function isVisibleCommand(commandName: string, command: ICommand): boolean {
   return true;
 }
 
-export default class HelpCommand implements ICommand {
+function getAllCommandHelpInfo(
+  commands: CommandLookup,
+  helpCommand: HelpCommand
+): ReadonlyArray<CommandHelpInfo> {
+  const commandInfo: CommandHelpInfo[] = [];
+  for (const commandName in commands) {
+    if (!commands.hasOwnProperty(commandName)) {
+      continue;
+    }
+
+    const command = commands[commandName];
+    if (!command) {
+      continue;
+    }
+
+    if (!isVisibleCommand(commandName, command)) {
+      continue;
+    }
+
+    const helpInfo = new CommandHelpInfo(command);
+    commandInfo.push(helpInfo);
+  }
+
+  if (isVisibleCommand(helpCommand.name, helpCommand)) {
+    const helpInfo = new CommandHelpInfo(helpCommand);
+    commandInfo.push(helpInfo);
+  }
+
+  return commandInfo;
+}
+
+function groupCommands(
+  commandInfo: ReadonlyArray<CommandHelpInfo>
+): ReadonlyArray<HelpGroupInfo> {
+  const groupLookup: { [groupNum: number]: HelpGroupInfo } = {};
+
+  for (const info of commandInfo) {
+    if (!groupLookup[info.helpGroup]) {
+      groupLookup[info.helpGroup] = new HelpGroupInfo(info.helpGroup);
+    }
+
+    groupLookup[info.helpGroup].addCommandInfo(info);
+  }
+
+  const helpGroups: HelpGroupInfo[] = [];
+  for (const groupNum in groupLookup) {
+    if (!groupLookup.hasOwnProperty(groupNum)) {
+      continue;
+    }
+
+    const group = groupLookup[groupNum];
+    group.finish();
+    helpGroups.push(group);
+  }
+
+  helpGroups.sort(HelpGroupInfo.sort);
+  return helpGroups;
+}
+
+export default class HelpCommand extends Logger implements ICommand {
   public readonly name = 'help';
   public readonly aliases: ReadonlyArray<string> = [];
   public readonly feature = null;
@@ -33,7 +92,17 @@ export default class HelpCommand implements ICommand {
 
   public readonly versionAdded = 3;
 
-  private helpGroups: ReadonlyArray<HelpGroupInfo> = [];
+  private readonly helpGroups: ReadonlyArray<HelpGroupInfo>;
+
+  public constructor(
+    parentDefinition: LoggerDefinition,
+    lookup: CommandLookup
+  ) {
+    super(new LoggerDefinition('help', parentDefinition));
+
+    const allHelpInfo = getAllCommandHelpInfo(lookup, this);
+    this.helpGroups = groupCommands(allHelpInfo);
+  }
 
   public async processMessage(
     phil: Phil,
@@ -64,51 +133,5 @@ export default class HelpCommand implements ICommand {
         helpMessage
       );
     }
-  }
-
-  public saveCommandDefinitions(commands: ICommandLookup) {
-    const commandInfo = this.getAllCommandHelpInfo(commands);
-    const groupLookup: { [groupNum: number]: HelpGroupInfo } = {};
-
-    for (const info of commandInfo) {
-      if (!groupLookup[info.helpGroup]) {
-        groupLookup[info.helpGroup] = new HelpGroupInfo(info.helpGroup);
-      }
-
-      groupLookup[info.helpGroup].addCommandInfo(info);
-    }
-
-    const helpGroups: HelpGroupInfo[] = [];
-    for (const groupNum in groupLookup) {
-      if (!groupLookup.hasOwnProperty(groupNum)) {
-        continue;
-      }
-
-      const group = groupLookup[groupNum];
-      group.finish();
-      helpGroups.push(group);
-    }
-
-    helpGroups.sort(HelpGroupInfo.sort);
-    this.helpGroups = helpGroups;
-  }
-
-  private getAllCommandHelpInfo(commands: ICommandLookup): CommandHelpInfo[] {
-    const commandInfo: CommandHelpInfo[] = [];
-    for (const commandName in commands) {
-      if (!commands.hasOwnProperty(commandName)) {
-        continue;
-      }
-
-      const command = commands[commandName];
-      if (!isVisibleCommand(commandName, command)) {
-        continue;
-      }
-
-      const helpInfo = new CommandHelpInfo(command);
-      commandInfo.push(helpInfo);
-    }
-
-    return commandInfo;
   }
 }

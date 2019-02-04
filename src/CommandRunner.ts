@@ -1,6 +1,6 @@
 import { Client as DiscordIOClient } from 'discord.io';
-import ICommand from './commands/@types';
-import { CommandLookup } from './commands/index';
+import Command, { CommandLookup } from './commands/@types';
+import { instantiateCommands } from './commands/index';
 import Database from './database';
 import GlobalConfig from './global-config';
 import InputMessage from './input-message';
@@ -11,17 +11,18 @@ import PermissionLevel, { getPermissionLevelName } from './permission-level';
 import Phil from './phil';
 import BotUtils from './utils';
 
-function NEVER(_: never) {
-  throw new Error('Reached an unreachable location in code');
-}
+const definition = new LoggerDefinition('Command Runner');
 
 export default class CommandRunner extends Logger {
+  private readonly commands: CommandLookup;
+
   constructor(
     private readonly phil: Phil,
     private readonly bot: DiscordIOClient,
     private readonly db: Database
   ) {
-    super(new LoggerDefinition('Command Runner'));
+    super(definition);
+    this.commands = instantiateCommands(definition);
   }
 
   public isCommand(message: IPublicMessage): boolean {
@@ -75,10 +76,11 @@ export default class CommandRunner extends Logger {
     );
   }
 
-  private getCommandFromInputMessage(input: InputMessage) {
-    if (input.commandName in CommandLookup) {
-      return CommandLookup[input.commandName];
+  private getCommandFromInputMessage(input: InputMessage): Command | null {
+    if (input.commandName in this.commands) {
+      return this.commands[input.commandName]!;
     }
+
     return null;
   }
 
@@ -93,7 +95,7 @@ export default class CommandRunner extends Logger {
   }
 
   private canUserUseCommand(
-    command: ICommand,
+    command: Command,
     message: IPublicMessage
   ): boolean {
     switch (command.permissionLevel) {
@@ -106,14 +108,14 @@ export default class CommandRunner extends Logger {
       case PermissionLevel.BotManagerOnly: {
         return message.userId === GlobalConfig.botManagerUserId;
       }
+      default:
+        return command.permissionLevel;
     }
-
-    NEVER(command.permissionLevel);
   }
 
   private reportCannotUseCommand(
     message: IPublicMessage,
-    command: ICommand,
+    command: Command,
     input: InputMessage
   ) {
     const permissionLevelName = getPermissionLevelName(command.permissionLevel);
@@ -128,7 +130,7 @@ export default class CommandRunner extends Logger {
 
   private async runCommand(
     message: IPublicMessage,
-    command: ICommand,
+    command: Command,
     input: InputMessage
   ) {
     try {

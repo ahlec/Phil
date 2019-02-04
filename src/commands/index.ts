@@ -1,4 +1,4 @@
-import ICommand, { ICommandLookup } from './@types';
+import Command, { CommandLookup, LoggerDefinition } from './@types';
 import ApologiseCommand from './apologise';
 import BirthdayCommand from './birthday';
 import BucketCommand from './bucket';
@@ -33,50 +33,62 @@ import VersionCommand from './version';
 import WelcomeCommand from './welcome';
 import YoutubeCommand from './youtube';
 
-export const CommandLookup: ICommandLookup = {};
-export default CommandLookup;
+// REGULAR_COMMANDS are all commands *other than* p!help
+const REGULAR_COMMANDS: ReadonlyArray<
+  new (parentDefinition: LoggerDefinition) => Command
+> = [
+  ApologiseCommand,
+  BirthdayCommand,
+  BucketCommand,
+  CalendarCommand,
+  ColourCommand,
+  ConchCommand,
+  ConfigCommand,
+  ConfirmCommand,
+  DefineCommand,
+  DisableCommand,
+  EnableCommand,
+  EvalCommand,
+  KuzcoCommand,
+  LeaderboardCommand,
+  MapCommand,
+  NewsCommand,
+  PauseCommand,
+  PromptCommand,
+  PronounCommand,
+  QueueCommand,
+  RejectCommand,
+  RemoveCommand,
+  RequestCommand,
+  SuggestCommand,
+  TimediffCommand,
+  TimezoneCommand,
+  UnconfirmedCommand,
+  UnpauseCommand,
+  UtcCommand,
+  VersionCommand,
+  WelcomeCommand,
+  YoutubeCommand,
+];
 
-function registerCommand(command: ICommand) {
-  CommandLookup[command.name] = command;
+function addToLookup(command: Command, lookup: CommandLookup): void {
+  lookup[command.name] = command;
   for (const alias of command.aliases) {
-    CommandLookup[alias] = command;
+    lookup[alias] = command;
   }
 }
 
-const helpCommand = new HelpCommand();
+export function instantiateCommands(
+  parentDefinition: LoggerDefinition
+): CommandLookup {
+  const lookup: CommandLookup = {};
+  for (const constructor of REGULAR_COMMANDS) {
+    const command = new constructor(parentDefinition);
+    addToLookup(command, lookup);
+  }
 
-registerCommand(new ApologiseCommand());
-registerCommand(new BirthdayCommand());
-registerCommand(new BucketCommand());
-registerCommand(new CalendarCommand());
-registerCommand(new ColourCommand());
-registerCommand(new ConchCommand());
-registerCommand(new ConfigCommand());
-registerCommand(new ConfirmCommand());
-registerCommand(new DefineCommand());
-registerCommand(new DisableCommand());
-registerCommand(new EnableCommand());
-registerCommand(new EvalCommand());
-registerCommand(helpCommand);
-registerCommand(new KuzcoCommand());
-registerCommand(new LeaderboardCommand());
-registerCommand(new MapCommand());
-registerCommand(new NewsCommand());
-registerCommand(new PauseCommand());
-registerCommand(new PromptCommand());
-registerCommand(new PronounCommand());
-registerCommand(new QueueCommand());
-registerCommand(new RejectCommand());
-registerCommand(new RemoveCommand());
-registerCommand(new RequestCommand());
-registerCommand(new SuggestCommand());
-registerCommand(new TimediffCommand());
-registerCommand(new TimezoneCommand());
-registerCommand(new UnconfirmedCommand());
-registerCommand(new UnpauseCommand());
-registerCommand(new UtcCommand());
-registerCommand(new VersionCommand());
-registerCommand(new WelcomeCommand());
-registerCommand(new YoutubeCommand());
+  const help = new HelpCommand(parentDefinition, lookup);
+  addToLookup(help, lookup);
 
-helpCommand.saveCommandDefinitions(CommandLookup);
+  return lookup;
+}

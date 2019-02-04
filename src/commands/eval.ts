@@ -1,26 +1,22 @@
+import { inspect } from 'util';
 import EmbedColor from '../embed-color';
-import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
-import ICommand from './@types';
-
-const util = require('util');
+import Command, { LoggerDefinition } from './@types';
 
 const NEWLINE = '\n';
-const NOWRAP = '';
 
-export default class EvalCommand implements ICommand {
-  public readonly name = 'eval';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = null;
-  public readonly permissionLevel = PermissionLevel.BotManagerOnly;
-
-  public readonly helpGroup = HelpGroup.General;
-  public readonly helpDescription = `Evaluates the result of a JavaScript function with context ${NOWRAP}of Phil.`;
-
-  public readonly versionAdded = 13;
+export default class EvalCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('eval', parentDefinition, {
+      helpDescription:
+        'Evaluates the result of a JavaScript function with context of Phil.',
+      permissionLevel: PermissionLevel.BotManagerOnly,
+      versionAdded: 13,
+    });
+  }
 
   public processMessage(
     phil: Phil,
@@ -44,14 +40,14 @@ export default class EvalCommand implements ICommand {
     };
     /* tslint:enable:no-eval only-arrow-functions */
 
-    console.log('----------------------------------------');
-    console.log('p!eval');
-    console.log();
-    console.log(javascript);
+    this.write('----------------------------------------');
+    this.write('p!eval');
+    this.write('');
+    this.write(javascript);
     const result = evalFunc.call(phil);
-    console.log(`result: ${result}`);
-    console.log(util.inspect(result));
-    console.log('----------------------------------------');
+    this.write(`result: ${result}`);
+    this.write(inspect(result));
+    this.write('----------------------------------------');
 
     return result;
   }

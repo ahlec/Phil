@@ -1,23 +1,21 @@
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import UserTimezone from '../timezones/user-timezone';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
-export default class TimediffCommand implements ICommand {
-  public readonly name = 'timediff';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = Features.TimezoneProcessing;
-  public readonly permissionLevel = PermissionLevel.General;
-
-  public readonly helpGroup = HelpGroup.Time;
-  public readonly helpDescription =
-    'Tells you the time difference (in hours) between you and the user that you mention with this command.';
-
-  public readonly versionAdded = 10;
+export default class TimediffCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('timediff', parentDefinition, {
+      feature: Features.TimezoneProcessing,
+      helpDescription:
+        'Tells you the time difference (in hours) between you and the user that you mention with this command.',
+      helpGroup: HelpGroup.Time,
+      versionAdded: 10,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

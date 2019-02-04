@@ -1,22 +1,20 @@
-import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import Versions from '../versions';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
-export default class VersionCommand implements ICommand {
-  public readonly name = 'version';
-  public readonly aliases = ['versions'];
-  public readonly feature = null;
-  public readonly permissionLevel = PermissionLevel.BotManagerOnly;
-
-  public readonly helpGroup = HelpGroup.General;
-  public readonly helpDescription =
-    'Prints out the current version numbers related to Phil.';
-
-  public readonly versionAdded = 3;
+export default class VersionCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('version', parentDefinition, {
+      aliases: ['versions'],
+      helpDescription:
+        'Prints out the current version numbers related to Phil.',
+      permissionLevel: PermissionLevel.BotManagerOnly,
+      versionAdded: 3,
+    });
+  }
 
   public processMessage(
     phil: Phil,

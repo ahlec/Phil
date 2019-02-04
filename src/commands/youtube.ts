@@ -1,22 +1,18 @@
-import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import YouTubePromises from '../promises/youtube';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
-export default class YoutubeCommand implements ICommand {
-  public readonly name = 'youtube';
-  public readonly aliases = ['yt'];
-  public readonly feature = null;
-  public readonly permissionLevel = PermissionLevel.General;
-
-  public readonly helpGroup = HelpGroup.General;
-  public readonly helpDescription =
-    'Searches YouTube for something and posts a link to the first video.';
-
-  public readonly versionAdded = 4;
+export default class YoutubeCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('youtube', parentDefinition, {
+      aliases: ['yt'],
+      helpDescription:
+        'Searches YouTube for something and posts a link to the first video.',
+      versionAdded: 4,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

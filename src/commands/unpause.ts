@@ -5,19 +5,20 @@ import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
-export default class UnpauseCommand implements ICommand {
-  public readonly name = 'unpause';
-  public readonly aliases = ['resume'];
-  public readonly feature = Features.Prompts;
-  public readonly permissionLevel = PermissionLevel.AdminOnly;
-
-  public readonly helpGroup = HelpGroup.Prompts;
-  public readonly helpDescription =
-    'Unpauses a prompt bucket that had been paused earlier from posting any new prompts.';
-
-  public readonly versionAdded = 11;
+export default class UnpauseCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('unpause', parentDefinition, {
+      aliases: ['resume'],
+      feature: Features.Prompts,
+      helpDescription:
+        'Unpauses a prompt bucket that had been paused earlier from posting any new prompts.',
+      helpGroup: HelpGroup.Prompts,
+      permissionLevel: PermissionLevel.AdminOnly,
+      versionAdded: 11,
+    });
+  }
 
   public async processMessage(
     phil: Phil,
