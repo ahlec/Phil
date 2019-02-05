@@ -2,20 +2,20 @@ import PrivateMessage from '../messages/private';
 import Phil from '../phil';
 import TimezoneQuestionnaire from '../timezones/questionnaire';
 import IStage from '../timezones/questionnaire-stages/@stage';
-import { IDirectMessageProcessor, IProcessorActiveToken } from './@base';
+import { DirectMessageProcessor, ProcessorActiveToken } from './@base';
 
-interface ITimezoneQuestionnaireToken extends IProcessorActiveToken {
+interface TimezoneQuestionnaireToken extends ProcessorActiveToken {
   readonly currentStage?: IStage;
 }
 
 export default class TimezoneQuestionnaireProcessor
-  implements IDirectMessageProcessor {
+  implements DirectMessageProcessor {
   public readonly handle = 'timezone-questionnaire';
 
   public async canProcess(
     phil: Phil,
     message: PrivateMessage
-  ): Promise<ITimezoneQuestionnaireToken> {
+  ): Promise<TimezoneQuestionnaireToken> {
     const currentStage = await TimezoneQuestionnaire.getStageForUser(
       phil.db,
       message.userId
@@ -41,9 +41,9 @@ export default class TimezoneQuestionnaireProcessor
   public async process(
     phil: Phil,
     message: PrivateMessage,
-    rawToken: IProcessorActiveToken
+    rawToken: ProcessorActiveToken
   ) {
-    const token = rawToken as ITimezoneQuestionnaireToken;
+    const token = rawToken as TimezoneQuestionnaireToken;
     if (!token.currentStage) {
       throw new Error('Cannot process an ongoing questionnaire');
     }

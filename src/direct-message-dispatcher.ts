@@ -1,4 +1,4 @@
-import { IDirectMessageProcessor } from './direct-message-processors/@base';
+import { DirectMessageProcessor } from './direct-message-processors/@base';
 
 import SuggestSessionListener from './direct-message-processors/suggest-session-listener';
 import TimezoneQuestionnaireProcessor from './direct-message-processors/timezone-questionnaire';
@@ -11,7 +11,7 @@ import { DiscordPromises } from './promises/discord';
 const util = require('util');
 
 export default class DirectMessageDispatcher {
-  private readonly processorsInPriorityOrder: IDirectMessageProcessor[] = [
+  private readonly processorsInPriorityOrder: DirectMessageProcessor[] = [
     new SuggestSessionListener(),
     new TimezoneQuestionnaireProcessor(),
   ];
@@ -33,7 +33,7 @@ export default class DirectMessageDispatcher {
     }
   }
 
-  private reportError(err: Error, processor: IDirectMessageProcessor) {
+  private reportError(err: Error, processor: DirectMessageProcessor) {
     console.error(err);
 
     DiscordPromises.sendEmbedMessage(

@@ -11,13 +11,13 @@ import {
 } from 'discord.io';
 import { DiscordPromises } from './promises/discord';
 
-interface ISendErrorMessageOpts {
+interface SendErrorMessageOpts {
   readonly bot: DiscordIOClient;
   readonly channelId: string;
   readonly message: string;
 }
 
-interface ISendSuccessMessageOpts {
+interface SendSuccessMessageOpts {
   readonly bot: DiscordIOClient;
   readonly channelId: string;
   readonly message: string;
@@ -38,14 +38,14 @@ export namespace BotUtils {
   }
 
   export function sendErrorMessage(
-    options: ISendErrorMessageOpts
+    options: SendErrorMessageOpts
   ): Promise<string> {
     const message = ':no_entry: **ERROR.** ' + options.message;
     return DiscordPromises.sendMessage(options.bot, options.channelId, message);
   }
 
   export function sendSuccessMessage(
-    options: ISendSuccessMessageOpts
+    options: SendSuccessMessageOpts
   ): Promise<string> {
     const message = ':white_check_mark: **SUCCESS.** ' + options.message;
     return DiscordPromises.sendMessage(options.bot, options.channelId, message);

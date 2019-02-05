@@ -1,8 +1,8 @@
 import Phil from '../phil';
 import ServerConfig from '../server-config';
 import {
-  ITypeDefinition,
   ParseResult,
+  TypeDefinition,
   ValidityResultType,
 } from './@type-definition';
 
@@ -11,7 +11,7 @@ const ROLE_LINK_SUFFIX = '>';
 const ROLE_LINK_MARKUP_LENGTH =
   ROLE_LINK_PREFIX.length + ROLE_LINK_SUFFIX.length;
 
-class RoleTypeDefinitionImplementation implements ITypeDefinition {
+class RoleTypeDefinitionImplementation implements TypeDefinition {
   public readonly rules = [
     'Must be a link to a role on the server.',
     'Must not be @here',

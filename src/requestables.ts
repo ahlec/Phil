@@ -2,7 +2,7 @@ import { Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
 import { QueryResult } from 'pg';
 import Database from './database';
 
-export interface IRequestableCreationDefinition {
+export interface RequestableCreationDefinition {
   name: string;
   role: DiscordIORole;
 }
@@ -70,7 +70,7 @@ export default class Requestable {
   public static async createRequestable(
     db: Database,
     server: DiscordIOServer,
-    info: IRequestableCreationDefinition
+    info: RequestableCreationDefinition
   ): Promise<void> {
     await db.query('INSERT INTO requestable_roles VALUES($1, $2, $3)', [
       info.name,

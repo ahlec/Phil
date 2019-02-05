@@ -74,7 +74,7 @@ export default abstract class MemberUniqueRoleCommandBase<
   ): boolean;
   protected abstract getRoleConfig(
     data: TData
-  ): DiscordPromises.IEditRoleOptions;
+  ): DiscordPromises.EditRoleOptions;
   protected abstract getSuccessMessage(
     serverConfig: ServerConfig,
     data: TData

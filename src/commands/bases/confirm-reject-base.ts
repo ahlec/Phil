@@ -69,7 +69,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
         message.channelId,
         confirmNumber
       );
-      console.log('result of number %d: %d', confirmNumber, result);
+      this.write(`result of number ${confirmNumber}: ${result}`);
       if (result === PerformResult.Success) {
         results.numSuccessful++;
       } else if (result === PerformResult.Error) {

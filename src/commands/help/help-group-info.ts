@@ -1,4 +1,4 @@
-import { IBatchFeaturesEnabledLookup } from '../../features/feature-utils';
+import { BatchFeaturesEnabledLookup } from '../../features/feature-utils';
 import { getHeaderForGroup, HelpGroup } from '../../help-groups';
 import MessageBuilder from '../../message-builder';
 import CommandHelpInfo from './command-help-info';
@@ -25,7 +25,7 @@ export default class HelpGroupInfo {
 
   public shouldDisplay(
     isAdminChannel: boolean,
-    featuresEnabledLookup: IBatchFeaturesEnabledLookup
+    featuresEnabledLookup: BatchFeaturesEnabledLookup
   ): boolean {
     for (const command of this.commands) {
       if (command.shouldDisplay(isAdminChannel, featuresEnabledLookup)) {
@@ -39,7 +39,7 @@ export default class HelpGroupInfo {
   public append(
     builder: MessageBuilder,
     isAdminChannel: boolean,
-    featuresEnabledLookup: IBatchFeaturesEnabledLookup
+    featuresEnabledLookup: BatchFeaturesEnabledLookup
   ) {
     builder.append(this.header);
 

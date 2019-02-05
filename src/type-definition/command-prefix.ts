@@ -2,19 +2,19 @@ import GlobalConfig from '../global-config';
 import Phil from '../phil';
 import ServerConfig from '../server-config';
 import {
-  ITypeDefinition,
   ParseResult,
+  TypeDefinition,
   ValidityResultType,
 } from './@type-definition';
 
-interface IInvalidPrefixCharacterDefinition {
+interface InvalidPrefixCharacterDefinition {
   character: string;
   name: string;
   indefiniteArticle: string;
 }
 
 const InvalidPrefixCharacters: ReadonlyArray<
-  IInvalidPrefixCharacterDefinition
+  InvalidPrefixCharacterDefinition
 > = [
   { character: '`', name: 'tilde', indefiniteArticle: 'a' },
   { character: '#', name: 'hash symbol', indefiniteArticle: 'a' },
@@ -36,7 +36,7 @@ for (const invalidCharacter of InvalidPrefixCharacters) {
   );
 }
 
-class CommandPrefixTypeDefinitionImplementation implements ITypeDefinition {
+class CommandPrefixTypeDefinitionImplementation implements TypeDefinition {
   public readonly rules = Rules;
 
   public tryParse(input: string): ParseResult {

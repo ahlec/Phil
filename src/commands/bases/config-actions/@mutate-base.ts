@@ -3,11 +3,11 @@ import PublicMessage from '../../../messages/public';
 import Phil from '../../../phil';
 import { DiscordPromises } from '../../../promises/discord';
 import ServerConfig from '../../../server-config';
-import { ConfigCommandBase, IConfigProperty } from '../config-command-base';
+import { ConfigCommandBase, ConfigProperty } from '../config-command-base';
 import {
+  ConfigAction,
   ConfigActionParameterType,
   ConfigActionPrimaryKey,
-  IConfigAction,
 } from './@action';
 
 const NEWLINE = '\n';
@@ -18,7 +18,7 @@ export type GetNewValueResult =
   | { wasSuccessful: true; parsedValue: string | null };
 
 export default abstract class MutateConfigActionBase<TModel>
-  implements IConfigAction<TModel> {
+  implements ConfigAction<TModel> {
   public abstract readonly primaryKey: ConfigActionPrimaryKey;
   public abstract readonly aliases: ReadonlyArray<string>;
   public abstract readonly description: string;
@@ -33,7 +33,7 @@ export default abstract class MutateConfigActionBase<TModel>
     phil: Phil,
     message: PublicMessage,
     mutableArgs: string[],
-    property: IConfigProperty<TModel>,
+    property: ConfigProperty<TModel>,
     model: TModel
   ): Promise<any> {
     const newValue = this.getNewValue(
@@ -64,7 +64,7 @@ export default abstract class MutateConfigActionBase<TModel>
   protected abstract getNewValue(
     phil: Phil,
     serverConfig: ServerConfig,
-    property: IConfigProperty<TModel>,
+    property: ConfigProperty<TModel>,
     mutableArgs: string[]
   ): GetNewValueResult;
 
@@ -72,7 +72,7 @@ export default abstract class MutateConfigActionBase<TModel>
     command: ConfigCommandBase<TModel>,
     phil: Phil,
     message: PublicMessage,
-    property: IConfigProperty<TModel>,
+    property: ConfigProperty<TModel>,
     errorMessage: string
   ): Promise<any> {
     const response = `The value you attempted to set the ${
@@ -95,7 +95,7 @@ export default abstract class MutateConfigActionBase<TModel>
   private async sendMutateSuccessMessage(
     phil: Phil,
     message: PublicMessage,
-    property: IConfigProperty<TModel>,
+    property: ConfigProperty<TModel>,
     newValue: string | null
   ): Promise<any> {
     return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {

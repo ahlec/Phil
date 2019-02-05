@@ -5,7 +5,7 @@ import {
 } from 'official-discord';
 import Phil from '../phil';
 
-export interface IMention {
+export interface Mention {
   readonly userId: string;
   readonly user: string;
   readonly userDiscriminator: string;
@@ -17,7 +17,7 @@ export abstract class MessageBase {
   public readonly user: DiscordIOUser;
   public readonly userId: string;
   public readonly content: string;
-  public readonly mentions: IMention[];
+  public readonly mentions: Mention[];
 
   constructor(
     event: OfficialDiscordPayload<OfficialDiscordMessage>,

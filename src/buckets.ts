@@ -2,11 +2,11 @@ import {
   Client as DiscordIOClient,
   Server as DiscordIOServer,
 } from 'discord.io';
+import * as moment from 'moment';
 import Database from './database';
 import Phil from './phil';
 import ServerConfig from './server-config';
 import BotUtils from './utils';
-import * as moment from 'moment';
 
 export enum BucketFrequency {
   Daily = 0,

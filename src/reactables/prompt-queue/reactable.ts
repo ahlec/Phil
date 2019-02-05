@@ -33,7 +33,7 @@ export default class PromptQueueReactable extends ReactableType {
     post: ReactablePost,
     pageDelta: number
   ): Promise<void> {
-    const data = post.jsonData as PromptQueueReactableShared.IData;
+    const data = post.jsonData as PromptQueueReactableShared.Data;
     const newPageNumber = data.currentPage + pageDelta;
 
     if (!this.canMoveToPage(data, newPageNumber)) {
@@ -71,7 +71,7 @@ export default class PromptQueueReactable extends ReactableType {
   }
 
   private canMoveToPage(
-    data: PromptQueueReactableShared.IData,
+    data: PromptQueueReactableShared.Data,
     newPageNumber: number
   ): boolean {
     return newPageNumber > 0 && newPageNumber <= data.totalNumberPages;

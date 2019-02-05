@@ -3,7 +3,8 @@
   "rules": {
     "no-debugger": false,
     "no-namespace": false,
-    "no-var-requires": false
+    "no-var-requires": false,
+    "interface-name": [true, "never-prefix"]
   },
   "linterOptions": {
     "exclude": ["node_modules/**/*.ts"]

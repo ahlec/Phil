@@ -2,12 +2,12 @@ import { Server as DiscordIOServer } from 'discord.io';
 import Phil from './phil';
 import ServerConfig from './server-config';
 
-interface IConfigCache {
+interface ConfigCache {
   [serverId: string]: ServerConfig | undefined;
 }
 
 export default class ServerDirectory {
-  private readonly configCache: IConfigCache = {};
+  private readonly configCache: ConfigCache = {};
 
   constructor(private readonly phil: Phil) {}
 

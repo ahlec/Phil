@@ -1,22 +1,20 @@
 import EmbedColor from '../../../embed-color';
 import PublicMessage from '../../../messages/public';
 import Phil from '../../../phil';
-import { DiscordPromises, IEmbedField } from '../../../promises/discord';
+import { DiscordPromises, EmbedField } from '../../../promises/discord';
 import ServerConfig from '../../../server-config';
-import { ConfigCommandBase, IConfigProperty } from '../config-command-base';
+import { ConfigCommandBase, ConfigProperty } from '../config-command-base';
 import {
+  ConfigAction,
   ConfigActionParameterType,
   ConfigActionPrimaryKey,
-  IConfigAction,
 } from './@action';
 
-const NOWRAP = '';
-
 export default class DisplayConfigAction<TModel>
-  implements IConfigAction<TModel> {
+  implements ConfigAction<TModel> {
   public readonly primaryKey = ConfigActionPrimaryKey.Display;
   public readonly aliases = ['show'];
-  public readonly description = `view a list of all of the configuration properties as well as ${NOWRAP} their current values`;
+  public readonly description = `view a list of all of the configuration properties as well as their current values`;
   public readonly isPropertyRequired = false;
   public readonly specialUsageNotes = null;
   public readonly parameters: ReadonlyArray<ConfigActionParameterType> = [];
@@ -26,10 +24,10 @@ export default class DisplayConfigAction<TModel>
     phil: Phil,
     message: PublicMessage,
     mutableArgs: string[],
-    _: IConfigProperty<TModel>,
+    _: ConfigProperty<TModel>,
     model: TModel
   ): Promise<any> {
-    const fields: IEmbedField[] = [];
+    const fields: EmbedField[] = [];
     for (const property of command.orderedProperties) {
       fields.push(
         this.getDisplayRequestField(model, property, message.serverConfig)
@@ -45,9 +43,9 @@ export default class DisplayConfigAction<TModel>
 
   private getDisplayRequestField(
     model: TModel,
-    property: IConfigProperty<TModel>,
+    property: ConfigProperty<TModel>,
     serverConfig: ServerConfig
-  ): IEmbedField {
+  ): EmbedField {
     const currentValue = property.getValue(model);
     const displayValue = property.typeDefinition.toDisplayFormat(
       currentValue,

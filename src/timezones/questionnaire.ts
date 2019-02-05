@@ -3,8 +3,8 @@ import IStage from './questionnaire-stages/@stage';
 import QuestionnaireStageUtils from './questionnaire-stages/@utils';
 
 import Database from '../database';
-import Phil from '../phil';
 import { endOngoingDirectMessageProcesses } from '../direct-message-utils';
+import Phil from '../phil';
 
 async function canStartQuestionnaire(
   db: Database,

@@ -3,19 +3,19 @@ import EmbedColor, { getColorValue } from '../embed-color';
 import MessageBuilder from '../message-builder';
 import Delay from '../utils/delay';
 
-declare interface IDiscordIOCallbackError {
+declare interface DiscordIOCallbackError {
   statusCode?: number;
   statusMessage?: string;
   response?: any;
 }
 
-export interface IEmbedField {
+export interface EmbedField {
   name: string;
   value?: string;
   inline?: boolean;
 }
 
-export interface IEmbedData {
+export interface EmbedData {
   author?: {
     icon_url?: string;
     name: string;
@@ -23,7 +23,7 @@ export interface IEmbedData {
   };
   color: EmbedColor;
   description?: string;
-  fields?: IEmbedField[];
+  fields?: EmbedField[];
   thumbnail?: {
     url: string;
   };
@@ -37,7 +37,7 @@ export interface IEmbedData {
 }
 
 export namespace DiscordPromises {
-  export interface IEditRoleOptions {
+  export interface EditRoleOptions {
     name: string;
     color?: number;
   }
@@ -82,7 +82,7 @@ export namespace DiscordPromises {
   export function sendEmbedMessage(
     bot: DiscordIOClient,
     channelId: string,
-    embedData: IEmbedData
+    embedData: EmbedData
   ): Promise<string> {
     return new Promise((resolve, reject) => {
       bot.sendMessage(
@@ -91,7 +91,7 @@ export namespace DiscordPromises {
             author: embedData.author,
             color: getColorValue(embedData.color),
             description: embedData.description,
-            fields: embedData.fields as [IEmbedField],
+            fields: embedData.fields as [EmbedField],
             footer: embedData.footer,
             thumbnail: embedData.thumbnail,
             timestamp: embedData.timestamp,
@@ -230,7 +230,7 @@ export namespace DiscordPromises {
     bot: DiscordIOClient,
     serverId: string,
     roleId: string,
-    changes: IEditRoleOptions
+    changes: EditRoleOptions
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       bot.editRole(
@@ -316,7 +316,7 @@ export namespace DiscordPromises {
           messageID: messageId,
           reaction,
         },
-        (err: IDiscordIOCallbackError, response: any) => {
+        (err: DiscordIOCallbackError, response: any) => {
           if (err) {
             if (err.statusCode === 429) {
               const waitTime: number = err.response.retry_after;
@@ -354,7 +354,7 @@ export namespace DiscordPromises {
           reaction,
           userID: bot.id,
         },
-        (err: IDiscordIOCallbackError, response: any) => {
+        (err: DiscordIOCallbackError, response: any) => {
           if (err) {
             if (err.statusCode === 429) {
               const waitTime: number = err.response.retry_after;

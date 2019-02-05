@@ -3,22 +3,22 @@ import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
 import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
-import { DiscordPromises, IEmbedField } from '../../promises/discord';
+import { DiscordPromises, EmbedField } from '../../promises/discord';
 import ServerConfig from '../../server-config';
-import { ITypeDefinition } from '../../type-definition/@type-definition';
+import { TypeDefinition } from '../../type-definition/@type-definition';
 import BotUtils from '../../utils';
 import Command, { LoggerDefinition } from '../@types';
 import {
+  ConfigAction,
   ConfigActionParameterType,
-  IConfigAction,
 } from './config-actions/@action';
 
-export interface IConfigProperty<TModel> {
+export interface ConfigProperty<TModel> {
   readonly defaultValue: string | null;
   readonly description: string;
   readonly displayName: string;
   readonly key: string;
-  readonly typeDefinition: ITypeDefinition;
+  readonly typeDefinition: TypeDefinition;
 
   getValue(model: TModel): string | null;
   getRandomExampleValue(model: TModel): string;
@@ -35,18 +35,18 @@ const NEWLINE = '\n';
 interface ConfigCommandBaseDetails<TModel> {
   configurationFor: string;
   helpDescription: string;
-  orderedActions: ReadonlyArray<IConfigAction<TModel>>;
-  properties: ReadonlyArray<IConfigProperty<TModel>>;
+  orderedActions: ReadonlyArray<ConfigAction<TModel>>;
+  properties: ReadonlyArray<ConfigProperty<TModel>>;
   versionAdded: number;
 }
 
 export abstract class ConfigCommandBase<TModel> extends Command {
-  public readonly orderedActions: ReadonlyArray<IConfigAction<TModel>>;
-  public readonly orderedProperties: ReadonlyArray<IConfigProperty<TModel>>;
+  public readonly orderedActions: ReadonlyArray<ConfigAction<TModel>>;
+  public readonly orderedProperties: ReadonlyArray<ConfigProperty<TModel>>;
 
   private readonly configurationFor: string;
-  private readonly actionsLookup: { [verb: string]: IConfigAction<TModel> };
-  private readonly propertiesLookup: { [key: string]: IConfigProperty<TModel> };
+  private readonly actionsLookup: { [verb: string]: ConfigAction<TModel> };
+  private readonly propertiesLookup: { [key: string]: ConfigProperty<TModel> };
 
   protected constructor(
     name: string,
@@ -107,9 +107,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     return this.processAction(phil, message, mutableArgs, model, action);
   }
 
-  public getPropertyRulesDisplayList(
-    property: IConfigProperty<TModel>
-  ): string {
+  public getPropertyRulesDisplayList(property: ConfigProperty<TModel>): string {
     let response = '```';
     for (const rule of property.typeDefinition.rules) {
       response += `● ${rule}\n`;
@@ -126,8 +124,8 @@ export abstract class ConfigCommandBase<TModel> extends Command {
   ): Promise<TModel>;
 
   private compareConfigProperties(
-    a: IConfigProperty<TModel>,
-    b: IConfigProperty<TModel>
+    a: ConfigProperty<TModel>,
+    b: ConfigProperty<TModel>
   ): number {
     const aKey = a.displayName.toUpperCase();
     const bKey = b.displayName.toUpperCase();
@@ -158,7 +156,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     });
   }
 
-  private determineAction(mutableArgs: string[]): IConfigAction<TModel> | null {
+  private determineAction(mutableArgs: string[]): ConfigAction<TModel> | null {
     let verb = mutableArgs.shift();
     if (!verb) {
       return null;
@@ -191,9 +189,9 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     message: PublicMessage,
     mutableArgs: string[],
     model: TModel,
-    action: IConfigAction<TModel>
+    action: ConfigAction<TModel>
   ): Promise<any> {
-    let property: IConfigProperty<TModel> | null = null;
+    let property: ConfigProperty<TModel> | null = null;
     if (action.isPropertyRequired) {
       property = this.getSpecifiedProperty(mutableArgs);
       if (!property) {
@@ -206,7 +204,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
 
   private getSpecifiedProperty(
     mutableArgs: string[]
-  ): IConfigProperty<TModel> | null {
+  ): ConfigProperty<TModel> | null {
     let specifiedKey = mutableArgs.shift();
     if (!specifiedKey) {
       return null;
@@ -219,7 +217,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
   private async sendUnknownPropertyResponse(
     phil: Phil,
     message: PublicMessage,
-    action: IConfigAction<TModel>,
+    action: ConfigAction<TModel>,
     model: TModel
   ): Promise<any> {
     const response = `You attempted to use an unknown property with the **${
@@ -228,7 +226,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       message.serverConfig.commandPrefix
     }${this.name} command:`;
 
-    const fields: IEmbedField[] = [];
+    const fields: EmbedField[] = [];
     for (const property of this.orderedProperties) {
       const exampleUse = this.createActionExampleUse(
         phil,
@@ -289,7 +287,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       }
     }
 
-    let demoActionRequiringProperty: IConfigAction<TModel>;
+    let demoActionRequiringProperty: ConfigAction<TModel>;
     do {
       demoActionRequiringProperty = BotUtils.getRandomArrayEntry(
         this.orderedActions
@@ -312,8 +310,8 @@ export abstract class ConfigCommandBase<TModel> extends Command {
   private createActionExampleUse(
     phil: Phil,
     serverConfig: ServerConfig,
-    action: IConfigAction<TModel>,
-    demoProperty: IConfigProperty<TModel>,
+    action: ConfigAction<TModel>,
+    demoProperty: ConfigProperty<TModel>,
     model: TModel
   ): string {
     let example = `${serverConfig.commandPrefix}${this.name} ${
@@ -338,7 +336,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     phil: Phil,
     serverConfig: ServerConfig,
     parameterType: ConfigActionParameterType,
-    demoProperty: IConfigProperty<TModel>,
+    demoProperty: ConfigProperty<TModel>,
     model: TModel
   ): string {
     switch (parameterType) {

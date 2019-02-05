@@ -1,5 +1,5 @@
 export namespace PromptQueueReactableShared {
-  export interface IData {
+  export interface Data {
     currentPage: number;
     totalNumberPages: number;
     pageSize: number;

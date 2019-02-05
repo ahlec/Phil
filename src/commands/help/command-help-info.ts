@@ -1,5 +1,5 @@
 import Feature from '../../features/feature';
-import { IBatchFeaturesEnabledLookup } from '../../features/feature-utils';
+import { BatchFeaturesEnabledLookup } from '../../features/feature-utils';
 import { HelpGroup } from '../../help-groups';
 import PermissionLevel from '../../permission-level';
 import Versions from '../../versions';
@@ -45,7 +45,7 @@ export default class CommandHelpInfo {
 
   public shouldDisplay(
     isAdminChannel: boolean,
-    featuresEnabledLookup: IBatchFeaturesEnabledLookup
+    featuresEnabledLookup: BatchFeaturesEnabledLookup
   ): boolean {
     if (this.permissionLevel === PermissionLevel.BotManagerOnly) {
       return false;

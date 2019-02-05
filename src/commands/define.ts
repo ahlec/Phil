@@ -3,7 +3,7 @@ import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import Requestable, { IRequestableCreationDefinition } from '../requestables';
+import Requestable, { RequestableCreationDefinition } from '../requestables';
 import ServerConfig from '../server-config';
 import { BotUtils } from '../utils';
 import Command, { LoggerDefinition } from './@types';
@@ -65,7 +65,7 @@ export default class DefineCommand extends Command {
   private getDefinitionData(
     commandArgs: ReadonlyArray<string>,
     serverConfig: ServerConfig
-  ): IRequestableCreationDefinition {
+  ): RequestableCreationDefinition {
     if (commandArgs.length < 2) {
       throw new Error(
         '`' +

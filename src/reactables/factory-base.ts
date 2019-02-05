@@ -3,7 +3,7 @@ import Database from '../database';
 import { DiscordPromises } from '../promises/discord';
 import ReactablePost from './post';
 
-export interface IReactableCreateArgsBase {
+export interface ReactableCreateArgsBase {
   messageId: string;
   channelId: string;
   user: DiscordIOUser;
@@ -11,7 +11,7 @@ export interface IReactableCreateArgsBase {
 }
 
 export abstract class ReactableFactoryBase<
-  TCreateArgs extends IReactableCreateArgsBase
+  TCreateArgs extends ReactableCreateArgsBase
 > {
   protected abstract readonly handle: string;
 

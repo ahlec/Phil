@@ -1,24 +1,21 @@
 import { Client as DiscordIOClient } from 'discord.io';
 import Database from '../../database';
-import {
-  IReactableCreateArgsBase,
-  ReactableFactoryBase,
-} from '../factory-base';
+import { ReactableCreateArgsBase, ReactableFactoryBase } from '../factory-base';
 import SuggestSessionReactableShared from './shared';
 
-interface ICreateArgs extends IReactableCreateArgsBase {
+interface CreateArgs extends ReactableCreateArgsBase {
   canMakeAnonymous: boolean;
 }
 
 export default class SuggestSessionReactableFactory extends ReactableFactoryBase<
-  ICreateArgs
+  CreateArgs
 > {
   protected readonly handle = SuggestSessionReactableShared.ReactableHandle;
 
   constructor(
     readonly bot: DiscordIOClient,
     readonly db: Database,
-    readonly args: ICreateArgs
+    readonly args: CreateArgs
   ) {
     super(bot, db, args);
   }

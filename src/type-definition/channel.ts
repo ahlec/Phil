@@ -1,12 +1,12 @@
 import Phil from '../phil';
 import ServerConfig from '../server-config';
 import {
-  ITypeDefinition,
   ParseResult,
+  TypeDefinition,
   ValidityResultType,
 } from './@type-definition';
 
-class ChannelTypeDefinitionImplementation implements ITypeDefinition {
+class ChannelTypeDefinitionImplementation implements TypeDefinition {
   public readonly rules = [
     'Must be a link to an existing channel on the server.',
     'Must be a channel that Phil has permissions to access and know about.',

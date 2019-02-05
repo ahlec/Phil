@@ -2,12 +2,12 @@ import Phil from '../phil';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
 import {
-  ITypeDefinition,
   ParseResult,
+  TypeDefinition,
   ValidityResultType,
 } from './@type-definition';
 
-class MemberTypeDefinitionImplementation implements ITypeDefinition {
+class MemberTypeDefinitionImplementation implements TypeDefinition {
   public readonly rules = ['Must be a mention of a user on the server.'];
 
   public tryParse(input: string): ParseResult {

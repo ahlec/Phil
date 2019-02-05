@@ -2,20 +2,19 @@ import EmbedColor from '../../../embed-color';
 import PublicMessage from '../../../messages/public';
 import Phil from '../../../phil';
 import { DiscordPromises } from '../../../promises/discord';
-import { ConfigCommandBase, IConfigProperty } from '../config-command-base';
+import { ConfigCommandBase, ConfigProperty } from '../config-command-base';
 import {
+  ConfigAction,
   ConfigActionParameterType,
   ConfigActionPrimaryKey,
-  IConfigAction,
 } from './@action';
 
 const NEWLINE = '\n';
-const NOWRAP = '';
 
-export default class InfoConfigAction<TModel> implements IConfigAction<TModel> {
+export default class InfoConfigAction<TModel> implements ConfigAction<TModel> {
   public readonly primaryKey = ConfigActionPrimaryKey.Info;
   public readonly aliases = ['show'];
-  public readonly description = `see detailed information about a configuration property ${NOWRAP}as well its current value`;
+  public readonly description = `see detailed information about a configuration property as well its current value`;
   public readonly isPropertyRequired = true;
   public readonly specialUsageNotes = null;
   public readonly parameters = [ConfigActionParameterType.PropertyKey];
@@ -25,7 +24,7 @@ export default class InfoConfigAction<TModel> implements IConfigAction<TModel> {
     phil: Phil,
     message: PublicMessage,
     mutableArgs: string[],
-    property: IConfigProperty<TModel>,
+    property: ConfigProperty<TModel>,
     model: TModel
   ): Promise<any> {
     const currentValue = property.getValue(model);

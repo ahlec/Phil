@@ -2,15 +2,15 @@ import Phil from '../phil';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
 import {
-  ITypeDefinition,
   ParseResult,
+  TypeDefinition,
   ValidityResultType,
 } from './@type-definition';
 
 const MAX_CHARACTER_LIMIT = 1800; // Limit is actually 2000, but need to leave room to account for character names
 const DISPLAY_CHARACTER_LIMIT = 200;
 
-class WelcomeMessageTypeDefinitionImplementation implements ITypeDefinition {
+class WelcomeMessageTypeDefinitionImplementation implements TypeDefinition {
   public readonly rules = [
     `Must be ${MAX_CHARACTER_LIMIT} characters or less.`,
   ];

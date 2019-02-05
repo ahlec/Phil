@@ -1,5 +1,5 @@
 import IStage from './@stage';
-import { CountryTimezones, ITimezoneData } from './@timezone-data';
+import { CountryTimezones, TimezoneData } from './@timezone-data';
 import QuestionnaireStageUtils from './@utils';
 
 import Database from '../../database';
@@ -48,7 +48,7 @@ export default class SpecificationStage implements IStage {
   private async getTimezoneDataFromCountryDb(
     db: Database,
     userId: string
-  ): Promise<ITimezoneData> {
+  ): Promise<TimezoneData> {
     const results = await db.query(
       'SELECT country_name FROM timezones WHERE userid = $1',
       [userId]
@@ -57,7 +57,7 @@ export default class SpecificationStage implements IStage {
   }
 
   private getSpecificationList(
-    timezoneData: ITimezoneData,
+    timezoneData: TimezoneData,
     prefix: string
   ): string {
     let message =

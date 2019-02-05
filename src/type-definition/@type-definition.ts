@@ -1,30 +1,30 @@
 import Phil from '../phil';
 import ServerConfig from '../server-config';
 
-interface IParseSuccess {
+interface ParseSuccess {
   wasSuccessful: true;
   parsedValue: string;
 }
 
-interface IParseFailure {
+interface ParseFailure {
   wasSuccessful: false;
   errorMessage: string;
 }
 
-export type ParseResult = IParseSuccess | IParseFailure;
+export type ParseResult = ParseSuccess | ParseFailure;
 
-interface IValidResult {
+interface ValidResult {
   isValid: true;
 }
 
-interface IInvalidResult {
+interface InvalidResult {
   errorMessage: string;
   isValid: false;
 }
 
-export type ValidityResultType = IValidResult | IInvalidResult;
+export type ValidityResultType = ValidResult | InvalidResult;
 
-export interface ITypeDefinition {
+export interface TypeDefinition {
   readonly rules: ReadonlyArray<string>;
   tryParse(input: string): ParseResult;
   isValid(

@@ -1,30 +1,27 @@
 import { Client as DiscordIOClient } from 'discord.io';
 import Database from '../../database';
-import {
-  IReactableCreateArgsBase,
-  ReactableFactoryBase,
-} from '../factory-base';
+import { ReactableCreateArgsBase, ReactableFactoryBase } from '../factory-base';
 import { PromptQueueReactableShared } from './shared';
 
-interface ICreateArgs
-  extends IReactableCreateArgsBase,
-    PromptQueueReactableShared.IData {}
+interface CreateArgs
+  extends ReactableCreateArgsBase,
+    PromptQueueReactableShared.Data {}
 
 export class PromptQueueReactableFactory extends ReactableFactoryBase<
-  ICreateArgs
+  CreateArgs
 > {
   protected readonly handle = PromptQueueReactableShared.ReactableHandle;
 
   constructor(
     readonly bot: DiscordIOClient,
     readonly db: Database,
-    readonly args: ICreateArgs
+    readonly args: CreateArgs
   ) {
     super(bot, db, args);
   }
 
   protected getJsonData(): any | null {
-    const data: PromptQueueReactableShared.IData = {
+    const data: PromptQueueReactableShared.Data = {
       bucket: this.args.bucket,
       currentPage: this.args.currentPage,
       pageSize: this.args.pageSize,

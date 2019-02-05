@@ -7,7 +7,7 @@ import ServerConfig from '../server-config';
 import { BotUtils } from '../utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
-interface IRoleInfo {
+interface RoleInfo {
   id: string;
   name: string;
 }
@@ -49,7 +49,7 @@ export default class RemoveUnusedColorRolesChrono extends Logger
     );
   }
 
-  private getAllUnusedColorRoleIds(server: DiscordIOServer): IRoleInfo[] {
+  private getAllUnusedColorRoleIds(server: DiscordIOServer): RoleInfo[] {
     const colorRoles = [];
     for (const roleId in server.roles) {
       if (!server.roles.hasOwnProperty(roleId)) {

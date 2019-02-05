@@ -4,10 +4,7 @@ import Phil from '../phil';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
 import { LoggerDefinition } from './@types';
-import {
-  ConfigCommandBase,
-  IConfigProperty,
-} from './bases/config-command-base';
+import { ConfigCommandBase, ConfigProperty } from './bases/config-command-base';
 
 import ClearConfigAction from './bases/config-actions/clear';
 import DisplayConfigAction from './bases/config-actions/display';
@@ -43,7 +40,7 @@ function getRandomChannelId(serverConfig: ServerConfig): string {
 const NOWRAP = '';
 const NEWLINE = '\n';
 
-const properties: ReadonlyArray<IConfigProperty<ServerConfig>> = [
+const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
   {
     defaultValue: null,
     description: `This is an optional channel for admins intended for performing admin bot ${NOWRAP}commands in. If provided, Phil will also send all admin-intended messages to ${NOWRAP}this channel. This can be a channel that is used for other properties/purposes ${NOWRAP}or one that is unique to this purpose.`,
