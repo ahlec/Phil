@@ -2,22 +2,19 @@ import Bucket from '../buckets';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import Prompt from '../prompts/prompt';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
-export default class PromptCommand implements ICommand {
-  public readonly name = 'prompt';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = Features.Prompts;
-  public readonly permissionLevel = PermissionLevel.General;
-
-  public readonly helpGroup = HelpGroup.Prompts;
-  public readonly helpDescription =
-    'Asks Phil to remind you what the prompt of the day is.';
-
-  public readonly versionAdded = 3;
+export default class PromptCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('prompt', parentDefinition, {
+      feature: Features.Prompts,
+      helpDescription: 'Asks Phil to remind you what the prompt of the day is.',
+      helpGroup: HelpGroup.Prompts,
+      versionAdded: 3,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

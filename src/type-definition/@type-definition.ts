@@ -1,33 +1,41 @@
 import Phil from '../phil';
 import ServerConfig from '../server-config';
 
-interface IParseSuccess {
-    wasSuccessful: true;
-    parsedValue: string;
+interface ParseSuccess {
+  wasSuccessful: true;
+  parsedValue: string;
 }
 
-interface IParseFailure {
-    wasSuccessful: false;
-    errorMessage: string;
+interface ParseFailure {
+  wasSuccessful: false;
+  errorMessage: string;
 }
 
-export type ParseResult = IParseSuccess | IParseFailure;
+export type ParseResult = ParseSuccess | ParseFailure;
 
-interface IValidResult {
-    isValid: true;
+interface ValidResult {
+  isValid: true;
 }
 
-interface IInvalidResult {
-    errorMessage: string;
-    isValid: false;
+interface InvalidResult {
+  errorMessage: string;
+  isValid: false;
 }
 
-export type ValidityResultType = IValidResult | IInvalidResult;
+export type ValidityResultType = ValidResult | InvalidResult;
 
-export interface ITypeDefinition {
-    readonly rules: ReadonlyArray<string>;
-    tryParse(input: string): ParseResult;
-    isValid(value: string, phil: Phil, serverConfig: ServerConfig): ValidityResultType;
-    toDisplayFormat(value: string, serverConfig: ServerConfig): string;
-    toMultilineCodeblockDisplayFormat(value: string, phil: Phil, serverConfig: ServerConfig): string;
+export interface TypeDefinition {
+  readonly rules: ReadonlyArray<string>;
+  tryParse(input: string): ParseResult;
+  isValid(
+    value: string,
+    phil: Phil,
+    serverConfig: ServerConfig
+  ): ValidityResultType;
+  toDisplayFormat(value: string | null, serverConfig: ServerConfig): string;
+  toMultilineCodeblockDisplayFormat(
+    value: string | null,
+    phil: Phil,
+    serverConfig: ServerConfig
+  ): string;
 }

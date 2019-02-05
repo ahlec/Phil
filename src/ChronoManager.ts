@@ -1,26 +1,29 @@
 import * as moment from 'moment';
 import { QueryResult } from 'pg';
-import Chronos from './chronos/index';
+import { inspect } from 'util';
+import Chronos, { Chrono } from './chronos/index';
 import EmbedColor from './embed-color';
+import Logger from './Logger';
+import LoggerDefinition from './LoggerDefinition';
 import Phil from './phil';
 import { DiscordPromises } from './promises/discord';
 import ServerConfig from './server-config';
 import ServerDirectory from './server-directory';
 
-export default class ChronoManager {
+const Definition = new LoggerDefinition('Chrono Manager');
+
+export default class ChronoManager extends Logger {
   private readonly channelsLastMessageTable: { [channelId: string]: Date };
   private hasBeenStarted: boolean;
+  private readonly chronos: { [handle: string]: Chrono | undefined } = {};
 
   constructor(
     private readonly phil: Phil,
     private readonly serverDirectory: ServerDirectory
   ) {
+    super(Definition);
     this.channelsLastMessageTable = {};
     this.hasBeenStarted = false;
-  }
-
-  get MinimumSilenceRequiredBeforePostingInChannel() {
-    return 10; // 10 minutes
   }
 
   public start() {
@@ -29,8 +32,15 @@ export default class ChronoManager {
     }
 
     this.hasBeenStarted = true;
-    console.log('[CHRONOS] Starting chronos system.');
-    setInterval(this.processChronos.bind(this), 1000 * 60 * 15); // Run every 15 minutes
+    this.write('Starting system.');
+
+    for (const constructor of Chronos) {
+      const chrono = new constructor(Definition);
+      this.chronos[chrono.handle] = chrono;
+      this.write(` > Registered '${chrono.handle}'.`);
+    }
+
+    setInterval(this.processChronos, 1000 * 60 * 15); // Run every 15 minutes
     this.processChronos(); // Also run at startup to make sure you get anything that ran earlier that day
   }
 
@@ -53,15 +63,11 @@ export default class ChronoManager {
     this.channelsLastMessageTable[channelId] = new Date();
   }
 
-  private processChronos() {
+  private processChronos = () => {
     const now = moment.utc();
     const hour = now.hours();
     const date = now.format('YYYY-M-DD');
-    console.log(
-      '[CHRONOS] processing chronos with UTC hour = %d on UTC %s',
-      hour,
-      date
-    );
+    this.write(`processing chronos with UTC hour = ${hour} on UTC ${date}'`);
 
     this.phil.db
       .query(
@@ -94,7 +100,7 @@ export default class ChronoManager {
           );
         }
       });
-  }
+  };
 
   private async processChronoInstance(
     now: moment.Moment,
@@ -103,24 +109,18 @@ export default class ChronoManager {
     serverId: string,
     utcDate: string
   ) {
-    console.log('[CHRONOS] %s for serverId %s', chronoHandle, serverId);
+    this.write(`Executing ${chronoHandle} for serverId ${serverId}`);
 
     const server = this.phil.bot.servers[serverId];
     const serverConfig = await this.serverDirectory.getServerConfig(server);
     if (!serverConfig) {
-      console.log(
-        '[CHRONOS] Phil is no longer part of server with serverId %s',
-        serverId
-      );
+      this.write(`Phil is no longer part of server with serverId ${serverId}`);
       return;
     }
 
-    const chronoDefinition = Chronos[chronoHandle];
+    const chronoDefinition = this.chronos[chronoHandle];
     if (!chronoDefinition) {
-      console.error(
-        '[CHRONOS]     there is no chrono with the handle %s',
-        chronoHandle
-      );
+      this.error(`there is no chrono with the handle ${chronoHandle}`);
       return;
     }
 
@@ -150,26 +150,16 @@ export default class ChronoManager {
     serverConfig: ServerConfig,
     chronoHandle: string
   ) {
-    console.error(
-      '[CHRONOS]     error running %s for server %s',
-      chronoHandle,
-      serverConfig.server.id
+    this.error(
+      `error running ${chronoHandle} for server ${serverConfig.server.id}`
     );
-    console.error(err);
-
-    let errorStr;
-    if (typeof err !== 'string') {
-      errorStr = JSON.stringify(err);
-    } else {
-      errorStr = err;
-    }
-
+    this.error(err);
     return DiscordPromises.sendEmbedMessage(
       this.phil.bot,
       serverConfig.botControlChannel.id,
       {
         color: EmbedColor.Error,
-        description: errorStr,
+        description: inspect(err),
         footer: {
           text: 'chrono: ' + chronoHandle,
         },

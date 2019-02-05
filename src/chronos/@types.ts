@@ -8,6 +8,5 @@ export default interface Chrono {
   process(phil: Phil, serverConfig: ServerConfig, now: Moment): Promise<void>;
 }
 
-export interface ChronoLookup {
-  [chronoHandle: string]: Chrono;
-}
+export { default as Logger } from '../Logger';
+export { default as LoggerDefinition } from '../LoggerDefinition';

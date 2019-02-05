@@ -1,12 +1,12 @@
 import { Client as DiscordIOClient } from 'discord.io';
 import * as moment from 'moment';
-import Submission from './submission';
 import Bucket from '../buckets';
-import EmbedColor from '../embed-color';
 import Database from '../database';
+import EmbedColor from '../embed-color';
 import { DiscordPromises } from '../promises/discord';
 import ServerConfig from '../server-config';
 import { BotUtils } from '../utils';
+import Submission from './submission';
 
 export interface PromptDatabaseSchema {
   prompt_id: string;
@@ -20,7 +20,7 @@ export default class Prompt {
     client: DiscordIOClient,
     db: Database,
     promptId: number
-  ): Promise<Prompt> {
+  ): Promise<Prompt | null> {
     const result = await db.querySingle(
       `SELECT
         prompt_id,
@@ -45,6 +45,10 @@ export default class Prompt {
       db,
       result.submission_id
     );
+    if (!submission) {
+      return null;
+    }
+
     return new Prompt(submission, result);
   }
 
@@ -89,6 +93,10 @@ export default class Prompt {
     result.rows.forEach(row => {
       const submissionId = parseInt(row.submission_id, 10);
       const submission = submissions[submissionId];
+      if (!submission) {
+        return;
+      }
+
       const prompt = new Prompt(submission, row);
       returnValue[prompt.id] = prompt;
     });
@@ -100,7 +108,7 @@ export default class Prompt {
     client: DiscordIOClient,
     db: Database,
     bucket: Bucket
-  ): Promise<Prompt> {
+  ): Promise<Prompt | null> {
     const result = await db.querySingle(
       `SELECT
         p.prompt_id,
@@ -132,13 +140,17 @@ export default class Prompt {
       db,
       result.submission_id
     );
+    if (!submission) {
+      return null;
+    }
+
     return new Prompt(submission, result);
   }
 
   public static async queueSubscription(
     db: Database,
     submission: Submission
-  ): Promise<Prompt> {
+  ): Promise<Prompt | null> {
     const lastPromptInBucket = await db.querySingle(
       `SELECT
         p.prompt_number
@@ -198,7 +210,7 @@ export default class Prompt {
   public readonly id: number;
   public readonly promptNumber: number;
   public readonly repetitionNumber: number;
-  private _promptDateInternal: moment.Moment | null;
+  private promptDateInternal: moment.Moment | null;
 
   public constructor(
     public readonly submission: Submission,
@@ -206,14 +218,14 @@ export default class Prompt {
   ) {
     this.id = parseInt(dbRow.prompt_id, 10);
     this.promptNumber = parseInt(dbRow.prompt_number, 10);
-    this._promptDateInternal = dbRow.prompt_date
+    this.promptDateInternal = dbRow.prompt_date
       ? moment(dbRow.prompt_date)
       : null;
     this.repetitionNumber = parseInt(dbRow.repetition_number, 10);
   }
 
   public get promptDate(): moment.Moment | null {
-    return this._promptDateInternal;
+    return this.promptDateInternal;
   }
 
   public sendToChannel(
@@ -244,7 +256,7 @@ export default class Prompt {
       throw new Error('This prompt has already been published.');
     }
 
-    this._promptDateInternal = moment.utc();
+    this.promptDateInternal = moment.utc();
     try {
       const rowsUpdated = await db.execute(
         `UPDATE
@@ -253,14 +265,14 @@ export default class Prompt {
           prompt_date = $1
         WHERE
           prompt_id = $2`,
-        [this._promptDateInternal, this.id]
+        [this.promptDateInternal, this.id]
       );
 
       if (rowsUpdated <= 0) {
         throw new Error('Could not publish the prompt in the database.');
       }
     } catch (e) {
-      this._promptDateInternal = null;
+      this.promptDateInternal = null;
       throw e;
     }
 

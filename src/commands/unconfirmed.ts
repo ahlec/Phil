@@ -7,21 +7,21 @@ import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import Submission from '../prompts/submission';
 import ServerConfig from '../server-config';
-import ICommand from './@types';
+import Command, { LoggerDefinition } from './@types';
 
 const MAX_LIST_LENGTH = 10;
 
-export default class UnconfirmedCommand implements ICommand {
-  public readonly name = 'unconfirmed';
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature = Features.Prompts;
-  public readonly permissionLevel = PermissionLevel.AdminOnly;
-
-  public readonly helpGroup = HelpGroup.Prompts;
-  public readonly helpDescription =
-    'Creates a list of some of the unconfirmed submissions that are awaiting admin approval before being added to the prompt queue.';
-
-  public readonly versionAdded = 1;
+export default class UnconfirmedCommand extends Command {
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('unconfirmed', parentDefinition, {
+      feature: Features.Prompts,
+      helpDescription:
+        'Creates a list of some of the unconfirmed submissions that are awaiting admin approval before being added to the prompt queue.',
+      helpGroup: HelpGroup.Prompts,
+      permissionLevel: PermissionLevel.AdminOnly,
+      versionAdded: 1,
+    });
+  }
 
   public async processMessage(
     phil: Phil,

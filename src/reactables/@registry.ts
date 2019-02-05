@@ -3,14 +3,14 @@ import ReactableType from './reactable-type';
 import PromptQueueReactable from './prompt-queue/reactable';
 import SuggestSessionReactable from './suggest-session/reactable';
 
-interface IReactableTypeRegistry {
-    [reactableTypeName: string]: ReactableType;
+interface ReactableTypeRegistry {
+  [reactableTypeName: string]: ReactableType;
 }
 
-export const ReactableTypeRegistry: IReactableTypeRegistry = {};
+export const ReactableTypeRegistry: ReactableTypeRegistry = {};
 
 function register(reactable: ReactableType) {
-    ReactableTypeRegistry[reactable.handle] = reactable;
+  ReactableTypeRegistry[reactable.handle] = reactable;
 }
 
 register(new PromptQueueReactable());

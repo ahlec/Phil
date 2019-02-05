@@ -1,7 +1,7 @@
 import { Client as DiscordIOClient } from 'discord.io';
 import * as moment from 'moment';
-import Database from '../database';
 import Bucket from '../buckets';
+import Database from '../database';
 
 export interface SubmissionDatabaseSchema {
   submission_id: number;
@@ -17,7 +17,7 @@ export default class Submission {
     client: DiscordIOClient,
     db: Database,
     submissionId: number
-  ): Promise<Submission> {
+  ): Promise<Submission | null> {
     const result = await db.querySingle(
       `SELECT
         submission_id,
@@ -40,6 +40,10 @@ export default class Submission {
     }
 
     const bucket = await Bucket.getFromId(client, db, result.bucket_id);
+    if (!bucket) {
+      return null;
+    }
+
     return new Submission(bucket, result);
   }
 
@@ -82,6 +86,10 @@ export default class Submission {
     result.rows.forEach(row => {
       const bucketId = parseInt(row.bucket_id, 10);
       const bucket = buckets[bucketId];
+      if (!bucket) {
+        return;
+      }
+
       const submission = new Submission(bucket, row);
       returnValue[submission.id] = submission;
     });

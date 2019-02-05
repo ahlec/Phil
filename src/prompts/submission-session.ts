@@ -8,7 +8,7 @@ export default class SubmissionSession {
   public static async getActiveSession(
     phil: Phil,
     userId: string
-  ): Promise<SubmissionSession> {
+  ): Promise<SubmissionSession | null> {
     const utcNow = moment.utc();
     const dbRow = await phil.db.querySingle(
       `SELECT

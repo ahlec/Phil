@@ -14,31 +14,31 @@ import SpecificationStage from './specification-stage';
 /* tslint:disable:object-literal-sort-keys */
 
 export namespace Stages {
-    export const LetsBegin: IStage = new LetsBeginStage();
-    export const Country: IStage = new CountryStage();
-    export const Specification: IStage = new SpecificationStage();
-    export const Confirmation: IStage = new ConfirmationStage();
-    export const Finished: IStage = new FinishedStage();
-    export const Declined: IStage = new DeclinedStage();
+  export const LetsBegin: IStage = new LetsBeginStage();
+  export const Country: IStage = new CountryStage();
+  export const Specification: IStage = new SpecificationStage();
+  export const Confirmation: IStage = new ConfirmationStage();
+  export const Finished: IStage = new FinishedStage();
+  export const Declined: IStage = new DeclinedStage();
 
-    const AllStages: ReadonlyArray<IStage> = [
-        LetsBegin,
-        Country,
-        Specification,
-        Confirmation,
-        Finished,
-        Declined
-    ];
+  const AllStages: ReadonlyArray<IStage> = [
+    LetsBegin,
+    Country,
+    Specification,
+    Confirmation,
+    Finished,
+    Declined,
+  ];
 
-    export function getFromNumber(stageNo: number): IStage {
-        for (const stage of AllStages) {
-            if (stage.stageNumber === stageNo) {
-                return stage;
-            }
-        }
-
-        throw new Error('This user appears to be on an invalid stage: ' + stageNo);
+  export function getFromNumber(stageNo: number): IStage {
+    for (const stage of AllStages) {
+      if (stage.stageNumber === stageNo) {
+        return stage;
+      }
     }
+
+    throw new Error('This user appears to be on an invalid stage: ' + stageNo);
+  }
 }
 
 export default Stages;

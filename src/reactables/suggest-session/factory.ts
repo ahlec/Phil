@@ -1,32 +1,36 @@
 import { Client as DiscordIOClient } from 'discord.io';
 import Database from '../../database';
-import { IReactableCreateArgsBase, ReactableFactoryBase } from '../factory-base'
+import { ReactableCreateArgsBase, ReactableFactoryBase } from '../factory-base';
 import SuggestSessionReactableShared from './shared';
 
-interface ICreateArgs extends IReactableCreateArgsBase {
-    canMakeAnonymous: boolean;
+interface CreateArgs extends ReactableCreateArgsBase {
+  canMakeAnonymous: boolean;
 }
 
-export default class SuggestSessionReactableFactory extends ReactableFactoryBase<ICreateArgs> {
-    protected readonly handle = SuggestSessionReactableShared.ReactableHandle;
+export default class SuggestSessionReactableFactory extends ReactableFactoryBase<
+  CreateArgs
+> {
+  protected readonly handle = SuggestSessionReactableShared.ReactableHandle;
 
-    constructor(readonly bot: DiscordIOClient,
-        readonly db: Database,
-        readonly args: ICreateArgs) {
-            super(bot, db, args);
+  constructor(
+    readonly bot: DiscordIOClient,
+    readonly db: Database,
+    readonly args: CreateArgs
+  ) {
+    super(bot, db, args);
+  }
+
+  protected getJsonData(): any | null {
+    return null;
+  }
+
+  protected getEmojiReactions(): string[] {
+    const reactions = [SuggestSessionReactableShared.Emoji.Stop];
+
+    if (this.args.canMakeAnonymous) {
+      reactions.push(SuggestSessionReactableShared.Emoji.MakeAnonymous);
     }
 
-    protected getJsonData(): any | null {
-        return null;
-    }
-
-    protected getEmojiReactions(): string[] {
-        const reactions = [SuggestSessionReactableShared.Emoji.Stop];
-
-        if (this.args.canMakeAnonymous) {
-            reactions.push(SuggestSessionReactableShared.Emoji.MakeAnonymous);
-        }
-
-        return reactions;
-    }
+    return reactions;
+  }
 }

@@ -1,275 +1,357 @@
 import EmbedColor from '../../embed-color';
-import Feature from '../../features/feature';
 import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
 import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
-import { DiscordPromises, IEmbedField } from '../../promises/discord';
+import { DiscordPromises, EmbedField } from '../../promises/discord';
 import ServerConfig from '../../server-config';
-import { ITypeDefinition } from '../../type-definition/@type-definition';
+import { TypeDefinition } from '../../type-definition/@type-definition';
 import BotUtils from '../../utils';
-import ICommand from '../@types';
-import { ConfigActionParameterType, IConfigAction } from './config-actions/@action';
+import Command, { LoggerDefinition } from '../@types';
+import {
+  ConfigAction,
+  ConfigActionParameterType,
+} from './config-actions/@action';
 
-export interface IConfigProperty<TModel> {
-    readonly defaultValue: string;
-    readonly description: string;
-    readonly displayName: string;
-    readonly key: string;
-    readonly typeDefinition: ITypeDefinition;
+export interface ConfigProperty<TModel> {
+  readonly defaultValue: string | null;
+  readonly description: string;
+  readonly displayName: string;
+  readonly key: string;
+  readonly typeDefinition: TypeDefinition;
 
-    getValue(model: TModel): string;
-    getRandomExampleValue(model: TModel): string;
-    setValue(phil: Phil, model: TModel, newValue: string): Promise<boolean>;
+  getValue(model: TModel): string | null;
+  getRandomExampleValue(model: TModel): string;
+  setValue(
+    phil: Phil,
+    model: TModel,
+    newValue: string | null
+  ): Promise<boolean>;
 }
 
 const NOWRAP = '';
 const NEWLINE = '\n';
 
-function NEVER(x: never) {
-    throw new Error('Should not be here -- switch case not handled.');
+interface ConfigCommandBaseDetails<TModel> {
+  configurationFor: string;
+  helpDescription: string;
+  orderedActions: ReadonlyArray<ConfigAction<TModel>>;
+  properties: ReadonlyArray<ConfigProperty<TModel>>;
+  versionAdded: number;
 }
 
-export abstract class ConfigCommandBase<TModel> implements ICommand {
-    public abstract readonly name: string;
-    public abstract readonly aliases: ReadonlyArray<string>;
-    public abstract readonly feature: Feature;
-    public readonly permissionLevel = PermissionLevel.AdminOnly;
+export abstract class ConfigCommandBase<TModel> extends Command {
+  public readonly orderedActions: ReadonlyArray<ConfigAction<TModel>>;
+  public readonly orderedProperties: ReadonlyArray<ConfigProperty<TModel>>;
 
-    public abstract readonly helpGroup: HelpGroup;
-    public abstract readonly helpDescription: string;
+  private readonly configurationFor: string;
+  private readonly actionsLookup: { [verb: string]: ConfigAction<TModel> };
+  private readonly propertiesLookup: { [key: string]: ConfigProperty<TModel> };
 
-    public abstract readonly versionAdded: number;
+  protected constructor(
+    name: string,
+    parentDefinition: LoggerDefinition,
+    details: ConfigCommandBaseDetails<TModel>
+  ) {
+    super(name, parentDefinition, {
+      helpDescription: details.helpDescription,
+      helpGroup: HelpGroup.Admin,
+      permissionLevel: PermissionLevel.AdminOnly,
+      versionAdded: details.versionAdded,
+    });
 
-    public readonly orderedProperties: ReadonlyArray<IConfigProperty<TModel>>;
-    public get titleCaseConfigurationFor(): string {
-        return this.configurationFor[0].toUpperCase() + this.configurationFor.slice(1).toLowerCase();
+    this.orderedActions = details.orderedActions;
+    this.configurationFor = details.configurationFor;
+
+    this.actionsLookup = {};
+    for (const action of details.orderedActions) {
+      this.actionsLookup[action.primaryKey] = action;
+
+      for (const alias of action.aliases) {
+        this.actionsLookup[alias] = action;
+      }
     }
 
-    protected abstract configurationFor: string;
+    this.orderedProperties = details.properties
+      .slice()
+      .sort(this.compareConfigProperties);
+    this.propertiesLookup = {};
+    for (const property of details.properties) {
+      this.propertiesLookup[property.key.toLowerCase()] = property;
+    }
+  }
 
-    private readonly actionsLookup: {[verb: string]: IConfigAction<TModel>};
-    private readonly propertiesLookup: {[key: string]: IConfigProperty<TModel>};
+  public get titleCaseConfigurationFor(): string {
+    return (
+      this.configurationFor[0].toUpperCase() +
+      this.configurationFor.slice(1).toLowerCase()
+    );
+  }
 
-    constructor(public readonly orderedActions: ReadonlyArray<IConfigAction<TModel>>,
-      properties: ReadonlyArray<IConfigProperty<TModel>>) {
-        this.actionsLookup = {};
-        for (const action of orderedActions) {
-            this.actionsLookup[action.primaryKey] = action;
-
-            for (const alias of action.aliases) {
-                this.actionsLookup[alias] = action;
-            }
-        }
-
-        this.orderedProperties = properties.slice().sort(this.compareConfigProperties);
-        this.propertiesLookup = {};
-        for (const property of properties) {
-            this.propertiesLookup[property.key.toLowerCase()] = property;
-        }
+  public async processMessage(
+    phil: Phil,
+    message: PublicMessage,
+    commandArgs: ReadonlyArray<string>
+  ): Promise<any> {
+    const mutableArgs: string[] = [...commandArgs];
+    const model = await this.getModel(phil, message, mutableArgs);
+    if (!mutableArgs.length) {
+      return this.processNoAction(phil, message, model);
     }
 
-    public async processMessage(phil: Phil, message: PublicMessage, commandArgs: ReadonlyArray<string>): Promise<any> {
-        const mutableArgs: string[] = [ ...commandArgs ];
-        const model = await this.getModel(phil, message, mutableArgs);
-        if (!mutableArgs.length) {
-            return this.processNoAction(phil, message, model);
-        }
-
-        const action = this.determineAction(mutableArgs);
-        if (!action) {
-            return this.sendUnknownActionResponse(phil, message, model);
-        }
-
-        return this.processAction(phil, message, mutableArgs, model, action);
+    const action = this.determineAction(mutableArgs);
+    if (!action) {
+      return this.sendUnknownActionResponse(phil, message, model);
     }
 
-    public getPropertyRulesDisplayList(property: IConfigProperty<TModel>): string {
-        let response = '```';
-        for (const rule of property.typeDefinition.rules) {
-            response += `● ${rule}\n`;
-        }
+    return this.processAction(phil, message, mutableArgs, model, action);
+  }
 
-        response += '```';
-        return response;
+  public getPropertyRulesDisplayList(property: ConfigProperty<TModel>): string {
+    let response = '```';
+    for (const rule of property.typeDefinition.rules) {
+      response += `● ${rule}\n`;
     }
 
-    protected abstract getModel(phil: Phil, message: PublicMessage, mutableArgs: string[]): Promise<TModel>;
+    response += '```';
+    return response;
+  }
 
-    private compareConfigProperties(a: IConfigProperty<TModel>, b: IConfigProperty<TModel>): number {
-        const aKey = a.displayName.toUpperCase();
-        const bKey = b.displayName.toUpperCase();
-        if (aKey === bKey) {
-            return 0;
-        }
+  protected abstract getModel(
+    phil: Phil,
+    message: PublicMessage,
+    mutableArgs: string[]
+  ): Promise<TModel>;
 
-        return (aKey < bKey ? -1 : 1);
+  private compareConfigProperties(
+    a: ConfigProperty<TModel>,
+    b: ConfigProperty<TModel>
+  ): number {
+    const aKey = a.displayName.toUpperCase();
+    const bKey = b.displayName.toUpperCase();
+    if (aKey === bKey) {
+      return 0;
     }
 
-    private async processNoAction(phil: Phil, message: PublicMessage, model: TModel): Promise<any> {
-        const response = `This is the command for changing ${this.configurationFor} configuration. ${
-            NOWRAP}Within this command, there are numerous actions you can take to allow you to ${
-            NOWRAP}understand Phil, his configuration, and how you can make him fit your server's ${
-            NOWRAP}needs.${
-            NEWLINE}${
-            NEWLINE}${this.getActionsExplanation(phil, message.serverConfig, model)}`;
+    return aKey < bKey ? -1 : 1;
+  }
 
-        console.log(response.length);
-        return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-            color: EmbedColor.Info,
-            description: response,
-            title: this.titleCaseConfigurationFor + ' Configuration'
-        });
+  private async processNoAction(
+    phil: Phil,
+    message: PublicMessage,
+    model: TModel
+  ): Promise<any> {
+    const response = `This is the command for changing ${
+      this.configurationFor
+    } configuration. ${NOWRAP}Within this command, there are numerous actions you can take to allow you to ${NOWRAP}understand Phil, his configuration, and how you can make him fit your server's ${NOWRAP}needs.${NEWLINE}${NEWLINE}${this.getActionsExplanation(
+      phil,
+      message.serverConfig,
+      model
+    )}`;
+
+    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+      color: EmbedColor.Info,
+      description: response,
+      title: this.titleCaseConfigurationFor + ' Configuration',
+    });
+  }
+
+  private determineAction(mutableArgs: string[]): ConfigAction<TModel> | null {
+    let verb = mutableArgs.shift();
+    if (!verb) {
+      return null;
     }
 
-    private determineAction(mutableArgs: string[]): IConfigAction<TModel> {
-        let verb = mutableArgs.shift();
-        if (!verb) {
-            return undefined;
-        }
+    verb = verb.toLowerCase();
+    return this.actionsLookup[verb];
+  }
 
-        verb = verb.toLowerCase();
-        return this.actionsLookup[verb];
+  private async sendUnknownActionResponse(
+    phil: Phil,
+    message: PublicMessage,
+    model: TModel
+  ): Promise<any> {
+    const response = `You attempted to use an unrecognized action with this command.${NEWLINE}${NEWLINE}${this.getActionsExplanation(
+      phil,
+      message.serverConfig,
+      model
+    )}`;
+
+    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+      color: EmbedColor.Error,
+      description: response,
+      title: `${this.titleCaseConfigurationFor} Configuration: Unknown action`,
+    });
+  }
+
+  private async processAction(
+    phil: Phil,
+    message: PublicMessage,
+    mutableArgs: string[],
+    model: TModel,
+    action: ConfigAction<TModel>
+  ): Promise<any> {
+    let property: ConfigProperty<TModel> | null = null;
+    if (action.isPropertyRequired) {
+      property = this.getSpecifiedProperty(mutableArgs);
+      if (!property) {
+        return this.sendUnknownPropertyResponse(phil, message, action, model);
+      }
     }
 
-    private async sendUnknownActionResponse(phil: Phil, message: PublicMessage,
-        model: TModel): Promise<any> {
-        const response = `You attempted to use an unrecognized action with this command.${
-            NEWLINE}${
-            NEWLINE}${this.getActionsExplanation(phil, message.serverConfig, model)}`;
+    return action.process(this, phil, message, mutableArgs, property, model);
+  }
 
-        return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-            color: EmbedColor.Error,
-            description: response,
-            title: `${this.titleCaseConfigurationFor} Configuration: Unknown action`
-        });
+  private getSpecifiedProperty(
+    mutableArgs: string[]
+  ): ConfigProperty<TModel> | null {
+    let specifiedKey = mutableArgs.shift();
+    if (!specifiedKey) {
+      return null;
     }
 
-    private async processAction(phil: Phil, message: PublicMessage, mutableArgs: string[],
-        model: TModel, action: IConfigAction<TModel>): Promise<any> {
-        let property: IConfigProperty<TModel>;
-        if (action.isPropertyRequired) {
-            property = this.getSpecifiedProperty(mutableArgs);
-            if (!property) {
-                return this.sendUnknownPropertyResponse(phil, message, action, model);
-            }
-        }
+    specifiedKey = specifiedKey.toLowerCase();
+    return this.propertiesLookup[specifiedKey];
+  }
 
-        return action.process(this, phil, message, mutableArgs, property, model);
+  private async sendUnknownPropertyResponse(
+    phil: Phil,
+    message: PublicMessage,
+    action: ConfigAction<TModel>,
+    model: TModel
+  ): Promise<any> {
+    const response = `You attempted to use an unknown property with the **${
+      action.primaryKey
+    }** action.${NEWLINE}${NEWLINE}**PROPERTIES**${NEWLINE}The following are all of the properties that are recognized with the ${
+      message.serverConfig.commandPrefix
+    }${this.name} command:`;
+
+    const fields: EmbedField[] = [];
+    for (const property of this.orderedProperties) {
+      const exampleUse = this.createActionExampleUse(
+        phil,
+        message.serverConfig,
+        action,
+        property,
+        model
+      );
+      fields.push({
+        name: `**${property.displayName}** [key: ${property.key}]`,
+        value: `\`${exampleUse}\``,
+      });
     }
 
-    private getSpecifiedProperty(mutableArgs: string[]): IConfigProperty<TModel> {
-        let specifiedKey = mutableArgs.shift();
-        if (!specifiedKey) {
-            return null;
-        }
+    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+      color: EmbedColor.Error,
+      description: response,
+      fields,
+      title: `${
+        this.titleCaseConfigurationFor
+      } Configuration: Unknown property`,
+    });
+  }
 
-        specifiedKey = specifiedKey.toLowerCase();
-        return this.propertiesLookup[specifiedKey];
-    }
+  private getActionsExplanation(
+    phil: Phil,
+    serverConfig: ServerConfig,
+    model: TModel
+  ): string {
+    const demoProp = BotUtils.getRandomArrayEntry(this.orderedProperties);
+    let explanation = `**ACTIONS**${NEWLINE}The various actions that you can take with \`${
+      serverConfig.commandPrefix
+    }${this.name}\` are as follows:\`\`\``;
+    const usageExamples: string[] = [];
+    let specialUsageNotes = '';
 
-    private async sendUnknownPropertyResponse(phil: Phil, message: PublicMessage,
-        action: IConfigAction<TModel>, model: TModel): Promise<any> {
-        const response = `You attempted to use an unknown property with the **${
-            action.primaryKey}** action.${
-            NEWLINE}${
-            NEWLINE}**PROPERTIES**${
-            NEWLINE}The following are all of the properties that are recognized with the ${
-            message.serverConfig.commandPrefix}${this.name} command:`;
+    for (let index = 0; index < this.orderedActions.length; ++index) {
+      const action = this.orderedActions[index];
+      let lineEnd = ';\n';
+      if (index === this.orderedActions.length - 1) {
+        lineEnd = '.';
+      }
 
-        const fields: IEmbedField[] = [];
-        for (const property of this.orderedProperties) {
-            const exampleUse = this.createActionExampleUse(phil, message.serverConfig, action,
-                property, model);
-            fields.push({
-                name: `**${property.displayName}** [key: ${property.key}]`,
-                value: `\`${exampleUse}\``
-            });
-        }
+      explanation += `● [${action.primaryKey}] - ${
+        action.description
+      }${lineEnd}`;
 
-        return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-            color: EmbedColor.Error,
-            description: response,
-            fields,
-            title: `${this.titleCaseConfigurationFor} Configuration: Unknown property`
-        });
-    }
+      usageExamples.push(
+        this.createActionExampleUse(phil, serverConfig, action, demoProp, model)
+      );
 
-    private getActionsExplanation(phil: Phil, serverConfig: ServerConfig, model: TModel): string {
-        const demoProp = BotUtils.getRandomArrayEntry(this.orderedProperties);
-        let explanation = `**ACTIONS**${
-            NEWLINE}The various actions that you can take with \`${
-            serverConfig.commandPrefix}${this.name}\` are as follows:\`\`\``;
-        const usageExamples: string[] = [];
-        let specialUsageNotes = '';
-
-        for (let index = 0; index < this.orderedActions.length; ++index) {
-            const action = this.orderedActions[index];
-            let lineEnd = ';\n';
-            if (index === this.orderedActions.length - 1) {
-                lineEnd = '.';
-            }
-
-            explanation += `● [${action.primaryKey}] - ${action.description}${lineEnd}`;
-
-            usageExamples.push(this.createActionExampleUse(phil, serverConfig, action, demoProp, model));
-
-            if (action.specialUsageNotes) {
-                if (specialUsageNotes) {
-                    specialUsageNotes += '\n\n';
-                }
-
-                specialUsageNotes += action.specialUsageNotes;
-            }
-        }
-
-        let demoActionRequiringProperty: IConfigAction<TModel>;
-        do {
-            demoActionRequiringProperty = BotUtils.getRandomArrayEntry(this.orderedActions);
-        } while(!demoActionRequiringProperty.isPropertyRequired);
-
-        explanation += `\`\`\`${
-            NEWLINE}**USAGE**${
-            NEWLINE}Using this command is a matter of combining an action and a property ${
-            NOWRAP} (if appropriate), like so:${
-            NEWLINE}\`\`\`${usageExamples.join('\n')}\`\`\`As you can see from the above ${
-            NOWRAP}examples, the action (eg **${demoActionRequiringProperty.primaryKey}**) comes ${
-            NOWRAP}before the property key (eg **${demoProp.key}**).`;
-
+      if (action.specialUsageNotes) {
         if (specialUsageNotes) {
-            explanation += '\n\n' + specialUsageNotes;
+          specialUsageNotes += '\n\n';
         }
 
-        return explanation;
+        specialUsageNotes += action.specialUsageNotes;
+      }
     }
 
-    private createActionExampleUse(phil: Phil, serverConfig: ServerConfig,
-        action: IConfigAction<TModel>, demoProperty: IConfigProperty<TModel>,
-        model: TModel): string {
-        let example = `${serverConfig.commandPrefix}${this.name} ${action.primaryKey}`;
+    let demoActionRequiringProperty: ConfigAction<TModel>;
+    do {
+      demoActionRequiringProperty = BotUtils.getRandomArrayEntry(
+        this.orderedActions
+      );
+    } while (!demoActionRequiringProperty.isPropertyRequired);
 
-        for (const parameter of action.parameters) {
-            example += ' ';
-            example += this.getActionParameterExampleValue(phil, serverConfig, parameter, demoProperty,
-                model);
-        }
+    explanation += `\`\`\`${NEWLINE}**USAGE**${NEWLINE}Using this command is a matter of combining an action and a property ${NOWRAP} (if appropriate), like so:${NEWLINE}\`\`\`${usageExamples.join(
+      '\n'
+    )}\`\`\`As you can see from the above ${NOWRAP}examples, the action (eg **${
+      demoActionRequiringProperty.primaryKey
+    }**) comes ${NOWRAP}before the property key (eg **${demoProp.key}**).`;
 
-        return example;
+    if (specialUsageNotes) {
+      explanation += '\n\n' + specialUsageNotes;
     }
 
-    private getActionParameterExampleValue(phil: Phil, serverConfig: ServerConfig,
-        parameterType: ConfigActionParameterType, demoProperty: IConfigProperty<TModel>,
-        model: TModel): string {
-            switch (parameterType) {
-                case ConfigActionParameterType.PropertyKey:
-                    return demoProperty.key;
-                case ConfigActionParameterType.NewPropertyValue: {
-                    const randomValue = demoProperty.getRandomExampleValue(model);
-                    return demoProperty.typeDefinition
-                        .toMultilineCodeblockDisplayFormat(randomValue, phil, serverConfig);
-                }
-            }
+    return explanation;
+  }
 
-            NEVER(parameterType);
-        }
+  private createActionExampleUse(
+    phil: Phil,
+    serverConfig: ServerConfig,
+    action: ConfigAction<TModel>,
+    demoProperty: ConfigProperty<TModel>,
+    model: TModel
+  ): string {
+    let example = `${serverConfig.commandPrefix}${this.name} ${
+      action.primaryKey
+    }`;
+
+    for (const parameter of action.parameters) {
+      example += ' ';
+      example += this.getActionParameterExampleValue(
+        phil,
+        serverConfig,
+        parameter,
+        demoProperty,
+        model
+      );
+    }
+
+    return example;
+  }
+
+  private getActionParameterExampleValue(
+    phil: Phil,
+    serverConfig: ServerConfig,
+    parameterType: ConfigActionParameterType,
+    demoProperty: ConfigProperty<TModel>,
+    model: TModel
+  ): string {
+    switch (parameterType) {
+      case ConfigActionParameterType.PropertyKey:
+        return demoProperty.key;
+      case ConfigActionParameterType.NewPropertyValue: {
+        const randomValue = demoProperty.getRandomExampleValue(model);
+        return demoProperty.typeDefinition.toMultilineCodeblockDisplayFormat(
+          randomValue,
+          phil,
+          serverConfig
+        );
+      }
+    }
+
+    return parameterType;
+  }
 }

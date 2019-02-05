@@ -2,13 +2,18 @@ import { Moment } from 'moment';
 import Bucket from '../buckets';
 import Phil from '../phil';
 import Prompt from '../prompts/prompt';
-import Submission from '../prompts/submission';
 import { PromptQueue } from '../prompts/queue';
+import Submission from '../prompts/submission';
 import ServerConfig from '../server-config';
-import Chrono from './@types';
+import Chrono, { Logger, LoggerDefinition } from './@types';
 
-export default class PostNewPromptsChrono implements Chrono {
-  public readonly handle = 'post-new-prompts';
+const HANDLE = 'post-new-prompts';
+export default class PostNewPromptsChrono extends Logger implements Chrono {
+  public readonly handle = HANDLE;
+
+  public constructor(parentDefinition: LoggerDefinition) {
+    super(new LoggerDefinition(HANDLE, parentDefinition));
+  }
 
   public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
     const serverBuckets = await Bucket.getAllForServer(
@@ -17,13 +22,15 @@ export default class PostNewPromptsChrono implements Chrono {
       serverConfig.server.id
     );
 
-    for (const bucket of serverBuckets) {
+    const processes = serverBuckets.map(bucket => {
       if (bucket.isPaused || !bucket.isValid) {
-        continue;
+        return Promise.resolve();
       }
 
-      await this.processBucket(phil, serverConfig, now, bucket);
-    }
+      return this.processBucket(phil, serverConfig, now, bucket);
+    });
+
+    await Promise.all(processes);
   }
 
   private async processBucket(
@@ -38,33 +45,47 @@ export default class PostNewPromptsChrono implements Chrono {
       bucket
     );
     if (!this.isCurrentPromptOutdated(currentPrompt, now, bucket)) {
-      console.log(
-        '[CHRONOS]    - bucket %s on server %s is not ready for a new prompt just yet',
-        bucket.handle,
-        serverConfig.serverId
+      this.write(
+        `bucket ${bucket.handle} on server ${
+          serverConfig.serverId
+        } is not ready for a new prompt just yet`
       );
       return;
     }
 
     const nextPrompt = await this.getNextPrompt(phil, bucket);
     if (!nextPrompt) {
-      console.log(
-        `[CHRONOS]    - bucket ${bucket.handle} on server ${
+      this.write(
+        `bucket ${bucket.handle} on server ${
           serverConfig.serverId
         } has no prompts to post`
       );
       return;
     }
 
-    console.log(
-      `[CHRONOS]    - posting prompt ${nextPrompt.id} to bucket ${
-        bucket.handle
-      } on server ${serverConfig.serverId}`
+    this.write(
+      `posting prompt ${nextPrompt.id} to bucket ${bucket.handle} on server ${
+        serverConfig.serverId
+      }`
     );
-    await nextPrompt.publish(phil.bot, phil.db, serverConfig);
+
+    try {
+      await nextPrompt.publish(phil.bot, phil.db, serverConfig);
+    } catch (err) {
+      this.error(
+        `encountered an error when posting prompt ${nextPrompt.id} to bucket ${
+          bucket.handle
+        } on server ${serverConfig.serverId}`
+      );
+
+      throw err;
+    }
   }
 
-  private async getNextPrompt(phil: Phil, bucket: Bucket): Promise<Prompt> {
+  private async getNextPrompt(
+    phil: Phil,
+    bucket: Bucket
+  ): Promise<Prompt | null> {
     const promptQueue = await PromptQueue.getPromptQueue(
       phil.bot,
       phil.db,
@@ -74,7 +95,6 @@ export default class PostNewPromptsChrono implements Chrono {
     );
 
     if (promptQueue.count > 0) {
-      console.log('from the queue');
       return promptQueue.entries[0].prompt;
     }
 
@@ -84,16 +104,15 @@ export default class PostNewPromptsChrono implements Chrono {
       1
     );
     if (dustiest) {
-      console.log('got dustiest');
       const prompt = await Prompt.queueSubscription(phil.db, dustiest);
       return prompt;
-    } else {
-      console.log('no dusties?');
     }
+
+    return null;
   }
 
   private isCurrentPromptOutdated(
-    currentPrompt: Prompt,
+    currentPrompt: Prompt | null,
     now: Moment,
     bucket: Bucket
   ) {

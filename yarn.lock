@@ -18,6 +18,11 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
+"@types/lodash@^4.14.120":
+  version "4.14.120"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.120.tgz#cf265d06f6c7a710db087ed07523ab8c1a24047b"
+  integrity sha512-jQ21kQ120mo+IrDs1nFNVm/AsdFxIx2+vZ347DbogHJPd/JzKNMOqU6HCYin1W6v8l5R9XSO2/e9cxmn7HAnVw==
+
 "@types/moment-timezone@^0.5.4":
   version "0.5.10"
   resolved "https://registry.yarnpkg.com/@types/moment-timezone/-/moment-timezone-0.5.10.tgz#2b251ad454a46bdd4e3b5a5157d45059e5714799"
@@ -421,9 +426,9 @@ diff@^3.2.0:
   resolved "https://registry.yarnpkg.com/diff/-/diff-3.5.0.tgz#800c0dd1e0a8bfbc95835c202ad220fe317e5a12"
   integrity sha512-A46qtFgd+g7pDZinpnwiRJtxbC1hpgf0uzP3iG89scHk0AUC7A1TGxf5OiiOUv/JMZR8GOt8hL900hV0bOy5xA==
 
-"discord.io@github:woor/discord.io#gateway_v6":
+"discord.io@https://github.com/ahlec/discord.io.git#gateway_v6":
   version "2.5.3"
-  resolved "https://codeload.github.com/woor/discord.io/tar.gz/7312624af8b2d6cb1c8f03055a30d738252912ae"
+  resolved "https://github.com/ahlec/discord.io.git#5cdaf24db943311761d969ae6addb9c2244276b3"
   dependencies:
     cjopus "^0.0.4"
     tweetnacl "^0.14.0"

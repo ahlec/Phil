@@ -4,19 +4,17 @@ import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import SubmissionSession from '../prompts/submission-session';
 import SuggestSessionReactableFactory from '../reactables/suggest-session/factory';
-import { IDirectMessageProcessor, IProcessorActiveToken } from './@base';
+import { DirectMessageProcessor, ProcessorActiveToken } from './@base';
 
-interface PromptValidateResult {
-  isValid: boolean;
-  invalidReason?: string;
-  validatedMessage?: string;
-}
+type PromptValidateResult =
+  | { isValid: true; validatedMessage: string }
+  | { isValid: false; invalidReason: string };
 
 function validatePromptSubmission(message: string): PromptValidateResult {
   if (!message) {
     return {
-      isValid: false,
       invalidReason: 'The input was just an empty message.',
+      isValid: false,
     };
   }
 
@@ -25,11 +23,11 @@ function validatePromptSubmission(message: string): PromptValidateResult {
   return { isValid: true, validatedMessage: message };
 }
 
-interface SuggestSessionListenerToken extends IProcessorActiveToken {
+interface SuggestSessionListenerToken extends ProcessorActiveToken {
   readonly currentSession?: SubmissionSession;
 }
 
-export default class SuggestSessionListener implements IDirectMessageProcessor {
+export default class SuggestSessionListener implements DirectMessageProcessor {
   public readonly handle = 'suggest-session-listener';
 
   public async canProcess(
@@ -55,11 +53,11 @@ export default class SuggestSessionListener implements IDirectMessageProcessor {
   public async process(
     phil: Phil,
     message: PrivateMessage,
-    rawToken: IProcessorActiveToken
+    rawToken: ProcessorActiveToken
   ) {
     const token = rawToken as SuggestSessionListenerToken;
     const validationResults = validatePromptSubmission(message.content);
-    if (!validationResults.isValid) {
+    if (!validationResults.isValid || !token.currentSession) {
       // TODO
       return;
     }

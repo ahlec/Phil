@@ -1,12 +1,15 @@
 import Feature from '../features/feature';
 import PublicMessage from '../messages/public';
+import { LoggerDefinition } from './@types';
 import EnableDisableCommandBase from './bases/enable-disable-base';
 
 export default class DisableCommand extends EnableDisableCommandBase {
-  public readonly name = 'disable';
-  public readonly helpDescription = "Disables a feature of Phil's.";
-
-  protected readonly shouldEnableFeature: boolean = false;
+  public constructor(parentDefinition: LoggerDefinition) {
+    super('disable', parentDefinition, {
+      helpDescription: "Disables a feature of Phil's.",
+      shouldEnableFeature: false,
+    });
+  }
 
   protected getSuccessMessage(
     message: PublicMessage,

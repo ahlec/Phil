@@ -3,7 +3,7 @@ import { QueryResult } from 'pg';
 import Bucket from '../buckets';
 import Database from '../database';
 import EmbedColor from '../embed-color';
-import { DiscordPromises, IEmbedData } from '../promises/discord';
+import { DiscordPromises, EmbedData } from '../promises/discord';
 import { PromptQueueReactableFactory } from '../reactables/prompt-queue/factory';
 import Prompt from './prompt';
 
@@ -73,7 +73,7 @@ export class PromptQueue {
     );
     const batchPrompts = await Prompt.getFromBatchIds(client, db, promptIds);
     const orderedPrompts: Prompt[] = promptResults.rows.map(
-      ({ prompt_id }) => batchPrompts[parseInt(prompt_id, 10)]
+      ({ prompt_id }) => batchPrompts[parseInt(prompt_id, 10)]!
     );
 
     const countResults = await db.query(
@@ -155,7 +155,7 @@ export class PromptQueue {
     return messageId;
   }
 
-  private asEmbedObject(): IEmbedData {
+  private asEmbedObject(): EmbedData {
     return {
       color: EmbedColor.Info,
       description: this.makeBodyFromQueue(),

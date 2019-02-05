@@ -2,13 +2,13 @@ import Database from '../database';
 import AllFeatures from './all-features';
 import Feature from './feature';
 
-interface IFeaturesLookup {
+interface FeaturesLookup {
   [key: string]: Feature;
 }
 
-const featuresLookup = AllFeatures as IFeaturesLookup;
+const featuresLookup = AllFeatures as FeaturesLookup;
 
-export interface IBatchFeaturesEnabledLookup {
+export interface BatchFeaturesEnabledLookup {
   [featureId: number]: boolean;
 }
 
@@ -16,12 +16,12 @@ export namespace FeatureUtils {
   export async function getServerFeaturesStatus(
     db: Database,
     serverId: string
-  ): Promise<IBatchFeaturesEnabledLookup> {
+  ): Promise<BatchFeaturesEnabledLookup> {
     const results = await db.query(
       'SELECT feature_id, is_enabled FROM server_features WHERE server_id = $1',
       [serverId]
     );
-    const lookup: IBatchFeaturesEnabledLookup = {};
+    const lookup: BatchFeaturesEnabledLookup = {};
 
     for (const key in featuresLookup) {
       if (!featuresLookup.hasOwnProperty(key)) {

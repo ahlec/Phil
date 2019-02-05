@@ -1,13 +1,15 @@
 const countryTimezonesJson = require('../../../data/country-timezones.json');
 
-interface ITimezone {
-    readonly name: string;
-    readonly displayName: string;
+interface Timezone {
+  readonly name: string;
+  readonly displayName: string;
 }
 
-export interface ITimezoneData {
-    readonly isCities: boolean;
-    readonly timezones: ReadonlyArray<ITimezone>;
+export interface TimezoneData {
+  readonly isCities: boolean;
+  readonly timezones: ReadonlyArray<Timezone>;
 }
 
-export const CountryTimezones: { [name: string]: ITimezoneData } = countryTimezonesJson;
+export const CountryTimezones: {
+  [name: string]: TimezoneData;
+} = countryTimezonesJson;

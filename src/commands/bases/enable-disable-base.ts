@@ -1,26 +1,36 @@
-import Feature from '../../features/feature';
 import AllFeatures from '../../features/all-features';
+import Feature from '../../features/feature';
 import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
-import Phil from '../../phil';
 import PermissionLevel from '../../permission-level';
+import Phil from '../../phil';
 import BotUtils from '../../utils';
-import ICommand from '../@types';
+import Command, { LoggerDefinition } from '../@types';
 
 const FEATURES_LIST = Object.values(AllFeatures);
 
-export default abstract class EnableDisableCommandBase implements ICommand {
-  public abstract readonly name: string;
-  public readonly aliases: ReadonlyArray<string> = [];
-  public readonly feature: Feature = null;
-  public readonly permissionLevel = PermissionLevel.AdminOnly;
+interface EnableDisableCommandBaseDetails {
+  helpDescription: string;
+  shouldEnableFeature: boolean;
+}
 
-  public readonly helpGroup = HelpGroup.Admin;
-  public abstract readonly helpDescription: string = null;
+export default abstract class EnableDisableCommandBase extends Command {
+  private readonly shouldEnableFeature: boolean;
 
-  public readonly versionAdded = 9;
+  protected constructor(
+    name: string,
+    parentDefinition: LoggerDefinition,
+    details: EnableDisableCommandBaseDetails
+  ) {
+    super(name, parentDefinition, {
+      helpDescription: details.helpDescription,
+      helpGroup: HelpGroup.Admin,
+      permissionLevel: PermissionLevel.AdminOnly,
+      versionAdded: 9,
+    });
 
-  protected abstract readonly shouldEnableFeature: boolean;
+    this.shouldEnableFeature = details.shouldEnableFeature;
+  }
 
   public async processMessage(
     phil: Phil,
@@ -62,8 +72,8 @@ export default abstract class EnableDisableCommandBase implements ICommand {
     feature: Feature
   ): string;
 
-  private getFeatureByName(name: string): Feature {
-    return FEATURES_LIST.find(feature => feature.is(name));
+  private getFeatureByName(name: string): Feature | null {
+    return FEATURES_LIST.find(feature => feature.is(name)) || null;
   }
 
   private formatParameterErrorMessage(message: string): string {

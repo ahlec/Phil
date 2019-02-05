@@ -2,28 +2,33 @@ import { Server as DiscordIOServer } from 'discord.io';
 import Phil from './phil';
 import ServerConfig from './server-config';
 
-interface IConfigCache {
-    [serverId: string]: ServerConfig;
+interface ConfigCache {
+  [serverId: string]: ServerConfig | undefined;
 }
 
 export default class ServerDirectory {
-    private readonly configCache: IConfigCache = {};
+  private readonly configCache: ConfigCache = {};
 
-    constructor(private readonly phil: Phil) {
+  constructor(private readonly phil: Phil) {}
+
+  public async getServerConfig(
+    server: DiscordIOServer
+  ): Promise<ServerConfig | null> {
+    if (!server) {
+      throw new Error('Server was not provided to this function!');
     }
 
-    public async getServerConfig(server: DiscordIOServer): Promise<ServerConfig> {
-        if (!server) {
-            throw new Error('Server was not provided to this function!');
-        }
-
-        const cached = this.configCache[server.id];
-        if (cached) {
-            return cached;
-        }
-
-        const serverConfig = await ServerConfig.getFromId(this.phil.db, server);
-        this.configCache[server.id] = serverConfig;
-        return serverConfig;
+    const cached = this.configCache[server.id];
+    if (cached) {
+      return cached;
     }
-};
+
+    const serverConfig = await ServerConfig.getFromId(this.phil.db, server);
+    if (!serverConfig) {
+      return null;
+    }
+
+    this.configCache[server.id] = serverConfig;
+    return serverConfig;
+  }
+}
