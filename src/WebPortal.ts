@@ -25,7 +25,7 @@ type CreateServerResponseListener = (
 let createServer: (
   responseListener: CreateServerResponseListener
 ) => HttpServer | HttpsServer;
-let get: (url: string) => ClientRequest;
+let get: (url: string, options: { port: number }) => ClientRequest;
 switch (serverProtocol) {
   case 'http': {
     createServer = createHttpServer;
@@ -48,7 +48,7 @@ switch (serverProtocol) {
 function getEndpoint(endpoint: string): Promise<string> {
   const url = resolve(GlobalConfig.webportalUrl, endpoint);
   return new Promise((resolvePromise, reject) => {
-    const request = get(url);
+    const request = get(url, { port: GlobalConfig.webportalPort });
     request.on('error', err => reject(err));
     request.on('response', (response: IncomingMessage) => {
       response.on('error', err => reject(err));
