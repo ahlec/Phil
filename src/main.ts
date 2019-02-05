@@ -17,7 +17,7 @@ async function main() {
     webPortal.start();
     webPortal.beginKeepAliveHeartbeat();
   } catch (err) {
-    console.error(err);
+    console.error(err); /* tslint:disable-line */
     process.exit(1);
   }
 }

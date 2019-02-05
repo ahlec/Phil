@@ -5,18 +5,22 @@ import TimezoneQuestionnaireProcessor from './direct-message-processors/timezone
 
 import EmbedColor from './embed-color';
 import GlobalConfig from './global-config';
+import Logger from './Logger';
+import LoggerDefinition from './LoggerDefinition';
 import PrivateMessage from './messages/private';
 import Phil from './phil';
 import { DiscordPromises } from './promises/discord';
 const util = require('util');
 
-export default class DirectMessageDispatcher {
+export default class DirectMessageDispatcher extends Logger {
   private readonly processorsInPriorityOrder: DirectMessageProcessor[] = [
     new SuggestSessionListener(),
     new TimezoneQuestionnaireProcessor(),
   ];
 
-  constructor(private readonly phil: Phil) {}
+  constructor(private readonly phil: Phil) {
+    super(new LoggerDefinition('Direct Message Dispatcher'));
+  }
 
   public async process(message: PrivateMessage) {
     for (const processor of this.processorsInPriorityOrder) {
@@ -34,7 +38,7 @@ export default class DirectMessageDispatcher {
   }
 
   private reportError(err: Error, processor: DirectMessageProcessor) {
-    console.error(err);
+    this.error(err);
 
     DiscordPromises.sendEmbedMessage(
       this.phil.bot,
