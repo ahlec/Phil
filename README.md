@@ -14,9 +14,9 @@ Phil also served as a useful reentry point to working with JavaScript. It's been
 Phil is designed to be run/hosted on [Heroku](https://heroku.com). Running him locally is also possible as part of the [Heroku Toolbelt](https://toolbelt.heroku.com/). There are a couple of dependencies you'll need to manually secure in order to run him, but they're all pretty standard run-of-the-mill.
 
 - Node.js
-- Heroku
+- Heroku CLI (and Heroku account)
 - yarn
-- Postgres
+- Docker
 
 All of his other dependencies are secured through yarn and can be done by running `yarn install`.
 
@@ -30,21 +30,17 @@ Here's (more or less) a flow to get Phil started locally. It'll probably need so
 
 ```
 git clone git@github.com:ahlec/Phil.git
-cd Phil/database
-psql -f database.sql
-psql -f database-v2.sql
-psql -f database-v3.sql
-[continue for further versions]
-cd ..
-[take a moment now and configure your .env file]
+cd Phil
+cp .env.template .env
+[take a moment to configure .env]
 yarn install
-tsc
-heroku local web
+yarn db-migrate
+yarn start
 ```
 
-This will launch Phil running from your local machine. Subsequently, you can get Phil running using just `heroku local web`.
+This will launch Phil running from your local machine. Subsequently, you can get Phil running using just `yarn start`.
 
-Phil is now written entirely in TypeScript, which means that we need to transpile our TypeScript code to JavaScript in order for changes to show up. After making changes to the TypeScript code, run `tsc` again prior to running `heroku local web`. When it comes time to push him to Heroku and have him running on the cloud rather than on your local machine, you simply need to `git push heroku master` and it'll push everything in your git repo to the live environment on Heroku. You only need to push your TypeScript file changes, however. The JavaScript gets transpiled automatically when pushed to Heroku as part of the build process. It WON'T push your .env file, though, so you'll need to configure your environment variables on Heroku. Easiest way to do that is just using their dashboard to modify them.
+Phil is now written entirely in TypeScript, which means that we need to transpile our TypeScript code to JavaScript in order for changes to show up. The process of transpilation will happen automatically before starting up when using `yarn start`. When it comes time to push him to Heroku and have him running on the cloud rather than on your local machine, you simply need to `git push heroku master` and it'll push everything in your git repo to the live environment on Heroku. You only need to push your TypeScript file changes, however. The JavaScript gets transpiled automatically when pushed to Heroku as part of the build process. It WON'T push your .env file, though, so you'll need to configure your environment variables on Heroku. Easiest way to do that is just using their dashboard to modify them.
 
 ## Components
 
