@@ -9,7 +9,7 @@
     "yarn": "^1.6.4"
   },
   "scripts": {
-    "start": "heroku local web",
+    "start": "tsc && heroku local web",
     "postinstall": "tsc",
     "clean": "rm -rf ./build",
     "lint": "tslint -p .",

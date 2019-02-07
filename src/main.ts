@@ -8,7 +8,9 @@ async function main() {
     ensureNecessaryEnvironmentVariables();
 
     const db = new Database();
-    await db.checkIsCurrentVersion();
+    if (!(await db.checkIsCurrentVersion())) {
+      return;
+    }
 
     const phil = new Phil(db);
     phil.start();

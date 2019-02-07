@@ -1,17 +1,20 @@
 import { Pool, QueryResult } from 'pg';
 import GlobalConfig from './global-config';
+import Logger from './Logger';
+import LoggerDefinition from './LoggerDefinition';
 import Versions from './versions';
 
 const EMPTY_ARRAY: any[] = [];
 
-export default class Database {
+export default class Database extends Logger {
   private readonly pool: Pool;
 
   constructor() {
+    super(new LoggerDefinition('Database'));
     this.pool = new Pool({ connectionString: GlobalConfig.databaseUrl });
   }
 
-  public async checkIsCurrentVersion() {
+  public async checkIsCurrentVersion(): Promise<boolean> {
     const results = await this.query(
       'SELECT version FROM schemaversion ORDER BY version DESC LIMIT 1'
     );
@@ -20,20 +23,24 @@ export default class Database {
       rows: [row],
     } = results;
     if (!row) {
-      throw new Error(
+      this.error(
         'There is no database entry for the current database version number.'
       );
+      return false;
     }
 
     const dbVersion = parseInt(row.version, 10);
     if (dbVersion !== Versions.DATABASE) {
-      throw new Error(
-        'The required database version is ' +
-          Versions.DATABASE +
-          ' but the current database is version ' +
-          dbVersion
+      this.error(
+        `The required database version is${
+          Versions.DATABASE
+        }but the current database is version ${dbVersion}`
       );
+      return false;
     }
+
+    this.write(`Database is at current version of ${Versions.DATABASE}.`);
+    return true;
   }
 
   public query(text: string, values?: any[]): Promise<QueryResult> {

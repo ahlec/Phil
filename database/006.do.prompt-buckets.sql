@@ -22,7 +22,7 @@ CREATE TABLE prompt_buckets (
     required_role_id VARCHAR NULL,
     alert_when_low BIT(1) NOT NULL DEFAULT E'1',
     frequency VARCHAR NOT NULL DEFAULT 'daily',
-    prompt_title_format VARCHAR NOT NULL
+    prompt_title_format VARCHAR NOT NULL DEFAULT 'Prompt of the day'
 );
 
 INSERT INTO prompt_buckets(server_id, channel_id, reference_handle, display_name) VALUES('240114141031825408', '254309217442332673', 'hijack-daily', 'Hijack Daily Prompts (SFW)');
