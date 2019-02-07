@@ -45,6 +45,40 @@ export class ServerConfig extends Logger {
     return new ServerConfig(server, results.rows[0]);
   }
 
+  public static async initializeDefault(
+    db: Database,
+    server: DiscordIOServer
+  ): Promise<ServerConfig> {
+    let botControlChannel = server.channels[server.id];
+    if (!botControlChannel) {
+      const id = Object.keys(server.channels);
+      botControlChannel = server.channels[id[0]];
+      if (!botControlChannel) {
+        throw new Error('Could not find a suitable initial bot channel');
+      }
+    }
+
+    const creation = await db.query(
+      `INSERT INTO
+        server_configs(
+          server_id,
+          bot_control_channel_id
+        )
+        VALUES
+          ($1, $2)
+        RETURNING
+          *`,
+      [server.id, botControlChannel.id]
+    );
+    if (!creation.rowCount) {
+      throw new Error(
+        'Could not initialize the server config within the database.'
+      );
+    }
+
+    return new ServerConfig(server, creation.rows[0]);
+  }
+
   public readonly serverId: string;
   public readonly fandomMapLink: string | null;
   private commandPrefixInternal: string;

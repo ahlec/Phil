@@ -1,4 +1,6 @@
 import { Server as DiscordIOServer } from 'discord.io';
+import Logger from './Logger';
+import LoggerDefinition from './LoggerDefinition';
 import Phil from './phil';
 import ServerConfig from './server-config';
 
@@ -6,10 +8,12 @@ interface ConfigCache {
   [serverId: string]: ServerConfig | undefined;
 }
 
-export default class ServerDirectory {
+export default class ServerDirectory extends Logger {
   private readonly configCache: ConfigCache = {};
 
-  constructor(private readonly phil: Phil) {}
+  constructor(private readonly phil: Phil) {
+    super(new LoggerDefinition('Server Directory'));
+  }
 
   public async getServerConfig(
     server: DiscordIOServer
@@ -23,12 +27,24 @@ export default class ServerDirectory {
       return cached;
     }
 
-    const serverConfig = await ServerConfig.getFromId(this.phil.db, server);
-    if (!serverConfig) {
+    try {
+      let serverConfig = await ServerConfig.getFromId(this.phil.db, server);
+      if (!serverConfig) {
+        this.write(
+          `Have not encountered server ${server.id} before. Initializing.`
+        );
+        serverConfig = await ServerConfig.initializeDefault(
+          this.phil.db,
+          server
+        );
+      }
+
+      this.configCache[server.id] = serverConfig;
+      return serverConfig;
+    } catch (e) {
+      this.error(`Error when retrieving config for server ${server.id}.`);
+      this.error(e);
       return null;
     }
-
-    this.configCache[server.id] = serverConfig;
-    return serverConfig;
   }
 }
