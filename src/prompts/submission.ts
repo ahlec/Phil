@@ -57,7 +57,9 @@ export default class Submission {
       return returnValue;
     }
 
-    const result = await db.query(
+    const result = await db.query<
+      SubmissionDatabaseSchema & { bucket_id: number }
+    >(
       `SELECT
         submission_id,
         bucket_id,
@@ -78,14 +80,11 @@ export default class Submission {
     }
 
     const bucketIds = new Set<number>();
-    result.rows.forEach(({ bucket_id }) =>
-      bucketIds.add(parseInt(bucket_id, 10))
-    );
+    result.rows.forEach(({ bucket_id }) => bucketIds.add(bucket_id));
 
     const buckets = await Bucket.getFromBatchIds(client, db, bucketIds);
     result.rows.forEach(row => {
-      const bucketId = parseInt(row.bucket_id, 10);
-      const bucket = buckets[bucketId];
+      const bucket = buckets[row.bucket_id];
       if (!bucket) {
         return;
       }
@@ -102,7 +101,7 @@ export default class Submission {
     bucket: Bucket,
     maxNumResults: number
   ): Promise<Submission[]> {
-    const { rows } = await db.query(
+    const { rows } = await db.query<SubmissionDatabaseSchema>(
       `SELECT
         submission_id,
         bucket_id,
@@ -134,7 +133,7 @@ export default class Submission {
     bucket: Bucket,
     maxNumResults: number
   ): Promise<Submission[]> {
-    const { rows } = await db.query(
+    const { rows } = await db.query<SubmissionDatabaseSchema>(
       `SELECT
           s.submission_id,
           MAX(s.bucket_id) AS "bucket_id",

@@ -1,7 +1,6 @@
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
-import { QueryResult } from 'pg';
 import Bucket from '../buckets';
-import Database from '../database';
+import Database, { DatabaseResult } from '../database';
 import EmbedColor from '../embed-color';
 import { DiscordPromises, EmbedData } from '../promises/discord';
 import { PromptQueueReactableFactory } from '../reactables/prompt-queue/factory';
@@ -113,7 +112,7 @@ export class PromptQueue {
   private constructor(
     readonly bucket: Bucket,
     prompts: ReadonlyArray<Prompt>,
-    countResults: QueryResult,
+    countResults: DatabaseResult<any>,
     pageNum: number,
     readonly pageSize: number
   ) {
