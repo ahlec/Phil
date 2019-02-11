@@ -1,10 +1,44 @@
 import { Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
-import { QueryResult } from 'pg';
 import Database from './database';
 
 export interface RequestableCreationDefinition {
   name: string;
   role: DiscordIORole;
+}
+
+function groupRequestStrings(
+  results: Array<{ role_id: string; request_string: string }>
+): { [roleId: string]: string[] } {
+  const groupedRequestStrings: { [roleId: string]: string[] } = {};
+  for (const { role_id, request_string } of results) {
+    let group = groupedRequestStrings[role_id];
+    if (!group) {
+      group = [];
+      groupedRequestStrings[role_id] = group;
+    }
+
+    group.push(request_string);
+  }
+
+  return groupedRequestStrings;
+}
+
+function groupBlacklist(
+  rows: Array<{ role_id: string; user_id: string }>
+): { [roleId: string]: Set<string> | undefined } {
+  const groups: { [roleId: string]: Set<string> | undefined } = {};
+
+  for (const { role_id, user_id } of rows) {
+    let role = groups[role_id];
+    if (!role) {
+      role = new Set<string>();
+      groups[role_id] = role;
+    }
+
+    role.add(user_id);
+  }
+
+  return groups;
 }
 
 export default class Requestable {
@@ -17,14 +51,17 @@ export default class Requestable {
     db: Database,
     server: DiscordIOServer
   ): Promise<Requestable[]> {
-    const results = await db.query(
+    const requestStrings = (await db.query(
       'SELECT request_string, role_id FROM requestable_roles WHERE server_id = $1',
       [server.id]
-    );
-    const groupedRequestStrings = this.groupRequestStrings(results);
+    )).transform(groupRequestStrings);
+    const blacklistLookup = (await db.query(
+      'SELECT user_id, role_id FROM requestable_blacklist WHERE server_id = $1',
+      [server.id]
+    )).transform(groupBlacklist);
     const requestables = [];
-    for (const roleId in groupedRequestStrings) {
-      if (!groupedRequestStrings.hasOwnProperty(roleId)) {
+    for (const roleId in requestStrings) {
+      if (!requestStrings.hasOwnProperty(roleId)) {
         continue;
       }
 
@@ -33,7 +70,11 @@ export default class Requestable {
         continue;
       }
 
-      requestables.push(new Requestable(role, groupedRequestStrings[roleId]));
+      const blacklist = blacklistLookup[roleId] || new Set<string>();
+
+      requestables.push(
+        new Requestable(role, requestStrings[roleId], blacklist)
+      );
     }
 
     return requestables;
@@ -45,7 +86,7 @@ export default class Requestable {
     requestString: string
   ): Promise<Requestable | null> {
     requestString = requestString.toLowerCase();
-    const results = await db.query(
+    const results = await db.query<{ role_id: string }>(
       'SELECT role_id FROM requestable_roles WHERE request_string = $1 AND server_id = $2',
       [requestString, server.id]
     );
@@ -64,7 +105,12 @@ export default class Requestable {
       );
     }
 
-    return new Requestable(role, []); // TODO: We need to get the list of request strings here!!
+    const blacklist = (await db.query<{ user_id: string }>(
+      'SELECT user_id FROM requestable_blacklist WHERE role_id = $1 AND server_id = $2',
+      [roleId, server.id]
+    )).toReadonlySet(({ user_id }) => user_id);
+
+    return new Requestable(role, [], blacklist); // TODO: We need to get the list of request strings here!!
   }
 
   public static async createRequestable(
@@ -79,24 +125,9 @@ export default class Requestable {
     ]);
   }
 
-  private static groupRequestStrings(
-    results: QueryResult
-  ): { [roleId: string]: string[] } {
-    const groupedRequestStrings: { [roleId: string]: string[] } = {};
-    for (let index = 0; index < results.rowCount; ++index) {
-      const roleId = results.rows[index].role_id;
-      if (groupedRequestStrings[roleId] === undefined) {
-        groupedRequestStrings[roleId] = [];
-      }
-
-      groupedRequestStrings[roleId].push(results.rows[index].request_string);
-    }
-
-    return groupedRequestStrings;
-  }
-
   constructor(
     public readonly role: DiscordIORole,
-    public readonly requestStrings: ReadonlyArray<string>
+    public readonly requestStrings: ReadonlyArray<string>,
+    public readonly blacklistedUserIds: ReadonlySet<string>
   ) {}
 }
