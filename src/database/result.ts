@@ -15,9 +15,7 @@ export default class DatabaseResult<TRow> {
     return transformation(this.rows);
   }
 
-  public toReadonlySet<TOutput>(
-    transform: (row: TRow) => TOutput
-  ): ReadonlySet<TOutput> {
+  public toSet<TOutput>(transform: (row: TRow) => TOutput): Set<TOutput> {
     return new Set<TOutput>(this.rows.map(transform));
   }
 }
