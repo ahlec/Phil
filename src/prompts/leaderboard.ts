@@ -2,8 +2,7 @@ import {
   Client as DiscordIOClient,
   Server as DiscordIOServer,
 } from 'discord.io';
-import { QueryResult } from 'pg';
-import Database from '../database';
+import Database, { DatabaseResult } from '../database';
 import LeaderboardEntry from './leaderboard-entry';
 
 const LEADERBOARD_SIZE = 10;
@@ -42,7 +41,7 @@ export default class Leaderboard {
   private constructor(
     client: DiscordIOClient,
     server: DiscordIOServer,
-    results: QueryResult
+    results: DatabaseResult<any>
   ) {
     const mutableEntries: LeaderboardEntry[] = [];
     for (const row of results.rows) {

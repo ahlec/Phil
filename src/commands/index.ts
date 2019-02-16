@@ -1,6 +1,7 @@
 import Command, { CommandLookup, LoggerDefinition } from './@types';
 import ApologiseCommand from './apologise';
 import BirthdayCommand from './birthday';
+import BlacklistCommand from './blacklist';
 import BucketCommand from './bucket';
 import CalendarCommand from './calendar';
 import ColourCommand from './colour';
@@ -39,6 +40,7 @@ const REGULAR_COMMANDS: ReadonlyArray<
 > = [
   ApologiseCommand,
   BirthdayCommand,
+  BlacklistCommand,
   BucketCommand,
   CalendarCommand,
   ColourCommand,

@@ -44,7 +44,7 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
     const day = now.date();
     const month = now.month() + 1;
 
-    const results = await db.query(
+    const results = await db.query<{ userid: string }>(
       'SELECT userid FROM birthdays WHERE birthday_day = $1 AND birthday_month = $2',
       [day, month]
     );

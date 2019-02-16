@@ -1,8 +1,11 @@
 import { Pool, QueryResult } from 'pg';
-import GlobalConfig from './global-config';
-import Logger from './Logger';
-import LoggerDefinition from './LoggerDefinition';
-import Versions from './versions';
+import GlobalConfig from '../global-config';
+import Logger from '../Logger';
+import LoggerDefinition from '../LoggerDefinition';
+import Versions from '../versions';
+import DatabaseResult from './result';
+
+export { default as DatabaseResult } from './result';
 
 const EMPTY_ARRAY: any[] = [];
 
@@ -15,26 +18,23 @@ export default class Database extends Logger {
   }
 
   public async checkIsCurrentVersion(): Promise<boolean> {
-    const results = await this.query(
+    const results = await this.querySingle<{ version: string }>(
       'SELECT version FROM schemaversion ORDER BY version DESC LIMIT 1'
     );
 
-    const {
-      rows: [row],
-    } = results;
-    if (!row) {
+    if (!results) {
       this.error(
         'There is no database entry for the current database version number.'
       );
       return false;
     }
 
-    const dbVersion = parseInt(row.version, 10);
+    const dbVersion = parseInt(results.version, 10);
     if (dbVersion !== Versions.DATABASE) {
       this.error(
-        `The required database version is${
+        `The required database version is ${
           Versions.DATABASE
-        }but the current database is version ${dbVersion}`
+        } but the current database is version ${dbVersion}`
       );
       return false;
     }
@@ -43,7 +43,10 @@ export default class Database extends Logger {
     return true;
   }
 
-  public query(text: string, values?: any[]): Promise<QueryResult> {
+  public query<TRow = any>(
+    text: string,
+    values?: any[]
+  ): Promise<DatabaseResult<TRow>> {
     return new Promise((resolve, reject) => {
       this.pool.connect((error, client, done) => {
         if (error) {
@@ -62,17 +65,20 @@ export default class Database extends Logger {
               return;
             }
 
-            resolve(result);
+            resolve(new DatabaseResult(result));
           }
         );
       });
     });
   }
 
-  public async querySingle(text: string, values?: any[]): Promise<any> {
+  public async querySingle<TRow = any>(
+    text: string,
+    values?: any[]
+  ): Promise<TRow | null> {
     const {
       rows: [row],
-    } = await this.query(text, values);
+    } = await this.query<TRow>(text, values);
 
     if (!row) {
       return null;

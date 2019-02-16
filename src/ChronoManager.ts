@@ -1,5 +1,4 @@
 import * as moment from 'moment';
-import { QueryResult } from 'pg';
 import { inspect } from 'util';
 import Chronos, { Chrono } from './chronos/index';
 import EmbedColor from './embed-color';
@@ -89,7 +88,7 @@ export default class ChronoManager extends Logger {
                 c.utc_hour ASC`,
         [hour, date]
       )
-      .then((results: QueryResult) => {
+      .then(results => {
         for (const dbRow of results.rows) {
           this.processChronoInstance(
             now,

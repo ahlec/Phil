@@ -56,8 +56,7 @@ export default class RequestCommand extends Command {
     BotUtils.sendSuccessMessage({
       bot: phil.bot,
       channelId: message.channelId,
-      message:
-        'You have been granted the "' + requestable.role.name + '" role!',
+      message: `You have been granted the "${requestable.role.name}" role!`,
     });
   }
 
@@ -66,14 +65,20 @@ export default class RequestCommand extends Command {
     userId: string,
     requestable: Requestable
   ) {
+    if (requestable.blacklistedUserIds.has(userId)) {
+      throw new Error(
+        `You are unable to request the "${
+          requestable.role.name
+        }" role at this time.`
+      );
+    }
+
     const member = serverConfig.server.members[userId];
     if (member.roles.indexOf(requestable.role.id) >= 0) {
       throw new Error(
-        'You already have the "' +
-          requestable.role.name +
-          '" role. You can use `' +
-          serverConfig.commandPrefix +
-          'remove` to remove the role if you wish.'
+        `You already have the "${requestable.role.name}" role. You can use \`${
+          serverConfig.commandPrefix
+        }remove\` to remove the role if you wish.`
       );
     }
   }

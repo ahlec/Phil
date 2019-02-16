@@ -62,7 +62,9 @@ export default class Prompt {
       return returnValue;
     }
 
-    const result = await db.query(
+    const result = await db.query<
+      PromptDatabaseSchema & { submission_id: number }
+    >(
       `SELECT
           prompt_id,
           submission_id,
@@ -82,7 +84,7 @@ export default class Prompt {
 
     const submissionIds = new Set<number>();
     result.rows.forEach(({ submission_id }) =>
-      submissionIds.add(parseInt(submission_id, 10))
+      submissionIds.add(submission_id)
     );
 
     const submissions = await Submission.getFromBatchIds(
@@ -91,8 +93,7 @@ export default class Prompt {
       submissionIds
     );
     result.rows.forEach(row => {
-      const submissionId = parseInt(row.submission_id, 10);
-      const submission = submissions[submissionId];
+      const submission = submissions[row.submission_id];
       if (!submission) {
         return;
       }
@@ -172,7 +173,9 @@ export default class Prompt {
         ? parseInt(lastPromptInBucket.prompt_number, 10)
         : 0) + 1;
 
-    const { count: repetitionNumber } = await db.querySingle(
+    const { count: repetitionNumber } = (await db.querySingle<{
+      count: string;
+    }>(
       `SELECT
         count(*)
       FROM
@@ -180,9 +183,9 @@ export default class Prompt {
       WHERE
         submission_id = $1`,
       [submission.id]
-    );
+    ))!;
 
-    const creation = await db.query(
+    const creation = await db.query<PromptDatabaseSchema>(
       `INSERT INTO
           prompt_v2(
             submission_id,

@@ -44,7 +44,7 @@ export default class CalendarMonth {
     db: Database,
     server: DiscordIOServer
   ) {
-    const results = await db.query(
+    const results = await db.query<{ userid: string; birthday_day: number }>(
       'SELECT userid, birthday_day FROM birthdays WHERE birthday_month = $1',
       [this.month]
     );
