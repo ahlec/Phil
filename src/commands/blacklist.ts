@@ -57,13 +57,7 @@ export default class BlacklistCommand extends Command {
       return this.replyWithBlacklist(phil, message, requestable, requestString);
     }
 
-    return this.toggleMember(
-      phil,
-      message.channelId,
-      requestable,
-      requestString,
-      member
-    );
+    return this.toggleMember(phil, message, requestable, requestString, member);
   }
 
   private async processNoCommandArgs(
@@ -185,17 +179,42 @@ export default class BlacklistCommand extends Command {
 
   private async toggleMember(
     phil: Phil,
-    channelId: string,
+    message: PublicMessage,
     requestable: Requestable,
     requestStringUsed: string,
     member: DiscordIOMember
   ) {
     const result = await requestable.toggleUserBlacklist(member.id, phil.db);
+    if (!result.success) {
+      this.error(`requestable: ${requestable.role.id} - ${requestStringUsed}`);
+      this.error(`server: ${message.server.id}`);
+      this.error(`member: ${member.id}`);
+      this.error(result.message);
+      return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+        color: EmbedColor.Error,
+        description: result.message,
+        title: `:no_entry: Blacklist error encountered`,
+      });
+    }
 
-    return DiscordPromises.sendMessage(
-      phil.bot,
-      channelId,
-      result.success ? 'YES' : 'NO'
-    );
+    const isOnBlacklist = requestable.blacklistedUserIds.has(member.id);
+    let displayName: string;
+    if (member.nick) {
+      displayName = member.nick;
+    } else {
+      const user = phil.bot.users[member.id];
+      displayName = `${user.username}#${user.discriminator}`;
+    }
+    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+      color: EmbedColor.Info,
+      description: `**${displayName}** was ${
+        isOnBlacklist ? 'added to' : 'removed from'
+      } the blacklist for all requestables that give **${
+        requestable.role.name
+      }**.\n\nYou can undo this by using \`${
+        message.serverConfig.commandPrefix
+      }blacklist ${requestStringUsed} ${displayName}\` to toggle the member's presence on the list.`,
+      title: `:name_badge: "${requestable.role.name}" blacklist`,
+    });
   }
 }

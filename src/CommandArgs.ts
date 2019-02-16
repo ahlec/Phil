@@ -25,6 +25,8 @@ function roleNameSelector(role: DiscordIORole): string {
   return role.name;
 }
 
+const USER_MENTION_REGEX = /^<@(\d+)>$/;
+
 export default class CommandArgs {
   private readonly queue: string[];
 
@@ -167,6 +169,14 @@ export default class CommandArgs {
     let member: DiscordIOMember | undefined = server.members[firstPiece];
     if (member) {
       return member;
+    }
+
+    const mentionResults = firstPiece.match(USER_MENTION_REGEX);
+    if (mentionResults && mentionResults.length >= 2) {
+      member = server.members[mentionResults[1]];
+      if (member) {
+        return member;
+      }
     }
 
     let searchString = firstPiece;
