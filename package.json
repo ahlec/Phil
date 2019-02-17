@@ -1,6 +1,6 @@
 {
   "name": "PhilTheYeti",
-  "version": "14.2.0",
+  "version": "14.2.1",
   "database_version": "10",
   "description": "A Discord bot made specifically for the Official Hijack (Hiccup Haddock/Jack Frost) Discord server",
   "main": "main.js",
@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "heroku local web",
-    "build": "tsc && yarn db-migrate",
+    "build": "tsc",
     "clean": "rm -rf ./build",
     "lint": "tslint -p .",
     "run-bot": "node build/main.js",
