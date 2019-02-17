@@ -2,7 +2,7 @@ import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
-import Versions from '../versions';
+import { CODE_VERSION, DATABASE_VERSION } from '../versions';
 import Command, { LoggerDefinition } from './@types';
 
 export default class VersionCommand extends Command {
@@ -21,12 +21,10 @@ export default class VersionCommand extends Command {
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
   ): Promise<any> {
-    const reply =
-      '**Code:** Version ' +
-      Versions.CODE +
-      '.\n**Database:** Version ' +
-      Versions.DATABASE +
-      '.';
-    return DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
+    return DiscordPromises.sendMessage(
+      phil.bot,
+      message.channelId,
+      `**Code**: v${CODE_VERSION.format()}\n**Database**: v${DATABASE_VERSION}`
+    );
   }
 }

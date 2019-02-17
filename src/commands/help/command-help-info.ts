@@ -2,7 +2,7 @@ import Feature from '../../features/feature';
 import { BatchFeaturesEnabledLookup } from '../../features/feature-utils';
 import { HelpGroup } from '../../help-groups';
 import PermissionLevel from '../../permission-level';
-import Versions from '../../versions';
+import { CODE_VERSION } from '../../versions';
 import ICommand from '../@types';
 
 export default class CommandHelpInfo {
@@ -19,7 +19,7 @@ export default class CommandHelpInfo {
   }
 
   private static isVersionNew(version: number): boolean {
-    return version >= Versions.CODE - 1;
+    return version >= CODE_VERSION.major - 1;
   }
 
   public readonly name: string;
