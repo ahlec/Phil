@@ -10,13 +10,14 @@
     "yarn": "^1.6.4"
   },
   "scripts": {
-    "start": "tsc && heroku local web",
-    "postinstall": "tsc",
+    "start": "heroku local web",
+    "build": "tsc && yarn db-migrate",
     "clean": "rm -rf ./build",
     "lint": "tslint -p .",
     "run-bot": "node build/main.js",
     "db-migrate": "node scripts/db-migrate.js"
   },
+  "heroku-run-build-script": true,
   "dependencies": {
     "chalk": "^2.4.2",
     "chrono-node": "1.3.5",
