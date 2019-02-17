@@ -2,7 +2,7 @@ import { Pool, QueryResult } from 'pg';
 import GlobalConfig from '../global-config';
 import Logger from '../Logger';
 import LoggerDefinition from '../LoggerDefinition';
-import Versions from '../versions';
+import { DATABASE_VERSION } from '../versions';
 import DatabaseResult from './result';
 
 export { default as DatabaseResult } from './result';
@@ -30,16 +30,14 @@ export default class Database extends Logger {
     }
 
     const dbVersion = parseInt(results.version, 10);
-    if (dbVersion !== Versions.DATABASE) {
+    if (dbVersion !== DATABASE_VERSION) {
       this.error(
-        `The required database version is ${
-          Versions.DATABASE
-        } but the current database is version ${dbVersion}`
+        `The required database version is ${DATABASE_VERSION} but the current database is version ${dbVersion}`
       );
       return false;
     }
 
-    this.write(`Database is at current version of ${Versions.DATABASE}.`);
+    this.write(`Database is at current version of ${DATABASE_VERSION}.`);
     return true;
   }
 
