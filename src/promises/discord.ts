@@ -36,6 +36,22 @@ export interface EmbedData {
   };
 }
 
+export async function deleteChannel(
+  client: DiscordIOClient,
+  channelId: string
+): Promise<void> {
+  return new Promise((resolve, reject) =>
+    client.deleteChannel(channelId, (err, response) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      resolve(response);
+    })
+  );
+}
+
 export namespace DiscordPromises {
   export interface EditRoleOptions {
     name: string;

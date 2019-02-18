@@ -26,6 +26,7 @@ export const AllFeatures = {
     'welcomemessage',
   ]),
   FandomMap: new Feature(8, 'Fandom Map', ['map']),
+  TemporaryChannels: new Feature(9, 'Temporary Channels', ['tempchannels']),
 };
 
 export default AllFeatures;

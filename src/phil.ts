@@ -21,6 +21,7 @@ import MessageBase from './messages/base';
 import PublicMessage from './messages/public';
 import ReactableProcessor from './reactables/processor';
 import ServerDirectory from './server-directory';
+import TemporaryChannelManager from './TemporaryChannelManager';
 import { BotUtils } from './utils';
 
 function ignoreDiscordCode(code: number) {
@@ -38,6 +39,7 @@ export default class Phil extends Logger {
   private readonly chronoManager: ChronoManager;
   private readonly directMessageDispatcher: DirectMessageDispatcher;
   private readonly reactableProcessor: ReactableProcessor;
+  private readonly temporaryChannelManager: TemporaryChannelManager;
   private shouldSendDisconnectedMessage: boolean;
 
   constructor(public readonly db: Database) {
@@ -52,6 +54,10 @@ export default class Phil extends Logger {
     this.chronoManager = new ChronoManager(this, this.serverDirectory);
     this.directMessageDispatcher = new DirectMessageDispatcher(this);
     this.reactableProcessor = new ReactableProcessor(this);
+    this.temporaryChannelManager = new TemporaryChannelManager(
+      this.bot,
+      this.db
+    );
   }
 
   public start() {
@@ -62,6 +68,8 @@ export default class Phil extends Logger {
     this.bot.on('disconnect', this.onDisconnect);
     this.bot.on('guildMemberAdd', this.onMemberAdd);
     this.bot.on('any', this.onRawWebSocketEvent);
+
+    this.temporaryChannelManager.start();
   }
 
   public getServerFromChannelId(channelId: string): DiscordIOServer | null {
