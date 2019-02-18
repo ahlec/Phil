@@ -1,4 +1,8 @@
-import { Client as DiscordIOClient, Role as DiscordIORole } from 'discord.io';
+import {
+  Client as DiscordIOClient,
+  Permissions as DiscordIOPermissions,
+  Role as DiscordIORole,
+} from 'discord.io';
 import EmbedColor, { getColorValue } from '../embed-color';
 import MessageBuilder from '../message-builder';
 import Delay from '../utils/delay';
@@ -49,6 +53,69 @@ export async function deleteChannel(
 
       resolve(response);
     })
+  );
+}
+
+interface EditChannelPermissions {
+  allow?: DiscordIOPermissions[];
+  deny?: DiscordIOPermissions[];
+}
+
+export function editChannelUserPermissions(
+  client: DiscordIOClient,
+  channelId: string,
+  userId: string,
+  permissions: EditChannelPermissions
+): Promise<void> {
+  return editChannelPermissionsBase(
+    client,
+    channelId,
+    userId,
+    undefined,
+    permissions
+  );
+}
+
+export function editChannelRolePermissions(
+  client: DiscordIOClient,
+  channelId: string,
+  roleId: string,
+  permissions: EditChannelPermissions
+): Promise<void> {
+  return editChannelPermissionsBase(
+    client,
+    channelId,
+    undefined,
+    roleId,
+    permissions
+  );
+}
+
+function editChannelPermissionsBase(
+  client: DiscordIOClient,
+  channelId: string,
+  userId: string | undefined,
+  roleId: string | undefined,
+  permissions: EditChannelPermissions
+): Promise<void> {
+  return new Promise((resolve, reject) =>
+    client.editChannelPermissions(
+      {
+        channelID: channelId,
+        roleID: roleId!,
+        userID: userId!,
+        ...permissions,
+        default: [],
+      },
+      err => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve();
+      }
+    )
   );
 }
 

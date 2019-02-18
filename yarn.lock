@@ -233,6 +233,7 @@ circular-json@^0.3.1:
 cjopus@^0.0.4:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/cjopus/-/cjopus-0.0.4.tgz#46f3cfc96b83f7d78446de8b4cfd994b5889a9a0"
+  integrity sha1-RvPPyWuD99eERt6LTP2ZS1iJqaA=
 
 cli-cursor@^2.1.0:
   version "2.1.0"
@@ -364,7 +365,7 @@ diff@^3.2.0:
 
 "discord.io@https://github.com/ahlec/discord.io.git#gateway_v6":
   version "2.5.3"
-  resolved "https://github.com/ahlec/discord.io.git#5cdaf24db943311761d969ae6addb9c2244276b3"
+  resolved "https://github.com/ahlec/discord.io.git#3d628c0f0265972c0f13dead41d02eddb5a398ce"
   dependencies:
     cjopus "^0.0.4"
     tweetnacl "^0.14.0"
@@ -1109,6 +1110,7 @@ optionator@^0.8.2:
 options@>=0.0.5:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/options/-/options-0.0.6.tgz#ec22d312806bb53e731773e7cdaefcf1c643128f"
+  integrity sha1-7CLTEoBrtT5zF3Pnza788cZDEo8=
 
 os-tmpdir@~1.0.2:
   version "1.0.2"
@@ -1611,6 +1613,7 @@ tunnel-agent@~0.4.0:
 tweetnacl@^0.14.0:
   version "0.14.5"
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
+  integrity sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q=
 
 type-check@~0.3.2:
   version "0.3.2"
@@ -1625,6 +1628,7 @@ typescript@^3.2.2:
 ultron@1.0.x:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/ultron/-/ultron-1.0.2.tgz#ace116ab557cd197386a4e88f4685378c8b2e4fa"
+  integrity sha1-rOEWq1V80Zc4ak6I9GhTeMiy5Po=
 
 uri-js@^4.2.2:
   version "4.2.2"
@@ -1706,6 +1710,7 @@ write@^0.2.1:
 ws@^1.1.0:
   version "1.1.5"
   resolved "https://registry.yarnpkg.com/ws/-/ws-1.1.5.tgz#cbd9e6e75e09fc5d2c90015f21f0c40875e0dd51"
+  integrity sha512-o3KqipXNUdS7wpQzBHSe180lBGO60SoK0yVo3CYJgb2MkobuWuBX6dhkYP5ORCLd55y+SaflMOV5fqAB53ux4w==
   dependencies:
     options ">=0.0.5"
     ultron "1.0.x"

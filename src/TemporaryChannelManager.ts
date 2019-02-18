@@ -2,7 +2,6 @@ import {
   Client as DiscordIOClient,
   Server as DiscordIOServer,
 } from 'discord.io';
-import * as moment from 'moment';
 import Database from './database';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
@@ -30,11 +29,12 @@ export default class TemporaryChannelManager extends Logger {
       this.scanForCleanup,
       POLLING_TIME_MILLISECONDS
     );
+    this.scanForCleanup();
   }
 
   private scanForCleanup = async () => {
     this.write('Scanning for cleanup...');
-    const now = moment();
+    const now = new Date();
     const channelsToDelete = await this.database.query<{
       channel_id: string;
       server_id: string;
@@ -45,7 +45,7 @@ export default class TemporaryChannelManager extends Logger {
       FROM
         temporary_channels
       WHERE
-        deletion_time >= $1`,
+        deletion_time <= $1`,
       [now]
     );
     this.write(`  > Deleting ${channelsToDelete.rowCount} channels.`);
@@ -63,8 +63,8 @@ export default class TemporaryChannelManager extends Logger {
       FROM
         temporary_channels
       WHERE
-        expiration >= $1 AND
-        deletion_time < $1`,
+        expiration <= $1 AND
+        has_hidden = E'0'`,
       [now]
     );
     this.write(`  > Hiding ${channelsToHide.rowCount} channels.`);
@@ -121,7 +121,7 @@ export default class TemporaryChannelManager extends Logger {
     }
 
     try {
-      const success = await tempChannel.hideChannel(this.client);
+      const success = await tempChannel.hideChannel(this.client, this.database);
       if (!success) {
         this.error(`Could not hide channel ${channelId} on server ${serverId}`);
         return;

@@ -68,8 +68,6 @@ export default class Phil extends Logger {
     this.bot.on('disconnect', this.onDisconnect);
     this.bot.on('guildMemberAdd', this.onMemberAdd);
     this.bot.on('any', this.onRawWebSocketEvent);
-
-    this.temporaryChannelManager.start();
   }
 
   public getServerFromChannelId(channelId: string): DiscordIOServer | null {
@@ -90,6 +88,7 @@ export default class Phil extends Logger {
     this.write(`Logged in as ${this.bot.username} - ${this.bot.id}`);
 
     this.chronoManager.start();
+    this.temporaryChannelManager.start();
 
     if (this.shouldSendDisconnectedMessage) {
       BotUtils.sendErrorMessage({
