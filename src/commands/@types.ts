@@ -1,3 +1,4 @@
+import EmbedColor from '../embed-color';
 import Feature from '../features/feature';
 import { HelpGroup } from '../help-groups';
 import Logger from '../Logger';
@@ -5,6 +6,7 @@ import LoggerDefinition from '../LoggerDefinition';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
+import { DiscordPromises } from '../promises/discord';
 
 export type CommandDetails = {
   aliases?: ReadonlyArray<string>;
@@ -46,6 +48,20 @@ export default abstract class Command extends Logger {
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
   ): Promise<any>;
+
+  protected async reportError(
+    phil: Phil,
+    channelId: string,
+    error: Error | string,
+    title: string = 'Error Occurred'
+  ): Promise<any> {
+    const message = typeof error === 'string' ? error : error.message;
+    return DiscordPromises.sendEmbedMessage(phil.bot, channelId, {
+      color: EmbedColor.Error,
+      description: message,
+      title: `:no_entry: ${title}`,
+    });
+  }
 }
 
 export interface CommandLookup {

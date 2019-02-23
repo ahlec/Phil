@@ -21,6 +21,17 @@ interface GetQueryResult {
   topic: string;
 }
 
+const ONE_SECOND = 1000;
+const ONE_MINUTE = ONE_SECOND * 60;
+const ONE_HOUR = ONE_MINUTE * 60;
+const ONE_DAY = ONE_HOUR * 24;
+
+export const MAX_NUMBER_EXISTANT_CHANNELS_PER_USER = 2;
+export const INITIAL_CHANNEL_DURATION_MILLISECONDS = ONE_HOUR * 3;
+export const CHANNEL_RENEWAL_DURATION_MILLISECONDS = ONE_HOUR * 3;
+export const MAX_CHANNEL_RENEWALS = 1;
+export const CHANNEL_DELETION_DURATION_MILLISECONDS = ONE_DAY;
+
 export default class TemporaryChannel {
   public static async get(
     database: Database,
@@ -47,6 +58,33 @@ export default class TemporaryChannel {
     }
 
     return new TemporaryChannel(channel, server, result);
+  }
+
+  public static async countUsersChannels(
+    database: Database,
+    server: DiscordIOServer,
+    userId: string
+  ): Promise<number> {
+    const result = await database.querySingle<{ count: string }>(
+      `SELECT
+        count(*)
+      FROM
+        temporary_channels
+      WHERE
+        creator_user_id = $1 AND
+        server_id = $2`,
+      [userId, server.id]
+    );
+    if (!result) {
+      return 0;
+    }
+
+    const parsed = parseInt(result.count, 10);
+    if (isNaN(parsed) || parsed < 0) {
+      return 0;
+    }
+
+    return parsed;
   }
 
   public readonly creator: DiscordIOMember | null;

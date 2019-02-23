@@ -25,6 +25,7 @@ import RejectCommand from './reject';
 import RemoveCommand from './remove';
 import RequestCommand from './request';
 import SuggestCommand from './suggest';
+import TempChannelCommand from './tempchannel';
 import TimediffCommand from './timediff';
 import TimezoneCommand from './timezone';
 import UnconfirmedCommand from './unconfirmed';
@@ -63,6 +64,7 @@ const REGULAR_COMMANDS: ReadonlyArray<
   RemoveCommand,
   RequestCommand,
   SuggestCommand,
+  TempChannelCommand,
   TimediffCommand,
   TimezoneCommand,
   UnconfirmedCommand,
