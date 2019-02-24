@@ -1,4 +1,5 @@
 import {
+  Channel as DiscordIOChannel,
   Client as DiscordIOClient,
   Permissions as DiscordIOPermissions,
   Role as DiscordIORole,
@@ -114,6 +115,28 @@ function editChannelPermissionsBase(
         }
 
         resolve();
+      }
+    )
+  );
+}
+
+export function createChannel(
+  client: DiscordIOClient,
+  serverId: string,
+  type: 'voice' | 'text' | 'category',
+  name: string,
+  parentId?: string
+): Promise<DiscordIOChannel> {
+  return new Promise((resolve, reject) =>
+    client.createChannel(
+      { serverID: serverId, type, name, parentID: parentId },
+      (err, response) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(response);
       }
     )
   );

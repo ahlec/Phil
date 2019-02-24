@@ -5,6 +5,7 @@ import { Emoji, JsonData, ReactableHandle } from './shared';
 
 interface CreateArgs extends ReactableCreateArgsBase {
   tempChannelName: string;
+  topic: string;
 }
 
 export default class TempChannelConfirmationReactableFactory extends ReactableFactoryBase<
@@ -21,7 +22,10 @@ export default class TempChannelConfirmationReactableFactory extends ReactableFa
   }
 
   protected getJsonData(): JsonData {
-    return { tempChannelName: this.args.tempChannelName };
+    return {
+      tempChannelName: this.args.tempChannelName,
+      topic: this.args.topic,
+    };
   }
 
   protected getEmojiReactions(): string[] {

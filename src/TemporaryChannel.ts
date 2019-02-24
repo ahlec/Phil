@@ -9,7 +9,7 @@ import * as moment from 'moment';
 import Database from './database';
 import { deleteChannel, editChannelRolePermissions } from './promises/discord';
 
-interface GetQueryResult {
+interface TableSchema {
   channel_id: string;
   server_id: string;
   creator_user_id: string;
@@ -17,7 +17,7 @@ interface GetQueryResult {
   expiration: string;
   has_hidden: string;
   deletion_time: string;
-  has_been_extended: string;
+  num_times_extended: string;
   topic: string;
 }
 
@@ -26,11 +26,12 @@ const ONE_MINUTE = ONE_SECOND * 60;
 const ONE_HOUR = ONE_MINUTE * 60;
 const ONE_DAY = ONE_HOUR * 24;
 
-export const MAX_NUMBER_EXISTANT_CHANNELS_PER_USER = 2;
-export const INITIAL_CHANNEL_DURATION_MILLISECONDS = ONE_HOUR * 3;
-export const CHANNEL_RENEWAL_DURATION_MILLISECONDS = ONE_HOUR * 3;
-export const MAX_CHANNEL_RENEWALS = 1;
-export const CHANNEL_DELETION_DURATION_MILLISECONDS = ONE_DAY;
+export const MAX_NUMBER_EXISTANT_CHANNELS_PER_USER: number = 2;
+export const INITIAL_CHANNEL_DURATION_MILLISECONDS: number = ONE_HOUR * 3;
+export const CHANNEL_RENEWAL_DURATION_MILLISECONDS: number = ONE_HOUR * 3;
+export const MAX_CHANNEL_RENEWALS: number = 1;
+export const CHANNEL_DELETION_DURATION_MILLISECONDS: number = ONE_DAY;
+export const CATEGORY_NAME: string = 'Temporary Channels';
 
 export default class TemporaryChannel {
   public static async get(
@@ -38,7 +39,7 @@ export default class TemporaryChannel {
     channelId: string,
     server: DiscordIOServer
   ): Promise<TemporaryChannel | null> {
-    const result = await database.querySingle<GetQueryResult>(
+    const result = await database.querySingle<TableSchema>(
       `SELECT
         *
       FROM
@@ -87,25 +88,68 @@ export default class TemporaryChannel {
     return parsed;
   }
 
+  public static async create(
+    database: Database,
+    channel: DiscordIOChannel,
+    server: DiscordIOServer,
+    userId: string,
+    topic: string
+  ): Promise<TemporaryChannel | null> {
+    const now = moment.utc();
+    const expiration = moment(now).add(
+      INITIAL_CHANNEL_DURATION_MILLISECONDS,
+      'milliseconds'
+    );
+    const deletion = moment(now).add(
+      CHANNEL_DELETION_DURATION_MILLISECONDS,
+      'milliseconds'
+    );
+    const creation = await database.query<TableSchema>(
+      `INSERT INTO
+        temporary_channels(
+          channel_id,
+          server_id,
+          creator_user_id,
+          created,
+          expiration,
+          has_hidden,
+          deletion_time,
+          num_times_extended,
+          topic
+        )
+      VALUES
+        ($1, $2, $3, $4, $5, E'0', $6, 0, $7)
+      RETURNING
+        *`,
+      [channel.id, server.id, userId, now, expiration, deletion, topic]
+    );
+
+    if (!creation.rowCount) {
+      return null;
+    }
+
+    return new TemporaryChannel(channel, server, creation.rows[0]);
+  }
+
   public readonly creator: DiscordIOMember | null;
   public readonly created: moment.Moment;
   public readonly expiration: moment.Moment;
   public readonly hasHidden: boolean;
   public readonly deletionTime: moment.Moment;
-  public readonly hasBeenExtended: boolean;
+  public readonly numTimesExtended: number;
   public readonly topic: string;
 
   private constructor(
     public readonly channel: DiscordIOChannel,
     public readonly server: DiscordIOServer,
-    result: GetQueryResult
+    result: TableSchema
   ) {
     this.creator = server.members[result.creator_user_id] || null;
     this.created = moment(result.created);
     this.expiration = moment(result.expiration);
     this.hasHidden = result.has_hidden === '1';
     this.deletionTime = moment(result.deletion_time);
-    this.hasBeenExtended = result.has_been_extended === '1';
+    this.numTimesExtended = parseInt(result.num_times_extended, 10);
     this.topic = result.topic;
   }
 

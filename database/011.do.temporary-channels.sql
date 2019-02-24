@@ -6,7 +6,7 @@ CREATE TABLE temporary_channels(
   expiration TIMESTAMP NOT NULL,
   has_hidden BIT(1) NOT NULL DEFAULT E'0',
   deletion_time TIMESTAMP NOT NULL,
-  has_been_extended BIT(1) NOT NULL DEFAULT E'0',
+  num_times_extended INTEGER NOT NULL DEFAULT 0,
   topic TEXT NOT NULL,
   UNIQUE(channel_id, server_id)
 );

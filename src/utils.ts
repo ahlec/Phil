@@ -23,6 +23,10 @@ interface SendSuccessMessageOpts {
   readonly message: string;
 }
 
+export function makeBulletList(items: ReadonlyArray<string>): string {
+  return items.map(item => `• ${item}`).join('\n');
+}
+
 export namespace BotUtils {
   export function getUrl(inputUrl: string): string {
     const protocol = url.parse(inputUrl).protocol;

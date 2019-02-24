@@ -7,4 +7,5 @@ export const ReactableHandle = 'temp-channel-confirmation';
 
 export interface JsonData {
   tempChannelName: string;
+  topic: string;
 }

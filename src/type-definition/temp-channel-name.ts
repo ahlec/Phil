@@ -9,13 +9,14 @@ import {
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 20;
 const VALID_CHARACTERS_REGEX = /^[a-zA-Z0-9\-]*$/;
+export const CHANNEL_NAME_PREFIX: string = 'temp-';
 
 class TempChannelNameTypeDefinitionImplementation implements TypeDefinition {
   public readonly rules = [
     `Must be between ${MIN_LENGTH} and ${MAX_LENGTH} characters.`,
     'Must contain only alphanumeric characters and hyphens.',
     'Must not start or end with a hyphen, or have two or more hyphens in a row.',
-    'Must not be a name currently in use or one that was used recently',
+    'Must not be a name currently in use or one that was used recently.',
   ];
 
   public tryParse(input: string): ParseResult {
@@ -60,7 +61,7 @@ class TempChannelNameTypeDefinitionImplementation implements TypeDefinition {
     }
 
     return {
-      parsedValue: `temp-${trimmedInput}`,
+      parsedValue: `${CHANNEL_NAME_PREFIX}${trimmedInput}`,
       wasSuccessful: true,
     };
   }
