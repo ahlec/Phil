@@ -1,11 +1,10 @@
 import * as moment from 'moment';
 import { inspect } from 'util';
 import Chronos, { Chrono } from './chronos/index';
-import EmbedColor from './embed-color';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 import Phil from './phil';
-import { DiscordPromises } from './promises/discord';
+import { sendEmbedMessage } from './promises/discord';
 import ServerConfig from './server-config';
 import ServerDirectory from './server-directory';
 
@@ -153,17 +152,13 @@ export default class ChronoManager extends Logger {
       `error running ${chronoHandle} for server ${serverConfig.server.id}`
     );
     this.error(err);
-    return DiscordPromises.sendEmbedMessage(
-      this.phil.bot,
-      serverConfig.botControlChannel.id,
-      {
-        color: EmbedColor.Error,
-        description: inspect(err),
-        footer: {
-          text: 'chrono: ' + chronoHandle,
-        },
-        title: ':no_entry: Chrono Error',
-      }
-    );
+    return sendEmbedMessage(this.phil.bot, serverConfig.botControlChannel.id, {
+      color: 'error',
+      description: inspect(err),
+      footer: {
+        text: 'chrono: ' + chronoHandle,
+      },
+      title: ':no_entry: Chrono Error',
+    });
   }
 }

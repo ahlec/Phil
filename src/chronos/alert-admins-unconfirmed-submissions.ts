@@ -1,7 +1,6 @@
 import { Moment } from 'moment';
-import EmbedColor from '../embed-color';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import UnconfirmedSubmissionTally from '../prompts/unconfirmed-submission-tally';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
@@ -29,15 +28,11 @@ export default class AlertAdminsUnconfirmedSubmissionsChrono extends Logger
       return;
     }
 
-    DiscordPromises.sendEmbedMessage(
-      phil.bot,
-      serverConfig.botControlChannel.id,
-      {
-        color: EmbedColor.Info,
-        description: reply,
-        title: ':ballot_box: Unconfirmed Submissions',
-      }
-    );
+    sendEmbedMessage(phil.bot, serverConfig.botControlChannel.id, {
+      color: 'info',
+      description: reply,
+      title: ':ballot_box: Unconfirmed Submissions',
+    });
   }
 
   private getUnconfimedPromptsMessage(

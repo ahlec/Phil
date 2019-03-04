@@ -1,9 +1,8 @@
-import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import Leaderboard from '../prompts/leaderboard';
 import LeaderboardEntry from '../prompts/leaderboard-entry';
 import Command, { LoggerDefinition } from './@types';
@@ -96,8 +95,8 @@ export default class LeaderboardCommand extends Command {
     );
     const reply = createLeaderboardMessage(leaderboard);
 
-    DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Info,
+    sendEmbedMessage(phil.bot, message.channelId, {
+      color: 'info',
       description: reply,
       footer: {
         text:

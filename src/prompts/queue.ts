@@ -1,8 +1,7 @@
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
 import Bucket from '../buckets';
 import Database, { DatabaseResult } from '../database';
-import EmbedColor from '../embed-color';
-import { DiscordPromises, EmbedData } from '../promises/discord';
+import { EmbedData, sendEmbedMessage } from '../promises/discord';
 import { PromptQueueReactableFactory } from '../reactables/prompt-queue/factory';
 import Prompt from './prompt';
 
@@ -142,7 +141,7 @@ export class PromptQueue {
     db: Database,
     postData: PromptQueuePostData
   ): Promise<string> {
-    const messageId = await DiscordPromises.sendEmbedMessage(
+    const messageId = await sendEmbedMessage(
       bot,
       postData.channelId,
       this.asEmbedObject()
@@ -156,7 +155,7 @@ export class PromptQueue {
 
   private asEmbedObject(): EmbedData {
     return {
-      color: EmbedColor.Info,
+      color: 'info',
       description: this.makeBodyFromQueue(),
       footer: this.makeFooterFromQueue(),
       title: 'Prompt Queue for ' + this.bucket.displayName,

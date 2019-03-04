@@ -3,13 +3,12 @@ import { DirectMessageProcessor } from './direct-message-processors/@base';
 import SuggestSessionListener from './direct-message-processors/suggest-session-listener';
 import TimezoneQuestionnaireProcessor from './direct-message-processors/timezone-questionnaire';
 
-import EmbedColor from './embed-color';
 import GlobalConfig from './global-config';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 import PrivateMessage from './messages/private';
 import Phil from './phil';
-import { DiscordPromises } from './promises/discord';
+import { sendEmbedMessage } from './promises/discord';
 const util = require('util');
 
 export default class DirectMessageDispatcher extends Logger {
@@ -40,17 +39,13 @@ export default class DirectMessageDispatcher extends Logger {
   private reportError(err: Error, processor: DirectMessageProcessor) {
     this.error(err);
 
-    DiscordPromises.sendEmbedMessage(
-      this.phil.bot,
-      GlobalConfig.botManagerUserId,
-      {
-        color: EmbedColor.Error,
-        description: util.inspect(err),
-        footer: {
-          text: 'processor: ' + processor.handle,
-        },
-        title: ':no_entry: Processor Error',
-      }
-    );
+    sendEmbedMessage(this.phil.bot, GlobalConfig.botManagerUserId, {
+      color: 'error',
+      description: util.inspect(err),
+      footer: {
+        text: 'processor: ' + processor.handle,
+      },
+      title: ':no_entry: Processor Error',
+    });
   }
 }

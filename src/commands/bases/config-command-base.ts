@@ -1,9 +1,8 @@
-import EmbedColor from '../../embed-color';
 import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
 import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
-import { DiscordPromises, EmbedField } from '../../promises/discord';
+import { EmbedField, sendEmbedMessage } from '../../promises/discord';
 import ServerConfig from '../../server-config';
 import { TypeDefinition } from '../../type-definition/@type-definition';
 import BotUtils from '../../utils';
@@ -149,8 +148,8 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       model
     )}`;
 
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Info,
+    return sendEmbedMessage(phil.bot, message.channelId, {
+      color: 'info',
       description: response,
       title: this.titleCaseConfigurationFor + ' Configuration',
     });
@@ -177,8 +176,8 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       model
     )}`;
 
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Error,
+    return sendEmbedMessage(phil.bot, message.channelId, {
+      color: 'error',
       description: response,
       title: `${this.titleCaseConfigurationFor} Configuration: Unknown action`,
     });
@@ -241,8 +240,8 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       });
     }
 
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Error,
+    return sendEmbedMessage(phil.bot, message.channelId, {
+      color: 'error',
       description: response,
       fields,
       title: `${

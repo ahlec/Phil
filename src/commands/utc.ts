@@ -1,10 +1,9 @@
 import * as moment from 'moment-timezone';
-import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import UserTimezone from '../timezones/user-timezone';
 import Command, { LoggerDefinition } from './@types';
 
@@ -51,8 +50,8 @@ export default class UtcCommand extends Command {
     }
 
     const reply = this.createReply(inputTime, timezone);
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Timezone,
+    return sendEmbedMessage(phil.bot, message.channelId, {
+      color: 'timezone',
       description: reply,
       footer: {
         text:

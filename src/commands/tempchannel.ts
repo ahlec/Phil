@@ -1,9 +1,8 @@
 import CommandArgs from '../CommandArgs';
-import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import TempChannelConfirmationReactableFactory from '../reactables/temp-channel-confirmation/factory';
 import ServerConfig from '../server-config';
 import TemporaryChannel, {
@@ -77,15 +76,11 @@ export default class TempChannelCommand extends Command {
       );
     }
 
-    const messageId = await DiscordPromises.sendEmbedMessage(
-      phil.bot,
-      message.channelId,
-      {
-        color: EmbedColor.Info,
-        description: `You asked me to create the temporary channel **${channelName}**. Is this correct?`,
-        title: `Confirm Temporary Channel`,
-      }
-    );
+    const messageId = await sendEmbedMessage(phil.bot, message.channelId, {
+      color: 'info',
+      description: `You asked me to create the temporary channel **${channelName}**. Is this correct?`,
+      title: `Confirm Temporary Channel`,
+    });
 
     const factory = new TempChannelConfirmationReactableFactory(
       phil.bot,

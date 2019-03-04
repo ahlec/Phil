@@ -1,13 +1,12 @@
 import { Member as DiscordIOMember } from 'discord.io';
 import CommandArgs from '../CommandArgs';
-import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { DiscordPromises, sendEmbedMessage } from '../promises/discord';
 import Requestable from '../requestables';
 import ServerConfig from '../server-config';
 import BotUtils from '../utils';
@@ -170,8 +169,8 @@ export default class BlacklistCommand extends Command {
       message.serverConfig.commandPrefix
     }blacklist ${requestStringUsed} [user name]\` to toggle that user on the blacklist.`;
 
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Info,
+    return sendEmbedMessage(phil.bot, message.channelId, {
+      color: 'info',
       description: response,
       title: `:name_badge: "${requestable.role.name}" blacklist`,
     });
@@ -190,8 +189,8 @@ export default class BlacklistCommand extends Command {
       this.error(`server: ${message.server.id}`);
       this.error(`member: ${member.id}`);
       this.error(result.message);
-      return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-        color: EmbedColor.Error,
+      return sendEmbedMessage(phil.bot, message.channelId, {
+        color: 'error',
         description: result.message,
         title: `:no_entry: Blacklist error encountered`,
       });
@@ -205,8 +204,8 @@ export default class BlacklistCommand extends Command {
       const user = phil.bot.users[member.id];
       displayName = `${user.username}#${user.discriminator}`;
     }
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Info,
+    return sendEmbedMessage(phil.bot, message.channelId, {
+      color: 'info',
       description: `**${displayName}** was ${
         isOnBlacklist ? 'added to' : 'removed from'
       } the blacklist for all requestables that give **${

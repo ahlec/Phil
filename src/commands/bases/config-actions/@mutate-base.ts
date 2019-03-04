@@ -1,7 +1,6 @@
-import EmbedColor from '../../../embed-color';
 import PublicMessage from '../../../messages/public';
 import Phil from '../../../phil';
-import { DiscordPromises } from '../../../promises/discord';
+import { sendEmbedMessage } from '../../../promises/discord';
 import ServerConfig from '../../../server-config';
 import { ConfigCommandBase, ConfigProperty } from '../config-command-base';
 import {
@@ -85,8 +84,8 @@ export default abstract class MutateConfigActionBase<TModel>
       message.serverConfig.commandPrefix
     }${command.name} ${ConfigActionPrimaryKey.Info} ${property.key}\`.`;
 
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Error,
+    return sendEmbedMessage(phil.bot, message.channelId, {
+      color: 'error',
       description: response,
       title: `${property.displayName}: Invalid Input`,
     });
@@ -98,8 +97,8 @@ export default abstract class MutateConfigActionBase<TModel>
     property: ConfigProperty<TModel>,
     newValue: string | null
   ): Promise<any> {
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Success,
+    return sendEmbedMessage(phil.bot, message.channelId, {
+      color: 'success',
       description: `The value of the **${property.displayName.toLowerCase()}** has been ${
         this.pastTenseVerb
       } successfully to now be \`${property.typeDefinition.toMultilineCodeblockDisplayFormat(

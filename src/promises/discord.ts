@@ -142,6 +142,62 @@ export function createChannel(
   );
 }
 
+export function sendEmbedMessage(
+  bot: DiscordIOClient,
+  channelId: string,
+  embedData: EmbedData
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    bot.sendMessage(
+      {
+        embed: {
+          author: embedData.author,
+          color: getColorValue(embedData.color),
+          description: embedData.description,
+          fields: embedData.fields as [EmbedField],
+          footer: embedData.footer,
+          thumbnail: embedData.thumbnail,
+          timestamp: embedData.timestamp,
+          title: embedData.title,
+          url: embedData.url,
+        },
+        to: channelId,
+      },
+      (err, response) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(response.id);
+      }
+    );
+  });
+}
+
+export function pinMessage(
+  bot: DiscordIOClient,
+  channelId: string,
+  messageId: string
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    bot.pinMessage(
+      {
+        channelID: channelId,
+        messageID: messageId,
+      },
+      (err, response) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(response); // TODO: What does this return?
+      }
+    );
+  });
+}
+
 export namespace DiscordPromises {
   export interface EditRoleOptions {
     name: string;
@@ -183,39 +239,6 @@ export namespace DiscordPromises {
     }
 
     return messageIds;
-  }
-
-  export function sendEmbedMessage(
-    bot: DiscordIOClient,
-    channelId: string,
-    embedData: EmbedData
-  ): Promise<string> {
-    return new Promise((resolve, reject) => {
-      bot.sendMessage(
-        {
-          embed: {
-            author: embedData.author,
-            color: getColorValue(embedData.color),
-            description: embedData.description,
-            fields: embedData.fields as [EmbedField],
-            footer: embedData.footer,
-            thumbnail: embedData.thumbnail,
-            timestamp: embedData.timestamp,
-            title: embedData.title,
-            url: embedData.url,
-          },
-          to: channelId,
-        },
-        (err, response) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          resolve(response.id);
-        }
-      );
-    });
   }
 
   export function editMessage(
@@ -372,29 +395,6 @@ export namespace DiscordPromises {
         {
           roleID: roleId,
           serverID: serverId,
-        },
-        (err, response) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          resolve(response); // TODO: What does this return?
-        }
-      );
-    });
-  }
-
-  export function pinMessage(
-    bot: DiscordIOClient,
-    channelId: string,
-    messageId: string
-  ): Promise<void> {
-    return new Promise((resolve, reject) => {
-      bot.pinMessage(
-        {
-          channelID: channelId,
-          messageID: messageId,
         },
         (err, response) => {
           if (err) {

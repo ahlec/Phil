@@ -1,9 +1,8 @@
 import { inspect } from 'util';
-import EmbedColor from '../embed-color';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 const NEWLINE = '\n';
@@ -26,8 +25,8 @@ export default class EvalCommand extends Command {
     const javascript = commandArgs.join(' ');
     const result = this.evaluateJavascript(phil, javascript);
 
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Success,
+    return sendEmbedMessage(phil.bot, message.channelId, {
+      color: 'success',
       description: `**Evaluated:**${NEWLINE}${javascript}${NEWLINE}${NEWLINE}**Result:**${NEWLINE}${result}`,
       title: 'JavaScript evaluation',
     });

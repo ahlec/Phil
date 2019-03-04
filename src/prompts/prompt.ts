@@ -2,8 +2,7 @@ import { Client as DiscordIOClient } from 'discord.io';
 import * as moment from 'moment';
 import Bucket from '../buckets';
 import Database from '../database';
-import EmbedColor from '../embed-color';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import ServerConfig from '../server-config';
 import { BotUtils } from '../utils';
 import Submission from './submission';
@@ -240,8 +239,8 @@ export default class Prompt {
       submissionText,
     } = this.submission;
 
-    return DiscordPromises.sendEmbedMessage(client, channelId, {
-      color: EmbedColor.Info,
+    return sendEmbedMessage(client, channelId, {
+      color: 'info',
       description: submissionText,
       footer: {
         text: this.getPromptMessageFooter(client, serverConfig),

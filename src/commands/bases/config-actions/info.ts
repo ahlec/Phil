@@ -1,7 +1,6 @@
-import EmbedColor from '../../../embed-color';
 import PublicMessage from '../../../messages/public';
 import Phil from '../../../phil';
-import { DiscordPromises } from '../../../promises/discord';
+import { sendEmbedMessage } from '../../../promises/discord';
 import { ConfigCommandBase, ConfigProperty } from '../config-command-base';
 import {
   ConfigAction,
@@ -56,8 +55,8 @@ export default class InfoConfigAction<TModel> implements ConfigAction<TModel> {
       command.name
     } ${ConfigActionPrimaryKey.Clear} ${property.key}\`\`\``;
 
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Info,
+    return sendEmbedMessage(phil.bot, message.channelId, {
+      color: 'info',
       description: response,
       title: `${command.titleCaseConfigurationFor} Configuration: ${
         property.displayName

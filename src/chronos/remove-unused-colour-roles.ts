@@ -1,8 +1,7 @@
 import { Server as DiscordIOServer } from 'discord.io';
 import { Moment } from 'moment';
-import EmbedColor from '../embed-color';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { DiscordPromises, sendEmbedMessage } from '../promises/discord';
 import ServerConfig from '../server-config';
 import { BotUtils } from '../utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
@@ -38,15 +37,11 @@ export default class RemoveUnusedColorRolesChrono extends Logger
       message += '\n\t' + role.name + ' (ID: ' + role.id + ')';
     }
 
-    DiscordPromises.sendEmbedMessage(
-      phil.bot,
-      serverConfig.botControlChannel.id,
-      {
-        color: EmbedColor.Info,
-        description: message,
-        title: ':scroll: Unused Colour Roles Removed',
-      }
-    );
+    sendEmbedMessage(phil.bot, serverConfig.botControlChannel.id, {
+      color: 'info',
+      description: message,
+      title: ':scroll: Unused Colour Roles Removed',
+    });
   }
 
   private getAllUnusedColorRoleIds(server: DiscordIOServer): RoleInfo[] {

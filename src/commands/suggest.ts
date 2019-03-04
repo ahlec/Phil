@@ -1,11 +1,10 @@
 import Bucket from '../buckets';
 import { endOngoingDirectMessageProcesses } from '../direct-message-utils';
-import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import SubmissionSession from '../prompts/submission-session';
 import SuggestSessionReactableFactory from '../reactables/suggest-session/factory';
 import SuggestSessionReactableShared from '../reactables/suggest-session/shared';
@@ -87,8 +86,8 @@ export default class SuggestCommand extends Command {
     serverConfig: ServerConfig,
     session: SubmissionSession
   ) {
-    const messageId = await DiscordPromises.sendEmbedMessage(phil.bot, userId, {
-      color: EmbedColor.Info,
+    const messageId = await sendEmbedMessage(phil.bot, userId, {
+      color: 'info',
       description: getBeginMessage(phil, serverConfig, session),
       title: ':pencil: Begin Sending Suggestions :incoming_envelope:',
     });
