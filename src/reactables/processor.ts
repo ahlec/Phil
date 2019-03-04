@@ -1,10 +1,24 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
+import Logger from '../Logger';
+import LoggerDefinition from '../LoggerDefinition';
 import Phil from '../phil';
-import { ReactableTypeRegistry } from './@registry';
+import { instantiateRegistry, ReactableTypeRegistry } from './@registry';
 import ReactablePost from './post';
 
-export default class ReactableProcessor {
-  constructor(private readonly phil: Phil) {}
+const definition = new LoggerDefinition('ReactableProcessor');
+
+export default class ReactableProcessor extends Logger {
+  private registry: ReactableTypeRegistry;
+
+  constructor(private readonly phil: Phil) {
+    super(definition);
+    this.registry = instantiateRegistry(definition);
+
+    this.write('Starting processor.');
+    for (const handle of Object.keys(this.registry)) {
+      this.write(` > Registered '${handle}'.`);
+    }
+  }
 
   public async processReactionAdded(
     event: OfficialDiscordReactionEvent
@@ -26,16 +40,22 @@ export default class ReactableProcessor {
       return;
     }
 
-    const reactableType = ReactableTypeRegistry[post.reactableHandle];
+    const reactableType = this.registry[post.reactableHandle];
     if (!reactableType) {
-      throw new Error(
+      this.error(
         'Attempted to react to an undefined reactable: `' +
           post.reactableHandle +
           '`'
       );
+
+      return;
     }
 
-    reactableType.processReactionAdded(this.phil, post, event);
+    try {
+      reactableType.processReactionAdded(this.phil, post, event);
+    } catch (err) {
+      this.error(err);
+    }
   }
 
   private shouldProcessEvent(event: OfficialDiscordReactionEvent): boolean {

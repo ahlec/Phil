@@ -1,19 +1,17 @@
-import {
-  Client as DiscordIOClient,
-  Server as DiscordIOServer,
-} from 'discord.io';
 import { OfficialDiscordReactionEvent } from 'official-discord';
-import { ChannelType } from '../../DiscordConstants';
-import EmbedColor from '../../embed-color';
 import Phil from '../../phil';
-import { createChannel, DiscordPromises } from '../../promises/discord';
+import { sendEmbedMessage } from '../../promises/discord';
 import ReactablePost from '../../reactables/post';
-import ReactableType from '../../reactables/reactable-type';
-import TemporaryChannel, { CATEGORY_NAME } from '../../TemporaryChannel';
+import ReactableType, {
+  LoggerDefinition,
+} from '../../reactables/reactable-type';
+import TemporaryChannel from '../../TemporaryChannel';
 import { Emoji, JsonData, ReactableHandle } from './shared';
 
 export default class TempChannelConfirmationReactable extends ReactableType {
-  public readonly handle = ReactableHandle;
+  public constructor(parentDefinition: LoggerDefinition) {
+    super(ReactableHandle, parentDefinition);
+  }
 
   public async processReactionAdded(
     phil: Phil,
@@ -28,31 +26,37 @@ export default class TempChannelConfirmationReactable extends ReactableType {
       case Emoji.Confirm: {
         await post.remove(phil.db);
         const { tempChannelName, topic } = post.jsonData as JsonData;
-        const categoryId = await this.getTempChannelCategoryId(
-          phil.bot,
-          server
-        );
-        const newChannel = await createChannel(
-          phil.bot,
-          server.id,
-          'text',
-          tempChannelName,
-          categoryId
-        );
-        await TemporaryChannel.create(
-          phil.db,
-          newChannel,
-          server,
-          post.user.id,
-          topic
-        );
-        break;
+        try {
+          const tempChannel = await TemporaryChannel.create(
+            phil.bot,
+            phil.db,
+            serverConfig,
+            post.user.id,
+            tempChannelName,
+            topic
+          );
+          return sendEmbedMessage(phil.bot, post.channelId, {
+            color: 'info',
+            description: `Okay! I went ahead and created <#${
+              tempChannel.channel.id
+            }>. Please enjoy your channel responsibly!`,
+            title: 'Channel Created',
+          });
+        } catch (err) {
+          return sendEmbedMessage(phil.bot, post.channelId, {
+            color: 'error',
+            description: `An error occurred when trying to create your channel: ${
+              err.message
+            }`,
+            title: 'An error occurred',
+          });
+        }
       }
 
       case Emoji.Reject: {
         await post.remove(phil.db);
-        return DiscordPromises.sendEmbedMessage(phil.bot, post.channelId, {
-          color: EmbedColor.Info,
+        return sendEmbedMessage(phil.bot, post.channelId, {
+          color: 'info',
           description: `Okay! I won't make this channel. If you want to try again, feel free to use \`${
             serverConfig.commandPrefix
           }tempchannel\`.`,
@@ -60,27 +64,5 @@ export default class TempChannelConfirmationReactable extends ReactableType {
         });
       }
     }
-  }
-
-  private async getTempChannelCategoryId(
-    client: DiscordIOClient,
-    server: DiscordIOServer
-  ): Promise<string> {
-    const channels = Object.values(server.channels);
-    const category = channels.find(
-      channel =>
-        channel.type === ChannelType.Category && channel.name === CATEGORY_NAME
-    );
-    if (category) {
-      return category.id;
-    }
-
-    const newCategory = await createChannel(
-      client,
-      server.id,
-      'category',
-      CATEGORY_NAME
-    );
-    return newCategory.id;
   }
 }

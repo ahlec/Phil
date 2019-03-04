@@ -7,7 +7,16 @@ import {
 } from 'discord.io';
 import * as moment from 'moment';
 import Database from './database';
-import { deleteChannel, editChannelRolePermissions } from './promises/discord';
+import { ChannelType } from './DiscordConstants';
+import { durationToStr, ONE_DAY, ONE_HOUR } from './Durations';
+import {
+  createChannel,
+  deleteChannel,
+  editChannelRolePermissions,
+  pinMessage,
+  sendEmbedMessage,
+} from './promises/discord';
+import ServerConfig from './server-config';
 
 interface TableSchema {
   channel_id: string;
@@ -21,17 +30,34 @@ interface TableSchema {
   topic: string;
 }
 
-const ONE_SECOND = 1000;
-const ONE_MINUTE = ONE_SECOND * 60;
-const ONE_HOUR = ONE_MINUTE * 60;
-const ONE_DAY = ONE_HOUR * 24;
-
 export const MAX_NUMBER_EXISTANT_CHANNELS_PER_USER: number = 2;
 export const INITIAL_CHANNEL_DURATION_MILLISECONDS: number = ONE_HOUR * 3;
 export const CHANNEL_RENEWAL_DURATION_MILLISECONDS: number = ONE_HOUR * 3;
 export const MAX_CHANNEL_RENEWALS: number = 1;
 export const CHANNEL_DELETION_DURATION_MILLISECONDS: number = ONE_DAY;
 export const CATEGORY_NAME: string = 'Temporary Channels';
+
+async function getTempChannelCategoryId(
+  client: DiscordIOClient,
+  server: DiscordIOServer
+): Promise<string> {
+  const channels = Object.values(server.channels);
+  const category = channels.find(
+    channel =>
+      channel.type === ChannelType.Category && channel.name === CATEGORY_NAME
+  );
+  if (category) {
+    return category.id;
+  }
+
+  const newCategory = await createChannel(
+    client,
+    server.id,
+    'category',
+    CATEGORY_NAME
+  );
+  return newCategory.id;
+}
 
 export default class TemporaryChannel {
   public static async get(
@@ -89,12 +115,25 @@ export default class TemporaryChannel {
   }
 
   public static async create(
+    client: DiscordIOClient,
     database: Database,
-    channel: DiscordIOChannel,
-    server: DiscordIOServer,
+    serverConfig: ServerConfig,
     userId: string,
+    channelName: string,
     topic: string
-  ): Promise<TemporaryChannel | null> {
+  ): Promise<TemporaryChannel> {
+    const categoryId = await getTempChannelCategoryId(
+      client,
+      serverConfig.server
+    );
+    const channel = await createChannel(
+      client,
+      serverConfig.serverId,
+      'text',
+      channelName,
+      categoryId
+    );
+
     const now = moment.utc();
     const expiration = moment(now).add(
       INITIAL_CHANNEL_DURATION_MILLISECONDS,
@@ -121,14 +160,29 @@ export default class TemporaryChannel {
         ($1, $2, $3, $4, $5, E'0', $6, 0, $7)
       RETURNING
         *`,
-      [channel.id, server.id, userId, now, expiration, deletion, topic]
+      [
+        channel.id,
+        serverConfig.serverId,
+        userId,
+        now,
+        expiration,
+        deletion,
+        topic,
+      ]
     );
 
     if (!creation.rowCount) {
-      return null;
+      await deleteChannel(client, channel.id);
+      throw new Error('Could not insert into the database');
     }
 
-    return new TemporaryChannel(channel, server, creation.rows[0]);
+    const tempChannel = new TemporaryChannel(
+      channel,
+      serverConfig.server,
+      creation.rows[0]
+    );
+    await tempChannel.publishCreationMessage(client, serverConfig);
+    return tempChannel;
   }
 
   public readonly creator: DiscordIOMember | null;
@@ -191,5 +245,31 @@ export default class TemporaryChannel {
       [this.channel.id, this.server.id]
     );
     return numRowsDeleted >= 1;
+  }
+
+  private async publishCreationMessage(
+    client: DiscordIOClient,
+    serverConfig: ServerConfig
+  ): Promise<void> {
+    const createdStr = this.created.format('D MMMM YYYY \\a\\t h:mma');
+    const durationStr = durationToStr(INITIAL_CHANNEL_DURATION_MILLISECONDS);
+    const renewalStr = `${MAX_CHANNEL_RENEWALS} ${
+      MAX_CHANNEL_RENEWALS === 1 ? 'time' : 'times'
+    }`;
+    const renewCommand = `${serverConfig.commandPrefix}renew`;
+    const messageId = await sendEmbedMessage(client, this.channel.id, {
+      color: 'info',
+      description: `Welcome to <#${
+        this.channel.id
+      }>. This is a temporary channel that was created on **${createdStr}** UTC. The channel will be around for **${durationStr}**, but the channel creator (<@${
+        this.creator!.id
+      }>) can renew the channel **${renewalStr}** by using the \`${renewCommand}\` command in this channel.
+
+      The topic for this channel is: **${this.topic}**.
+
+      Enjoy yourselves!!`,
+      title: `Welcome to ${this.topic}!`,
+    });
+    await pinMessage(client, this.channel.id, messageId);
   }
 }

@@ -3,12 +3,14 @@ import Phil from '../../phil';
 import { sendEmbedMessage } from '../../promises/discord';
 import SubmissionSession from '../../prompts/submission-session';
 import ReactablePost from '../post';
-import ReactableType from '../reactable-type';
+import ReactableType, { LoggerDefinition } from '../reactable-type';
 import SuggestSessionReactableFactory from './factory';
 import SuggestSessionReactableShared from './shared';
 
 export default class SuggestSessionReactable extends ReactableType {
-  public readonly handle = SuggestSessionReactableShared.ReactableHandle;
+  public constructor(parentDefinition: LoggerDefinition) {
+    super(SuggestSessionReactableShared.ReactableHandle, parentDefinition);
+  }
 
   public async processReactionAdded(
     phil: Phil,

@@ -4,11 +4,15 @@ import Phil from '../../phil';
 import { DiscordPromises } from '../../promises/discord';
 import { PromptQueue } from '../../prompts/queue';
 import ReactablePost from '../../reactables/post';
-import ReactableType from '../../reactables/reactable-type';
+import ReactableType, {
+  LoggerDefinition,
+} from '../../reactables/reactable-type';
 import PromptQueueReactableShared from './shared';
 
 export default class PromptQueueReactable extends ReactableType {
-  public readonly handle = PromptQueueReactableShared.ReactableHandle;
+  public constructor(parentDefinition: LoggerDefinition) {
+    super(PromptQueueReactableShared.ReactableHandle, parentDefinition);
+  }
 
   public async processReactionAdded(
     phil: Phil,
@@ -37,7 +41,7 @@ export default class PromptQueueReactable extends ReactableType {
     const newPageNumber = data.currentPage + pageDelta;
 
     if (!this.canMoveToPage(data, newPageNumber)) {
-      console.log('cannot move to page ' + newPageNumber);
+      this.write('cannot move to page ' + newPageNumber);
       return;
     }
 
@@ -67,7 +71,7 @@ export default class PromptQueueReactable extends ReactableType {
 
     await queue.postToChannel(phil.bot, phil.db, post);
 
-    console.log('moving to page ' + newPageNumber);
+    this.write('moving to page ' + newPageNumber);
   }
 
   private canMoveToPage(

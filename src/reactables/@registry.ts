@@ -1,19 +1,29 @@
-import ReactableType from './reactable-type';
+import ReactableType, { LoggerDefinition } from './reactable-type';
 
 import PromptQueueReactable from './prompt-queue/reactable';
 import SuggestSessionReactable from './suggest-session/reactable';
 import TempChannelConfirmationReactable from './temp-channel-confirmation/reactable';
 
-interface ReactableTypeRegistry {
+export interface ReactableTypeRegistry {
   [reactableTypeName: string]: ReactableType;
 }
 
-export const ReactableTypeRegistry: ReactableTypeRegistry = {};
+const REACTABLES: ReadonlyArray<
+  new (parentDefinition: LoggerDefinition) => ReactableType
+> = [
+  PromptQueueReactable,
+  SuggestSessionReactable,
+  TempChannelConfirmationReactable,
+];
 
-function register(reactable: ReactableType) {
-  ReactableTypeRegistry[reactable.handle] = reactable;
+export function instantiateRegistry(
+  parentDefinition: LoggerDefinition
+): ReactableTypeRegistry {
+  const registry: ReactableTypeRegistry = {};
+  for (const constructor of REACTABLES) {
+    const reactable = new constructor(parentDefinition);
+    registry[reactable.handle] = reactable;
+  }
+
+  return registry;
 }
-
-register(new PromptQueueReactable());
-register(new SuggestSessionReactable());
-register(new TempChannelConfirmationReactable());
