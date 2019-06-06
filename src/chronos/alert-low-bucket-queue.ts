@@ -1,5 +1,5 @@
-import { Moment } from 'moment';
 import Bucket from '../buckets';
+import Features from '../features/all-features';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import { PromptQueue } from '../prompts/queue';
@@ -12,12 +12,13 @@ const HANDLE = 'alert-low-bucket-queue';
 export default class AlertLowBucketQueueChrono extends Logger
   implements Chrono {
   public readonly handle = HANDLE;
+  public readonly requiredFeature = Features.Prompts;
 
   public constructor(parentDefinition: LoggerDefinition) {
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
+  public async process(phil: Phil, serverConfig: ServerConfig) {
     const serverBuckets = await Bucket.getAllForServer(
       phil.bot,
       phil.db,

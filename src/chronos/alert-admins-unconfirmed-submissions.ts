@@ -1,5 +1,5 @@
-import { Moment } from 'moment';
 import EmbedColor from '../embed-color';
+import Features from '../features/all-features';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import UnconfirmedSubmissionTally from '../prompts/unconfirmed-submission-tally';
@@ -11,12 +11,13 @@ const HANDLE = 'alert-admins-unconfirmed-submissions';
 export default class AlertAdminsUnconfirmedSubmissionsChrono extends Logger
   implements Chrono {
   public readonly handle = HANDLE;
+  public readonly requiredFeature = Features.Prompts;
 
   public constructor(parentDefinition: LoggerDefinition) {
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
+  public async process(phil: Phil, serverConfig: ServerConfig) {
     const unconfirmedTally = await UnconfirmedSubmissionTally.collectForServer(
       phil.db,
       serverConfig.server.id

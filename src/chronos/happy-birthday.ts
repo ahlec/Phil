@@ -1,5 +1,6 @@
 import { Moment } from 'moment';
 import Database from '../database';
+import Features from '../features/all-features';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import { GROUP_PRONOUNS } from '../pronouns/definitions';
@@ -16,6 +17,7 @@ interface HappyBirthdayInfo {
 const HANDLE = 'happy-birthday';
 export default class HappyBirthdayChrono extends Logger implements Chrono {
   public readonly handle = HANDLE;
+  public readonly requiredFeature = Features.Calendar;
 
   public constructor(parentDefinition: LoggerDefinition) {
     super(new LoggerDefinition(HANDLE, parentDefinition));

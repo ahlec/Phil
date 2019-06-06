@@ -1,4 +1,5 @@
 import { Moment } from 'moment';
+import Features from '../features/all-features';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import ServerConfig from '../server-config';
@@ -7,6 +8,7 @@ import Chrono, { Logger, LoggerDefinition } from './@types';
 const HANDLE = 'booty-day';
 export default class BootyDayChrono extends Logger implements Chrono {
   public readonly handle = HANDLE;
+  public readonly requiredFeature = Features.Prompts;
 
   public constructor(parentDefinition: LoggerDefinition) {
     super(new LoggerDefinition(HANDLE, parentDefinition));

@@ -1,5 +1,4 @@
 import { Server as DiscordIOServer } from 'discord.io';
-import { Moment } from 'moment';
 import EmbedColor from '../embed-color';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
@@ -16,12 +15,13 @@ const HANDLE = 'remove-unused-colour-roles';
 export default class RemoveUnusedColorRolesChrono extends Logger
   implements Chrono {
   public readonly handle = HANDLE;
+  public readonly requiredFeature = null; // Even if not using, still clean up
 
   public constructor(parentDefinition: LoggerDefinition) {
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
+  public async process(phil: Phil, serverConfig: ServerConfig) {
     const unusedColorRoles = this.getAllUnusedColorRoleIds(serverConfig.server);
     if (unusedColorRoles.length === 0) {
       return;

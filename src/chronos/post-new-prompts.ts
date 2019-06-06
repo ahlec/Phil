@@ -1,5 +1,6 @@
 import { Moment } from 'moment';
 import Bucket from '../buckets';
+import Features from '../features/all-features';
 import Phil from '../phil';
 import Prompt from '../prompts/prompt';
 import { PromptQueue } from '../prompts/queue';
@@ -10,6 +11,7 @@ import Chrono, { Logger, LoggerDefinition } from './@types';
 const HANDLE = 'post-new-prompts';
 export default class PostNewPromptsChrono extends Logger implements Chrono {
   public readonly handle = HANDLE;
+  public readonly requiredFeature = Features.Prompts;
 
   public constructor(parentDefinition: LoggerDefinition) {
     super(new LoggerDefinition(HANDLE, parentDefinition));

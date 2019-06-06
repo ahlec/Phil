@@ -124,7 +124,28 @@ export default class ChronoManager extends Logger {
     }
 
     try {
-      await chronoDefinition.process(this.phil, serverConfig, now);
+      let shouldProcess = true;
+      if (chronoDefinition.requiredFeature) {
+        shouldProcess = await chronoDefinition.requiredFeature.getIsEnabled(
+          this.phil.db,
+          serverConfig.serverId
+        );
+
+        if (!shouldProcess) {
+          this.write(
+            `Feature ${
+              chronoDefinition.requiredFeature.displayName
+            } is disabled on server ${
+              serverConfig.serverId
+            }, skipping processing ${chronoDefinition.handle}.`
+          );
+        }
+      }
+
+      if (shouldProcess) {
+        await chronoDefinition.process(this.phil, serverConfig, now);
+      }
+
       this.markChronoProcessed(chronoId, serverId, utcDate);
     } catch (err) {
       this.reportChronoError(err, serverConfig, chronoHandle);
