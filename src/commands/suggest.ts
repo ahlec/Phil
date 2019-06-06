@@ -1,5 +1,5 @@
 import Bucket from '../buckets';
-import { endOngoingDirectMessageProcesses } from '../direct-message-utils';
+import { endOngoingDirectMessageProcesses } from '../DirectMessageUtils';
 import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
