@@ -78,14 +78,20 @@ export default class CalendarCommand extends Command {
         ' Server\n\n'
     );
 
+    let hasEventsThisMonth = false;
     for (let index = 0; index < calendar.days.length; ++index) {
       const day = calendar.days[index];
       const dayPrefix =
         index + 1 + ' ' + calendar.definition.abbreviation + ': ';
 
       for (const event of day) {
+        hasEventsThisMonth = true;
         builder.append(dayPrefix + event + '\n');
       }
+    }
+
+    if (!hasEventsThisMonth) {
+      builder.append("There don't appear to be any events during this month.");
     }
 
     return builder;

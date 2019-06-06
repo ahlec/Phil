@@ -3,6 +3,7 @@ import {
   Server as DiscordIOServer,
 } from 'discord.io';
 import Database from '../database';
+import GlobalConfig from '../GlobalConfig';
 import { BotUtils } from '../utils';
 import { AllMonths, MonthDefinition } from './month-definition';
 
@@ -17,7 +18,7 @@ export default class CalendarMonth {
   ): Promise<CalendarMonth> {
     const calendar = new CalendarMonth(month);
     await calendar.addBirthdaysForMonth(bot, db, server);
-    await calendar.addServerEventsForMonth();
+    await calendar.addServerEventsForMonth(server);
     return calendar;
   }
 
@@ -64,7 +65,9 @@ export default class CalendarMonth {
     }
   }
 
-  private async addServerEventsForMonth() {
-    this.addEvent(3, 'Hijack Booty Day.');
+  private async addServerEventsForMonth(server: DiscordIOServer) {
+    if (server.id === GlobalConfig.hijackServerId) {
+      this.addEvent(3, 'Hijack Booty Day.');
+    }
   }
 }
