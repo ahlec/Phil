@@ -1,5 +1,6 @@
 import { DirectMessageProcessor } from './direct-message-processors/@base';
 
+import BotManagerCommandListener from './direct-message-processors/BotManagerCommandListener';
 import SuggestSessionListener from './direct-message-processors/suggest-session-listener';
 import TimezoneQuestionnaireProcessor from './direct-message-processors/timezone-questionnaire';
 
@@ -12,14 +13,17 @@ import Phil from './phil';
 import { DiscordPromises } from './promises/discord';
 const util = require('util');
 
+const LOGGER_DEFINITION = new LoggerDefinition('Direct Message Dispatcher');
+
 export default class DirectMessageDispatcher extends Logger {
   private readonly processorsInPriorityOrder: DirectMessageProcessor[] = [
     new SuggestSessionListener(),
     new TimezoneQuestionnaireProcessor(),
+    new BotManagerCommandListener(LOGGER_DEFINITION),
   ];
 
   constructor(private readonly phil: Phil) {
-    super(new LoggerDefinition('Direct Message Dispatcher'));
+    super(LOGGER_DEFINITION);
   }
 
   public async process(message: PrivateMessage) {

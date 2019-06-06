@@ -11,7 +11,7 @@ import {
 import ChronoManager from './ChronoManager';
 import CommandRunner from './CommandRunner';
 import Database from './database';
-import DirectMessageDispatcher from './direct-message-dispatcher';
+import DirectMessageDispatcher from './DirectMessageDispatcher';
 import GlobalConfig from './GlobalConfig';
 import Greeting from './greeting';
 import Logger from './Logger';

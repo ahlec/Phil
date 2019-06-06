@@ -9,10 +9,15 @@ interface ConfigCache {
 }
 
 export default class ServerDirectory extends Logger {
-  private readonly configCache: ConfigCache = {};
+  private configCache: ConfigCache = {};
 
   constructor(private readonly phil: Phil) {
     super(new LoggerDefinition('Server Directory'));
+  }
+
+  public clearCache() {
+    this.configCache = {};
+    this.write('Cache cleared.');
   }
 
   public async getServerConfig(
