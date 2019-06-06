@@ -12,7 +12,7 @@ import ChronoManager from './ChronoManager';
 import CommandRunner from './CommandRunner';
 import Database from './database';
 import DirectMessageDispatcher from './direct-message-dispatcher';
-import GlobalConfig from './global-config';
+import GlobalConfig from './GlobalConfig';
 import Greeting from './greeting';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';

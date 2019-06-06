@@ -1,4 +1,4 @@
-import GlobalConfig from '../global-config';
+import GlobalConfig from '../GlobalConfig';
 
 const YouTube = require('youtube-node');
 

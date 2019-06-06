@@ -3,7 +3,7 @@ import { sortBy, uniqBy, values } from 'lodash';
 import Command, { CommandLookup } from './commands/@types';
 import { instantiateCommands } from './commands/index';
 import Database from './database';
-import GlobalConfig from './global-config';
+import GlobalConfig from './GlobalConfig';
 import InputMessage from './input-message';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';

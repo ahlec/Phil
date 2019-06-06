@@ -1,5 +1,5 @@
 import { Pool, QueryResult } from 'pg';
-import GlobalConfig from '../global-config';
+import GlobalConfig from '../GlobalConfig';
 import Logger from '../Logger';
 import LoggerDefinition from '../LoggerDefinition';
 import { DATABASE_VERSION } from '../versions';

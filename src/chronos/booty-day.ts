@@ -1,5 +1,6 @@
 import { Moment } from 'moment';
 import Features from '../features/all-features';
+import GlobalConfig from '../GlobalConfig';
 import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
 import ServerConfig from '../server-config';
@@ -15,6 +16,13 @@ export default class BootyDayChrono extends Logger implements Chrono {
   }
 
   public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
+    if (serverConfig.serverId !== GlobalConfig.hijackServerId) {
+      this.write(
+        `Server ${serverConfig.serverId} is not a Hijack server, skipping`
+      );
+      return;
+    }
+
     if (now.date() !== 3) {
       this.write("Today isn't booty day.");
       return;

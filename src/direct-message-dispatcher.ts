@@ -4,7 +4,7 @@ import SuggestSessionListener from './direct-message-processors/suggest-session-
 import TimezoneQuestionnaireProcessor from './direct-message-processors/timezone-questionnaire';
 
 import EmbedColor from './embed-color';
-import GlobalConfig from './global-config';
+import GlobalConfig from './GlobalConfig';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 import PrivateMessage from './messages/private';

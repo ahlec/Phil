@@ -8,7 +8,7 @@ import {
 } from 'http';
 import { get as getHttps } from 'https';
 import { parse, resolve } from 'url';
-import GlobalConfig from './global-config';
+import GlobalConfig from './GlobalConfig';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 

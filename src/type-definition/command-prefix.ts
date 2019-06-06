@@ -1,4 +1,4 @@
-import GlobalConfig from '../global-config';
+import GlobalConfig from '../GlobalConfig';
 import Phil from '../phil';
 import ServerConfig from '../server-config';
 import {
