@@ -1,6 +1,6 @@
 {
   "name": "PhilTheYeti",
-  "version": "14.3.0",
+  "version": "14.3.1",
   "database_version": "10",
   "description": "A Discord bot made specifically for the Official Hijack (Hiccup Haddock/Jack Frost) Discord server",
   "main": "main.js",
