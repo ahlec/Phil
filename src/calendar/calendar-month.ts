@@ -49,16 +49,18 @@ export default class CalendarMonth {
       [this.month]
     );
 
-    for (let index = 0; index < results.rowCount; ++index) {
-      const userId = results.rows[index].userid;
-      const user = bot.users[userId];
+    for (const { userid, birthday_day } of results.rows) {
+      if (!server.members[userid]) {
+        continue;
+      }
+
+      const user = bot.users[userid];
       const userDisplayName = BotUtils.getUserDisplayName(user, server);
       if (!userDisplayName) {
         continue;
       }
 
-      const day = results.rows[index].birthday_day;
-      this.addEvent(day, '**' + userDisplayName + "**'s birthday.");
+      this.addEvent(birthday_day, '**' + userDisplayName + "**'s birthday.");
     }
   }
 
