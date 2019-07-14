@@ -47,10 +47,6 @@ export default class CommandHelpInfo {
     isAdminChannel: boolean,
     featuresEnabledLookup: BatchFeaturesEnabledLookup
   ): boolean {
-    if (this.permissionLevel === PermissionLevel.BotManagerOnly) {
-      return false;
-    }
-
     if (!isAdminChannel && this.permissionLevel === PermissionLevel.AdminOnly) {
       return false;
     }

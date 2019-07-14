@@ -1,7 +1,6 @@
 export enum PermissionLevel {
   General,
   AdminOnly,
-  BotManagerOnly,
 }
 
 export default PermissionLevel;
@@ -14,7 +13,5 @@ export function getPermissionLevelName(
       return 'general';
     case PermissionLevel.AdminOnly:
       return 'admin';
-    case PermissionLevel.BotManagerOnly:
-      return 'bot manager';
   }
 }

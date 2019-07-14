@@ -3,7 +3,6 @@ import { sortBy, uniqBy, values } from 'lodash';
 import Command, { CommandLookup } from './commands/@types';
 import { instantiateCommands } from './commands/index';
 import Database from './database';
-import GlobalConfig from './GlobalConfig';
 import InputMessage from './input-message';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
@@ -88,9 +87,7 @@ export default class CommandRunner extends Logger {
 
   private logInputReceived(message: IPublicMessage, input: InputMessage) {
     this.write(
-      `user ${message.user.username}${
-        message.user.discriminator
-      } used command ${message.serverConfig.commandPrefix}${input.commandName}`
+      `user ${message.user.username}${message.user.discriminator} used command ${message.serverConfig.commandPrefix}${input.commandName}`
     );
   }
 
@@ -106,9 +103,7 @@ export default class CommandRunner extends Logger {
     BotUtils.sendErrorMessage({
       bot: this.bot,
       channelId: message.channelId,
-      message: `There is no \`${message.serverConfig.commandPrefix}${
-        input.commandName
-      }\` command.`,
+      message: `There is no \`${message.serverConfig.commandPrefix}${input.commandName}\` command.`,
     });
   }
 
@@ -122,9 +117,6 @@ export default class CommandRunner extends Logger {
       case PermissionLevel.AdminOnly: {
         const member = message.server.members[message.userId];
         return message.serverConfig.isAdmin(member);
-      }
-      case PermissionLevel.BotManagerOnly: {
-        return message.userId === GlobalConfig.botManagerUserId;
       }
       default:
         return command.permissionLevel;
@@ -140,9 +132,7 @@ export default class CommandRunner extends Logger {
     BotUtils.sendErrorMessage({
       bot: this.bot,
       channelId: message.channelId,
-      message: `The \`${message.serverConfig.commandPrefix}${
-        input.commandName
-      }\` command requires ${permissionLevelName} privileges to use here.`,
+      message: `The \`${message.serverConfig.commandPrefix}${input.commandName}\` command requires ${permissionLevelName} privileges to use here.`,
     });
   }
 
