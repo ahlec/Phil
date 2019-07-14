@@ -9,6 +9,12 @@ import ServerConfig from '../server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 const HANDLE = 'post-new-prompts';
+
+interface NextPrompt {
+  prompt: Prompt;
+  isReusedPrompt: boolean;
+}
+
 export default class PostNewPromptsChrono extends Logger implements Chrono {
   public readonly handle = HANDLE;
   public readonly requiredFeature = Features.Prompts;
@@ -62,15 +68,17 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     }
 
     this.write(
-      `posting prompt ${nextPrompt.id} to bucket ${bucket.handle} on server ${serverConfig.serverId}`
+      `posting prompt ${nextPrompt.prompt.id} to bucket ${bucket.handle} on server ${serverConfig.serverId}`
     );
 
     try {
-      await nextPrompt.publish(phil.bot, phil.db, serverConfig);
-      await bucket.markAlertedEmptying(phil.db, false);
+      await nextPrompt.prompt.publish(phil.bot, phil.db, serverConfig);
+      if (!nextPrompt.isReusedPrompt) {
+        await bucket.markAlertedEmptying(phil.db, false);
+      }
     } catch (err) {
       this.error(
-        `encountered an error when posting prompt ${nextPrompt.id} to bucket ${bucket.handle} on server ${serverConfig.serverId}`
+        `encountered an error when posting prompt ${nextPrompt.prompt.id} to bucket ${bucket.handle} on server ${serverConfig.serverId}`
       );
 
       throw err;
@@ -80,7 +88,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
   private async getNextPrompt(
     phil: Phil,
     bucket: Bucket
-  ): Promise<Prompt | null> {
+  ): Promise<NextPrompt | null> {
     const promptQueue = await PromptQueue.getPromptQueue(
       phil.bot,
       phil.db,
@@ -90,7 +98,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     );
 
     if (promptQueue.count > 0) {
-      return promptQueue.entries[0].prompt;
+      return { isReusedPrompt: false, prompt: promptQueue.entries[0].prompt };
     }
 
     const [dustiest] = await Submission.getDustiestSubmissions(
@@ -100,7 +108,11 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     );
     if (dustiest) {
       const prompt = await Prompt.queueSubscription(phil.db, dustiest);
-      return prompt;
+      if (prompt) {
+        return { isReusedPrompt: true, prompt };
+      }
+
+      return null;
     }
 
     return null;
