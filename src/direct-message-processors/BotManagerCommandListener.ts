@@ -8,7 +8,7 @@ import BotUtils from '../utils';
 import { DirectMessageProcessor, ProcessorActiveToken } from './@base';
 
 type CommandParseResult =
-  | { isValid: true; command: BotManagerCommand }
+  | { isValid: true; command: BotManagerCommand; args: string }
   | { isValid: false; error: string | null };
 
 const MESSAGE_PREFIX = '> ';
@@ -51,7 +51,7 @@ export default class BotManagerCommandListener extends Logger
     }
 
     this.write(`Processing command ${parseResult.command.name}.`);
-    await parseResult.command.execute(phil, message);
+    await parseResult.command.execute(phil, message, parseResult.args);
   }
 
   private parseCommand(message: string): CommandParseResult {
@@ -70,10 +70,15 @@ export default class BotManagerCommandListener extends Logger
       };
     }
 
-    const commandName = message.substr(MESSAGE_PREFIX.length).toLowerCase();
+    const nameStartIndex = MESSAGE_PREFIX.length;
+    const nameEndIndex = message.indexOf(' ', nameStartIndex);
+    const commandName = message
+      .substring(nameStartIndex, nameEndIndex)
+      .toLowerCase();
     const command = this.commands.get(commandName);
     if (command) {
       return {
+        args: message.substr(nameEndIndex + 1),
         command,
         isValid: true,
       };

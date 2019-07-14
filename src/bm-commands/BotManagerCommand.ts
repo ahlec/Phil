@@ -11,7 +11,11 @@ export abstract class BotManagerCommand extends Logger {
     super(new LoggerDefinition(name, parentDefinition));
   }
 
-  public abstract execute(phil: Phil, message: PrivateMessage): Promise<void>;
+  public abstract execute(
+    phil: Phil,
+    message: PrivateMessage,
+    args: string
+  ): Promise<void>;
 }
 
 export { LoggerDefinition, Phil, PrivateMessage };

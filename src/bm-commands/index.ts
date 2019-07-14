@@ -1,10 +1,15 @@
 import { BotManagerCommand, LoggerDefinition } from './BotManagerCommand';
 import ClearCacheBotManagerCommand from './clearcache';
+import EvalBotManagerCommand from './eval';
 import VersionBotManagerCommand from './version';
 
 const COMMAND_CONSTRUCTORS: ReadonlyArray<
   new (parentDefinition: LoggerDefinition) => BotManagerCommand
-> = [ClearCacheBotManagerCommand, VersionBotManagerCommand];
+> = [
+  ClearCacheBotManagerCommand,
+  EvalBotManagerCommand,
+  VersionBotManagerCommand,
+];
 
 export function instantiateCommands(
   parentDefinition: LoggerDefinition

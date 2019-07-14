@@ -1,34 +1,28 @@
 import { inspect } from 'util';
 import EmbedColor from '../embed-color';
-import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
-import Phil from '../phil';
 import { DiscordPromises } from '../promises/discord';
-import Command, { LoggerDefinition } from './@types';
+import {
+  BotManagerCommand,
+  LoggerDefinition,
+  Phil,
+  PrivateMessage,
+} from './BotManagerCommand';
 
-const NEWLINE = '\n';
-
-export default class EvalCommand extends Command {
+export default class EvalBotManagerCommand extends BotManagerCommand {
   public constructor(parentDefinition: LoggerDefinition) {
-    super('eval', parentDefinition, {
-      helpDescription:
-        'Evaluates the result of a JavaScript function with context of Phil.',
-      permissionLevel: PermissionLevel.BotManagerOnly,
-      versionAdded: 13,
-    });
+    super('eval', parentDefinition);
   }
 
-  public processMessage(
+  public async execute(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
-    const javascript = commandArgs.join(' ');
+    message: PrivateMessage,
+    args: string
+  ): Promise<void> {
+    const javascript = args;
     const result = this.evaluateJavascript(phil, javascript);
-
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+    DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Success,
-      description: `**Evaluated:**${NEWLINE}${javascript}${NEWLINE}${NEWLINE}**Result:**${NEWLINE}${result}`,
+      description: `**Evaluated:**\n${javascript}\n\n**Result:**\n${result}`,
       title: 'JavaScript evaluation',
     });
   }

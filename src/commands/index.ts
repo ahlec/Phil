@@ -11,7 +11,6 @@ import ConfirmCommand from './confirm';
 import DefineCommand from './define';
 import DisableCommand from './disable';
 import EnableCommand from './enable';
-import EvalCommand from './eval';
 import HelpCommand from './help/command';
 import InviteCommand from './invite';
 import KuzcoCommand from './kuzco';
@@ -50,7 +49,6 @@ const REGULAR_COMMANDS: ReadonlyArray<
   DefineCommand,
   DisableCommand,
   EnableCommand,
-  EvalCommand,
   InviteCommand,
   KuzcoCommand,
   LeaderboardCommand,
