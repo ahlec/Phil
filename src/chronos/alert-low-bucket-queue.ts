@@ -6,7 +6,7 @@ import { PromptQueue } from '../prompts/queue';
 import ServerConfig from '../server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
-const PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD_DAYS = 5;
+const PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD = 5;
 
 const HANDLE = 'alert-low-bucket-queue';
 export default class AlertLowBucketQueueChrono extends Logger
@@ -26,15 +26,17 @@ export default class AlertLowBucketQueueChrono extends Logger
     );
 
     for (const bucket of serverBuckets) {
-      if (!bucket.isValid || bucket.isPaused || !bucket.alertWhenLow) {
+      if (
+        !bucket.isValid ||
+        bucket.isPaused ||
+        !bucket.alertWhenLow ||
+        bucket.alertedBucketEmptying
+      ) {
         continue;
       }
 
       const queueLength = await PromptQueue.getTotalLength(phil.db, bucket);
-      const numberDaysRemaining = bucket.convertPromptQueueLengthToDays(
-        queueLength
-      );
-      if (numberDaysRemaining > PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD_DAYS) {
+      if (queueLength > PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD) {
         continue;
       }
 
@@ -50,23 +52,17 @@ export default class AlertLowBucketQueueChrono extends Logger
   ) {
     const are = queueLength === 1 ? 'is' : 'are';
     const promptNoun = queueLength === 1 ? 'prompt' : 'prompts';
-
-    const message =
-      ':warning: The queue for **' +
-      bucket.displayName +
-      '** (`' +
-      bucket.handle +
-      '`) is growing short. There ' +
-      are +
-      ' **' +
-      (queueLength > 0 ? queueLength : 'no') +
-      '** more ' +
-      promptNoun +
-      ' in the queue.';
+    const message = `:warning: The queue for **${bucket.displayName}** (\`${
+      bucket.handle
+    }\`) is growing short. There ${are}  **${
+      queueLength > 0 ? queueLength : 'no'
+    }** more ${promptNoun} in the queue.`;
     DiscordPromises.sendMessage(
       phil.bot,
       serverConfig.botControlChannel.id,
       message
     );
+
+    bucket.markAlertedEmptying(phil.db, true);
   }
 }

@@ -48,9 +48,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     );
     if (!this.isCurrentPromptOutdated(currentPrompt, now, bucket)) {
       this.write(
-        `bucket ${bucket.handle} on server ${
-          serverConfig.serverId
-        } is not ready for a new prompt just yet`
+        `bucket ${bucket.handle} on server ${serverConfig.serverId} is not ready for a new prompt just yet`
       );
       return;
     }
@@ -58,26 +56,21 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     const nextPrompt = await this.getNextPrompt(phil, bucket);
     if (!nextPrompt) {
       this.write(
-        `bucket ${bucket.handle} on server ${
-          serverConfig.serverId
-        } has no prompts to post`
+        `bucket ${bucket.handle} on server ${serverConfig.serverId} has no prompts to post`
       );
       return;
     }
 
     this.write(
-      `posting prompt ${nextPrompt.id} to bucket ${bucket.handle} on server ${
-        serverConfig.serverId
-      }`
+      `posting prompt ${nextPrompt.id} to bucket ${bucket.handle} on server ${serverConfig.serverId}`
     );
 
     try {
       await nextPrompt.publish(phil.bot, phil.db, serverConfig);
+      await bucket.markAlertedEmptying(phil.db, false);
     } catch (err) {
       this.error(
-        `encountered an error when posting prompt ${nextPrompt.id} to bucket ${
-          bucket.handle
-        } on server ${serverConfig.serverId}`
+        `encountered an error when posting prompt ${nextPrompt.id} to bucket ${bucket.handle} on server ${serverConfig.serverId}`
       );
 
       throw err;

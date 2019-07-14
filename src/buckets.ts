@@ -249,6 +249,7 @@ export default class Bucket {
   public readonly frequency: BucketFrequency;
   public readonly frequencyDisplayName: string;
   public readonly promptTitleFormat: string;
+  public internalAlertedBucketEmptying: boolean;
 
   private constructor(bot: DiscordIOClient, dbRow: any) {
     const isValid = Bucket.determineIsBucketValid(bot, dbRow);
@@ -269,6 +270,12 @@ export default class Bucket {
     this.frequency = bucketFrequency;
     this.frequencyDisplayName = frequencyDisplayStrings[bucketFrequency];
     this.promptTitleFormat = dbRow.prompt_title_format;
+    this.internalAlertedBucketEmptying =
+      parseInt(dbRow.alerted_bucket_emptying, 10) === 1;
+  }
+
+  public get alertedBucketEmptying(): boolean {
+    return this.internalAlertedBucketEmptying;
   }
 
   public async setIsPaused(db: Database, isPaused: boolean) {
@@ -312,6 +319,18 @@ export default class Bucket {
           "Unrecognized frequency type: '" + this.frequency + "'"
         );
     }
+  }
+
+  public async markAlertedEmptying(db: Database, hasAlerted: boolean) {
+    const rowsModified = await db.execute(
+      'UPDATE prompt_buckets SET alerted_bucket_emptying = $1 WHERE bucket_id = $2',
+      [hasAlerted ? 1 : 0, this.id]
+    );
+    if (rowsModified !== 1) {
+      throw new Error('Unable to update the prompt bucket in the database.');
+    }
+
+    this.internalAlertedBucketEmptying = hasAlerted;
   }
 
   public canUserSubmitTo(bot: DiscordIOClient, userId: string): boolean {

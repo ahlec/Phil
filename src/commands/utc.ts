@@ -81,7 +81,8 @@ export default class UtcCommand extends Command {
       return null;
     }
 
-    return dateTimes[0].start.clone().moment();
+    const m = dateTimes[0].start.clone().moment() as any; // doesn't have .tz()
+    return moment(m); // clone it and make sure we define .tz()
   }
 
   private createReply(
