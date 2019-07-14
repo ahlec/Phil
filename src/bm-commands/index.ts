@@ -1,6 +1,7 @@
 import { BotManagerCommand, LoggerDefinition } from './BotManagerCommand';
 import ClearCacheBotManagerCommand from './clearcache';
 import EvalBotManagerCommand from './eval';
+import InviteBotManagerCommand from './invite';
 import VersionBotManagerCommand from './version';
 
 const COMMAND_CONSTRUCTORS: ReadonlyArray<
@@ -8,6 +9,7 @@ const COMMAND_CONSTRUCTORS: ReadonlyArray<
 > = [
   ClearCacheBotManagerCommand,
   EvalBotManagerCommand,
+  InviteBotManagerCommand,
   VersionBotManagerCommand,
 ];
 

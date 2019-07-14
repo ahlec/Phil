@@ -12,7 +12,6 @@ import DefineCommand from './define';
 import DisableCommand from './disable';
 import EnableCommand from './enable';
 import HelpCommand from './help/command';
-import InviteCommand from './invite';
 import KuzcoCommand from './kuzco';
 import LeaderboardCommand from './leaderboard';
 import MapCommand from './map';
@@ -49,7 +48,6 @@ const REGULAR_COMMANDS: ReadonlyArray<
   DefineCommand,
   DisableCommand,
   EnableCommand,
-  InviteCommand,
   KuzcoCommand,
   LeaderboardCommand,
   MapCommand,
