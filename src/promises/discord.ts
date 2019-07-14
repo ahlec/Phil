@@ -321,7 +321,6 @@ export namespace DiscordPromises {
             if (err.statusCode === 429) {
               const waitTime: number = err.response.retry_after;
               if (waitTime) {
-                console.log('rate limited, waiting ' + waitTime);
                 Delay.wait(waitTime)
                   .then(() => addReaction(bot, channelId, messageId, reaction))
                   .then(resolve);
@@ -359,7 +358,6 @@ export namespace DiscordPromises {
             if (err.statusCode === 429) {
               const waitTime: number = err.response.retry_after;
               if (waitTime) {
-                console.log('rate limited, waiting ' + waitTime);
                 Delay.wait(waitTime)
                   .then(() =>
                     removeOwnReaction(bot, channelId, messageId, reaction)

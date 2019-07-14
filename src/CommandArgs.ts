@@ -1,3 +1,4 @@
+import chronoNode = require('chrono-node');
 import {
   Client as DiscordIOClient,
   Member as DiscordIOMember,
@@ -5,7 +6,6 @@ import {
   Server as DiscordIOServer,
 } from 'discord.io';
 import { Moment } from 'moment';
-import chronoNode = require('chrono-node');
 import momentModuleFunc = require('moment');
 import FuzzyFinder from './FuzzyFinder';
 
