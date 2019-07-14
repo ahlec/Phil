@@ -73,12 +73,15 @@ export default class BotManagerCommandListener extends Logger
     const nameStartIndex = MESSAGE_PREFIX.length;
     const nameEndIndex = message.indexOf(' ', nameStartIndex);
     const commandName = message
-      .substring(nameStartIndex, nameEndIndex)
+      .substring(
+        nameStartIndex,
+        nameEndIndex < 0 ? message.length : nameEndIndex
+      )
       .toLowerCase();
     const command = this.commands.get(commandName);
     if (command) {
       return {
-        args: message.substr(nameEndIndex + 1),
+        args: nameEndIndex < 0 ? '' : message.substr(nameEndIndex + 1),
         command,
         isValid: true,
       };
