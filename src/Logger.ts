@@ -3,7 +3,7 @@
 import LoggerDefinition from './LoggerDefinition';
 
 export default abstract class Logger {
-  protected constructor(private readonly definition: LoggerDefinition) {}
+  protected constructor(protected readonly definition: LoggerDefinition) {}
 
   protected async write(msg: string) {
     console.log(this.definition.prefix, msg);

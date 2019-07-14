@@ -31,7 +31,6 @@ import TimezoneCommand from './timezone';
 import UnconfirmedCommand from './unconfirmed';
 import UnpauseCommand from './unpause';
 import UtcCommand from './utc';
-import VersionCommand from './version';
 import WelcomeCommand from './welcome';
 import YoutubeCommand from './youtube';
 
@@ -70,7 +69,6 @@ const REGULAR_COMMANDS: ReadonlyArray<
   UnconfirmedCommand,
   UnpauseCommand,
   UtcCommand,
-  VersionCommand,
   WelcomeCommand,
   YoutubeCommand,
 ];
