@@ -14,7 +14,7 @@
     "build": "tsc",
     "clean": "rm -rf ./build",
     "lint": "eslint \"./{src,scripts}/**/*.{js,ts}\"",
-    "run-bot": "node build/main.js",
+    "run-bot": "node build/src/main.js",
     "db-migrate": "node scripts/db-migrate.js"
   },
   "heroku-run-build-script": true,
