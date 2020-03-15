@@ -1,6 +1,6 @@
 import { inspect } from 'util';
-import EmbedColor from '../embed-color';
-import { sendEmbedMessage } from '../promises/discord';
+import EmbedColor from '@phil/embed-color';
+import { sendEmbedMessage } from '@phil/promises/discord';
 import {
   BotManagerCommand,
   LoggerDefinition,

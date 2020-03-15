@@ -2,7 +2,7 @@ import {
   Client as DiscordIOClient,
   Server as DiscordIOServer,
 } from 'discord.io';
-import { getUserDisplayName } from '../utils';
+import { getUserDisplayName } from '@phil/utils';
 
 export default class LeaderboardEntry {
   public readonly displayName: string;

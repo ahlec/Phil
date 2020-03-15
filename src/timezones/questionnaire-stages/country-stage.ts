@@ -3,9 +3,9 @@ import Stage from './@stage';
 import { CountryTimezones } from './@timezone-data';
 import { setStage, setTimezone } from './@utils';
 
-import PrivateMessage from '../../messages/private';
-import Phil from '../../phil';
-import { sendMessage } from '../../promises/discord';
+import PrivateMessage from '@phil/messages/private';
+import Phil from '@phil/phil';
+import { sendMessage } from '@phil/promises/discord';
 
 export default class CountryStage implements Stage {
   public readonly stageNumber = 2;

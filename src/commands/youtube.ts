@@ -1,7 +1,7 @@
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { sendMessage } from '../promises/discord';
-import { searchYouTube } from '../promises/youtube';
+import { sendMessage } from '@phil/promises/discord';
+import { searchYouTube } from '@phil/promises/youtube';
 import Command, { LoggerDefinition } from './@types';
 
 export default class YoutubeCommand extends Command {

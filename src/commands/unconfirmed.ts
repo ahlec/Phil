@@ -4,7 +4,7 @@ import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { sendMessage } from '../promises/discord';
+import { sendMessage } from '@phil/promises/discord';
 import Submission from '../prompts/submission';
 import ServerConfig from '../server-config';
 import Command, { LoggerDefinition } from './@types';

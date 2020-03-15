@@ -7,10 +7,10 @@ import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { sendEmbedMessage, sendMessageBuilder } from '../promises/discord';
+import { sendEmbedMessage, sendMessageBuilder } from '@phil/promises/discord';
 import Requestable from '../requestables';
 import ServerConfig from '../server-config';
-import { getRandomArrayEntry, stitchTogetherArray } from '../utils';
+import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class BlacklistCommand extends Command {

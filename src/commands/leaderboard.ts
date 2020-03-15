@@ -3,7 +3,7 @@ import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { sendEmbedMessage } from '../promises/discord';
+import { sendEmbedMessage } from '@phil/promises/discord';
 import Leaderboard from '../prompts/leaderboard';
 import LeaderboardEntry from '../prompts/leaderboard-entry';
 import Command, { LoggerDefinition } from './@types';

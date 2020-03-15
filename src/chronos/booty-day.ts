@@ -1,9 +1,9 @@
 import { Moment } from 'moment';
-import Features from '../features/all-features';
-import GlobalConfig from '../GlobalConfig';
-import Phil from '../phil';
-import { sendMessage } from '../promises/discord';
-import ServerConfig from '../server-config';
+import Features from '@phil/features/all-features';
+import GlobalConfig from '@phil/GlobalConfig';
+import Phil from '@phil/phil';
+import { sendMessage } from '@phil/promises/discord';
+import ServerConfig from '@phil/server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 const HANDLE = 'booty-day';

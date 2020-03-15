@@ -3,9 +3,9 @@ import * as moment from 'moment';
 import Bucket from '../buckets';
 import Database from '../database';
 import EmbedColor from '../embed-color';
-import { sendEmbedMessage } from '../promises/discord';
+import { sendEmbedMessage } from '@phil/promises/discord';
 import ServerConfig from '../server-config';
-import { getUserDisplayName } from '../utils';
+import { getUserDisplayName } from '@phil/utils';
 import Submission from './submission';
 
 export interface PromptDatabaseSchema {

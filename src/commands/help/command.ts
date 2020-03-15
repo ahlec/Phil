@@ -3,7 +3,7 @@ import { HelpGroup } from '../../help-groups';
 import MessageBuilder from '../../message-builder';
 import PublicMessage from '../../messages/public';
 import Phil from '../../phil';
-import { sendMessage } from '../../promises/discord';
+import { sendMessage } from '@phil/promises/discord';
 import Command, { CommandLookup, LoggerDefinition } from '../@types';
 import CommandHelpInfo from './command-help-info';
 import HelpGroupInfo from './help-group-info';

@@ -1,7 +1,7 @@
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { deleteMessage, sendMessage } from '../promises/discord';
+import { deleteMessage, sendMessage } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 export default class KuzcoCommand extends Command {

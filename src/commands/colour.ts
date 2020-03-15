@@ -1,8 +1,12 @@
 import { Role as DiscordIORole } from 'discord.io';
 import Features from '../features/all-features';
-import { EditRoleOptions } from '../promises/discord';
+import { EditRoleOptions } from '@phil/promises/discord';
 import ServerConfig from '../server-config';
-import { getRandomArrayEntry, isValidHexColor, isHexColorRole } from '../utils';
+import {
+  getRandomArrayEntry,
+  isValidHexColor,
+  isHexColorRole,
+} from '@phil/utils';
 import { LoggerDefinition } from './@types';
 import MemberUniqueRoleCommandBase from './bases/member-unique-role-base';
 

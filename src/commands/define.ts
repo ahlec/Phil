@@ -5,7 +5,7 @@ import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import Requestable, { RequestableCreationDefinition } from '../requestables';
 import ServerConfig from '../server-config';
-import { sendSuccessMessage } from '../utils';
+import { sendSuccessMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class DefineCommand extends Command {

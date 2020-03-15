@@ -4,7 +4,7 @@ import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { sendErrorMessage } from '../utils';
+import { sendErrorMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
 import MemberTypeDefinition from '../type-definition/member';

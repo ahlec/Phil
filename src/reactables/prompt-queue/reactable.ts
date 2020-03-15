@@ -1,7 +1,7 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
 import Bucket from '../../buckets';
 import Phil from '../../phil';
-import { deleteMessage } from '../../promises/discord';
+import { deleteMessage } from '@phil/promises/discord';
 import { PromptQueue } from '../../prompts/queue';
 import ReactablePost from '../../reactables/post';
 import ReactableType from '../../reactables/reactable-type';

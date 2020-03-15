@@ -4,7 +4,7 @@ import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
 import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
-import { sendSuccessMessage } from '../../utils';
+import { sendSuccessMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from '../@types';
 
 const FEATURES_LIST = Object.values(AllFeatures);

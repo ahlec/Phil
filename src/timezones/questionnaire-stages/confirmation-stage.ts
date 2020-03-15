@@ -2,10 +2,10 @@ import { CountryStage, FinishedStage } from './@all-stages';
 import IStage from './@stage';
 import { setStage } from './@utils';
 
-import Database from '../../database';
-import PrivateMessage from '../../messages/private';
-import Phil from '../../phil';
-import { sendMessage } from '../../promises/discord';
+import Database from '@phil/database';
+import PrivateMessage from '@phil/messages/private';
+import Phil from '@phil/phil';
+import { sendMessage } from '@phil/promises/discord';
 
 import * as moment from 'moment-timezone';
 

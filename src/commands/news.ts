@@ -2,7 +2,7 @@ import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { sendMessage } from '../promises/discord';
+import { sendMessage } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 export default class NewsCommand extends Command {

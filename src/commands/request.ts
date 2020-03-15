@@ -3,14 +3,14 @@ import { HelpGroup } from '../help-groups';
 import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { giveRoleToUser, sendMessageBuilder } from '../promises/discord';
+import { giveRoleToUser, sendMessageBuilder } from '@phil/promises/discord';
 import Requestable from '../requestables';
 import ServerConfig from '../server-config';
 import {
   sendSuccessMessage,
   getRandomArrayEntry,
   stitchTogetherArray,
-} from '../utils';
+} from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class RequestCommand extends Command {

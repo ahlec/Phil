@@ -1,4 +1,4 @@
-import GlobalConfig from '../GlobalConfig';
+import GlobalConfig from '@phil/GlobalConfig';
 import {
   ParseResult,
   TypeDefinition,

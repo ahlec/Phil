@@ -1,7 +1,7 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
 import EmbedColor from '../../embed-color';
 import Phil from '../../phil';
-import { sendEmbedMessage } from '../../promises/discord';
+import { sendEmbedMessage } from '@phil/promises/discord';
 import SubmissionSession from '../../prompts/submission-session';
 import ReactablePost from '../post';
 import ReactableType from '../reactable-type';

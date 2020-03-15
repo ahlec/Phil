@@ -1,7 +1,7 @@
 import EmbedColor from '../../../embed-color';
-import PublicMessage from '../../../messages/public';
+import PublicMessage from '@phil/messages/public';
 import Phil from '../../../phil';
-import { sendEmbedMessage, EmbedField } from '../../../promises/discord';
+import { sendEmbedMessage, EmbedField } from '@phil/promises/discord';
 import ServerConfig from '../../../server-config';
 import { ConfigCommandBase, ConfigProperty } from '../config-command-base';
 import {

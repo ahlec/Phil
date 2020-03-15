@@ -2,7 +2,7 @@ import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
 import Bucket from '../buckets';
 import Database, { DatabaseResult } from '../database';
 import EmbedColor from '../embed-color';
-import { sendEmbedMessage, EmbedData } from '../promises/discord';
+import { sendEmbedMessage, EmbedData } from '@phil/promises/discord';
 import { PromptQueueReactableFactory } from '../reactables/prompt-queue/factory';
 import Prompt from './prompt';
 

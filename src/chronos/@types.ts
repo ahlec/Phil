@@ -1,7 +1,7 @@
 import { Moment } from 'moment';
-import Feature from '../features/feature';
-import Phil from '../phil';
-import ServerConfig from '../server-config';
+import Feature from '@phil/features/feature';
+import Phil from '@phil/phil';
+import ServerConfig from '@phil/server-config';
 
 export default interface Chrono {
   readonly handle: string;

@@ -3,10 +3,10 @@ import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
 import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
-import { sendEmbedMessage, EmbedField } from '../../promises/discord';
+import { sendEmbedMessage, EmbedField } from '@phil/promises/discord';
 import ServerConfig from '../../server-config';
 import { TypeDefinition } from '../../type-definition/@type-definition';
-import { getRandomArrayEntry } from '../../utils';
+import { getRandomArrayEntry } from '@phil/utils';
 import Command, { LoggerDefinition } from '../@types';
 import {
   ConfigAction,

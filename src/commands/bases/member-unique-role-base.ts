@@ -9,9 +9,9 @@ import {
   editRole,
   giveRoleToUser,
   takeRoleFromUser,
-} from '../../promises/discord';
+} from '@phil/promises/discord';
 import ServerConfig from '../../server-config';
-import { sendSuccessMessage } from '../../utils';
+import { sendSuccessMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from '../@types';
 
 interface MemberUniqueRoleCommandBaseDetails {

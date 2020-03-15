@@ -1,7 +1,7 @@
 import EmbedColor from '../embed-color';
 import PrivateMessage from '../messages/private';
 import Phil from '../phil';
-import { sendEmbedMessage } from '../promises/discord';
+import { sendEmbedMessage } from '@phil/promises/discord';
 import SubmissionSession from '../prompts/submission-session';
 import SuggestSessionReactableFactory from '../reactables/suggest-session/factory';
 import { DirectMessageProcessor, ProcessorActiveToken } from './@base';

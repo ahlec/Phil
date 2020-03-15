@@ -1,9 +1,9 @@
-import Bucket from '../buckets';
-import Features from '../features/all-features';
-import Phil from '../phil';
-import { sendMessage } from '../promises/discord';
-import { PromptQueue } from '../prompts/queue';
-import ServerConfig from '../server-config';
+import Bucket from '@phil/buckets';
+import Features from '@phil/features/all-features';
+import Phil from '@phil/phil';
+import { sendMessage } from '@phil/promises/discord';
+import { PromptQueue } from '@phil/prompts/queue';
+import ServerConfig from '@phil/server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 const PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD = 5;

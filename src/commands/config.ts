@@ -2,7 +2,7 @@ import { Channel as DiscordIOChannel } from 'discord.io';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
 import ServerConfig from '../server-config';
-import { getRandomArrayEntry } from '../utils';
+import { getRandomArrayEntry } from '@phil/utils';
 import { LoggerDefinition } from './@types';
 import { ConfigCommandBase, ConfigProperty } from './bases/config-command-base';
 

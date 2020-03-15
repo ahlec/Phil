@@ -1,11 +1,11 @@
 import { Moment } from 'moment';
-import Bucket from '../buckets';
-import Features from '../features/all-features';
-import Phil from '../phil';
-import Prompt from '../prompts/prompt';
-import { PromptQueue } from '../prompts/queue';
-import Submission from '../prompts/submission';
-import ServerConfig from '../server-config';
+import Bucket from '@phil/buckets';
+import Features from '@phil/features/all-features';
+import Phil from '@phil/phil';
+import Prompt from '@phil/prompts/prompt';
+import { PromptQueue } from '@phil/prompts/queue';
+import Submission from '@phil/prompts/submission';
+import ServerConfig from '@phil/server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 const HANDLE = 'post-new-prompts';

@@ -1,6 +1,6 @@
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
 import Database from '../database';
-import { removeOwnReaction } from '../promises/discord';
+import { removeOwnReaction } from '@phil/promises/discord';
 
 interface DbRow {
   message_id: string;

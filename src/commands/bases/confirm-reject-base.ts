@@ -5,7 +5,7 @@ import PublicMessage from '../../messages/public';
 import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
 import ServerConfig from '../../server-config';
-import { isNumeric, sendErrorMessage, sendSuccessMessage } from '../../utils';
+import { isNumeric, sendErrorMessage, sendSuccessMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from '../@types';
 
 interface ConfirmRejectResults {

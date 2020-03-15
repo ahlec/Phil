@@ -4,7 +4,7 @@ import Logger from '../Logger';
 import LoggerDefinition from '../LoggerDefinition';
 import PrivateMessage from '../messages/private';
 import Phil from '../phil';
-import { sendErrorMessage } from '../utils';
+import { sendErrorMessage } from '@phil/utils';
 import { DirectMessageProcessor, ProcessorActiveToken } from './@base';
 
 type CommandParseResult =

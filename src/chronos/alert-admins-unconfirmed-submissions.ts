@@ -1,10 +1,10 @@
-import EmbedColor from '../embed-color';
-import Features from '../features/all-features';
-import Phil from '../phil';
-import { sendEmbedMessage } from '../promises/discord';
-import UnconfirmedSubmissionTally from '../prompts/unconfirmed-submission-tally';
-import ServerConfig from '../server-config';
-import { getRandomArrayEntry } from '../utils';
+import EmbedColor from '@phil/embed-color';
+import Features from '@phil/features/all-features';
+import Phil from '@phil/phil';
+import { sendEmbedMessage } from '@phil/promises/discord';
+import UnconfirmedSubmissionTally from '@phil/prompts/unconfirmed-submission-tally';
+import ServerConfig from '@phil/server-config';
+import { getRandomArrayEntry } from '@phil/utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 const HANDLE = 'alert-admins-unconfirmed-submissions';

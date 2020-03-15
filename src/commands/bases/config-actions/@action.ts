@@ -1,4 +1,4 @@
-import PublicMessage from '../../../messages/public';
+import PublicMessage from '@phil/messages/public';
 import Phil from '../../../phil';
 import { ConfigCommandBase, ConfigProperty } from '../config-command-base';
 

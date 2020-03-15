@@ -5,7 +5,7 @@ import Features from '../features/all-features';
 import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { sendMessageBuilder } from '../promises/discord';
+import { sendMessageBuilder } from '@phil/promises/discord';
 import ServerConfig from '../server-config';
 import Command, { LoggerDefinition } from './@types';
 

@@ -1,9 +1,9 @@
 import { Server as DiscordIOServer } from 'discord.io';
-import EmbedColor from '../embed-color';
-import Phil from '../phil';
-import { deleteRole, sendEmbedMessage } from '../promises/discord';
-import ServerConfig from '../server-config';
-import { doesMemberUseRole, isHexColorRole } from '../utils';
+import EmbedColor from '@phil/embed-color';
+import Phil from '@phil/phil';
+import { deleteRole, sendEmbedMessage } from '@phil/promises/discord';
+import ServerConfig from '@phil/server-config';
+import { doesMemberUseRole, isHexColorRole } from '@phil/utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 interface RoleInfo {

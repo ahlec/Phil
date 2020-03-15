@@ -5,7 +5,7 @@ import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { sendEmbedMessage } from '../promises/discord';
+import { sendEmbedMessage } from '@phil/promises/discord';
 import SubmissionSession from '../prompts/submission-session';
 import SuggestSessionReactableFactory from '../reactables/suggest-session/factory';
 import { Emoji } from '../reactables/suggest-session/shared';

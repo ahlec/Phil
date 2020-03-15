@@ -1,4 +1,4 @@
-import LoggerDefnition from '../LoggerDefinition';
+import LoggerDefnition from '@phil/LoggerDefinition';
 import Chrono from './@types';
 
 import AlertAdminsUnconfirmedSubmissionsChrono from './alert-admins-unconfirmed-submissions';
