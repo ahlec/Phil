@@ -29,7 +29,7 @@ export default class BlacklistCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     rawCommandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const commandArgs = new CommandArgs(rawCommandArgs);
     if (commandArgs.isEmpty) {
       return this.processNoCommandArgs(phil, message);
@@ -57,13 +57,13 @@ export default class BlacklistCommand extends Command {
       return this.replyWithBlacklist(phil, message, requestable, requestString);
     }
 
-    return this.toggleMember(phil, message, requestable, requestString, member);
+    await this.toggleMember(phil, message, requestable, requestString, member);
   }
 
   private async processNoCommandArgs(
     phil: Phil,
     message: PublicMessage
-  ): Promise<any> {
+  ): Promise<void> {
     const requestables = await Requestable.getAllRequestables(
       phil.db,
       message.server
@@ -80,7 +80,7 @@ export default class BlacklistCommand extends Command {
       message.serverConfig,
       requestables
     );
-    return sendMessageBuilder(phil.bot, message.channelId, reply);
+    await sendMessageBuilder(phil.bot, message.channelId, reply);
   }
 
   private composeAllRequestablesList(
@@ -125,7 +125,7 @@ export default class BlacklistCommand extends Command {
     message: PublicMessage,
     requestable: Requestable,
     requestStringUsed: string
-  ): Promise<any> {
+  ): Promise<void> {
     const blacklistedUsers = Array.from(requestable.blacklistedUserIds).map(
       (userId: string) => {
         const user = phil.bot.users[userId];
@@ -162,7 +162,7 @@ export default class BlacklistCommand extends Command {
 
     response += `\n\nTo add or remove a user to the blacklist, use \`${message.serverConfig.commandPrefix}blacklist ${requestStringUsed} [user name]\` to toggle that user on the blacklist.`;
 
-    return sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Info,
       description: response,
       title: `:name_badge: "${requestable.role.name}" blacklist`,
@@ -175,18 +175,19 @@ export default class BlacklistCommand extends Command {
     requestable: Requestable,
     requestStringUsed: string,
     member: DiscordIOMember
-  ) {
+  ): Promise<void> {
     const result = await requestable.toggleUserBlacklist(member.id, phil.db);
     if (!result.success) {
       this.error(`requestable: ${requestable.role.id} - ${requestStringUsed}`);
       this.error(`server: ${message.server.id}`);
       this.error(`member: ${member.id}`);
       this.error(result.message);
-      return sendEmbedMessage(phil.bot, message.channelId, {
+      await sendEmbedMessage(phil.bot, message.channelId, {
         color: EmbedColor.Error,
         description: result.message,
         title: `:no_entry: Blacklist error encountered`,
       });
+      return;
     }
 
     const isOnBlacklist = requestable.blacklistedUserIds.has(member.id);
@@ -197,7 +198,8 @@ export default class BlacklistCommand extends Command {
       const user = phil.bot.users[member.id];
       displayName = `${user.username}#${user.discriminator}`;
     }
-    return sendEmbedMessage(phil.bot, message.channelId, {
+
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Info,
       description: `**${displayName}** was ${
         isOnBlacklist ? 'added to' : 'removed from'

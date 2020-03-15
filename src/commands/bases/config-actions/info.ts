@@ -26,7 +26,7 @@ export default class InfoConfigAction<TModel> implements ConfigAction<TModel> {
     mutableArgs: string[],
     property: ConfigProperty<TModel>,
     model: TModel
-  ): Promise<any> {
+  ): Promise<void> {
     const currentValue = property.getValue(model);
     const displayValue = property.typeDefinition.toDisplayFormat(
       currentValue,
@@ -50,7 +50,7 @@ export default class InfoConfigAction<TModel> implements ConfigAction<TModel> {
     );
     response += `${NEWLINE}**EXAMPLES**${NEWLINE}\`\`\`${message.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Set} ${property.key} ${randomDisplayValue}${NEWLINE}${message.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Clear} ${property.key}\`\`\``;
 
-    return sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Info,
       description: response,
       title: `${command.titleCaseConfigurationFor} Configuration: ${property.displayName}`,

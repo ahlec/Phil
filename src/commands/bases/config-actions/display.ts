@@ -26,7 +26,7 @@ export default class DisplayConfigAction<TModel>
     mutableArgs: string[],
     _: ConfigProperty<TModel>,
     model: TModel
-  ): Promise<any> {
+  ): Promise<void> {
     const fields: EmbedField[] = [];
     for (const property of command.orderedProperties) {
       fields.push(
@@ -34,7 +34,7 @@ export default class DisplayConfigAction<TModel>
       );
     }
 
-    return sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Info,
       fields,
       title: command.titleCaseConfigurationFor + ' Configuration: Overview',

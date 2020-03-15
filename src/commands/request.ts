@@ -29,7 +29,7 @@ export default class RequestCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     if (commandArgs.length === 0) {
       return this.processNoCommandArgs(phil, message);
     }
@@ -68,7 +68,7 @@ export default class RequestCommand extends Command {
     serverConfig: ServerConfig,
     userId: string,
     requestable: Requestable
-  ) {
+  ): void {
     if (requestable.blacklistedUserIds.has(userId)) {
       throw new Error(
         `You are unable to request the "${requestable.role.name}" role at this time.`
@@ -86,7 +86,7 @@ export default class RequestCommand extends Command {
   private async processNoCommandArgs(
     phil: Phil,
     message: PublicMessage
-  ): Promise<any> {
+  ): Promise<void> {
     const requestables = await Requestable.getAllRequestables(
       phil.db,
       message.server
@@ -103,7 +103,7 @@ export default class RequestCommand extends Command {
       message.serverConfig,
       requestables
     );
-    return sendMessageBuilder(phil.bot, message.channelId, reply);
+    await sendMessageBuilder(phil.bot, message.channelId, reply);
   }
 
   private composeAllRequestablesList(

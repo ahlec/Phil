@@ -35,7 +35,7 @@ export default abstract class MutateConfigActionBase<TModel>
     mutableArgs: string[],
     property: ConfigProperty<TModel>,
     model: TModel
-  ): Promise<any> {
+  ): Promise<void> {
     const newValue = this.getNewValue(
       phil,
       message.serverConfig,
@@ -43,17 +43,18 @@ export default abstract class MutateConfigActionBase<TModel>
       mutableArgs
     );
     if (newValue.wasSuccessful === false) {
-      return this.sendInvalidInputResponse(
+      await this.sendInvalidInputResponse(
         command,
         phil,
         message,
         property,
         newValue.errorMessage
       );
+      return;
     }
 
     await property.setValue(phil, model, newValue.parsedValue);
-    return this.sendMutateSuccessMessage(
+    await this.sendMutateSuccessMessage(
       phil,
       message,
       property,
@@ -74,7 +75,7 @@ export default abstract class MutateConfigActionBase<TModel>
     message: PublicMessage,
     property: ConfigProperty<TModel>,
     errorMessage: string
-  ): Promise<any> {
+  ): Promise<void> {
     const response = `The value you attempted to set the ${
       property.displayName
     } property to ${NOWRAP}is invalid.${NEWLINE}${NEWLINE}**${errorMessage}**${NEWLINE}${NEWLINE}Proper values for the ${
@@ -85,7 +86,7 @@ export default abstract class MutateConfigActionBase<TModel>
       message.serverConfig.commandPrefix
     }${command.name} ${ConfigActionPrimaryKey.Info} ${property.key}\`.`;
 
-    return sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Error,
       description: response,
       title: `${property.displayName}: Invalid Input`,
@@ -97,8 +98,8 @@ export default abstract class MutateConfigActionBase<TModel>
     message: PublicMessage,
     property: ConfigProperty<TModel>,
     newValue: string | null
-  ): Promise<any> {
-    return sendEmbedMessage(phil.bot, message.channelId, {
+  ): Promise<void> {
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Success,
       description: `The value of the **${property.displayName.toLowerCase()}** has been ${
         this.pastTenseVerb

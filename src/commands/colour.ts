@@ -48,10 +48,7 @@ export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
     );
   }
 
-  protected getInvalidInputErrorMessage(
-    input: string,
-    serverConfig: ServerConfig
-  ): string {
+  protected getInvalidInputErrorMessage(input: string): string {
     const decemberLink = getRandomArrayEntry(decemberLinks);
     return (
       '`' +

@@ -46,10 +46,14 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     description: `This is an optional channel for admins intended for performing admin bot ${NOWRAP}commands in. If provided, Phil will also send all admin-intended messages to ${NOWRAP}this channel. This can be a channel that is used for other properties/purposes ${NOWRAP}or one that is unique to this purpose.`,
     displayName: 'Bot Control Channel',
     getRandomExampleValue: getRandomChannelId,
-    getValue: (model: ServerConfig) => getChannelId(model.botControlChannel),
+    getValue: (model: ServerConfig): string | null =>
+      getChannelId(model.botControlChannel),
     key: 'bot-control-channel',
-    setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
-      model.setBotControlChannel(newValue, phil.db),
+    setValue: (
+      phil: Phil,
+      model: ServerConfig,
+      newValue: string
+    ): Promise<boolean> => model.setBotControlChannel(newValue, phil.db),
     typeDefinition: ChannelTypeDefinition,
   },
   {
@@ -57,10 +61,14 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     description: `This is the optional designated admin channel for this server. This can be ${NOWRAP}a channel that is used for other properties/purposes or one that is unique to ${NOWRAP}this purpose.`,
     displayName: 'Admin Channel',
     getRandomExampleValue: getRandomChannelId,
-    getValue: (model: ServerConfig) => getChannelId(model.adminChannel),
+    getValue: (model: ServerConfig): string | null =>
+      getChannelId(model.adminChannel),
     key: 'admin-channel',
-    setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
-      model.setAdminChannel(newValue, phil.db),
+    setValue: (
+      phil: Phil,
+      model: ServerConfig,
+      newValue: string
+    ): Promise<boolean> => model.setAdminChannel(newValue, phil.db),
     typeDefinition: ChannelTypeDefinition,
   },
   {
@@ -68,10 +76,14 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     description: `This is the optional channel where Phil will post welcome messages for new ${NOWRAP}users, if configured to do so. This can be a channel that is used for other ${NOWRAP}properties/purposes or one that is unique to this purpose.`,
     displayName: 'Introductions Channel',
     getRandomExampleValue: getRandomChannelId,
-    getValue: (model: ServerConfig) => getChannelId(model.introductionsChannel),
+    getValue: (model: ServerConfig): string | null =>
+      getChannelId(model.introductionsChannel),
     key: 'introductions-channel',
-    setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
-      model.setIntroductionsChannel(newValue, phil.db),
+    setValue: (
+      phil: Phil,
+      model: ServerConfig,
+      newValue: string
+    ): Promise<boolean> => model.setIntroductionsChannel(newValue, phil.db),
     typeDefinition: ChannelTypeDefinition,
   },
   {
@@ -79,30 +91,37 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     description: `This is the optional channel where Phil will post calendar and birthday ${NOWRAP}notifications, and where the \`news\` command will echo output to. This can be ${NOWRAP}a channel that is used for other properties/purposes or one that is unique to ${NOWRAP}this purpose.`,
     displayName: 'News Channel',
     getRandomExampleValue: getRandomChannelId,
-    getValue: (model: ServerConfig) => getChannelId(model.newsChannel),
+    getValue: (model: ServerConfig): string | null =>
+      getChannelId(model.newsChannel),
     key: 'news-channel',
-    setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
-      model.setNewsChannel(newValue, phil.db),
+    setValue: (
+      phil: Phil,
+      model: ServerConfig,
+      newValue: string
+    ): Promise<boolean> => model.setNewsChannel(newValue, phil.db),
     typeDefinition: ChannelTypeDefinition,
   },
   {
     defaultValue: 'p!',
     description: `This is the prefix that is required at the start of all commands for Phil ${NOWRAP}to recognize as his own.`,
     displayName: 'Command Prefix',
-    getRandomExampleValue: (_: ServerConfig) => 'p!',
-    getValue: (model: ServerConfig) => model.commandPrefix,
+    getRandomExampleValue: (): string => 'p!',
+    getValue: (model: ServerConfig): string | null => model.commandPrefix,
     key: 'command-prefix',
-    setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
-      model.setCommandPrefix(newValue, phil.db),
+    setValue: (
+      phil: Phil,
+      model: ServerConfig,
+      newValue: string
+    ): Promise<boolean> => model.setCommandPrefix(newValue, phil.db),
     typeDefinition: CommandPrefixTypeDefinition,
   },
   {
     defaultValue: null,
     description: `This is a role that a user must have in order to make use of any of the ${NOWRAP}admin-only commands. The server owner is capable of making use of the admin-${NOWRAP}only commands at all times, but for all other members of the server, they must ${NOWRAP}have the role specified here in order to user the higher privilege commands.${NEWLINE}${NEWLINE}Note that while admin commands may be used in any channel within the server, ${NOWRAP}admin-only commands will only appear in the \`help\` command list if you use ${NOWRAP}the command within the **Admin Channel** (property key: \`admin-channel\`) or ${NOWRAP}within the **Bot Control Channel** (property key: \`bot-control-channel\`).`,
     displayName: 'Admin Role',
-    getRandomExampleValue: (model: ServerConfig) =>
+    getRandomExampleValue: (model: ServerConfig): string =>
       getRandomArrayEntry(Object.keys(model.server.roles)),
-    getValue: (model: ServerConfig) => {
+    getValue: (model: ServerConfig): string | null => {
       if (!model.adminRole) {
         return null;
       }
@@ -110,20 +129,25 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
       return model.adminRole.id;
     },
     key: 'admin-role',
-    setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
-      model.setAdminRole(newValue, phil.db),
+    setValue: (
+      phil: Phil,
+      model: ServerConfig,
+      newValue: string
+    ): Promise<boolean> => model.setAdminRole(newValue, phil.db),
     typeDefinition: RoleTypeDefinition,
   },
   {
     defaultValue: null,
     description: `The welcome message that is posted to the introductions channel ${NOWRAP}(config key: \`introductions-channel\`) whenever a new user joins the server. ${NOWRAP}You are capable of previewing the welcome message at any time using the ${NOWRAP}\`welcome\` admin command.${NEWLINE}${NEWLINE}Instances of \`{user}\` within the welcome message will be replaced with the ${NOWRAP}new user's name.`,
     displayName: 'Welcome Message',
-    getRandomExampleValue: (_: ServerConfig) =>
-      'Welcome to our server, {user}!',
-    getValue: (model: ServerConfig) => model.welcomeMessage,
+    getRandomExampleValue: (): string => 'Welcome to our server, {user}!',
+    getValue: (model: ServerConfig): string | null => model.welcomeMessage,
     key: 'welcome-message',
-    setValue: (phil: Phil, model: ServerConfig, newValue: string) =>
-      model.setWelcomeMessage(newValue, phil.db),
+    setValue: (
+      phil: Phil,
+      model: ServerConfig,
+      newValue: string
+    ): Promise<boolean> => model.setWelcomeMessage(newValue, phil.db),
     typeDefinition: WelcomeMessageTypeDefinition,
   },
 ];
@@ -151,8 +175,7 @@ export default class ConfigCommand extends ConfigCommandBase<ServerConfig> {
 
   protected async getModel(
     phil: Phil,
-    message: PublicMessage,
-    mutableArgs: string[]
+    message: PublicMessage
   ): Promise<ServerConfig> {
     return message.serverConfig;
   }

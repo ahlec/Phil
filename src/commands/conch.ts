@@ -31,12 +31,10 @@ export default class ConchCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+    message: PublicMessage
+  ): Promise<void> {
     const conchReply = getRandomArrayEntry(conchReplies);
     const reply = ':shell: The Magic Conch Shell says: **' + conchReply + '**.';
-
-    return sendMessage(phil.bot, message.channelId, reply);
+    await sendMessage(phil.bot, message.channelId, reply);
   }
 }

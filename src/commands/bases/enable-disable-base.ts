@@ -36,7 +36,7 @@ export default abstract class EnableDisableCommandBase extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     if (commandArgs.length < 1) {
       const errorMessage = this.formatParameterErrorMessage(
         `You must specify one of the features listed below when using this command:`

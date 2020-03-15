@@ -23,12 +23,24 @@ function doesRoleHavePermission(
   return false;
 }
 
+interface DbRow {
+  server_id: string;
+  command_prefix: string;
+  bot_control_channel_id: string;
+  admin_channel_id: string;
+  introductions_channel_id: string;
+  news_channel_id: string;
+  welcome_message: string;
+  fandom_map_link: string;
+  admin_role_id: string;
+}
+
 export class ServerConfig extends Logger {
   public static async getFromId(
     db: Database,
     server: discord.Server
   ): Promise<ServerConfig | null> {
-    const results = await db.query(
+    const results = await db.query<DbRow>(
       'SELECT * FROM server_configs WHERE server_id = $1',
       [server.id]
     );
@@ -52,7 +64,7 @@ export class ServerConfig extends Logger {
       }
     }
 
-    const creation = await db.query(
+    const creation = await db.query<DbRow>(
       `INSERT INTO
         server_configs(
           server_id,
@@ -83,7 +95,7 @@ export class ServerConfig extends Logger {
   private adminRoleInternal: discord.Role;
   private welcomeMessageInternal: string | null;
 
-  private constructor(public readonly server: discord.Server, dbRow: any) {
+  private constructor(public readonly server: discord.Server, dbRow: DbRow) {
     super(new LoggerDefinition('Server Config'));
 
     this.serverId = dbRow.server_id;
@@ -319,7 +331,7 @@ export class ServerConfig extends Logger {
       return this.server.channels[channelId];
     }
 
-    const systemChannelId: string = (this.server as any).system_channel_id;
+    const systemChannelId: string = this.server.system_channel_id;
     if (this.server.channels[systemChannelId]) {
       return this.server.channels[systemChannelId];
     }

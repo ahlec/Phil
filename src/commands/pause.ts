@@ -22,7 +22,7 @@ export default class PauseCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const bucket = await Bucket.retrieveFromCommandArgs(
       phil,
       commandArgs,
@@ -42,6 +42,6 @@ export default class PauseCommand extends Command {
       'unpause ' +
       bucket.handle +
       '`.';
-    sendMessage(phil.bot, message.channelId, reply);
+    await sendMessage(phil.bot, message.channelId, reply);
   }
 }

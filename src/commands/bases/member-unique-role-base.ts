@@ -42,7 +42,7 @@ export default abstract class MemberUniqueRoleCommandBase<
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const data = this.getDataFromCommandArgs(message.serverConfig, commandArgs);
     const newRole = await this.getRoleFromData(phil, message.server, data);
 

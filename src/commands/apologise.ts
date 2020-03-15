@@ -28,10 +28,9 @@ export default class ApologiseCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+    message: PublicMessage
+  ): Promise<void> {
     const apology = getRandomArrayEntry(apologies);
-    return sendMessage(phil.bot, message.channelId, apology);
+    await sendMessage(phil.bot, message.channelId, apology);
   }
 }

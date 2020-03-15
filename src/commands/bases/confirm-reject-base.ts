@@ -54,7 +54,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const numbers = this.getNumbersFromCommandArgs(commandArgs);
     const results: ConfirmRejectResults = {
       numFailed: 0,
@@ -77,7 +77,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
       }
     }
 
-    this.sendCompletionMessage(
+    await this.sendCompletionMessage(
       phil,
       message.serverConfig,
       message.channelId,
@@ -152,7 +152,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
     confirmNumber: number
   ): Promise<PerformResult> {
     try {
-      const results = await phil.db.query(
+      const results = await phil.db.query<{ submission_id: string }>(
         `SELECT
           submission_id
         FROM
@@ -191,7 +191,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
     db: Database,
     channelId: string,
     confirmNumber: number
-  ) {
+  ): Promise<void> {
     const rowsDeleted = await db.execute(
       `DELETE FROM
         submission_confirmation_queue
@@ -207,14 +207,14 @@ export default abstract class ConfirmRejectCommandBase extends Command {
     }
   }
 
-  private sendCompletionMessage(
+  private async sendCompletionMessage(
     phil: Phil,
     serverConfig: ServerConfig,
     channelId: string,
     results: ConfirmRejectResults
-  ) {
+  ): Promise<void> {
     if (results.numSuccessful === 0) {
-      sendErrorMessage({
+      await sendErrorMessage({
         bot: phil.bot,
         channelId,
         message: this.noItemsConfirmedMessage.replace(
@@ -225,7 +225,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
       return;
     }
 
-    sendSuccessMessage({
+    await sendSuccessMessage({
       bot: phil.bot,
       channelId,
       message: (results.numSuccessful === 1

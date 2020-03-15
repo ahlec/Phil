@@ -18,9 +18,8 @@ export default class PromptCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+    message: PublicMessage
+  ): Promise<void> {
     const bucket = await Bucket.getFromChannelId(
       phil.bot,
       phil.db,
@@ -39,6 +38,6 @@ export default class PromptCommand extends Command {
       );
     }
 
-    prompt.sendToChannel(phil.bot, message.serverConfig);
+    await prompt.sendToChannel(phil.bot, message.serverConfig);
   }
 }

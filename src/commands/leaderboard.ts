@@ -86,9 +86,8 @@ export default class LeaderboardCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+    message: PublicMessage
+  ): Promise<void> {
     const leaderboard = await Leaderboard.getLeaderboard(
       phil.bot,
       phil.db,
@@ -96,7 +95,7 @@ export default class LeaderboardCommand extends Command {
     );
     const reply = createLeaderboardMessage(leaderboard);
 
-    sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Info,
       description: reply,
       footer: {

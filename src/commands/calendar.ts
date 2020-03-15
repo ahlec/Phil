@@ -23,7 +23,7 @@ export default class CalendarCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const month = this.determineMonth(message.serverConfig, commandArgs);
     const calendar = await CalendarMonth.getForMonth(
       phil.bot,
@@ -32,7 +32,7 @@ export default class CalendarCommand extends Command {
       month
     );
     const builder = this.composeMessageFromCalendar(message.server, calendar);
-    return sendMessageBuilder(phil.bot, message.channelId, builder);
+    await sendMessageBuilder(phil.bot, message.channelId, builder);
   }
 
   private determineMonth(

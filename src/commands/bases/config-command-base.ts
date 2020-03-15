@@ -92,19 +92,21 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const mutableArgs: string[] = [...commandArgs];
     const model = await this.getModel(phil, message, mutableArgs);
     if (!mutableArgs.length) {
-      return this.processNoAction(phil, message, model);
+      await this.processNoAction(phil, message, model);
+      return;
     }
 
     const action = this.determineAction(mutableArgs);
     if (!action) {
-      return this.sendUnknownActionResponse(phil, message, model);
+      await this.sendUnknownActionResponse(phil, message, model);
+      return;
     }
 
-    return this.processAction(phil, message, mutableArgs, model, action);
+    await this.processAction(phil, message, mutableArgs, model, action);
   }
 
   public getPropertyRulesDisplayList(property: ConfigProperty<TModel>): string {
@@ -140,7 +142,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     phil: Phil,
     message: PublicMessage,
     model: TModel
-  ): Promise<any> {
+  ): Promise<void> {
     const response = `This is the command for changing ${
       this.configurationFor
     } configuration. ${NOWRAP}Within this command, there are numerous actions you can take to allow you to ${NOWRAP}understand Phil, his configuration, and how you can make him fit your server's ${NOWRAP}needs.${NEWLINE}${NEWLINE}${this.getActionsExplanation(
@@ -149,7 +151,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       model
     )}`;
 
-    return sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Info,
       description: response,
       title: this.titleCaseConfigurationFor + ' Configuration',
@@ -170,14 +172,14 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     phil: Phil,
     message: PublicMessage,
     model: TModel
-  ): Promise<any> {
+  ): Promise<void> {
     const response = `You attempted to use an unrecognized action with this command.${NEWLINE}${NEWLINE}${this.getActionsExplanation(
       phil,
       message.serverConfig,
       model
     )}`;
 
-    return sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Error,
       description: response,
       title: `${this.titleCaseConfigurationFor} Configuration: Unknown action`,
@@ -190,16 +192,17 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     mutableArgs: string[],
     model: TModel,
     action: ConfigAction<TModel>
-  ): Promise<any> {
+  ): Promise<void> {
     let property: ConfigProperty<TModel> | null = null;
     if (action.isPropertyRequired) {
       property = this.getSpecifiedProperty(mutableArgs);
       if (!property) {
-        return this.sendUnknownPropertyResponse(phil, message, action, model);
+        await this.sendUnknownPropertyResponse(phil, message, action, model);
+        return;
       }
     }
 
-    return action.process(this, phil, message, mutableArgs, property, model);
+    await action.process(this, phil, message, mutableArgs, property, model);
   }
 
   private getSpecifiedProperty(
@@ -219,7 +222,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     message: PublicMessage,
     action: ConfigAction<TModel>,
     model: TModel
-  ): Promise<any> {
+  ): Promise<void> {
     const response = `You attempted to use an unknown property with the **${action.primaryKey}** action.${NEWLINE}${NEWLINE}**PROPERTIES**${NEWLINE}The following are all of the properties that are recognized with the ${message.serverConfig.commandPrefix}${this.name} command:`;
 
     const fields: EmbedField[] = [];
@@ -237,7 +240,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       });
     }
 
-    return sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Error,
       description: response,
       fields,

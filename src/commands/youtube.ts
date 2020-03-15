@@ -18,7 +18,7 @@ export default class YoutubeCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const query = commandArgs.join(' ').trim();
     if (query.length === 0) {
       throw new Error(
@@ -32,6 +32,6 @@ export default class YoutubeCommand extends Command {
     }
 
     const link = 'https://youtu.be/' + results[0].id;
-    sendMessage(phil.bot, message.channelId, link);
+    await sendMessage(phil.bot, message.channelId, link);
   }
 }

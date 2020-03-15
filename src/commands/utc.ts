@@ -28,7 +28,7 @@ export default class UtcCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const inputTime = this.getTimeFromCommandArgs(commandArgs);
     if (!inputTime) {
       throw new Error(
@@ -50,7 +50,7 @@ export default class UtcCommand extends Command {
     }
 
     const reply = this.createReply(inputTime, timezone);
-    return sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Timezone,
       description: reply,
       footer: {

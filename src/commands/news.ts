@@ -20,12 +20,16 @@ export default class NewsCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const echoedMessage = this.getEchoedStatementFromCommandArgs(
       message,
       commandArgs
     );
-    sendMessage(phil.bot, message.serverConfig.newsChannel.id, echoedMessage);
+    await sendMessage(
+      phil.bot,
+      message.serverConfig.newsChannel.id,
+      echoedMessage
+    );
   }
 
   private getEchoedStatementFromCommandArgs(

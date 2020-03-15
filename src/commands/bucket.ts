@@ -77,7 +77,7 @@ export default class BucketCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const bucket = await Bucket.retrieveFromCommandArgs(
       phil,
       commandArgs,
@@ -85,6 +85,6 @@ export default class BucketCommand extends Command {
       'bucket',
       true
     );
-    return sendBucketToChannel(phil, message.channelId, bucket);
+    await sendBucketToChannel(phil, message.channelId, bucket);
   }
 }

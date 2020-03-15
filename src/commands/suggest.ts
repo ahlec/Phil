@@ -46,7 +46,7 @@ export default class SuggestCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const bucket = await Bucket.retrieveFromCommandArgs(
       phil,
       commandArgs,
@@ -78,7 +78,12 @@ export default class SuggestCommand extends Command {
       throw new Error('Unable to start a new session despite all good input.');
     }
 
-    this.sendDirectMessage(phil, message.userId, message.serverConfig, session);
+    await this.sendDirectMessage(
+      phil,
+      message.userId,
+      message.serverConfig,
+      session
+    );
   }
 
   private async sendDirectMessage(
@@ -86,7 +91,7 @@ export default class SuggestCommand extends Command {
     userId: string,
     serverConfig: ServerConfig,
     session: SubmissionSession
-  ) {
+  ): Promise<void> {
     const messageId = await sendEmbedMessage(phil.bot, userId, {
       color: EmbedColor.Info,
       description: getBeginMessage(phil, serverConfig, session),

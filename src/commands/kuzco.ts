@@ -18,12 +18,12 @@ export default class KuzcoCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const poison = this.getPoison(commandArgs);
     const reply = this.createReply(poison);
 
     await deleteMessage(phil.bot, message.channelId, message.id);
-    return sendMessage(phil.bot, message.channelId, reply);
+    await sendMessage(phil.bot, message.channelId, reply);
   }
 
   private getPoison(commandArgs: ReadonlyArray<string>): string[] {

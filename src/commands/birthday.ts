@@ -20,7 +20,7 @@ export default class BirthdayCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const birthday = this.getInputFromCommandArgs(
       message.serverConfig,
       commandArgs
@@ -37,7 +37,7 @@ export default class BirthdayCommand extends Command {
       "I've updated your birthday to be " +
       birthday.format('D MMMM') +
       '! Thank you! If I made a mistake, however, feel free to tell me your birthday again!';
-    sendSuccessMessage({
+    await sendSuccessMessage({
       bot: phil.bot,
       channelId: message.channelId,
       message: reply,
@@ -74,7 +74,7 @@ export default class BirthdayCommand extends Command {
     username: string,
     userId: string,
     birthday: moment.Moment
-  ) {
+  ): Promise<void> {
     const day = birthday.date();
     const month = birthday.month() + 1;
 

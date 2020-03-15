@@ -24,7 +24,7 @@ export default class DefineCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const definition = this.getDefinitionData(
       commandArgs,
       message.serverConfig

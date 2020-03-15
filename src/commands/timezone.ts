@@ -17,11 +17,10 @@ export default class TimezoneCommand extends Command {
     });
   }
 
-  public processMessage(
+  public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
-    return startQuestionnaire(phil, message.userId, true);
+    message: PublicMessage
+  ): Promise<void> {
+    await startQuestionnaire(phil, message.userId, true);
   }
 }

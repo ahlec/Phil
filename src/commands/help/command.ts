@@ -90,9 +90,8 @@ export default class HelpCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+    message: PublicMessage
+  ): Promise<void> {
     const isAdminChannel = message.serverConfig.isAdminChannel(
       message.channelId
     );

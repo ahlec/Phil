@@ -1,4 +1,4 @@
-import { Server as DiscordIOServer } from 'discord.io';
+import * as Discord from 'discord.io';
 import Database from '../database';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
@@ -30,7 +30,7 @@ export default class RemoveCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     if (commandArgs.length === 0) {
       return this.processNoCommandArgs(phil, message);
     }
@@ -63,10 +63,10 @@ export default class RemoveCommand extends Command {
   }
 
   private ensureUserHasRole(
-    server: DiscordIOServer,
+    server: Discord.Server,
     userId: string,
     requestable: Requestable
-  ) {
+  ): Discord.Role {
     const member = server.members[userId];
 
     if (member.roles.indexOf(requestable.role.id) < 0) {
@@ -81,7 +81,7 @@ export default class RemoveCommand extends Command {
   private async processNoCommandArgs(
     phil: Phil,
     message: PublicMessage
-  ): Promise<any> {
+  ): Promise<void> {
     const userRequestables = await this.getAllRequestablesUserHas(
       phil.db,
       message.serverConfig,
@@ -99,7 +99,7 @@ export default class RemoveCommand extends Command {
       message.serverConfig,
       userRequestables
     );
-    return sendMessageBuilder(phil.bot, message.channelId, reply);
+    await sendMessageBuilder(phil.bot, message.channelId, reply);
   }
 
   private async getAllRequestablesUserHas(

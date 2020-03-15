@@ -15,11 +15,11 @@ export default class HelpGroupInfo {
     this.header = '\n\n**' + getHeaderForGroup(helpGroup) + '**\n';
   }
 
-  public addCommandInfo(commandInfo: CommandHelpInfo) {
+  public addCommandInfo(commandInfo: CommandHelpInfo): void {
     this.commands.push(commandInfo);
   }
 
-  public finish() {
+  public finish(): void {
     this.commands.sort(CommandHelpInfo.sort);
   }
 
@@ -40,7 +40,7 @@ export default class HelpGroupInfo {
     builder: MessageBuilder,
     isAdminChannel: boolean,
     featuresEnabledLookup: BatchFeaturesEnabledLookup
-  ) {
+  ): void {
     builder.append(this.header);
 
     for (const command of this.commands) {

@@ -25,7 +25,7 @@ export default class QueueCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const bucket = await Bucket.retrieveFromCommandArgs(
       phil,
       commandArgs,

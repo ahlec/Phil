@@ -27,7 +27,7 @@ export default class UnconfirmedCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     await phil.db.query(
       'DELETE FROM submission_confirmation_queue WHERE channel_id = $1',
       [message.channelId]
@@ -46,7 +46,8 @@ export default class UnconfirmedCommand extends Command {
       MAX_LIST_LENGTH
     );
     if (submissions.length === 0) {
-      return this.outputNoUnconfirmedSubmissions(phil, message.channelId);
+      await this.outputNoUnconfirmedSubmissions(phil, message.channelId);
+      return;
     }
 
     for (let index = 0; index < submissions.length; ++index) {
@@ -57,7 +58,7 @@ export default class UnconfirmedCommand extends Command {
       );
     }
 
-    return this.outputList(
+    await this.outputList(
       phil,
       message.serverConfig,
       message.channelId,
@@ -65,23 +66,23 @@ export default class UnconfirmedCommand extends Command {
     );
   }
 
-  private outputNoUnconfirmedSubmissions(
+  private async outputNoUnconfirmedSubmissions(
     phil: Phil,
     channelId: string
-  ): Promise<string> {
-    return sendMessage(
+  ): Promise<void> {
+    await sendMessage(
       phil.bot,
       channelId,
       ':large_blue_diamond: There are no unconfirmed submissions in this bucket right now.'
     );
   }
 
-  private outputList(
+  private async outputList(
     phil: Phil,
     serverConfig: ServerConfig,
     channelId: string,
     submissions: Submission[]
-  ): Promise<string> {
+  ): Promise<void> {
     const are = submissions.length === 1 ? 'is' : 'are';
     const submissionsNoun =
       submissions.length === 1 ? 'submission' : 'submissions';
@@ -103,6 +104,6 @@ export default class UnconfirmedCommand extends Command {
       serverConfig.commandPrefix +
       'confirm 2-7`)';
 
-    return sendMessage(phil.bot, channelId, message);
+    await sendMessage(phil.bot, channelId, message);
   }
 }
