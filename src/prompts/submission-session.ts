@@ -10,7 +10,13 @@ export default class SubmissionSession {
     userId: string
   ): Promise<SubmissionSession | null> {
     const utcNow = moment.utc();
-    const dbRow = await phil.db.querySingle(
+    const dbRow = await phil.db.querySingle<{
+      bucket_id: string;
+      started_utc: string;
+      timeout_utc: string;
+      is_anonymous: string;
+      num_submitted: string;
+    }>(
       `SELECT
         pss.*
       FROM
@@ -106,7 +112,7 @@ export default class SubmissionSession {
     return this.isAnonymous;
   }
 
-  public async submit(phil: Phil, prompt: string) {
+  public async submit(phil: Phil, prompt: string): Promise<void> {
     const isAnonymousBit = this.isAnonymous ? 1 : 0;
     const promptsAdded = await phil.db.execute(
       `INSERT INTO
@@ -143,7 +149,7 @@ export default class SubmissionSession {
     this.numSubmitted++;
   }
 
-  public async makeAnonymous(phil: Phil) {
+  public async makeAnonymous(phil: Phil): Promise<void> {
     if (this.isAnonymous) {
       return;
     }
@@ -161,7 +167,7 @@ export default class SubmissionSession {
     this.isAnonymous = true;
   }
 
-  public async end(phil: Phil) {
+  public async end(phil: Phil): Promise<void> {
     await phil.db.query(
       `DELETE FROM prompt_submission_sessions WHERE user_id = $1`,
       [this.userId]

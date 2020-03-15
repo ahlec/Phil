@@ -16,12 +16,17 @@ interface PromptQueuePostData {
   readonly user: DiscordIOUser;
 }
 
+interface DbCountResultRow {
+  count: string;
+  approved_by_admin: string;
+}
+
 export class PromptQueue {
   public static async getTotalLength(
     db: Database,
     bucket: Bucket
   ): Promise<number> {
-    const result = await db.querySingle(
+    const result = await db.querySingle<{ count: string }>(
       `SELECT
         count(*)
       FROM
@@ -37,6 +42,10 @@ export class PromptQueue {
       [bucket.id]
     );
 
+    if (!result) {
+      return 0;
+    }
+
     return parseInt(result.count, 10);
   }
 
@@ -47,7 +56,7 @@ export class PromptQueue {
     pageNum: number,
     pageSize: number
   ): Promise<PromptQueue> {
-    const promptResults = await db.query(
+    const promptResults = await db.query<{ prompt_id: string }>(
       `SELECT
         p.prompt_id,
         p.prompt_number
@@ -77,7 +86,7 @@ export class PromptQueue {
       ({ prompt_id: promptId }) => batchPrompts[parseInt(promptId, 10)]!
     );
 
-    const countResults = await db.query(
+    const countResults = await db.query<DbCountResultRow>(
       `SELECT
         s.approved_by_admin,
         COUNT(s.approved_by_admin)
@@ -114,7 +123,7 @@ export class PromptQueue {
   private constructor(
     readonly bucket: Bucket,
     prompts: ReadonlyArray<Prompt>,
-    countResults: DatabaseResult<any>,
+    countResults: DatabaseResult<DbCountResultRow>,
     pageNum: number,
     readonly pageSize: number
   ) {
@@ -189,7 +198,7 @@ export class PromptQueue {
     return lines.join('\n');
   }
 
-  private makeFooterFromQueue(): any {
+  private makeFooterFromQueue(): EmbedData['footer'] {
     if (!this.hasMultiplePages) {
       return;
     }
@@ -210,7 +219,7 @@ export class PromptQueue {
     db: Database,
     postData: PromptQueuePostData,
     messageId: string
-  ) {
+  ): Promise<void> {
     const factory = new PromptQueueReactableFactory(bot, db, {
       bucket: this.bucket.id,
       channelId: postData.channelId,

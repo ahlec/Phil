@@ -18,7 +18,9 @@ export default class Submission {
     db: Database,
     submissionId: number
   ): Promise<Submission | null> {
-    const result = await db.querySingle(
+    const result = await db.querySingle<
+      SubmissionDatabaseSchema & { bucket_id: number }
+    >(
       `SELECT
         submission_id,
         bucket_id,

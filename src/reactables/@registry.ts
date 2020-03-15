@@ -9,7 +9,7 @@ interface ReactableTypeRegistry {
 
 export const ReactableTypeRegistry: ReactableTypeRegistry = {};
 
-function register(reactable: ReactableType) {
+function register(reactable: ReactableType): void {
   ReactableTypeRegistry[reactable.handle] = reactable;
 }
 

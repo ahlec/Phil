@@ -15,7 +15,7 @@ export default class SuggestSessionReactable extends ReactableType {
     phil: Phil,
     post: ReactablePost,
     event: OfficialDiscordReactionEvent
-  ): Promise<any> {
+  ): Promise<void> {
     const activeSession = await SubmissionSession.getActiveSession(
       phil,
       post.user.id
@@ -41,7 +41,7 @@ export default class SuggestSessionReactable extends ReactableType {
     phil: Phil,
     post: ReactablePost,
     session: SubmissionSession
-  ) {
+  ): Promise<void> {
     await post.remove(phil.db);
 
     await session.end(phil);
@@ -72,7 +72,7 @@ export default class SuggestSessionReactable extends ReactableType {
     phil: Phil,
     post: ReactablePost,
     session: SubmissionSession
-  ) {
+  ): Promise<void> {
     await post.remove(phil.db);
 
     await session.makeAnonymous(phil);

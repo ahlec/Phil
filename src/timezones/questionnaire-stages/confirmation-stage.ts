@@ -16,15 +16,19 @@ export default class ConfirmationStage implements IStage {
     return this.getConfirmationMessage(db, userId, 'Roger!');
   }
 
-  public async processInput(phil: Phil, message: PrivateMessage): Promise<any> {
+  public async processInput(
+    phil: Phil,
+    message: PrivateMessage
+  ): Promise<void> {
     const content = message.content.toLowerCase().trim();
 
     if (content === 'yes') {
-      return setStage(phil, message.userId, FinishedStage);
+      await setStage(phil, message.userId, FinishedStage);
+      return;
     }
 
     if (content === 'no') {
-      const results = await phil.db.query(
+      const results = await phil.db.query<{ timezones: string }>(
         'UPDATE timezones SET timezone_name = NULL WHERE userid = $1',
         [message.userId]
       );
@@ -34,7 +38,8 @@ export default class ConfirmationStage implements IStage {
         );
       }
 
-      return setStage(phil, message.userId, CountryStage);
+      await setStage(phil, message.userId, CountryStage);
+      return;
     }
 
     const reply = await this.getConfirmationMessage(
@@ -42,7 +47,7 @@ export default class ConfirmationStage implements IStage {
       message.userId,
       "Hmmmm, that wasn't one of the answers."
     );
-    return sendMessage(phil.bot, message.channelId, reply);
+    await sendMessage(phil.bot, message.channelId, reply);
   }
 
   private async getConfirmationMessage(
@@ -50,7 +55,7 @@ export default class ConfirmationStage implements IStage {
     userId: string,
     messagePrefix: string
   ): Promise<string> {
-    const results = await db.query(
+    const results = await db.query<{ timezone_name: string }>(
       'SELECT timezone_name FROM timezones WHERE userId = $1 LIMIT 1',
       [userId]
     );

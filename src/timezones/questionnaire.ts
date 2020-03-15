@@ -21,7 +21,7 @@ async function canStartQuestionnaire(
     return true;
   }
 
-  const results = await db.query(
+  const results = await db.query<{ will_provide: string }>(
     'SELECT will_provide FROM timezones WHERE userid = $1',
     [userId]
   );
@@ -75,7 +75,7 @@ export async function getStageForUser(
   db: Database,
   userId: string
 ): Promise<IStage | null> {
-  const results = await db.query(
+  const results = await db.query<{ stage: string }>(
     'SELECT stage FROM timezones WHERE userid = $1 LIMIT 1',
     [userId]
   );
@@ -87,7 +87,10 @@ export async function getStageForUser(
   return getFromNumber(stageNo);
 }
 
-export async function endQuestionnaire(db: Database, userId: string) {
+export async function endQuestionnaire(
+  db: Database,
+  userId: string
+): Promise<void> {
   await db.execute(
     `DELETE FROM
         timezones

@@ -1,4 +1,4 @@
-import IStage from './@stage';
+import Stage from './@stage';
 import { CountryTimezones, TimezoneData } from './@timezone-data';
 import { setTimezone } from './@utils';
 
@@ -7,7 +7,7 @@ import PrivateMessage from '../../messages/private';
 import Phil from '../../phil';
 import { sendMessage } from '../../promises/discord';
 
-export default class SpecificationStage implements IStage {
+export default class SpecificationStage implements Stage {
   public readonly stageNumber = 3;
 
   public async getMessage(db: Database, userId: string): Promise<string> {
@@ -15,7 +15,10 @@ export default class SpecificationStage implements IStage {
     return this.getSpecificationList(timezoneData, 'Okay!');
   }
 
-  public async processInput(phil: Phil, message: PrivateMessage): Promise<any> {
+  public async processInput(
+    phil: Phil,
+    message: PrivateMessage
+  ): Promise<void> {
     const timezoneData = await this.getTimezoneDataFromCountryDb(
       phil.db,
       message.userId
@@ -26,7 +29,8 @@ export default class SpecificationStage implements IStage {
         timezoneData,
         "Sorry, that wasn't actually a number. Can you try again?"
       );
-      return sendMessage(phil.bot, message.userId, reply);
+      await sendMessage(phil.bot, message.userId, reply);
+      return;
     }
 
     input = input - 1; // Front-facing, it's one-based
@@ -35,7 +39,8 @@ export default class SpecificationStage implements IStage {
         timezoneData,
         "That wasn't actually a number with a timezone I can understand. Can we try again?"
       );
-      return sendMessage(phil.bot, message.userId, reply);
+      await sendMessage(phil.bot, message.userId, reply);
+      return;
     }
 
     setTimezone(phil, message.userId, timezoneData.timezones[input].name);
@@ -45,7 +50,7 @@ export default class SpecificationStage implements IStage {
     db: Database,
     userId: string
   ): Promise<TimezoneData> {
-    const results = await db.query(
+    const results = await db.query<{ country_name: string }>(
       'SELECT country_name FROM timezones WHERE userid = $1',
       [userId]
     );

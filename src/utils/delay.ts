@@ -7,5 +7,5 @@ export function wait(milliseconds: number): Promise<void> {
     return Promise.resolve();
   }
 
-  return new Promise((resolve, reject) => setTimeout(resolve, milliseconds));
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
 }

@@ -1,5 +1,5 @@
 import { ConfirmationStage } from './@all-stages';
-import IStage from './@stage';
+import Stage from './@stage';
 
 import Phil from '../../phil';
 import { sendMessage } from '../../promises/discord';
@@ -7,13 +7,17 @@ import { sendMessage } from '../../promises/discord';
 export async function sendStageMessage(
   phil: Phil,
   userId: string,
-  stage: IStage
-) {
+  stage: Stage
+): Promise<void> {
   const message = await stage.getMessage(phil.db, userId);
-  return sendMessage(phil.bot, userId, message);
+  await sendMessage(phil.bot, userId, message);
 }
 
-export async function setStage(phil: Phil, userId: string, stage: IStage) {
+export async function setStage(
+  phil: Phil,
+  userId: string,
+  stage: Stage
+): Promise<void> {
   const results = await phil.db.query(
     'UPDATE timezones SET stage = $1 WHERE userid = $2',
     [stage.stageNumber, userId]
@@ -24,14 +28,14 @@ export async function setStage(phil: Phil, userId: string, stage: IStage) {
     );
   }
 
-  sendStageMessage(phil, userId, stage);
+  await sendStageMessage(phil, userId, stage);
 }
 
 export async function setTimezone(
   phil: Phil,
   userId: string,
   timezoneName: string
-) {
+): Promise<void> {
   const results = await phil.db.query(
     'UPDATE timezones SET timezone_name = $1 WHERE userid = $2',
     [timezoneName, userId]

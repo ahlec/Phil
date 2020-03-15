@@ -8,7 +8,8 @@ interface CreateArgs extends ReactableCreateArgsBase {
 }
 
 export default class SuggestSessionReactableFactory extends ReactableFactoryBase<
-  CreateArgs
+  CreateArgs,
+  null
 > {
   protected readonly handle = ReactableHandle;
 
@@ -20,7 +21,7 @@ export default class SuggestSessionReactableFactory extends ReactableFactoryBase
     super(bot, db, args);
   }
 
-  protected getJsonData(): any | null {
+  protected getJsonData(): null {
     return null;
   }
 

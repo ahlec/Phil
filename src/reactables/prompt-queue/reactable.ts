@@ -14,7 +14,7 @@ export default class PromptQueueReactable extends ReactableType {
     phil: Phil,
     post: ReactablePost,
     event: OfficialDiscordReactionEvent
-  ): Promise<any> {
+  ): Promise<void> {
     switch (event.emoji.name) {
       case Emoji.Previous: {
         await this.movePage(phil, post, -1);

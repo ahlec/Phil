@@ -6,7 +6,8 @@ import { Data, Emoji, ReactableHandle } from './shared';
 interface CreateArgs extends ReactableCreateArgsBase, Data {}
 
 export class PromptQueueReactableFactory extends ReactableFactoryBase<
-  CreateArgs
+  CreateArgs,
+  Data
 > {
   protected readonly handle = ReactableHandle;
 
@@ -18,15 +19,13 @@ export class PromptQueueReactableFactory extends ReactableFactoryBase<
     super(bot, db, args);
   }
 
-  protected getJsonData(): any | null {
-    const data: Data = {
+  protected getJsonData(): Data {
+    return {
       bucket: this.args.bucket,
       currentPage: this.args.currentPage,
       pageSize: this.args.pageSize,
       totalNumberPages: this.args.totalNumberPages,
     };
-
-    return data;
   }
 
   protected getEmojiReactions(): string[] {

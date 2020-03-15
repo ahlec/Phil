@@ -11,7 +11,8 @@ export interface ReactableCreateArgsBase {
 }
 
 export abstract class ReactableFactoryBase<
-  TCreateArgs extends ReactableCreateArgsBase
+  TCreateArgs extends ReactableCreateArgsBase,
+  TJsonData
 > {
   protected abstract readonly handle: string;
 
@@ -21,7 +22,7 @@ export abstract class ReactableFactoryBase<
     readonly args: TCreateArgs
   ) {}
 
-  public async create() {
+  public async create(): Promise<void> {
     if (!this.isValid()) {
       throw new Error('The provided creation args are not valid.');
     }
@@ -61,10 +62,10 @@ export abstract class ReactableFactoryBase<
     return true;
   }
 
-  protected abstract getJsonData(): any | null;
+  protected abstract getJsonData(): TJsonData;
   protected abstract getEmojiReactions(): string[];
 
-  private async addToDatabase(reactions: string[]) {
+  private async addToDatabase(reactions: string[]): Promise<void> {
     const jsonData = this.getJsonData();
     const results = await this.db.query(
       `INSERT INTO
@@ -89,7 +90,7 @@ export abstract class ReactableFactoryBase<
     }
   }
 
-  private async removeAllOthers() {
+  private async removeAllOthers(): Promise<void> {
     const posts = await ReactablePost.getAllOfTypeForUser(
       this.bot,
       this.db,

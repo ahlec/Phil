@@ -8,12 +8,18 @@ import {
 } from './questionnaire-stages/@all-stages';
 import IStage from './questionnaire-stages/@stage';
 
+interface DbRow {
+  timezone_name: string;
+  will_provide: string;
+  stage: string;
+}
+
 export default class UserTimezone {
   public static async getForUser(
     db: Database,
     userId: string
   ): Promise<UserTimezone | null> {
-    const result = await db.querySingle(
+    const result = await db.querySingle<DbRow>(
       `SELECT
         timezone_name,
         will_provide,
@@ -33,7 +39,7 @@ export default class UserTimezone {
     return new UserTimezone(userId, result);
   }
 
-  private static determineStage(dbRow: any): IStage {
+  private static determineStage(dbRow: DbRow): IStage {
     const stageNo = parseInt(dbRow.stage, 10);
     return getFromNumber(stageNo);
   }
@@ -43,7 +49,7 @@ export default class UserTimezone {
   public readonly isCurrentlyDoingQuestionnaire: boolean;
   public readonly timezoneName: string | null;
 
-  private constructor(public readonly userId: string, dbRow: any) {
+  private constructor(public readonly userId: string, dbRow: DbRow) {
     const stage = UserTimezone.determineStage(dbRow);
     this.hasProvided = stage === FinishedStage;
     this.hasDeclined = stage === DeclinedStage;

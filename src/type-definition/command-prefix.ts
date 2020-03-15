@@ -1,6 +1,4 @@
 import GlobalConfig from '../GlobalConfig';
-import Phil from '../phil';
-import ServerConfig from '../server-config';
 import {
   ParseResult,
   TypeDefinition,
@@ -78,28 +76,17 @@ class CommandPrefixTypeDefinitionImplementation implements TypeDefinition {
     };
   }
 
-  public isValid(
-    value: string,
-    phil: Phil,
-    serverConfig: ServerConfig
-  ): ValidityResultType {
+  public isValid(): ValidityResultType {
     return {
       isValid: true,
     };
   }
 
-  public toDisplayFormat(
-    value: string | null,
-    serverConfig: ServerConfig
-  ): string {
+  public toDisplayFormat(value: string | null): string {
     return value || '';
   }
 
-  public toMultilineCodeblockDisplayFormat(
-    value: string | null,
-    phil: Phil,
-    serverConfig: ServerConfig
-  ): string {
+  public toMultilineCodeblockDisplayFormat(value: string | null): string {
     return value || '';
   }
 }
