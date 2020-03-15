@@ -13,7 +13,7 @@
     "start": "heroku local web",
     "build": "tsc",
     "clean": "rm -rf ./build",
-    "lint": "tslint -p .",
+    "lint": "eslint \"./{src,scripts}/**/*.{js,jsx,ts,tsx}\"",
     "run-bot": "node build/main.js",
     "db-migrate": "node scripts/db-migrate.js"
   },
@@ -37,11 +37,14 @@
     "@types/node-cache": "^4.1.1",
     "@types/pg": "^7.4.4",
     "@types/semver": "^6.0.1",
+    "@typescript-eslint/eslint-plugin": "^2.23.0",
+    "@typescript-eslint/parser": "^2.23.0",
     "countries-and-timezones": "1.0.1",
     "countryjs": "1.8.0",
     "dotenv": "^8.0.0",
-    "eslint": "^6.0.1",
+    "eslint": "^6.8.0",
     "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-json": "^1.2.0",
     "eslint-plugin-jsx-a11y": "^6.1.2",
@@ -51,8 +54,6 @@
     "eslint-plugin-standard": "^4.0.0",
     "postgrator": "^3.7.0",
     "prettier": "^1.15.3",
-    "tslint": ">=5.12.1",
-    "tslint-config-prettier": "^1.10.0",
     "typescript": "^3.2.2"
   },
   "repository": {
