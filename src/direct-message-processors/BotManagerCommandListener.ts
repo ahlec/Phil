@@ -1,9 +1,9 @@
-import { BotManagerCommand, instantiateCommands } from '../bm-commands';
-import GlobalConfig from '../GlobalConfig';
-import Logger from '../Logger';
-import LoggerDefinition from '../LoggerDefinition';
-import PrivateMessage from '../messages/private';
-import Phil from '../phil';
+import { BotManagerCommand, instantiateCommands } from '@phil/bm-commands';
+import GlobalConfig from '@phil/GlobalConfig';
+import Logger from '@phil/Logger';
+import LoggerDefinition from '@phil/LoggerDefinition';
+import PrivateMessage from '@phil/messages/private';
+import Phil from '@phil/phil';
 import { sendErrorMessage } from '@phil/utils';
 import { DirectMessageProcessor, ProcessorActiveToken } from './@base';
 

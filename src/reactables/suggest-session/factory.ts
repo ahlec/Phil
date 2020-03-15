@@ -1,6 +1,9 @@
 import { Client as DiscordIOClient } from 'discord.io';
-import Database from '../../database';
-import { ReactableCreateArgsBase, ReactableFactoryBase } from '../factory-base';
+import Database from '@phil/database';
+import {
+  ReactableCreateArgsBase,
+  ReactableFactoryBase,
+} from '@phil/reactables/factory-base';
 import { Emoji, ReactableHandle } from './shared';
 
 interface CreateArgs extends ReactableCreateArgsBase {

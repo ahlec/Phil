@@ -1,10 +1,10 @@
-import PrivateMessage from '../messages/private';
-import Phil from '../phil';
+import PrivateMessage from '@phil/messages/private';
+import Phil from '@phil/phil';
 import {
   isCurrentlyDoingQuestionnaire,
   getStageForUser,
-} from '../timezones/questionnaire';
-import IStage from '../timezones/questionnaire-stages/@stage';
+} from '@phil/timezones/questionnaire';
+import IStage from '@phil/timezones/questionnaire-stages/@stage';
 import { DirectMessageProcessor, ProcessorActiveToken } from './@base';
 
 interface TimezoneQuestionnaireToken extends ProcessorActiveToken {

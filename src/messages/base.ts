@@ -3,7 +3,7 @@ import {
   OfficialDiscordMessage,
   OfficialDiscordPayload,
 } from 'official-discord';
-import Phil from '../phil';
+import Phil from '@phil/phil';
 
 export interface Mention {
   readonly userId: string;

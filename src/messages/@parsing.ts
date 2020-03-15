@@ -2,7 +2,7 @@ import {
   OfficialDiscordMessage,
   OfficialDiscordPayload,
 } from 'official-discord';
-import Phil from '../phil';
+import Phil from '@phil/phil';
 import MessageBase from './base';
 import PrivateMessage from './private';
 import PublicMessage from './public';
@@ -19,9 +19,7 @@ export async function parseMessage(
   const server = phil.getServerFromChannelId(event.d.channel_id);
   if (!server) {
     throw new Error(
-      `Received a message in channel ${
-        event.d.channel_id
-      }, which is not a server I'm in.`
+      `Received a message in channel ${event.d.channel_id}, which is not a server I'm in.`
     );
   }
 

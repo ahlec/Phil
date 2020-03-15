@@ -1,8 +1,8 @@
 import { Pool, QueryResult } from 'pg';
-import GlobalConfig from '../GlobalConfig';
-import Logger from '../Logger';
-import LoggerDefinition from '../LoggerDefinition';
-import { DATABASE_VERSION } from '../versions';
+import GlobalConfig from '@phil/GlobalConfig';
+import Logger from '@phil/Logger';
+import LoggerDefinition from '@phil/LoggerDefinition';
+import { DATABASE_VERSION } from '@phil/versions';
 import DatabaseResult from './result';
 
 export { default as DatabaseResult } from './result';

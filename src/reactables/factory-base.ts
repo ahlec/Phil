@@ -1,5 +1,5 @@
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
-import Database from '../database';
+import Database from '@phil/database';
 import { addReaction } from '@phil/promises/discord';
 import ReactablePost from './post';
 

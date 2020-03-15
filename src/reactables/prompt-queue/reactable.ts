@@ -1,10 +1,10 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
-import Bucket from '../../buckets';
-import Phil from '../../phil';
+import Bucket from '@phil/buckets';
+import Phil from '@phil/phil';
 import { deleteMessage } from '@phil/promises/discord';
-import { PromptQueue } from '../../prompts/queue';
-import ReactablePost from '../../reactables/post';
-import ReactableType from '../../reactables/reactable-type';
+import { PromptQueue } from '@phil/prompts/queue';
+import ReactablePost from '@phil/reactables/post';
+import ReactableType from '@phil/reactables/reactable-type';
 import { Data, Emoji, ReactableHandle } from './shared';
 
 export default class PromptQueueReactable extends ReactableType {

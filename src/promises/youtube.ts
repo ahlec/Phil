@@ -1,5 +1,5 @@
 import { YouTube } from 'youtube-node';
-import GlobalConfig from '../GlobalConfig';
+import GlobalConfig from '@phil/GlobalConfig';
 
 export interface YoutubeVideo {
   id: string;

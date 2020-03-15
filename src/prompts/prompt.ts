@@ -1,10 +1,10 @@
 import { Client as DiscordIOClient } from 'discord.io';
 import * as moment from 'moment';
-import Bucket from '../buckets';
-import Database from '../database';
-import EmbedColor from '../embed-color';
+import Bucket from '@phil/buckets';
+import Database from '@phil/database';
+import EmbedColor from '@phil/embed-color';
 import { sendEmbedMessage } from '@phil/promises/discord';
-import ServerConfig from '../server-config';
+import ServerConfig from '@phil/server-config';
 import { getUserDisplayName } from '@phil/utils';
 import Submission from './submission';
 

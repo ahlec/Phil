@@ -1,7 +1,7 @@
 import { Client as DiscordIOClient } from 'discord.io';
 import * as moment from 'moment';
-import Bucket from '../buckets';
-import Database from '../database';
+import Bucket from '@phil/buckets';
+import Database from '@phil/database';
 
 export interface SubmissionDatabaseSchema {
   submission_id: number;

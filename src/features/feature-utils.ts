@@ -1,4 +1,4 @@
-import Database from '../database';
+import Database from '@phil/database';
 import AllFeatures from './all-features';
 import Feature from './feature';
 
