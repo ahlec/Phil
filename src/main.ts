@@ -3,7 +3,7 @@ import { ensureNecessaryEnvironmentVariables } from './environment-manager';
 import Phil from './phil';
 import WebPortal from './WebPortal';
 
-async function main() {
+async function main(): Promise<void> {
   try {
     ensureNecessaryEnvironmentVariables();
 
@@ -19,7 +19,7 @@ async function main() {
     webPortal.start();
     webPortal.beginKeepAliveHeartbeat();
   } catch (err) {
-    console.error(err); /* tslint:disable-line */
+    console.error(err); /* eslint-disable-line no-console */
     process.exit(1);
   }
 }

@@ -7,7 +7,7 @@ import DatabaseResult from './result';
 
 export { default as DatabaseResult } from './result';
 
-const EMPTY_ARRAY: any[] = [];
+const EMPTY_ARRAY: unknown[] = [];
 
 export default class Database extends Logger {
   private readonly pool: Pool;
@@ -41,9 +41,9 @@ export default class Database extends Logger {
     return true;
   }
 
-  public query<TRow = any>(
+  public query<TRow = unknown>(
     text: string,
-    values?: any[]
+    values?: unknown[]
   ): Promise<DatabaseResult<TRow>> {
     return new Promise((resolve, reject) => {
       this.pool.connect((error, client, done) => {
@@ -70,9 +70,9 @@ export default class Database extends Logger {
     });
   }
 
-  public async querySingle<TRow = any>(
+  public async querySingle<TRow = unknown>(
     text: string,
-    values?: any[]
+    values?: unknown[]
   ): Promise<TRow | null> {
     const {
       rows: [row],
@@ -85,7 +85,7 @@ export default class Database extends Logger {
     return row;
   }
 
-  public async execute(text: string, values?: any[]): Promise<number> {
+  public async execute(text: string, values?: unknown[]): Promise<number> {
     const { rowCount = 0 } = await this.query(text, values);
     return rowCount;
   }

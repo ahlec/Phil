@@ -4,7 +4,7 @@ import {
 } from 'discord.io';
 import Database from '../database';
 import GlobalConfig from '../GlobalConfig';
-import { BotUtils } from '../utils';
+import { getUserDisplayName } from '../utils';
 import { AllMonths, MonthDefinition } from './month-definition';
 
 type DayEventCollection = ReadonlyArray<string[]>;
@@ -44,28 +44,30 @@ export default class CalendarMonth {
     bot: DiscordIOClient,
     db: Database,
     server: DiscordIOServer
-  ) {
+  ): Promise<void> {
     const results = await db.query<{ userid: string; birthday_day: number }>(
       'SELECT userid, birthday_day FROM birthdays WHERE birthday_month = $1',
       [this.month]
     );
 
-    for (const { userid, birthday_day } of results.rows) {
+    for (const { userid, birthday_day: birthdayDay } of results.rows) {
       if (!server.members[userid]) {
         continue;
       }
 
       const user = bot.users[userid];
-      const userDisplayName = BotUtils.getUserDisplayName(user, server);
+      const userDisplayName = getUserDisplayName(user, server);
       if (!userDisplayName) {
         continue;
       }
 
-      this.addEvent(birthday_day, '**' + userDisplayName + "**'s birthday.");
+      this.addEvent(birthdayDay, '**' + userDisplayName + "**'s birthday.");
     }
   }
 
-  private async addServerEventsForMonth(server: DiscordIOServer) {
+  private async addServerEventsForMonth(
+    server: DiscordIOServer
+  ): Promise<void> {
     if (server.id === GlobalConfig.hijackServerId) {
       this.addEvent(3, 'Hijack Booty Day.');
     }

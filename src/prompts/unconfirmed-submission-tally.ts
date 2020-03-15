@@ -1,11 +1,18 @@
 import Database from '../database';
 
+interface DbRow {
+  bucket_id: string;
+  reference_handle: string;
+  display_name: string;
+  total: string;
+}
+
 export default class UnconfirmedSubmissionTally {
   public static async collectForServer(
     db: Database,
     serverId: string
   ): Promise<UnconfirmedSubmissionTally[]> {
-    const results = await db.query(
+    const results = await db.query<DbRow>(
       `SELECT
         pb.bucket_id,
         pb.reference_handle,
@@ -35,7 +42,7 @@ export default class UnconfirmedSubmissionTally {
   public readonly bucketDisplayName: string;
   public readonly numUnconfirmed: number;
 
-  private constructor(dbRow: any) {
+  private constructor(dbRow: DbRow) {
     this.bucketId = parseInt(dbRow.bucket_id, 10);
     this.bucketHandle = dbRow.reference_handle;
     this.bucketDisplayName = dbRow.display_name;

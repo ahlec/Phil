@@ -7,9 +7,9 @@ import Database from './database';
 import Features from './features/all-features';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
-import { DiscordPromises } from './promises/discord';
+import { sendMessage } from './promises/discord';
 import ServerConfig from './server-config';
-import { BotUtils } from './utils';
+import { getUserDisplayName } from './utils';
 
 export default class Greeting extends Logger {
   private readonly user: DiscordIOUser;
@@ -28,7 +28,7 @@ export default class Greeting extends Logger {
     }
   }
 
-  public async send(channelId: string) {
+  public async send(channelId: string): Promise<void> {
     try {
       const shouldWelcome = await this.shouldWelcomeMember();
       if (!shouldWelcome) {
@@ -40,14 +40,12 @@ export default class Greeting extends Logger {
         return;
       }
 
-      DiscordPromises.sendMessage(this.client, channelId, welcomeMessage);
+      await sendMessage(this.client, channelId, welcomeMessage);
     } catch (err) {
-      const summaryMessage = `There was an error sending greeting message for member ${
-        this.member.id
-      } in server ${this.serverConfig.server.id}.`;
+      const summaryMessage = `There was an error sending greeting message for member ${this.member.id} in server ${this.serverConfig.server.id}.`;
       this.error(summaryMessage);
       this.error(err);
-      await DiscordPromises.sendMessage(
+      await sendMessage(
         this.client,
         this.serverConfig.botControlChannel.id,
         summaryMessage
@@ -60,10 +58,7 @@ export default class Greeting extends Logger {
       return null;
     }
 
-    const displayName = BotUtils.getUserDisplayName(
-      this.user,
-      this.serverConfig.server
-    );
+    const displayName = getUserDisplayName(this.user, this.serverConfig.server);
     return this.serverConfig.welcomeMessage
       .replace(/\{user\}/g, '<@' + this.user.id + '>')
       .replace(/\{name\}/g, displayName || 'new member');

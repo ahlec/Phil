@@ -1,6 +1,4 @@
-import Phil from '../phil';
-import ServerConfig from '../server-config';
-import BotUtils from '../utils';
+import { truncateString } from '../utils';
 import {
   ParseResult,
   TypeDefinition,
@@ -36,25 +34,18 @@ class WelcomeMessageTypeDefinitionImplementation implements TypeDefinition {
     };
   }
 
-  public isValid(
-    value: string,
-    phil: Phil,
-    serverConfig: ServerConfig
-  ): ValidityResultType {
+  public isValid(): ValidityResultType {
     return {
       isValid: true,
     };
   }
 
-  public toDisplayFormat(
-    value: string | null,
-    serverConfig: ServerConfig
-  ): string {
+  public toDisplayFormat(value: string | null): string {
     if (!value) {
       return '(None)';
     }
 
-    let truncated = BotUtils.truncateString(value, DISPLAY_CHARACTER_LIMIT);
+    let truncated = truncateString(value, DISPLAY_CHARACTER_LIMIT);
     const omittedTextLength = value.length - truncated.length;
     if (omittedTextLength > 0) {
       truncated += `... (and ${omittedTextLength} more character${omittedTextLength !==
@@ -64,12 +55,8 @@ class WelcomeMessageTypeDefinitionImplementation implements TypeDefinition {
     return truncated;
   }
 
-  public toMultilineCodeblockDisplayFormat(
-    value: string | null,
-    phil: Phil,
-    serverConfig: ServerConfig
-  ): string {
-    return this.toDisplayFormat(value, serverConfig);
+  public toMultilineCodeblockDisplayFormat(value: string | null): string {
+    return this.toDisplayFormat(value);
   }
 }
 

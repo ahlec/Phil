@@ -1,7 +1,7 @@
 import Bucket from '../buckets';
 import Features from '../features/all-features';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendMessage } from '../promises/discord';
 import { PromptQueue } from '../prompts/queue';
 import ServerConfig from '../server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
@@ -18,7 +18,7 @@ export default class AlertLowBucketQueueChrono extends Logger
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig) {
+  public async process(phil: Phil, serverConfig: ServerConfig): Promise<void> {
     const serverBuckets = await Bucket.getAllForServer(
       phil.bot,
       phil.db,
@@ -49,7 +49,7 @@ export default class AlertLowBucketQueueChrono extends Logger
     serverConfig: ServerConfig,
     bucket: Bucket,
     queueLength: number
-  ) {
+  ): void {
     const are = queueLength === 1 ? 'is' : 'are';
     const promptNoun = queueLength === 1 ? 'prompt' : 'prompts';
     const message = `:warning: The queue for **${bucket.displayName}** (\`${
@@ -57,11 +57,7 @@ export default class AlertLowBucketQueueChrono extends Logger
     }\`) is growing short. There ${are}  **${
       queueLength > 0 ? queueLength : 'no'
     }** more ${promptNoun} in the queue.`;
-    DiscordPromises.sendMessage(
-      phil.bot,
-      serverConfig.botControlChannel.id,
-      message
-    );
+    sendMessage(phil.bot, serverConfig.botControlChannel.id, message);
 
     bucket.markAlertedEmptying(phil.db, true);
   }

@@ -1,8 +1,8 @@
 import { Role as DiscordIORole } from 'discord.io';
 import Features from '../features/all-features';
-import { DiscordPromises } from '../promises/discord';
+import { EditRoleOptions } from '../promises/discord';
 import ServerConfig from '../server-config';
-import { BotUtils } from '../utils';
+import { getRandomArrayEntry, isValidHexColor, isHexColorRole } from '../utils';
 import { LoggerDefinition } from './@types';
 import MemberUniqueRoleCommandBase from './bases/member-unique-role-base';
 
@@ -38,7 +38,7 @@ export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
   protected getMissingCommandArgsErrorMessage(
     serverConfig: ServerConfig
   ): string {
-    const decemberLink = BotUtils.getRandomArrayEntry(decemberLinks);
+    const decemberLink = getRandomArrayEntry(decemberLinks);
     return (
       "You must provide a hex code to this function of the colour that you'd like to use. For example, `" +
       serverConfig.commandPrefix +
@@ -48,11 +48,8 @@ export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
     );
   }
 
-  protected getInvalidInputErrorMessage(
-    input: string,
-    serverConfig: ServerConfig
-  ): string {
-    const decemberLink = BotUtils.getRandomArrayEntry(decemberLinks);
+  protected getInvalidInputErrorMessage(input: string): string {
+    const decemberLink = getRandomArrayEntry(decemberLinks);
     return (
       '`' +
       input +
@@ -63,7 +60,7 @@ export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
   }
 
   protected tryParseInput(input: string): string | null {
-    if (!BotUtils.isValidHexColor(input)) {
+    if (!isValidHexColor(input)) {
       return null;
     }
 
@@ -71,14 +68,14 @@ export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
   }
 
   protected isRolePartOfUniquePool(role: DiscordIORole): boolean {
-    return BotUtils.isHexColorRole(role);
+    return isHexColorRole(role);
   }
 
   protected doesRoleMatchData(role: DiscordIORole, data: string): boolean {
     return role.name === data;
   }
 
-  protected getRoleConfig(data: string): DiscordPromises.EditRoleOptions {
+  protected getRoleConfig(data: string): EditRoleOptions {
     const hexColorNumber = parseInt(data.replace('#', '0x'), 16);
     return {
       color: hexColorNumber,
@@ -90,7 +87,7 @@ export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
     serverConfig: ServerConfig,
     data: string
   ): string {
-    const compliment = BotUtils.getRandomArrayEntry(compliments);
+    const compliment = getRandomArrayEntry(compliments);
     return 'Your colour has been changed to **' + data + '**. ' + compliment;
   }
 }

@@ -1,12 +1,12 @@
 require('dotenv').config();
-const Postgrator = require('postgrator');
-const chalk = require('chalk');
-const path = require('path');
+import Postgrator from 'postgrator';
+import chalk from 'chalk';
+import path from 'path';
 
 const postgrator = new Postgrator({
-  migrationPattern: `${path.resolve(__dirname, '../database')}/!(_)*.sql`,
-  driver: 'pg',
   connectionString: process.env.DATABASE_URL,
+  driver: 'pg',
+  migrationPattern: `${path.resolve(__dirname, '../database')}/!(_)*.sql`,
 });
 
 async function determineTargetVersion() {
@@ -25,7 +25,9 @@ async function determineTargetVersion() {
 
   const maxVersion = await postgrator.getMaxVersion();
   if (versionNum > maxVersion) {
-    throw new Error(`Cannot request a version number greater than max (${maxVersion}).`);
+    throw new Error(
+      `Cannot request a version number greater than max (${maxVersion}).`
+    );
   }
 
   return versionNum.toString().padStart(3, '0');

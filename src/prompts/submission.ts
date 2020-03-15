@@ -18,7 +18,9 @@ export default class Submission {
     db: Database,
     submissionId: number
   ): Promise<Submission | null> {
-    const result = await db.querySingle(
+    const result = await db.querySingle<
+      SubmissionDatabaseSchema & { bucket_id: number }
+    >(
       `SELECT
         submission_id,
         bucket_id,
@@ -80,7 +82,7 @@ export default class Submission {
     }
 
     const bucketIds = new Set<number>();
-    result.rows.forEach(({ bucket_id }) => bucketIds.add(bucket_id));
+    result.rows.forEach(({ bucket_id: bucketId }) => bucketIds.add(bucketId));
 
     const buckets = await Bucket.getFromBatchIds(client, db, bucketIds);
     result.rows.forEach(row => {

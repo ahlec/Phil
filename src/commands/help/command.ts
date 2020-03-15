@@ -1,9 +1,9 @@
-import FeatureUtils from '../../features/feature-utils';
+import { getServerFeaturesStatus } from '../../features/feature-utils';
 import { HelpGroup } from '../../help-groups';
 import MessageBuilder from '../../message-builder';
 import PublicMessage from '../../messages/public';
 import Phil from '../../phil';
-import { DiscordPromises } from '../../promises/discord';
+import { sendMessage } from '../../promises/discord';
 import Command, { CommandLookup, LoggerDefinition } from '../@types';
 import CommandHelpInfo from './command-help-info';
 import HelpGroupInfo from './help-group-info';
@@ -26,10 +26,6 @@ function getAllCommandHelpInfo(
 ): ReadonlyArray<CommandHelpInfo> {
   const commandInfo: CommandHelpInfo[] = [];
   for (const commandName in commands) {
-    if (!commands.hasOwnProperty(commandName)) {
-      continue;
-    }
-
     const command = commands[commandName];
     if (!command) {
       continue;
@@ -66,10 +62,6 @@ function groupCommands(
 
   const helpGroups: HelpGroupInfo[] = [];
   for (const groupNum in groupLookup) {
-    if (!groupLookup.hasOwnProperty(groupNum)) {
-      continue;
-    }
-
     const group = groupLookup[groupNum];
     group.finish();
     helpGroups.push(group);
@@ -98,13 +90,12 @@ export default class HelpCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+    message: PublicMessage
+  ): Promise<void> {
     const isAdminChannel = message.serverConfig.isAdminChannel(
       message.channelId
     );
-    const featuresEnabledLookup = await FeatureUtils.getServerFeaturesStatus(
+    const featuresEnabledLookup = await getServerFeaturesStatus(
       phil.db,
       message.server.id
     );
@@ -119,11 +110,7 @@ export default class HelpCommand extends Command {
     }
 
     for (const helpMessage of builder.messages) {
-      await DiscordPromises.sendMessage(
-        phil.bot,
-        message.channelId,
-        helpMessage
-      );
+      await sendMessage(phil.bot, message.channelId, helpMessage);
     }
   }
 }

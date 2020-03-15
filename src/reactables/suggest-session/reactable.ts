@@ -1,21 +1,21 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
 import EmbedColor from '../../embed-color';
 import Phil from '../../phil';
-import { DiscordPromises } from '../../promises/discord';
+import { sendEmbedMessage } from '../../promises/discord';
 import SubmissionSession from '../../prompts/submission-session';
 import ReactablePost from '../post';
 import ReactableType from '../reactable-type';
 import SuggestSessionReactableFactory from './factory';
-import SuggestSessionReactableShared from './shared';
+import { Emoji, ReactableHandle } from './shared';
 
 export default class SuggestSessionReactable extends ReactableType {
-  public readonly handle = SuggestSessionReactableShared.ReactableHandle;
+  public readonly handle = ReactableHandle;
 
   public async processReactionAdded(
     phil: Phil,
     post: ReactablePost,
     event: OfficialDiscordReactionEvent
-  ): Promise<any> {
+  ): Promise<void> {
     const activeSession = await SubmissionSession.getActiveSession(
       phil,
       post.user.id
@@ -25,12 +25,12 @@ export default class SuggestSessionReactable extends ReactableType {
     }
 
     switch (event.emoji.name) {
-      case SuggestSessionReactableShared.Emoji.Stop: {
+      case Emoji.Stop: {
         await this.stopSession(phil, post, activeSession);
         break;
       }
 
-      case SuggestSessionReactableShared.Emoji.MakeAnonymous: {
+      case Emoji.MakeAnonymous: {
         await this.makeSessionAnonymous(phil, post, activeSession);
         break;
       }
@@ -41,11 +41,11 @@ export default class SuggestSessionReactable extends ReactableType {
     phil: Phil,
     post: ReactablePost,
     session: SubmissionSession
-  ) {
+  ): Promise<void> {
     await post.remove(phil.db);
 
     await session.end(phil);
-    await DiscordPromises.sendEmbedMessage(phil.bot, post.user.id, {
+    await sendEmbedMessage(phil.bot, post.user.id, {
       color: EmbedColor.Info,
       description: this.getWrapupMessage(session),
       title: ':ribbon: Suggestions Session Ended :ribbon:',
@@ -72,20 +72,16 @@ export default class SuggestSessionReactable extends ReactableType {
     phil: Phil,
     post: ReactablePost,
     session: SubmissionSession
-  ) {
+  ): Promise<void> {
     await post.remove(phil.db);
 
     await session.makeAnonymous(phil);
     const NOWRAP = '';
-    const messageId = await DiscordPromises.sendEmbedMessage(
-      phil.bot,
-      post.user.id,
-      {
-        color: EmbedColor.Info,
-        description: `All submissions you send during this session will be anonymous. Don't ${NOWRAP}worry though! You'll still get credit for them on the server leaderboard!`,
-        title: ':spy: Anonymous Session Begun :spy:',
-      }
-    );
+    const messageId = await sendEmbedMessage(phil.bot, post.user.id, {
+      color: EmbedColor.Info,
+      description: `All submissions you send during this session will be anonymous. Don't ${NOWRAP}worry though! You'll still get credit for them on the server leaderboard!`,
+      title: ':spy: Anonymous Session Begun :spy:',
+    });
 
     const reactableFactory = new SuggestSessionReactableFactory(
       phil.bot,

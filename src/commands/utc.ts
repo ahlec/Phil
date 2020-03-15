@@ -1,14 +1,13 @@
+import * as chronoNode from 'chrono-node';
 import * as moment from 'moment-timezone';
 import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import UserTimezone from '../timezones/user-timezone';
 import Command, { LoggerDefinition } from './@types';
-
-import chronoNode = require('chrono-node');
 
 function formatTimeToString(time: moment.Moment): string {
   return time.format('HH:mm (h:mm A)');
@@ -29,7 +28,7 @@ export default class UtcCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const inputTime = this.getTimeFromCommandArgs(commandArgs);
     if (!inputTime) {
       throw new Error(
@@ -50,8 +49,14 @@ export default class UtcCommand extends Command {
       );
     }
 
-    const reply = this.createReply(inputTime, timezone);
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+    if (!timezone.timezoneName) {
+      throw new Error(
+        "Somehow has provided timezone but doesn't have specified timezoneName?"
+      );
+    }
+
+    const reply = this.createReply(inputTime, timezone.timezoneName);
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Timezone,
       description: reply,
       footer: {
@@ -81,18 +86,14 @@ export default class UtcCommand extends Command {
       return null;
     }
 
-    const m = dateTimes[0].start.clone().moment() as any; // doesn't have .tz()
-    return moment(m); // clone it and make sure we define .tz()
+    return moment(dateTimes[0].start.clone().date());
   }
 
-  private createReply(
-    inputTime: moment.Moment,
-    timezone: UserTimezone
-  ): string {
+  private createReply(inputTime: moment.Moment, timezoneName: string): string {
     let reply = formatTimeToString(inputTime) + ' local time is **';
 
     const timezoneOffset = moment()
-      .tz(timezone.timezoneName!)
+      .tz(timezoneName)
       .utcOffset();
     inputTime.utcOffset(timezoneOffset);
     const utcTime = inputTime.tz('Etc/UTC');

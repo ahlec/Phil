@@ -15,14 +15,14 @@ function groupRequestStrings(
   results: Array<{ role_id: string; request_string: string }>
 ): { [roleId: string]: string[] } {
   const groupedRequestStrings: { [roleId: string]: string[] } = {};
-  for (const { role_id, request_string } of results) {
-    let group = groupedRequestStrings[role_id];
+  for (const { role_id: roleId, request_string: requestString } of results) {
+    let group = groupedRequestStrings[roleId];
     if (!group) {
       group = [];
-      groupedRequestStrings[role_id] = group;
+      groupedRequestStrings[roleId] = group;
     }
 
-    group.push(request_string);
+    group.push(requestString);
   }
 
   return groupedRequestStrings;
@@ -33,14 +33,14 @@ function groupBlacklist(
 ): { [roleId: string]: Set<string> | undefined } {
   const groups: { [roleId: string]: Set<string> | undefined } = {};
 
-  for (const { role_id, user_id } of rows) {
-    let role = groups[role_id];
+  for (const { role_id: roleId, user_id: userId } of rows) {
+    let role = groups[roleId];
     if (!role) {
       role = new Set<string>();
-      groups[role_id] = role;
+      groups[roleId] = role;
     }
 
-    role.add(user_id);
+    role.add(userId);
   }
 
   return groups;
@@ -49,7 +49,7 @@ function groupBlacklist(
 export default class Requestable {
   public static checkIsValidRequestableName(name: string): boolean {
     // Only alphanumeric (with dashes) and must be 2+ characters in length
-    return /^[A-Za-z0-9\-]{2,}$/.test(name);
+    return /^[A-Za-z0-9-]{2,}$/.test(name);
   }
 
   public static async getAllRequestables(
@@ -66,10 +66,6 @@ export default class Requestable {
     )).transform(groupBlacklist);
     const requestables = [];
     for (const roleId in requestStrings) {
-      if (!requestStrings.hasOwnProperty(roleId)) {
-        continue;
-      }
-
       const role = server.roles[roleId];
       if (role === undefined || role === null) {
         continue;
@@ -113,7 +109,7 @@ export default class Requestable {
     const blacklist = (await db.query<{ user_id: string }>(
       'SELECT user_id FROM requestable_blacklist WHERE role_id = $1 AND server_id = $2',
       [roleId, server.id]
-    )).toSet(({ user_id }) => user_id);
+    )).toSet(({ user_id: userId }) => userId);
 
     return new Requestable(role, [], blacklist, server.id); // TODO: We need to get the list of request strings here!!
   }

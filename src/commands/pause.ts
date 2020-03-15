@@ -4,7 +4,7 @@ import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendMessage } from '../promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 export default class PauseCommand extends Command {
@@ -22,7 +22,7 @@ export default class PauseCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const bucket = await Bucket.retrieveFromCommandArgs(
       phil,
       commandArgs,
@@ -42,6 +42,6 @@ export default class PauseCommand extends Command {
       'unpause ' +
       bucket.handle +
       '`.';
-    DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
+    await sendMessage(phil.bot, message.channelId, reply);
   }
 }

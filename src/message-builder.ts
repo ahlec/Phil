@@ -1,11 +1,11 @@
-const PUBLIC_CHANNEL_CHARACTER_LIMIT: number = 2000;
+const PUBLIC_CHANNEL_CHARACTER_LIMIT = 2000;
 
 /* Helps with the building of messages to send to Discord by ensuring that they're
 always split prior to the max number of characters per message. */
 export default class MessageBuilder {
   public readonly messages: string[] = [];
 
-  public append(text: string) {
+  public append(text: string): void {
     if (!text) {
       return;
     }

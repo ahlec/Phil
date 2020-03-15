@@ -1,11 +1,11 @@
 import { Role as DiscordIORole } from 'discord.io';
 import Features from '../features/all-features';
-import { DiscordPromises } from '../promises/discord';
+import { EditRoleOptions } from '../promises/discord';
 import { AllPronouns } from '../pronouns/definitions';
 import { Pronoun } from '../pronouns/pronoun';
 import { getPronounFromRole } from '../pronouns/utils';
 import ServerConfig from '../server-config';
-import BotUtils from '../utils';
+import { getRandomArrayEntry } from '../utils';
 import { LoggerDefinition } from './@types';
 import MemberUniqueRoleCommandBase from './bases/member-unique-role-base';
 
@@ -72,7 +72,7 @@ export default class PronounCommand extends MemberUniqueRoleCommandBase<
     return data === rolePronoun;
   }
 
-  protected getRoleConfig(data: Pronoun): DiscordPromises.EditRoleOptions {
+  protected getRoleConfig(data: Pronoun): EditRoleOptions {
     return {
       name: data.roleName,
     };
@@ -106,7 +106,7 @@ export default class PronounCommand extends MemberUniqueRoleCommandBase<
       message += '\n';
     }
 
-    const randomPronoun = BotUtils.getRandomArrayEntry(AllPronouns);
+    const randomPronoun = getRandomArrayEntry(AllPronouns);
     message +=
       '\nFor instance, if you would like **' +
       randomPronoun.displayName +

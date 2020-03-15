@@ -1,7 +1,7 @@
 import EmbedColor from '../embed-color';
 import PrivateMessage from '../messages/private';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import SubmissionSession from '../prompts/submission-session';
 import SuggestSessionReactableFactory from '../reactables/suggest-session/factory';
 import { DirectMessageProcessor, ProcessorActiveToken } from './@base';
@@ -54,7 +54,7 @@ export default class SuggestSessionListener implements DirectMessageProcessor {
     phil: Phil,
     message: PrivateMessage,
     rawToken: ProcessorActiveToken
-  ) {
+  ): Promise<void> {
     const token = rawToken as SuggestSessionListenerToken;
     const validationResults = validatePromptSubmission(message.content);
     if (!validationResults.isValid || !token.currentSession) {
@@ -66,22 +66,16 @@ export default class SuggestSessionListener implements DirectMessageProcessor {
 
     const NOWRAP = '';
     const numSubmissions = token.currentSession.getNumberSubmissions();
-    const messageId = await DiscordPromises.sendEmbedMessage(
-      phil.bot,
-      message.channelId,
-      {
-        color: EmbedColor.Info,
-        description: `**${
-          validationResults.validatedMessage
-        }** has been sent to the admins ${NOWRAP}for approval.`,
-        footer: {
-          text: `You have made ${numSubmissions} submission${
-            numSubmissions !== 1 ? 's' : ''
-          } during this session.`,
-        },
-        title: ':pencil: Prompt Received :incoming_envelope:',
-      }
-    );
+    const messageId = await sendEmbedMessage(phil.bot, message.channelId, {
+      color: EmbedColor.Info,
+      description: `**${validationResults.validatedMessage}** has been sent to the admins ${NOWRAP}for approval.`,
+      footer: {
+        text: `You have made ${numSubmissions} submission${
+          numSubmissions !== 1 ? 's' : ''
+        } during this session.`,
+      },
+      title: ':pencil: Prompt Received :incoming_envelope:',
+    });
 
     const reactableFactory = new SuggestSessionReactableFactory(
       phil.bot,

@@ -1,6 +1,17 @@
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
 import Database from '../database';
-import { DiscordPromises } from '../promises/discord';
+import { removeOwnReaction } from '../promises/discord';
+
+interface DbRow {
+  message_id: string;
+  channel_id: string;
+  user_id: string;
+  created: number;
+  timelimit: string;
+  reactable_type: string;
+  monitored_reactions: string;
+  jsondata: string;
+}
 
 export default class ReactablePost {
   public static async getFromMessageId(
@@ -8,7 +19,7 @@ export default class ReactablePost {
     db: Database,
     messageId: string
   ): Promise<ReactablePost | null> {
-    const results = await db.query(
+    const results = await db.query<DbRow>(
       'SELECT * FROM reactable_posts WHERE message_id = $1 LIMIT 1',
       [messageId]
     );
@@ -25,7 +36,7 @@ export default class ReactablePost {
     userId: string,
     handle: string
   ): Promise<ReactablePost[]> {
-    const results = await db.query(
+    const results = await db.query<DbRow>(
       `SELECT * FROM reactable_posts
             WHERE user_id = $1 AND reactable_type = $2`,
       [userId, handle]
@@ -40,9 +51,9 @@ export default class ReactablePost {
   public readonly timeLimit: number;
   public readonly reactableHandle: string;
   public readonly monitoredReactions: Set<string>;
-  public readonly jsonData: any;
+  public readonly jsonData: unknown;
 
-  private constructor(private readonly bot: DiscordIOClient, dbRow: any) {
+  private constructor(private readonly bot: DiscordIOClient, dbRow: DbRow) {
     this.messageId = dbRow.message_id;
     this.channelId = dbRow.channel_id;
     this.user = bot.users[dbRow.user_id];
@@ -66,7 +77,7 @@ export default class ReactablePost {
       this.messageId,
     ]);
     for (const reaction of this.monitoredReactions) {
-      await DiscordPromises.removeOwnReaction(
+      await removeOwnReaction(
         this.bot,
         this.channelId,
         this.messageId,

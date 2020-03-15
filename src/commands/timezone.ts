@@ -2,7 +2,7 @@ import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import TimezoneQuestionnaire from '../timezones/questionnaire';
+import { startQuestionnaire } from '../timezones/questionnaire';
 import Command, { LoggerDefinition } from './@types';
 
 export default class TimezoneCommand extends Command {
@@ -17,11 +17,10 @@ export default class TimezoneCommand extends Command {
     });
   }
 
-  public processMessage(
+  public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
-    return TimezoneQuestionnaire.startQuestionnaire(phil, message.userId, true);
+    message: PublicMessage
+  ): Promise<void> {
+    await startQuestionnaire(phil, message.userId, true);
   }
 }

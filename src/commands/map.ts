@@ -1,8 +1,8 @@
 import Features from '../features/all-features';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
-import BotUtils from '../utils';
+import { sendMessage } from '../promises/discord';
+import { sendErrorMessage } from '../utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class MapCommand extends Command {
@@ -15,21 +15,21 @@ export default class MapCommand extends Command {
     });
   }
 
-  public processMessage(
+  public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+    message: PublicMessage
+  ): Promise<void> {
     if (!message.serverConfig.fandomMapLink) {
-      return BotUtils.sendErrorMessage({
+      await sendErrorMessage({
         bot: phil.bot,
         channelId: message.channelId,
         message:
           'This server has not provided a link to a shared map of the fandom.',
       });
+      return;
     }
 
-    return DiscordPromises.sendMessage(
+    await sendMessage(
       phil.bot,
       message.channelId,
       message.serverConfig.fandomMapLink

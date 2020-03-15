@@ -23,11 +23,11 @@ export default class RejectCommand extends ConfirmRejectCommandBase {
     submissionId: number
   ): Promise<boolean> {
     try {
-      await !!phil.db.execute(
+      await phil.db.execute(
         `DELETE FROM
-        submission
-      WHERE
-        submission_id = $1`,
+          submission
+        WHERE
+          submission_id = $1`,
         [submissionId]
       );
       return true;

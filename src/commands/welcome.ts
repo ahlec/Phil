@@ -4,7 +4,7 @@ import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { BotUtils } from '../utils';
+import { sendErrorMessage } from '../utils';
 import Command, { LoggerDefinition } from './@types';
 
 import MemberTypeDefinition from '../type-definition/member';
@@ -29,24 +29,24 @@ export default class WelcomeCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     if (!message.serverConfig.welcomeMessage) {
-      return BotUtils.sendErrorMessage({
+      await sendErrorMessage({
         bot: phil.bot,
         channelId: message.channelId,
-        message: `Your server is not configured with a welcome message. An admin can ${NOWRAP}change this by using \`${
-          message.serverConfig.commandPrefix
-        }config set ${NOWRAP}welcome-message\`.`,
+        message: `Your server is not configured with a welcome message. An admin can ${NOWRAP}change this by using \`${message.serverConfig.commandPrefix}config set ${NOWRAP}welcome-message\`.`,
       });
+      return;
     }
 
     const result = this.getUser(phil, message, commandArgs);
     if (result.success !== true) {
-      return BotUtils.sendErrorMessage({
+      await sendErrorMessage({
         bot: phil.bot,
         channelId: message.channelId,
         message: result.error,
       });
+      return;
     }
 
     const { user } = result;

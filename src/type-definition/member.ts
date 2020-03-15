@@ -1,6 +1,6 @@
 import Phil from '../phil';
 import ServerConfig from '../server-config';
-import BotUtils from '../utils';
+import { getUserDisplayName } from '../utils';
 import {
   ParseResult,
   TypeDefinition,
@@ -96,7 +96,7 @@ class MemberTypeDefinitionImplementation implements TypeDefinition {
     }
 
     const user = phil.bot.users[value];
-    const displayName = BotUtils.getUserDisplayName(user, serverConfig.server);
+    const displayName = getUserDisplayName(user, serverConfig.server);
     return displayName || '(None)';
   }
 }

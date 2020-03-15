@@ -2,7 +2,7 @@ import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
 import Bucket from '../buckets';
 import Database, { DatabaseResult } from '../database';
 import EmbedColor from '../embed-color';
-import { DiscordPromises, EmbedData } from '../promises/discord';
+import { sendEmbedMessage, EmbedData } from '../promises/discord';
 import { PromptQueueReactableFactory } from '../reactables/prompt-queue/factory';
 import Prompt from './prompt';
 
@@ -16,12 +16,17 @@ interface PromptQueuePostData {
   readonly user: DiscordIOUser;
 }
 
+interface DbCountResultRow {
+  count: string;
+  approved_by_admin: string;
+}
+
 export class PromptQueue {
   public static async getTotalLength(
     db: Database,
     bucket: Bucket
   ): Promise<number> {
-    const result = await db.querySingle(
+    const result = await db.querySingle<{ count: string }>(
       `SELECT
         count(*)
       FROM
@@ -37,6 +42,10 @@ export class PromptQueue {
       [bucket.id]
     );
 
+    if (!result) {
+      return 0;
+    }
+
     return parseInt(result.count, 10);
   }
 
@@ -47,7 +56,7 @@ export class PromptQueue {
     pageNum: number,
     pageSize: number
   ): Promise<PromptQueue> {
-    const promptResults = await db.query(
+    const promptResults = await db.query<{ prompt_id: string }>(
       `SELECT
         p.prompt_id,
         p.prompt_number
@@ -68,14 +77,16 @@ export class PromptQueue {
       [bucket.id, pageSize, (pageNum - 1) * pageSize]
     );
     const promptIds = new Set<number>(
-      promptResults.rows.map(({ prompt_id }) => parseInt(prompt_id, 10))
+      promptResults.rows.map(({ prompt_id: promptId }) =>
+        parseInt(promptId, 10)
+      )
     );
     const batchPrompts = await Prompt.getFromBatchIds(client, db, promptIds);
-    const orderedPrompts: Prompt[] = promptResults.rows.map(
-      ({ prompt_id }) => batchPrompts[parseInt(prompt_id, 10)]!
-    );
+    const orderedPrompts: Prompt[] = promptResults.rows
+      .map(({ prompt_id: promptId }) => batchPrompts[parseInt(promptId, 10)])
+      .filter((prompt): prompt is Prompt => !!prompt);
 
-    const countResults = await db.query(
+    const countResults = await db.query<DbCountResultRow>(
       `SELECT
         s.approved_by_admin,
         COUNT(s.approved_by_admin)
@@ -112,7 +123,7 @@ export class PromptQueue {
   private constructor(
     readonly bucket: Bucket,
     prompts: ReadonlyArray<Prompt>,
-    countResults: DatabaseResult<any>,
+    countResults: DatabaseResult<DbCountResultRow>,
     pageNum: number,
     readonly pageSize: number
   ) {
@@ -142,7 +153,7 @@ export class PromptQueue {
     db: Database,
     postData: PromptQueuePostData
   ): Promise<string> {
-    const messageId = await DiscordPromises.sendEmbedMessage(
+    const messageId = await sendEmbedMessage(
       bot,
       postData.channelId,
       this.asEmbedObject()
@@ -171,9 +182,7 @@ export class PromptQueue {
     const lines: string[] = [];
     const promptNoun = this.count === 1 ? 'prompt' : 'prompts';
     lines.push(
-      `:calendar_spiral: The queue currently contains **${
-        this.count
-      } ${promptNoun}**.`
+      `:calendar_spiral: The queue currently contains **${this.count} ${promptNoun}**.`
     );
     lines.push('');
 
@@ -189,7 +198,7 @@ export class PromptQueue {
     return lines.join('\n');
   }
 
-  private makeFooterFromQueue(): any {
+  private makeFooterFromQueue(): EmbedData['footer'] {
     if (!this.hasMultiplePages) {
       return;
     }
@@ -210,7 +219,7 @@ export class PromptQueue {
     db: Database,
     postData: PromptQueuePostData,
     messageId: string
-  ) {
+  ): Promise<void> {
     const factory = new PromptQueueReactableFactory(bot, db, {
       bucket: this.bucket.id,
       channelId: postData.channelId,

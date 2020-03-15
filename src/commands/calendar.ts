@@ -1,14 +1,13 @@
+import * as chronoNode from 'chrono-node';
 import { Server as DiscordIOServer } from 'discord.io';
 import CalendarMonth from '../calendar/calendar-month';
 import Features from '../features/all-features';
 import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendMessageBuilder } from '../promises/discord';
 import ServerConfig from '../server-config';
 import Command, { LoggerDefinition } from './@types';
-
-const chronoNode = require('chrono-node');
 
 export default class CalendarCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
@@ -24,7 +23,7 @@ export default class CalendarCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const month = this.determineMonth(message.serverConfig, commandArgs);
     const calendar = await CalendarMonth.getForMonth(
       phil.bot,
@@ -33,11 +32,7 @@ export default class CalendarCommand extends Command {
       month
     );
     const builder = this.composeMessageFromCalendar(message.server, calendar);
-    return DiscordPromises.sendMessageBuilder(
-      phil.bot,
-      message.channelId,
-      builder
-    );
+    await sendMessageBuilder(phil.bot, message.channelId, builder);
   }
 
   private determineMonth(

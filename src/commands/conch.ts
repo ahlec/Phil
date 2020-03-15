@@ -1,8 +1,8 @@
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
-import BotUtils from '../utils';
+import { sendMessage } from '../promises/discord';
+import { getRandomArrayEntry } from '../utils';
 import Command, { LoggerDefinition } from './@types';
 
 const conchReplies = [
@@ -31,12 +31,10 @@ export default class ConchCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
-    const conchReply = BotUtils.getRandomArrayEntry(conchReplies);
+    message: PublicMessage
+  ): Promise<void> {
+    const conchReply = getRandomArrayEntry(conchReplies);
     const reply = ':shell: The Magic Conch Shell says: **' + conchReply + '**.';
-
-    return DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
+    await sendMessage(phil.bot, message.channelId, reply);
   }
 }

@@ -3,7 +3,7 @@ import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import Leaderboard from '../prompts/leaderboard';
 import LeaderboardEntry from '../prompts/leaderboard-entry';
 import Command, { LoggerDefinition } from './@types';
@@ -34,7 +34,11 @@ function createLeaderboardMessageEntry(
   const emoji = RANKING_EMOJI[ranking];
   const rankText = RANKING_TEXT[ranking];
 
-  let message = emoji || process.env.CUSTOM_EMOJI_TRANSPARENT!;
+  if (!process.env.CUSTOM_EMOJI_TRANSPARENT) {
+    throw new Error('Bad environment?');
+  }
+
+  let message = emoji || process.env.CUSTOM_EMOJI_TRANSPARENT;
   message += ' ';
   message += rankText;
   message += ': **';
@@ -86,9 +90,8 @@ export default class LeaderboardCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+    message: PublicMessage
+  ): Promise<void> {
     const leaderboard = await Leaderboard.getLeaderboard(
       phil.bot,
       phil.db,
@@ -96,7 +99,7 @@ export default class LeaderboardCommand extends Command {
     );
     const reply = createLeaderboardMessage(leaderboard);
 
-    DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Info,
       description: reply,
       footer: {

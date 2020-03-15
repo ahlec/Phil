@@ -1,10 +1,10 @@
 import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import UnconfirmedSubmissionTally from '../prompts/unconfirmed-submission-tally';
 import ServerConfig from '../server-config';
-import BotUtils from '../utils';
+import { getRandomArrayEntry } from '../utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 const HANDLE = 'alert-admins-unconfirmed-submissions';
@@ -17,7 +17,7 @@ export default class AlertAdminsUnconfirmedSubmissionsChrono extends Logger
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig) {
+  public async process(phil: Phil, serverConfig: ServerConfig): Promise<void> {
     const unconfirmedTally = await UnconfirmedSubmissionTally.collectForServer(
       phil.db,
       serverConfig.server.id
@@ -30,15 +30,11 @@ export default class AlertAdminsUnconfirmedSubmissionsChrono extends Logger
       return;
     }
 
-    DiscordPromises.sendEmbedMessage(
-      phil.bot,
-      serverConfig.botControlChannel.id,
-      {
-        color: EmbedColor.Info,
-        description: reply,
-        title: ':ballot_box: Unconfirmed Submissions',
-      }
-    );
+    await sendEmbedMessage(phil.bot, serverConfig.botControlChannel.id, {
+      color: EmbedColor.Info,
+      description: reply,
+      title: ':ballot_box: Unconfirmed Submissions',
+    });
   }
 
   private getUnconfimedPromptsMessage(
@@ -56,7 +52,7 @@ export default class AlertAdminsUnconfirmedSubmissionsChrono extends Logger
 
     message += '\n';
 
-    const randomTally = BotUtils.getRandomArrayEntry(unconfirmedTallies);
+    const randomTally = getRandomArrayEntry(unconfirmedTallies);
     message +=
       'You can say `' +
       serverConfig.commandPrefix +

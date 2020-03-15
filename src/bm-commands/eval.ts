@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import EmbedColor from '../embed-color';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import {
   BotManagerCommand,
   LoggerDefinition,
@@ -20,25 +20,19 @@ export default class EvalBotManagerCommand extends BotManagerCommand {
   ): Promise<void> {
     const javascript = args;
     const result = this.evaluateJavascript(phil, javascript);
-    DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+    sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Success,
       description: `**Evaluated:**\n${javascript}\n\n**Result:**\n${result}`,
       title: 'JavaScript evaluation',
     });
   }
 
-  private evaluateJavascript(phil: Phil, javascript: string): any {
-    /* tslint:disable:no-eval only-arrow-functions */
-    const evalFunc = function() {
-      return eval(javascript);
-    };
-    /* tslint:enable:no-eval only-arrow-functions */
-
+  private evaluateJavascript(phil: Phil, javascript: string): unknown {
     this.write('----------------------------------------');
     this.write('p!eval');
     this.write('');
     this.write(javascript);
-    const result = evalFunc.call(phil);
+    const result = eval.call(phil, javascript);
     this.write(`result: ${result}`);
     this.write(inspect(result));
     this.write('----------------------------------------');

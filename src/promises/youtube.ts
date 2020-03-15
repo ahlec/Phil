@@ -1,37 +1,48 @@
+import { YouTube } from 'youtube-node';
 import GlobalConfig from '../GlobalConfig';
-
-const YouTube = require('youtube-node');
 
 export interface YoutubeVideo {
   id: string;
 }
 
-export namespace YouTubePromises {
-  export function search(query: string): Promise<YoutubeVideo[]> {
-    // Their typing definition for search is wrong, and the repo seems dead.
-    // Unlikely that I can submit a fix and have it get pushed live.
+export function searchYouTube(query: string): Promise<YoutubeVideo[]> {
+  const youtubeApi = new YouTube();
+  youtubeApi.setKey(GlobalConfig.youtubeApiKey);
 
-    const youtubeApi: any = new YouTube();
-    youtubeApi.setKey(GlobalConfig.youtubeApiKey);
+  return new Promise((resolve, reject) => {
+    youtubeApi.search(query, 1, (err, result) => {
+      if (err) {
+        reject(err);
+        return;
+      }
 
-    return new Promise((resolve, reject) => {
-      youtubeApi.search(query, 1, (err: Error, result: any) => {
-        if (err) {
-          reject(err);
+      if (!result || !result.items) {
+        reject(new Error('Response from API did not include expected data.'));
+        return;
+      }
+
+      const videos: YoutubeVideo[] = [];
+      for (const ytItem of result.items) {
+        if (!ytItem.id) {
+          reject(
+            new Error("Response included an item that doesn't have an ID.")
+          );
           return;
         }
 
-        const videos: YoutubeVideo[] = [];
-        for (const ytItem of result.items) {
-          videos.push({
-            id: ytItem.id.videoId,
-          });
+        if (!ytItem.id.videoId) {
+          reject(
+            new Error('Response included an item whose videoId was empty.')
+          );
+          return;
         }
 
-        resolve(videos);
-      });
-    });
-  }
-}
+        videos.push({
+          id: ytItem.id.videoId,
+        });
+      }
 
-export default YouTubePromises;
+      resolve(videos);
+    });
+  });
+}

@@ -10,8 +10,8 @@ import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 import PrivateMessage from './messages/private';
 import Phil from './phil';
-import { DiscordPromises } from './promises/discord';
-const util = require('util');
+import { sendEmbedMessage } from './promises/discord';
+import { inspect } from 'util';
 
 const LOGGER_DEFINITION = new LoggerDefinition('Direct Message Dispatcher');
 
@@ -26,35 +26,31 @@ export default class DirectMessageDispatcher extends Logger {
     super(LOGGER_DEFINITION);
   }
 
-  public async process(message: PrivateMessage) {
+  public async process(message: PrivateMessage): Promise<void> {
     for (const processor of this.processorsInPriorityOrder) {
       try {
         const token = await processor.canProcess(this.phil, message);
         if (token.isActive) {
           await processor.process(this.phil, message, token);
-          return;
         }
       } catch (err) {
-        this.reportError(err, processor);
-        return;
+        await this.reportError(err, processor);
       }
     }
   }
 
-  private reportError(err: Error, processor: DirectMessageProcessor) {
+  private async reportError(
+    err: Error,
+    processor: DirectMessageProcessor
+  ): Promise<void> {
     this.error(err);
-
-    DiscordPromises.sendEmbedMessage(
-      this.phil.bot,
-      GlobalConfig.botManagerUserId,
-      {
-        color: EmbedColor.Error,
-        description: util.inspect(err),
-        footer: {
-          text: 'processor: ' + processor.handle,
-        },
-        title: ':no_entry: Processor Error',
-      }
-    );
+    await sendEmbedMessage(this.phil.bot, GlobalConfig.botManagerUserId, {
+      color: EmbedColor.Error,
+      description: inspect(err),
+      footer: {
+        text: 'processor: ' + processor.handle,
+      },
+      title: ':no_entry: Processor Error',
+    });
   }
 }

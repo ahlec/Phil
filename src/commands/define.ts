@@ -5,7 +5,7 @@ import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import Requestable, { RequestableCreationDefinition } from '../requestables';
 import ServerConfig from '../server-config';
-import { BotUtils } from '../utils';
+import { sendSuccessMessage } from '../utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class DefineCommand extends Command {
@@ -24,7 +24,7 @@ export default class DefineCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const definition = this.getDefinitionData(
       commandArgs,
       message.serverConfig
@@ -55,7 +55,7 @@ export default class DefineCommand extends Command {
       'request` to grant the ' +
       definition.role.name +
       ' role.';
-    BotUtils.sendSuccessMessage({
+    await sendSuccessMessage({
       bot: phil.bot,
       channelId: message.channelId,
       message: reply,
@@ -91,10 +91,6 @@ export default class DefineCommand extends Command {
       .trim()
       .toLowerCase();
     for (const roleId in serverConfig.server.roles) {
-      if (!serverConfig.server.roles.hasOwnProperty(roleId)) {
-        continue;
-      }
-
       const role = serverConfig.server.roles[roleId];
       if (role.name.toLowerCase() === roleName) {
         return {

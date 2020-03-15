@@ -21,9 +21,9 @@ import MessageBase from './messages/base';
 import PublicMessage from './messages/public';
 import ReactableProcessor from './reactables/processor';
 import ServerDirectory from './server-directory';
-import { BotUtils } from './utils';
+import { sendErrorMessage } from './utils';
 
-function ignoreDiscordCode(code: number) {
+function ignoreDiscordCode(code: number): boolean {
   return code === 1000; // General disconnect code
 }
 
@@ -54,7 +54,7 @@ export default class Phil extends Logger {
     this.reactableProcessor = new ReactableProcessor(this);
   }
 
-  public start() {
+  public start(): void {
     this.shouldSendDisconnectedMessage = false;
 
     this.bot.on('ready', this.onReady);
@@ -78,13 +78,13 @@ export default class Phil extends Logger {
     return server;
   }
 
-  private onReady = () => {
+  private onReady = async (): Promise<void> => {
     this.write(`Logged in as ${this.bot.username} - ${this.bot.id}`);
 
     this.chronoManager.start();
 
     if (this.shouldSendDisconnectedMessage) {
-      BotUtils.sendErrorMessage({
+      await sendErrorMessage({
         bot: this.bot,
         channelId: GlobalConfig.botManagerUserId,
         message:
@@ -100,7 +100,7 @@ export default class Phil extends Logger {
     channelId: string,
     msg: string,
     event: OfficialDiscordPayload<OfficialDiscordMessage>
-  ) => {
+  ): Promise<void> => {
     const message = await parseMessage(this, event);
 
     if (this.isMessageFromPhil(message)) {
@@ -145,7 +145,7 @@ export default class Phil extends Logger {
 
   private handleOwnMessage(
     event: OfficialDiscordPayload<OfficialDiscordMessage>
-  ) {
+  ): void {
     const MESSAGE_TYPE_CHANNEL_PINNED_MESSAGE = 6; // https://discordapp.com/developers/docs/resources/channel#message-object-message-types
     if (event.d.type !== MESSAGE_TYPE_CHANNEL_PINNED_MESSAGE) {
       return;
@@ -154,9 +154,7 @@ export default class Phil extends Logger {
     // I dislike those messages that say 'Phil has pinned a message to this channel.'
     // So Phil is going to delete his own when he encounters them.
     this.write(
-      `Posted an empty message (id ${event.d.id}) to channel ${
-        event.d.channel_id
-      }. Deleting.`
+      `Posted an empty message (id ${event.d.id}) to channel ${event.d.channel_id}. Deleting.`
     );
     try {
       this.bot.deleteMessage({
@@ -169,7 +167,7 @@ export default class Phil extends Logger {
     }
   }
 
-  private onDisconnect = (err: Error, code: number) => {
+  private onDisconnect = (err: Error, code: number): void => {
     this.error(`Discord.io disconnected of its own accord. (Code: ${code})`);
     this.error(err);
     this.write('Attempting to reconnect now...');
@@ -177,8 +175,12 @@ export default class Phil extends Logger {
     this.bot.connect();
   };
 
-  private onMemberAdd = async (member: DiscordIOMember, event: any) => {
-    const serverId = (member as any).guild_id; // special field for this event
+  private onMemberAdd = async (
+    member: DiscordIOMember & {
+      /* special field for this event */ guild_id: string;
+    }
+  ): Promise<void> => {
+    const { guild_id: serverId } = member;
     const server = this.bot.servers[serverId];
     this.write(`A new member (${member.id}) has joined server ${serverId}.`);
     if (!server) {
@@ -189,9 +191,7 @@ export default class Phil extends Logger {
     const serverConfig = await this.serverDirectory.getServerConfig(server);
     if (!serverConfig) {
       this.error(
-        `I wanted to greet new member ${member.id} in server ${
-          server.id
-        }, but I do not have server config for there.`
+        `I wanted to greet new member ${member.id} in server ${server.id}, but I do not have server config for there.`
       );
       return;
     }
@@ -201,15 +201,15 @@ export default class Phil extends Logger {
       await greeting.send(serverConfig.introductionsChannel.id);
     } catch (err) {
       this.error(
-        `Uncaught exception when trying to greet new member ${
-          member.id
-        } in server ${server.id}.`
+        `Uncaught exception when trying to greet new member ${member.id} in server ${server.id}.`
       );
       this.error(err);
     }
   };
 
-  private onRawWebSocketEvent = (event: OfficialDiscordPayload<any>) => {
+  private onRawWebSocketEvent = (
+    event: OfficialDiscordPayload<unknown>
+  ): void => {
     if (event.t === 'MESSAGE_REACTION_ADD') {
       this.reactableProcessor.processReactionAdded(
         event.d as OfficialDiscordReactionEvent

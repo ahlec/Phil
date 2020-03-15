@@ -3,10 +3,14 @@ import { HelpGroup } from '../help-groups';
 import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { giveRoleToUser, sendMessageBuilder } from '../promises/discord';
 import Requestable from '../requestables';
 import ServerConfig from '../server-config';
-import BotUtils from '../utils';
+import {
+  sendSuccessMessage,
+  getRandomArrayEntry,
+  stitchTogetherArray,
+} from '../utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class RequestCommand extends Command {
@@ -25,7 +29,7 @@ export default class RequestCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     if (commandArgs.length === 0) {
       return this.processNoCommandArgs(phil, message);
     }
@@ -47,13 +51,13 @@ export default class RequestCommand extends Command {
       requestable
     );
 
-    await DiscordPromises.giveRoleToUser(
+    await giveRoleToUser(
       phil.bot,
       message.server.id,
       message.userId,
       requestable.role.id
     );
-    BotUtils.sendSuccessMessage({
+    await sendSuccessMessage({
       bot: phil.bot,
       channelId: message.channelId,
       message: `You have been granted the "${requestable.role.name}" role!`,
@@ -64,21 +68,17 @@ export default class RequestCommand extends Command {
     serverConfig: ServerConfig,
     userId: string,
     requestable: Requestable
-  ) {
+  ): void {
     if (requestable.blacklistedUserIds.has(userId)) {
       throw new Error(
-        `You are unable to request the "${
-          requestable.role.name
-        }" role at this time.`
+        `You are unable to request the "${requestable.role.name}" role at this time.`
       );
     }
 
     const member = serverConfig.server.members[userId];
     if (member.roles.indexOf(requestable.role.id) >= 0) {
       throw new Error(
-        `You already have the "${requestable.role.name}" role. You can use \`${
-          serverConfig.commandPrefix
-        }remove\` to remove the role if you wish.`
+        `You already have the "${requestable.role.name}" role. You can use \`${serverConfig.commandPrefix}remove\` to remove the role if you wish.`
       );
     }
   }
@@ -86,7 +86,7 @@ export default class RequestCommand extends Command {
   private async processNoCommandArgs(
     phil: Phil,
     message: PublicMessage
-  ): Promise<any> {
+  ): Promise<void> {
     const requestables = await Requestable.getAllRequestables(
       phil.db,
       message.server
@@ -103,11 +103,7 @@ export default class RequestCommand extends Command {
       message.serverConfig,
       requestables
     );
-    return DiscordPromises.sendMessageBuilder(
-      phil.bot,
-      message.channelId,
-      reply
-    );
+    await sendMessageBuilder(phil.bot, message.channelId, reply);
   }
 
   private composeAllRequestablesList(
@@ -125,8 +121,8 @@ export default class RequestCommand extends Command {
       builder.append(this.composeRequestableListEntry(requestable));
     }
 
-    const randomRequestable = BotUtils.getRandomArrayEntry(requestables);
-    const randomRequestableString = BotUtils.getRandomArrayEntry(
+    const randomRequestable = getRandomArrayEntry(requestables);
+    const randomRequestableString = getRandomArrayEntry(
       randomRequestable.requestStrings
     );
 
@@ -142,7 +138,7 @@ export default class RequestCommand extends Command {
 
   private composeRequestableListEntry(requestable: Requestable): string {
     let entry = '- ';
-    entry += BotUtils.stitchTogetherArray(requestable.requestStrings);
+    entry += stitchTogetherArray(requestable.requestStrings);
     entry += ' to receive the "' + requestable.role.name + '" role\n';
     return entry;
   }

@@ -19,8 +19,7 @@ export default class ClearConfigAction<TModel> extends MutateConfigActionBase<
   protected getNewValue(
     phil: Phil,
     serverConfig: ServerConfig,
-    property: ConfigProperty<TModel>,
-    mutableArgs: string[]
+    property: ConfigProperty<TModel>
   ): GetNewValueResult {
     return {
       parsedValue: property.defaultValue,

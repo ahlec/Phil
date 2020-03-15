@@ -29,5 +29,5 @@ export interface ConfigAction<TModel> {
     mutableArgs: string[],
     property: ConfigProperty<TModel> | null,
     model: TModel
-  ): Promise<any>;
+  ): Promise<void>;
 }

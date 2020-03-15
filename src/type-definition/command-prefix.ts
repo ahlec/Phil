@@ -1,6 +1,4 @@
 import GlobalConfig from '../GlobalConfig';
-import Phil from '../phil';
-import ServerConfig from '../server-config';
 import {
   ParseResult,
   TypeDefinition,
@@ -16,23 +14,19 @@ interface InvalidPrefixCharacterDefinition {
 const InvalidPrefixCharacters: ReadonlyArray<
   InvalidPrefixCharacterDefinition
 > = [
-  { character: '`', name: 'tilde', indefiniteArticle: 'a' },
-  { character: '#', name: 'hash symbol', indefiniteArticle: 'a' },
-  { character: '@', name: 'at sign', indefiniteArticle: 'an' },
+  { character: '`', indefiniteArticle: 'a', name: 'tilde' },
+  { character: '#', indefiniteArticle: 'a', name: 'hash symbol' },
+  { character: '@', indefiniteArticle: 'an', name: 'at sign' },
 ];
 
 const Rules = [
-  `Must be between ${GlobalConfig.minCommandPrefixLength} and ${
-    GlobalConfig.maxCommandPrefixLength
-  } characters in length.`,
+  `Must be between ${GlobalConfig.minCommandPrefixLength} and ${GlobalConfig.maxCommandPrefixLength} characters in length.`,
   'May not contain any whitespace characters.',
 ];
 
 for (const invalidCharacter of InvalidPrefixCharacters) {
   Rules.push(
-    `May not contain ${invalidCharacter.indefiniteArticle} ${
-      invalidCharacter.name
-    } (${invalidCharacter.character}).`
+    `May not contain ${invalidCharacter.indefiniteArticle} ${invalidCharacter.name} (${invalidCharacter.character}).`
   );
 }
 
@@ -52,9 +46,7 @@ class CommandPrefixTypeDefinitionImplementation implements TypeDefinition {
       input.length > GlobalConfig.maxCommandPrefixLength
     ) {
       return {
-        errorMessage: `A command prefix must be between ${
-          GlobalConfig.minCommandPrefixLength
-        } and ${GlobalConfig.maxCommandPrefixLength} characters in length.`,
+        errorMessage: `A command prefix must be between ${GlobalConfig.minCommandPrefixLength} and ${GlobalConfig.maxCommandPrefixLength} characters in length.`,
         wasSuccessful: false,
       };
     }
@@ -73,9 +65,7 @@ class CommandPrefixTypeDefinitionImplementation implements TypeDefinition {
       }
 
       return {
-        errorMessage: `A command prefix may not contain the ${
-          invalidCharacter.name
-        } (${invalidCharacter.character}) character.`,
+        errorMessage: `A command prefix may not contain the ${invalidCharacter.name} (${invalidCharacter.character}) character.`,
         wasSuccessful: false,
       };
     }
@@ -86,28 +76,17 @@ class CommandPrefixTypeDefinitionImplementation implements TypeDefinition {
     };
   }
 
-  public isValid(
-    value: string,
-    phil: Phil,
-    serverConfig: ServerConfig
-  ): ValidityResultType {
+  public isValid(): ValidityResultType {
     return {
       isValid: true,
     };
   }
 
-  public toDisplayFormat(
-    value: string | null,
-    serverConfig: ServerConfig
-  ): string {
+  public toDisplayFormat(value: string | null): string {
     return value || '';
   }
 
-  public toMultilineCodeblockDisplayFormat(
-    value: string | null,
-    phil: Phil,
-    serverConfig: ServerConfig
-  ): string {
+  public toMultilineCodeblockDisplayFormat(value: string | null): string {
     return value || '';
   }
 }

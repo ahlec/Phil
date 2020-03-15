@@ -5,20 +5,22 @@ import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage, EmbedField } from '../promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 type FieldTransformFunc<T> = (bucket: Bucket, value: T) => string;
 
-function createField<T>(
+function createField<T extends string | number | boolean>(
   bucket: Bucket,
   header: string,
   value: T,
   valueTransformFunc?: FieldTransformFunc<T>
-) {
-  let displayValue: any = value;
+): EmbedField {
+  let displayValue: string;
   if (valueTransformFunc) {
     displayValue = valueTransformFunc(bucket, value);
+  } else {
+    displayValue = value.toString();
   }
 
   return {
@@ -41,7 +43,7 @@ function sendBucketToChannel(
   channelId: string,
   bucket: Bucket
 ): Promise<string> {
-  return DiscordPromises.sendEmbedMessage(phil.bot, channelId, {
+  return sendEmbedMessage(phil.bot, channelId, {
     color: EmbedColor.Info,
     fields: [
       createField(bucket, 'Reference Handle', bucket.handle),
@@ -77,7 +79,7 @@ export default class BucketCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const bucket = await Bucket.retrieveFromCommandArgs(
       phil,
       commandArgs,
@@ -85,6 +87,6 @@ export default class BucketCommand extends Command {
       'bucket',
       true
     );
-    return sendBucketToChannel(phil, message.channelId, bucket);
+    await sendBucketToChannel(phil, message.channelId, bucket);
   }
 }

@@ -1,16 +1,17 @@
 import { Client as DiscordIOClient } from 'discord.io';
 import Database from '../../database';
 import { ReactableCreateArgsBase, ReactableFactoryBase } from '../factory-base';
-import SuggestSessionReactableShared from './shared';
+import { Emoji, ReactableHandle } from './shared';
 
 interface CreateArgs extends ReactableCreateArgsBase {
   canMakeAnonymous: boolean;
 }
 
 export default class SuggestSessionReactableFactory extends ReactableFactoryBase<
-  CreateArgs
+  CreateArgs,
+  null
 > {
-  protected readonly handle = SuggestSessionReactableShared.ReactableHandle;
+  protected readonly handle = ReactableHandle;
 
   constructor(
     readonly bot: DiscordIOClient,
@@ -20,15 +21,15 @@ export default class SuggestSessionReactableFactory extends ReactableFactoryBase
     super(bot, db, args);
   }
 
-  protected getJsonData(): any | null {
+  protected getJsonData(): null {
     return null;
   }
 
   protected getEmojiReactions(): string[] {
-    const reactions = [SuggestSessionReactableShared.Emoji.Stop];
+    const reactions = [Emoji.Stop];
 
     if (this.args.canMakeAnonymous) {
-      reactions.push(SuggestSessionReactableShared.Emoji.MakeAnonymous);
+      reactions.push(Emoji.MakeAnonymous);
     }
 
     return reactions;

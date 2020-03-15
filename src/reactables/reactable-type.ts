@@ -9,5 +9,5 @@ export default abstract class ReactableType {
     phil: Phil,
     post: ReactablePost,
     event: OfficialDiscordReactionEvent
-  ): Promise<any>;
+  ): Promise<void>;
 }

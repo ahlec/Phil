@@ -1,7 +1,7 @@
 import EmbedColor from '../../../embed-color';
 import PublicMessage from '../../../messages/public';
 import Phil from '../../../phil';
-import { DiscordPromises } from '../../../promises/discord';
+import { sendEmbedMessage } from '../../../promises/discord';
 import { ConfigCommandBase, ConfigProperty } from '../config-command-base';
 import {
   ConfigAction,
@@ -26,7 +26,7 @@ export default class InfoConfigAction<TModel> implements ConfigAction<TModel> {
     mutableArgs: string[],
     property: ConfigProperty<TModel>,
     model: TModel
-  ): Promise<any> {
+  ): Promise<void> {
     const currentValue = property.getValue(model);
     const displayValue = property.typeDefinition.toDisplayFormat(
       currentValue,
@@ -48,20 +48,12 @@ export default class InfoConfigAction<TModel> implements ConfigAction<TModel> {
       phil,
       message.serverConfig
     );
-    response += `${NEWLINE}**EXAMPLES**${NEWLINE}\`\`\`${
-      message.serverConfig.commandPrefix
-    }${command.name} ${ConfigActionPrimaryKey.Set} ${
-      property.key
-    } ${randomDisplayValue}${NEWLINE}${message.serverConfig.commandPrefix}${
-      command.name
-    } ${ConfigActionPrimaryKey.Clear} ${property.key}\`\`\``;
+    response += `${NEWLINE}**EXAMPLES**${NEWLINE}\`\`\`${message.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Set} ${property.key} ${randomDisplayValue}${NEWLINE}${message.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Clear} ${property.key}\`\`\``;
 
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Info,
       description: response,
-      title: `${command.titleCaseConfigurationFor} Configuration: ${
-        property.displayName
-      }`,
+      title: `${command.titleCaseConfigurationFor} Configuration: ${property.displayName}`,
     });
   }
 }

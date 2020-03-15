@@ -1,7 +1,7 @@
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { deleteMessage, sendMessage } from '../promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 export default class KuzcoCommand extends Command {
@@ -18,16 +18,12 @@ export default class KuzcoCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const poison = this.getPoison(commandArgs);
     const reply = this.createReply(poison);
 
-    await DiscordPromises.deleteMessage(
-      phil.bot,
-      message.channelId,
-      message.id
-    );
-    return DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
+    await deleteMessage(phil.bot, message.channelId, message.id);
+    await sendMessage(phil.bot, message.channelId, reply);
   }
 
   private getPoison(commandArgs: ReadonlyArray<string>): string[] {

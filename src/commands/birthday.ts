@@ -1,13 +1,11 @@
-import { Moment } from 'moment';
+import * as chronoNode from 'chrono-node';
+import * as moment from 'moment';
 import Database from '../database';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
 import ServerConfig from '../server-config';
-import BotUtils from '../utils';
+import { sendSuccessMessage } from '../utils';
 import Command, { LoggerDefinition } from './@types';
-
-import chronoNode = require('chrono-node');
-import momentModuleFunc = require('moment');
 
 export default class BirthdayCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
@@ -22,7 +20,7 @@ export default class BirthdayCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const birthday = this.getInputFromCommandArgs(
       message.serverConfig,
       commandArgs
@@ -39,7 +37,7 @@ export default class BirthdayCommand extends Command {
       "I've updated your birthday to be " +
       birthday.format('D MMMM') +
       '! Thank you! If I made a mistake, however, feel free to tell me your birthday again!';
-    BotUtils.sendSuccessMessage({
+    await sendSuccessMessage({
       bot: phil.bot,
       channelId: message.channelId,
       message: reply,
@@ -49,7 +47,7 @@ export default class BirthdayCommand extends Command {
   private getInputFromCommandArgs(
     serverConfig: ServerConfig,
     commandArgs: ReadonlyArray<string>
-  ): Moment {
+  ): moment.Moment {
     const birthdayInput = commandArgs.join(' ').trim();
     if (birthdayInput.length === 0) {
       throw new Error(
@@ -68,15 +66,15 @@ export default class BirthdayCommand extends Command {
       );
     }
 
-    return momentModuleFunc(birthday);
+    return moment(birthday);
   }
 
   private async setBirthdayInDatabase(
     db: Database,
     username: string,
     userId: string,
-    birthday: Moment
-  ) {
+    birthday: moment.Moment
+  ): Promise<void> {
     const day = birthday.date();
     const month = birthday.month() + 1;
 

@@ -12,35 +12,27 @@ export interface BatchFeaturesEnabledLookup {
   [featureId: number]: boolean;
 }
 
-export namespace FeatureUtils {
-  export async function getServerFeaturesStatus(
-    db: Database,
-    serverId: string
-  ): Promise<BatchFeaturesEnabledLookup> {
-    const results = await db.query(
-      'SELECT feature_id, is_enabled FROM server_features WHERE server_id = $1',
-      [serverId]
-    );
-    const lookup: BatchFeaturesEnabledLookup = {};
+export async function getServerFeaturesStatus(
+  db: Database,
+  serverId: string
+): Promise<BatchFeaturesEnabledLookup> {
+  const results = await db.query<{ feature_id: string; is_enabled: string }>(
+    'SELECT feature_id, is_enabled FROM server_features WHERE server_id = $1',
+    [serverId]
+  );
+  const lookup: BatchFeaturesEnabledLookup = {};
 
-    for (const key in featuresLookup) {
-      if (!featuresLookup.hasOwnProperty(key)) {
-        continue;
-      }
-
-      const featureId = featuresLookup[key].id;
-      lookup[featureId] = true;
-    }
-
-    for (const row of results.rows) {
-      const featureId = parseInt(row.feature_id, 10);
-      const isEnabled = parseInt(row.is_enabled, 10);
-
-      lookup[featureId] = isEnabled !== 0;
-    }
-
-    return lookup;
+  for (const key in featuresLookup) {
+    const featureId = featuresLookup[key].id;
+    lookup[featureId] = true;
   }
-}
 
-export default FeatureUtils;
+  for (const row of results.rows) {
+    const featureId = parseInt(row.feature_id, 10);
+    const isEnabled = parseInt(row.is_enabled, 10);
+
+    lookup[featureId] = isEnabled !== 0;
+  }
+
+  return lookup;
+}

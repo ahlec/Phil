@@ -1,15 +1,25 @@
-import moment = require('moment-timezone');
+import * as moment from 'moment-timezone';
 import Database from '../database';
-import TimezoneQuestionnaire from './questionnaire';
-import Stages from './questionnaire-stages/@all-stages';
+import { isCurrentlyDoingQuestionnaire } from './questionnaire';
+import {
+  DeclinedStage,
+  FinishedStage,
+  getFromNumber,
+} from './questionnaire-stages/@all-stages';
 import IStage from './questionnaire-stages/@stage';
+
+interface DbRow {
+  timezone_name: string;
+  will_provide: string;
+  stage: string;
+}
 
 export default class UserTimezone {
   public static async getForUser(
     db: Database,
     userId: string
   ): Promise<UserTimezone | null> {
-    const result = await db.querySingle(
+    const result = await db.querySingle<DbRow>(
       `SELECT
         timezone_name,
         will_provide,
@@ -29,9 +39,9 @@ export default class UserTimezone {
     return new UserTimezone(userId, result);
   }
 
-  private static determineStage(dbRow: any): IStage {
+  private static determineStage(dbRow: DbRow): IStage {
     const stageNo = parseInt(dbRow.stage, 10);
-    return Stages.getFromNumber(stageNo);
+    return getFromNumber(stageNo);
   }
 
   public readonly hasProvided: boolean;
@@ -39,13 +49,11 @@ export default class UserTimezone {
   public readonly isCurrentlyDoingQuestionnaire: boolean;
   public readonly timezoneName: string | null;
 
-  private constructor(public readonly userId: string, dbRow: any) {
+  private constructor(public readonly userId: string, dbRow: DbRow) {
     const stage = UserTimezone.determineStage(dbRow);
-    this.hasProvided = stage === Stages.Finished;
-    this.hasDeclined = stage === Stages.Declined;
-    this.isCurrentlyDoingQuestionnaire = TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(
-      stage
-    );
+    this.hasProvided = stage === FinishedStage;
+    this.hasDeclined = stage === DeclinedStage;
+    this.isCurrentlyDoingQuestionnaire = isCurrentlyDoingQuestionnaire(stage);
 
     if (this.hasProvided) {
       this.timezoneName = dbRow.timezone_name;
@@ -62,15 +70,23 @@ export default class UserTimezone {
       );
     }
 
+    const yourZone = moment.tz.zone(this.timezoneName);
+    if (!yourZone) {
+      throw new Error('Unable to parse your timezone.');
+    }
+
     if (!otherTimezone.hasProvided || !otherTimezone.timezoneName) {
       throw new Error('The other timezone has not been provided.');
     }
 
+    const theirZone = moment.tz.zone(otherTimezone.timezoneName);
+    if (!theirZone) {
+      throw new Error('Unable to parse their timezone.');
+    }
+
     const now = moment.utc().valueOf();
-    const yourOffset = moment.tz.zone(this.timezoneName)!.utcOffset(now);
-    const theirOffset = moment.tz
-      .zone(otherTimezone.timezoneName)!
-      .utcOffset(now);
+    const yourOffset = yourZone.utcOffset(now);
+    const theirOffset = theirZone.utcOffset(now);
     return (yourOffset - theirOffset) / 60;
   }
 }

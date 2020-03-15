@@ -3,7 +3,7 @@ import Feature from './feature';
 // Disable alphabetical sorting for this file.
 // Each feature here is enumerated by a numerical key, and it's the most maintainable
 // to keep the lookup ordered by the numerical key instead of alphabetically.
-/* tslint:disable:object-literal-sort-keys */
+/* eslint-disable sort-keys */
 
 export const AllFeatures = {
   Prompts: new Feature(1, 'Prompts', ['prompt', 'prompts']),

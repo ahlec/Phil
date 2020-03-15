@@ -5,7 +5,7 @@ import PublicMessage from '../../messages/public';
 import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
 import ServerConfig from '../../server-config';
-import { BotUtils } from '../../utils';
+import { isNumeric, sendErrorMessage, sendSuccessMessage } from '../../utils';
 import Command, { LoggerDefinition } from '../@types';
 
 interface ConfirmRejectResults {
@@ -54,7 +54,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const numbers = this.getNumbersFromCommandArgs(commandArgs);
     const results: ConfirmRejectResults = {
       numFailed: 0,
@@ -77,7 +77,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
       }
     }
 
-    this.sendCompletionMessage(
+    await this.sendCompletionMessage(
       phil,
       message.serverConfig,
       message.channelId,
@@ -100,7 +100,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
       );
     }
 
-    if (BotUtils.isNumeric(commandArgs[0])) {
+    if (isNumeric(commandArgs[0])) {
       const singleNumber = parseInt(commandArgs[0], 10);
       return [singleNumber];
     }
@@ -123,10 +123,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
       );
     }
 
-    if (
-      !BotUtils.isNumeric(separatedPieces[0]) ||
-      !BotUtils.isNumeric(separatedPieces[1])
-    ) {
+    if (!isNumeric(separatedPieces[0]) || !isNumeric(separatedPieces[1])) {
       throw new Error(
         'One or both of the arguments you provided in the range were not actually numbers.'
       );
@@ -155,7 +152,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
     confirmNumber: number
   ): Promise<PerformResult> {
     try {
-      const results = await phil.db.query(
+      const results = await phil.db.query<{ submission_id: string }>(
         `SELECT
           submission_id
         FROM
@@ -173,7 +170,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
       const actionResult = this.performActionOnSubmission(
         phil,
         serverConfig,
-        submissionId
+        parseInt(submissionId, 10)
       );
       if (!actionResult) {
         return PerformResult.Error;
@@ -194,7 +191,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
     db: Database,
     channelId: string,
     confirmNumber: number
-  ) {
+  ): Promise<void> {
     const rowsDeleted = await db.execute(
       `DELETE FROM
         submission_confirmation_queue
@@ -210,14 +207,14 @@ export default abstract class ConfirmRejectCommandBase extends Command {
     }
   }
 
-  private sendCompletionMessage(
+  private async sendCompletionMessage(
     phil: Phil,
     serverConfig: ServerConfig,
     channelId: string,
     results: ConfirmRejectResults
-  ) {
+  ): Promise<void> {
     if (results.numSuccessful === 0) {
-      BotUtils.sendErrorMessage({
+      await sendErrorMessage({
         bot: phil.bot,
         channelId,
         message: this.noItemsConfirmedMessage.replace(
@@ -228,7 +225,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
       return;
     }
 
-    BotUtils.sendSuccessMessage({
+    await sendSuccessMessage({
       bot: phil.bot,
       channelId,
       message: (results.numSuccessful === 1

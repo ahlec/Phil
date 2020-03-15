@@ -2,7 +2,7 @@ import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendMessage } from '../promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 export default class NewsCommand extends Command {
@@ -20,12 +20,12 @@ export default class NewsCommand extends Command {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+  ): Promise<void> {
     const echoedMessage = this.getEchoedStatementFromCommandArgs(
       message,
       commandArgs
     );
-    DiscordPromises.sendMessage(
+    await sendMessage(
       phil.bot,
       message.serverConfig.newsChannel.id,
       echoedMessage

@@ -7,13 +7,18 @@ import LeaderboardEntry from './leaderboard-entry';
 
 const LEADERBOARD_SIZE = 10;
 
+interface DbResultsRow {
+  suggesting_userid: string;
+  score: string;
+}
+
 export default class Leaderboard {
   public static async getLeaderboard(
     client: DiscordIOClient,
     db: Database,
     server: DiscordIOServer
   ): Promise<Leaderboard> {
-    const results = await db.query(
+    const results = await db.query<DbResultsRow>(
       `SELECT
           suggesting_userid,
           count(submission_id) as "score"
@@ -41,11 +46,18 @@ export default class Leaderboard {
   private constructor(
     client: DiscordIOClient,
     server: DiscordIOServer,
-    results: DatabaseResult<any>
+    results: DatabaseResult<DbResultsRow>
   ) {
     const mutableEntries: LeaderboardEntry[] = [];
     for (const row of results.rows) {
-      mutableEntries.push(new LeaderboardEntry(client, server, row));
+      mutableEntries.push(
+        new LeaderboardEntry(
+          client,
+          server,
+          row.suggesting_userid,
+          parseInt(row.score, 10)
+        )
+      );
     }
 
     this.entries = mutableEntries;

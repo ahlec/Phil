@@ -2,7 +2,7 @@ import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendMessage } from '../promises/discord';
 import UserTimezone from '../timezones/user-timezone';
 import Command, { LoggerDefinition } from './@types';
 
@@ -19,9 +19,8 @@ export default class TimediffCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): Promise<any> {
+    message: PublicMessage
+  ): Promise<void> {
     if (message.mentions.length !== 1) {
       throw new Error(
         "In order to use this function, you must mention the user you're asking about. For instance, something like `" +
@@ -32,11 +31,8 @@ export default class TimediffCommand extends Command {
 
     const mention = message.mentions[0];
     if (mention.userId === message.userId) {
-      return DiscordPromises.sendMessage(
-        phil.bot,
-        message.channelId,
-        ':unamused:'
-      );
+      await sendMessage(phil.bot, message.channelId, ':unamused:');
+      return;
     }
 
     const ownTimezone = await UserTimezone.getForUser(phil.db, message.userId);
@@ -62,7 +58,7 @@ export default class TimediffCommand extends Command {
 
     const hoursApart = ownTimezone.getHoursApart(theirTimezone);
     const reply = this.composeReply(hoursApart, mention.user);
-    return DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
+    await sendMessage(phil.bot, message.channelId, reply);
   }
 
   private composeReply(hoursApart: number, otherUser: string): string {

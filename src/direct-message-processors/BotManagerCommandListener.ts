@@ -4,7 +4,7 @@ import Logger from '../Logger';
 import LoggerDefinition from '../LoggerDefinition';
 import PrivateMessage from '../messages/private';
 import Phil from '../phil';
-import BotUtils from '../utils';
+import { sendErrorMessage } from '../utils';
 import { DirectMessageProcessor, ProcessorActiveToken } from './@base';
 
 type CommandParseResult =
@@ -36,11 +36,11 @@ export default class BotManagerCommandListener extends Logger
     };
   }
 
-  public async process(phil: Phil, message: PrivateMessage) {
+  public async process(phil: Phil, message: PrivateMessage): Promise<void> {
     const parseResult = this.parseCommand(message.content);
     if (!parseResult.isValid) {
       if (parseResult.error) {
-        await BotUtils.sendErrorMessage({
+        await sendErrorMessage({
           bot: phil.bot,
           channelId: message.channelId,
           message: parseResult.error,

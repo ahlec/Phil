@@ -13,7 +13,9 @@ import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 
 // Abstract away protocol from here forward.
-const serverProtocol = parse(GlobalConfig.webportalUrl).protocol!.slice(0, -1);
+const serverProtocol = (
+  parse(GlobalConfig.webportalUrl).protocol || 'https:'
+).slice(0, -1);
 let get: (url: string) => ClientRequest;
 switch (serverProtocol) {
   case 'http': {
@@ -53,7 +55,7 @@ export default class WebPortal extends Logger {
     super(new LoggerDefinition('Web Portal'));
   }
 
-  public start() {
+  public start(): void {
     this.server = createHttpServer(this.onRequest);
 
     this.write(`Creating an http server.`);
@@ -62,18 +64,18 @@ export default class WebPortal extends Logger {
     this.write(`Web server is running on port ${GlobalConfig.webportalPort}.`);
   }
 
-  public beginKeepAliveHeartbeat() {
+  public beginKeepAliveHeartbeat(): void {
     // Ping the server every 10 minutes so that the Heroku dynos won't fall asleep
     setInterval(this.onKeepAliveHeartbeat, 1000 * 60 * 10);
   }
 
-  private onRequest = (_: IncomingMessage, response: ServerResponse) => {
+  private onRequest = (_: IncomingMessage, response: ServerResponse): void => {
     response.writeHead(200, { 'Content-Type': 'text/plain' });
     response.write('Phil.');
     response.end();
   };
 
-  private onKeepAliveHeartbeat = async () => {
+  private onKeepAliveHeartbeat = async (): Promise<void> => {
     this.write('Making heartbeat request.');
     const response = await getEndpoint('/');
     this.write(`Heartbeat response: '${response}'`);

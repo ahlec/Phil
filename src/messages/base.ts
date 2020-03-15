@@ -23,6 +23,10 @@ export abstract class MessageBase {
     event: OfficialDiscordPayload<OfficialDiscordMessage>,
     phil: Phil
   ) {
+    if (!event.d.author) {
+      throw new Error("Somehow, message doesn't have an author?");
+    }
+
     this.mentions = [];
     for (const mention of event.d.mentions) {
       this.mentions.push({
@@ -34,7 +38,7 @@ export abstract class MessageBase {
 
     this.id = event.d.id;
     this.channelId = event.d.channel_id;
-    this.userId = event.d.author!.id;
+    this.userId = event.d.author.id;
     this.user = phil.bot.users[this.userId];
     this.content = event.d.content;
   }

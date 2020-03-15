@@ -45,7 +45,7 @@ export default abstract class Command extends Logger {
     phil: Phil,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
-  ): Promise<any>;
+  ): Promise<void>;
 }
 
 export interface CommandLookup {
