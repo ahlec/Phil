@@ -49,7 +49,13 @@ export default class UtcCommand extends Command {
       );
     }
 
-    const reply = this.createReply(inputTime, timezone);
+    if (!timezone.timezoneName) {
+      throw new Error(
+        "Somehow has provided timezone but doesn't have specified timezoneName?"
+      );
+    }
+
+    const reply = this.createReply(inputTime, timezone.timezoneName);
     await sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Timezone,
       description: reply,
@@ -80,18 +86,14 @@ export default class UtcCommand extends Command {
       return null;
     }
 
-    const m = dateTimes[0].start.clone().moment() as any; // doesn't have .tz()
-    return moment(m); // clone it and make sure we define .tz()
+    return moment(dateTimes[0].start.clone().date());
   }
 
-  private createReply(
-    inputTime: moment.Moment,
-    timezone: UserTimezone
-  ): string {
+  private createReply(inputTime: moment.Moment, timezoneName: string): string {
     let reply = formatTimeToString(inputTime) + ' local time is **';
 
     const timezoneOffset = moment()
-      .tz(timezone.timezoneName!)
+      .tz(timezoneName)
       .utcOffset();
     inputTime.utcOffset(timezoneOffset);
     const utcTime = inputTime.tz('Etc/UTC');

@@ -10,6 +10,7 @@ import Submission from './submission';
 
 export interface PromptDatabaseSchema {
   prompt_id: string;
+  submission_id: string;
   prompt_number: string;
   prompt_date: string | null;
   repetition_number: string;
@@ -21,7 +22,7 @@ export default class Prompt {
     db: Database,
     promptId: number
   ): Promise<Prompt | null> {
-    const result = await db.querySingle(
+    const result = await db.querySingle<PromptDatabaseSchema>(
       `SELECT
         prompt_id,
         submission_id,
@@ -43,7 +44,7 @@ export default class Prompt {
     const submission = await Submission.getFromId(
       client,
       db,
-      result.submission_id
+      parseInt(result.submission_id, 10)
     );
     if (!submission) {
       return null;
@@ -62,9 +63,7 @@ export default class Prompt {
       return returnValue;
     }
 
-    const result = await db.query<
-      PromptDatabaseSchema & { submission_id: number }
-    >(
+    const result = await db.query<PromptDatabaseSchema>(
       `SELECT
           prompt_id,
           submission_id,
@@ -84,7 +83,7 @@ export default class Prompt {
 
     const submissionIds = new Set<number>();
     result.rows.forEach(({ submission_id: submissionId }) =>
-      submissionIds.add(submissionId)
+      submissionIds.add(parseInt(submissionId, 10))
     );
 
     const submissions = await Submission.getFromBatchIds(
@@ -93,7 +92,7 @@ export default class Prompt {
       submissionIds
     );
     result.rows.forEach(row => {
-      const submission = submissions[row.submission_id];
+      const submission = submissions[parseInt(row.submission_id, 10)];
       if (!submission) {
         return;
       }
@@ -110,7 +109,7 @@ export default class Prompt {
     db: Database,
     bucket: Bucket
   ): Promise<Prompt | null> {
-    const result = await db.querySingle(
+    const result = await db.querySingle<PromptDatabaseSchema>(
       `SELECT
         p.prompt_id,
         p.submission_id,
@@ -139,7 +138,7 @@ export default class Prompt {
     const submission = await Submission.getFromId(
       client,
       db,
-      result.submission_id
+      parseInt(result.submission_id, 10)
     );
     if (!submission) {
       return null;
@@ -152,7 +151,7 @@ export default class Prompt {
     db: Database,
     submission: Submission
   ): Promise<Prompt | null> {
-    const lastPromptInBucket = await db.querySingle(
+    const lastPromptInBucket = await db.querySingle<{ prompt_number: string }>(
       `SELECT
         p.prompt_number
       FROM
@@ -183,7 +182,7 @@ export default class Prompt {
       WHERE
         submission_id = $1`,
       [submission.id]
-    ))!;
+    )) || { count: '0' };
 
     const creation = await db.query<PromptDatabaseSchema>(
       `INSERT INTO

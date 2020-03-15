@@ -37,8 +37,7 @@ export default class PromptQueueReactable extends ReactableType {
     const newPageNumber = data.currentPage + pageDelta;
 
     if (!this.canMoveToPage(data, newPageNumber)) {
-      console.log('cannot move to page ' + newPageNumber);
-      return;
+      throw new Error(`Cannot move to page ${newPageNumber}`);
     }
 
     const bucket = await Bucket.getFromId(phil.bot, phil.db, data.bucket);
@@ -62,8 +61,6 @@ export default class PromptQueueReactable extends ReactableType {
     await deleteMessage(phil.bot, post.channelId, post.messageId);
 
     await queue.postToChannel(phil.bot, phil.db, post);
-
-    console.log('moving to page ' + newPageNumber);
   }
 
   private canMoveToPage(data: Data, newPageNumber: number): boolean {

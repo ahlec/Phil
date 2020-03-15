@@ -81,13 +81,27 @@ function getOnlyBucketOnServer(
   );
 }
 
+interface DbRow {
+  bucket_id: string;
+  server_id: string;
+  channel_id: string;
+  reference_handle: string;
+  display_name: string;
+  is_paused: string;
+  required_role_id: string;
+  alert_when_low: string;
+  prompt_title_format: string;
+  alerted_bucket_emptying: string;
+  frequency: string;
+}
+
 export default class Bucket {
   public static async getFromId(
     bot: DiscordIOClient,
     db: Database,
     bucketId: number
   ): Promise<Bucket | null> {
-    const results = await db.query(
+    const results = await db.query<DbRow>(
       'SELECT * FROM prompt_buckets WHERE bucket_id = $1',
       [bucketId]
     );
@@ -108,7 +122,7 @@ export default class Bucket {
       return returnValue;
     }
 
-    const result = await db.query(
+    const result = await db.query<DbRow>(
       `SELECT
         *
       FROM
@@ -131,7 +145,7 @@ export default class Bucket {
     db: Database,
     channelId: string
   ): Promise<Bucket | null> {
-    const results = await db.query(
+    const results = await db.query<DbRow>(
       'SELECT * FROM prompt_buckets WHERE channel_id = $1',
       [channelId]
     );
@@ -148,7 +162,7 @@ export default class Bucket {
     server: DiscordIOServer,
     referenceHandle: string
   ): Promise<Bucket | null> {
-    const results = await db.query(
+    const results = await db.query<DbRow>(
       'SELECT * FROM prompt_buckets WHERE server_id = $1 AND reference_handle = $2',
       [server.id, referenceHandle]
     );
@@ -164,7 +178,7 @@ export default class Bucket {
     db: Database,
     serverId: string
   ): Promise<Bucket[]> {
-    const results = await db.query(
+    const results = await db.query<DbRow>(
       'SELECT * FROM prompt_buckets WHERE server_id = $1',
       [serverId]
     );
@@ -217,7 +231,7 @@ export default class Bucket {
 
   private static determineIsBucketValid(
     bot: DiscordIOClient,
-    dbRow: any
+    dbRow: DbRow
   ): boolean {
     const server = bot.servers[dbRow.server_id];
     if (!server) {
@@ -251,7 +265,7 @@ export default class Bucket {
   public readonly promptTitleFormat: string;
   public internalAlertedBucketEmptying: boolean;
 
-  private constructor(bot: DiscordIOClient, dbRow: any) {
+  private constructor(bot: DiscordIOClient, dbRow: DbRow) {
     const isValid = Bucket.determineIsBucketValid(bot, dbRow);
     let bucketFrequency = frequencyFromStrings[dbRow.frequency];
     if (bucketFrequency === undefined) {

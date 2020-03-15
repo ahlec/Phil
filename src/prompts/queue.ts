@@ -82,9 +82,9 @@ export class PromptQueue {
       )
     );
     const batchPrompts = await Prompt.getFromBatchIds(client, db, promptIds);
-    const orderedPrompts: Prompt[] = promptResults.rows.map(
-      ({ prompt_id: promptId }) => batchPrompts[parseInt(promptId, 10)]!
-    );
+    const orderedPrompts: Prompt[] = promptResults.rows
+      .map(({ prompt_id: promptId }) => batchPrompts[parseInt(promptId, 10)])
+      .filter((prompt): prompt is Prompt => !!prompt);
 
     const countResults = await db.query<DbCountResultRow>(
       `SELECT

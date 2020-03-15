@@ -34,7 +34,11 @@ function createLeaderboardMessageEntry(
   const emoji = RANKING_EMOJI[ranking];
   const rankText = RANKING_TEXT[ranking];
 
-  let message = emoji || process.env.CUSTOM_EMOJI_TRANSPARENT!;
+  if (!process.env.CUSTOM_EMOJI_TRANSPARENT) {
+    throw new Error('Bad environment?');
+  }
+
+  let message = emoji || process.env.CUSTOM_EMOJI_TRANSPARENT;
   message += ' ';
   message += rankText;
   message += ': **';

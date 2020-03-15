@@ -1,9 +1,10 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import * as semver from 'semver';
+import * as packageJson from '../package.json';
 
-const PACKAGE_JSON = path.resolve(__dirname, '../package.json');
-const packageJson: any = JSON.parse(fs.readFileSync(PACKAGE_JSON, 'utf8'));
+const parsedSemVer = semver.parse(packageJson.version);
+if (!parsedSemVer) {
+  throw new Error('Could not parse package.version as SemVer');
+}
 
-export const CODE_VERSION = semver.parse(packageJson.version)!;
+export const CODE_VERSION = parsedSemVer;
 export const DATABASE_VERSION = parseInt(packageJson.database_version, 10);

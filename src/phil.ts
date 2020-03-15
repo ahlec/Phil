@@ -78,13 +78,13 @@ export default class Phil extends Logger {
     return server;
   }
 
-  private onReady = () => {
+  private onReady = async (): Promise<void> => {
     this.write(`Logged in as ${this.bot.username} - ${this.bot.id}`);
 
     this.chronoManager.start();
 
     if (this.shouldSendDisconnectedMessage) {
-      sendErrorMessage({
+      await sendErrorMessage({
         bot: this.bot,
         channelId: GlobalConfig.botManagerUserId,
         message:
@@ -176,10 +176,11 @@ export default class Phil extends Logger {
   };
 
   private onMemberAdd = async (
-    member: DiscordIOMember,
-    event: any
+    member: DiscordIOMember & {
+      /* special field for this event */ guild_id: string;
+    }
   ): Promise<void> => {
-    const serverId = (member as any).guild_id; // special field for this event
+    const { guild_id: serverId } = member;
     const server = this.bot.servers[serverId];
     this.write(`A new member (${member.id}) has joined server ${serverId}.`);
     if (!server) {

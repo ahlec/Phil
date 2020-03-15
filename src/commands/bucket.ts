@@ -5,20 +5,22 @@ import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { sendEmbedMessage } from '../promises/discord';
+import { sendEmbedMessage, EmbedField } from '../promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 type FieldTransformFunc<T> = (bucket: Bucket, value: T) => string;
 
-function createField<T>(
+function createField<T extends string | number | boolean>(
   bucket: Bucket,
   header: string,
   value: T,
   valueTransformFunc?: FieldTransformFunc<T>
-) {
-  let displayValue: any = value;
+): EmbedField {
+  let displayValue: string;
   if (valueTransformFunc) {
     displayValue = valueTransformFunc(bucket, value);
+  } else {
+    displayValue = value.toString();
   }
 
   return {

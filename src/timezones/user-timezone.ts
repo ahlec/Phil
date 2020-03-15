@@ -70,15 +70,23 @@ export default class UserTimezone {
       );
     }
 
+    const yourZone = moment.tz.zone(this.timezoneName);
+    if (!yourZone) {
+      throw new Error('Unable to parse your timezone.');
+    }
+
     if (!otherTimezone.hasProvided || !otherTimezone.timezoneName) {
       throw new Error('The other timezone has not been provided.');
     }
 
+    const theirZone = moment.tz.zone(otherTimezone.timezoneName);
+    if (!theirZone) {
+      throw new Error('Unable to parse their timezone.');
+    }
+
     const now = moment.utc().valueOf();
-    const yourOffset = moment.tz.zone(this.timezoneName)!.utcOffset(now);
-    const theirOffset = moment.tz
-      .zone(otherTimezone.timezoneName)!
-      .utcOffset(now);
+    const yourOffset = yourZone.utcOffset(now);
+    const theirOffset = theirZone.utcOffset(now);
     return (yourOffset - theirOffset) / 60;
   }
 }
