@@ -6,21 +6,37 @@ export interface YoutubeVideo {
 }
 
 export function searchYouTube(query: string): Promise<YoutubeVideo[]> {
-  // Their typing definition for search is wrong, and the repo seems dead.
-  // Unlikely that I can submit a fix and have it get pushed live.
-
   const youtubeApi = new YouTube();
   youtubeApi.setKey(GlobalConfig.youtubeApiKey);
 
   return new Promise((resolve, reject) => {
-    youtubeApi.search(query, 1, (err: Error, result: any) => {
+    youtubeApi.search(query, 1, (err, result) => {
       if (err) {
         reject(err);
         return;
       }
 
+      if (!result || !result.items) {
+        reject(new Error('Response from API did not include expected data.'));
+        return;
+      }
+
       const videos: YoutubeVideo[] = [];
       for (const ytItem of result.items) {
+        if (!ytItem.id) {
+          reject(
+            new Error("Response included an item that doesn't have an ID.")
+          );
+          return;
+        }
+
+        if (!ytItem.id.videoId) {
+          reject(
+            new Error('Response included an item whose videoId was empty.')
+          );
+          return;
+        }
+
         videos.push({
           id: ytItem.id.videoId,
         });
