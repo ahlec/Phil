@@ -13,7 +13,7 @@
     "start": "heroku local web",
     "build": "tsc",
     "clean": "rm -rf ./build",
-    "lint": "eslint \"./{src,scripts}/**/*.{js,jsx,ts,tsx}\"",
+    "lint": "eslint \"./{src,scripts}/**/*.{js,ts}\"",
     "run-bot": "node build/main.js",
     "db-migrate": "node scripts/db-migrate.js"
   },
