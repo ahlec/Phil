@@ -4,7 +4,7 @@ import {
 } from 'discord.io';
 import Database from '../database';
 import GlobalConfig from '../GlobalConfig';
-import { BotUtils } from '../utils';
+import { getUserDisplayName } from '../utils';
 import { AllMonths, MonthDefinition } from './month-definition';
 
 type DayEventCollection = ReadonlyArray<string[]>;
@@ -56,7 +56,7 @@ export default class CalendarMonth {
       }
 
       const user = bot.users[userid];
-      const userDisplayName = BotUtils.getUserDisplayName(user, server);
+      const userDisplayName = getUserDisplayName(user, server);
       if (!userDisplayName) {
         continue;
       }

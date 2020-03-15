@@ -1,12 +1,12 @@
-import Stages from './@all-stages';
+import { SpecificationStage } from './@all-stages';
 import IStage from './@stage';
 import { CountryTimezones } from './@timezone-data';
-import QuestionnaireStageUtils from './@utils';
+import { setStage, setTimezone } from './@utils';
 
 import Database from '../../database';
 import PrivateMessage from '../../messages/private';
 import Phil from '../../phil';
-import { DiscordPromises } from '../../promises/discord';
+import { sendMessage } from '../../promises/discord';
 
 export default class CountryStage implements IStage {
   public readonly stageNumber = 2;
@@ -20,7 +20,7 @@ export default class CountryStage implements IStage {
     const timezoneData = CountryTimezones[input];
 
     if (!timezoneData) {
-      DiscordPromises.sendMessage(
+      sendMessage(
         phil.bot,
         message.channelId,
         "I'm not sure what country that was. I can understand a country by a couple of names, but the easiest is the standard English name of the country."
@@ -29,11 +29,7 @@ export default class CountryStage implements IStage {
     }
 
     if (timezoneData.timezones.length === 1) {
-      QuestionnaireStageUtils.setTimezone(
-        phil,
-        message.userId,
-        timezoneData.timezones[0].name
-      );
+      setTimezone(phil, message.userId, timezoneData.timezones[0].name);
       return;
     }
 
@@ -45,10 +41,6 @@ export default class CountryStage implements IStage {
       throw new Error('Could not set the country_name field in the database.');
     }
 
-    QuestionnaireStageUtils.setStage(
-      phil,
-      message.userId,
-      Stages.Specification
-    );
+    setStage(phil, message.userId, SpecificationStage);
   }
 }

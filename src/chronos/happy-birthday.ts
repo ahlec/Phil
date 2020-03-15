@@ -2,11 +2,11 @@ import { Moment } from 'moment';
 import Database from '../database';
 import Features from '../features/all-features';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendMessage } from '../promises/discord';
 import { GROUP_PRONOUNS } from '../pronouns/definitions';
 import { Pronoun } from '../pronouns/pronoun';
 import ServerConfig from '../server-config';
-import BotUtils from '../utils';
+import { getUserDisplayName } from '../utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 interface HappyBirthdayInfo {
@@ -31,11 +31,7 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
       return;
     }
 
-    DiscordPromises.sendMessage(
-      phil.bot,
-      serverConfig.newsChannel.id,
-      birthdayWish
-    );
+    sendMessage(phil.bot, serverConfig.newsChannel.id, birthdayWish);
   }
 
   private async getBirthdayUserIds(
@@ -72,10 +68,7 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
     const names = [];
     for (const userId of userIds) {
       const user = phil.bot.users[userId];
-      const userDisplayName = BotUtils.getUserDisplayName(
-        user,
-        serverConfig.server
-      );
+      const userDisplayName = getUserDisplayName(user, serverConfig.server);
       if (!userDisplayName) {
         continue;
       }

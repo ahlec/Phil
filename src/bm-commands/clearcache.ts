@@ -1,4 +1,4 @@
-import BotUtils from '../utils';
+import { sendSuccessMessage } from '../utils';
 import {
   BotManagerCommand,
   LoggerDefinition,
@@ -13,7 +13,7 @@ export default class ClearCacheBotManagerCommand extends BotManagerCommand {
 
   public async execute(phil: Phil, message: PrivateMessage): Promise<void> {
     phil.serverDirectory.clearCache();
-    await BotUtils.sendSuccessMessage({
+    await sendSuccessMessage({
       bot: phil.bot,
       channelId: message.channelId,
       message: 'Caches have been cleared.',

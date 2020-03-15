@@ -6,7 +6,7 @@ import * as moment from 'moment';
 import Database from './database';
 import Phil from './phil';
 import ServerConfig from './server-config';
-import BotUtils from './utils';
+import { getRandomArrayEntry } from './utils';
 
 export enum BucketFrequency {
   Daily = 0,
@@ -50,7 +50,7 @@ function multipleUnspecifiedBucketsError(
     message += ')\n';
   }
 
-  const randomBucket = BotUtils.getRandomArrayEntry(serverBuckets);
+  const randomBucket = getRandomArrayEntry(serverBuckets);
   message +=
     '\nPlease try the command once more, specifying which bucket, like `' +
     serverConfig.commandPrefix +

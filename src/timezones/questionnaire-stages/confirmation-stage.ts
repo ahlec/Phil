@@ -1,11 +1,11 @@
-import Stages from './@all-stages';
+import { CountryStage, FinishedStage } from './@all-stages';
 import IStage from './@stage';
-import QuestionnaireStageUtils from './@utils';
+import { setStage } from './@utils';
 
 import Database from '../../database';
 import PrivateMessage from '../../messages/private';
 import Phil from '../../phil';
-import { DiscordPromises } from '../../promises/discord';
+import { sendMessage } from '../../promises/discord';
 
 const moment = require('moment-timezone');
 
@@ -20,11 +20,7 @@ export default class ConfirmationStage implements IStage {
     const content = message.content.toLowerCase().trim();
 
     if (content === 'yes') {
-      return QuestionnaireStageUtils.setStage(
-        phil,
-        message.userId,
-        Stages.Finished
-      );
+      return setStage(phil, message.userId, FinishedStage);
     }
 
     if (content === 'no') {
@@ -38,11 +34,7 @@ export default class ConfirmationStage implements IStage {
         );
       }
 
-      return QuestionnaireStageUtils.setStage(
-        phil,
-        message.userId,
-        Stages.Country
-      );
+      return setStage(phil, message.userId, CountryStage);
     }
 
     const reply = await this.getConfirmationMessage(
@@ -50,7 +42,7 @@ export default class ConfirmationStage implements IStage {
       message.userId,
       "Hmmmm, that wasn't one of the answers."
     );
-    return DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
+    return sendMessage(phil.bot, message.channelId, reply);
   }
 
   private async getConfirmationMessage(

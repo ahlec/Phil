@@ -5,10 +5,14 @@ import { HelpGroup } from '../help-groups';
 import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { takeRoleFromUser, sendMessageBuilder } from '../promises/discord';
 import Requestable from '../requestables';
 import ServerConfig from '../server-config';
-import BotUtils from '../utils';
+import {
+  getRandomArrayEntry,
+  sendSuccessMessage,
+  stitchTogetherArray,
+} from '../utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class RemoveCommand extends Command {
@@ -44,13 +48,13 @@ export default class RemoveCommand extends Command {
 
     this.ensureUserHasRole(message.server, message.userId, requestable);
 
-    await DiscordPromises.takeRoleFromUser(
+    await takeRoleFromUser(
       phil.bot,
       message.server.id,
       message.userId,
       requestable.role.id
     );
-    BotUtils.sendSuccessMessage({
+    await sendSuccessMessage({
       bot: phil.bot,
       channelId: message.channelId,
       message:
@@ -95,11 +99,7 @@ export default class RemoveCommand extends Command {
       message.serverConfig,
       userRequestables
     );
-    return DiscordPromises.sendMessageBuilder(
-      phil.bot,
-      message.channelId,
-      reply
-    );
+    return sendMessageBuilder(phil.bot, message.channelId, reply);
   }
 
   private async getAllRequestablesUserHas(
@@ -145,8 +145,8 @@ export default class RemoveCommand extends Command {
       builder.append(this.composeRequestableListEntry(requestable));
     }
 
-    const randomRequestable = BotUtils.getRandomArrayEntry(requestables);
-    const randomRequestableString = BotUtils.getRandomArrayEntry(
+    const randomRequestable = getRandomArrayEntry(requestables);
+    const randomRequestableString = getRandomArrayEntry(
       randomRequestable.requestStrings
     );
 
@@ -162,7 +162,7 @@ export default class RemoveCommand extends Command {
 
   private composeRequestableListEntry(requestable: Requestable): string {
     let entry = '- ';
-    entry += BotUtils.stitchTogetherArray(requestable.requestStrings);
+    entry += stitchTogetherArray(requestable.requestStrings);
     entry += ' to remove the "' + requestable.role.name + '" role\n';
     return entry;
   }

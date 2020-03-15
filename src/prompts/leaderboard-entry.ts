@@ -2,7 +2,7 @@ import {
   Client as DiscordIOClient,
   Server as DiscordIOServer,
 } from 'discord.io';
-import { BotUtils } from '../utils';
+import { getUserDisplayName } from '../utils';
 
 export default class LeaderboardEntry {
   public readonly userId: string;
@@ -14,7 +14,7 @@ export default class LeaderboardEntry {
     this.userId = dbRow.suggesting_userid;
 
     const user = bot.users[this.userId];
-    const currentUserDisplayName = BotUtils.getUserDisplayName(user, server);
+    const currentUserDisplayName = getUserDisplayName(user, server);
 
     this.displayName = currentUserDisplayName || dbRow.suggesting_user;
     this.isStillInServer = server.members[this.userId] != null;

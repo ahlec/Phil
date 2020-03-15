@@ -1,9 +1,9 @@
-import FeatureUtils from '../../features/feature-utils';
+import { getServerFeaturesStatus } from '../../features/feature-utils';
 import { HelpGroup } from '../../help-groups';
 import MessageBuilder from '../../message-builder';
 import PublicMessage from '../../messages/public';
 import Phil from '../../phil';
-import { DiscordPromises } from '../../promises/discord';
+import { sendMessage } from '../../promises/discord';
 import Command, { CommandLookup, LoggerDefinition } from '../@types';
 import CommandHelpInfo from './command-help-info';
 import HelpGroupInfo from './help-group-info';
@@ -104,7 +104,7 @@ export default class HelpCommand extends Command {
     const isAdminChannel = message.serverConfig.isAdminChannel(
       message.channelId
     );
-    const featuresEnabledLookup = await FeatureUtils.getServerFeaturesStatus(
+    const featuresEnabledLookup = await getServerFeaturesStatus(
       phil.db,
       message.server.id
     );
@@ -119,11 +119,7 @@ export default class HelpCommand extends Command {
     }
 
     for (const helpMessage of builder.messages) {
-      await DiscordPromises.sendMessage(
-        phil.bot,
-        message.channelId,
-        helpMessage
-      );
+      await sendMessage(phil.bot, message.channelId, helpMessage);
     }
   }
 }

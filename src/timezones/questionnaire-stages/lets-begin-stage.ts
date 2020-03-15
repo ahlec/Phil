@@ -1,11 +1,11 @@
-import Stages from './@all-stages';
+import { CountryStage, DeclinedStage } from './@all-stages';
 import IStage from './@stage';
-import QuestionnaireStageUtils from './@utils';
+import { setStage } from './@utils';
 
 import Database from '../../database';
 import PrivateMessage from '../../messages/private';
 import Phil from '../../phil';
-import { DiscordPromises } from '../../promises/discord';
+import { sendMessage } from '../../promises/discord';
 
 export default class LetsBeginStage implements IStage {
   public readonly stageNumber = 1;
@@ -18,11 +18,7 @@ export default class LetsBeginStage implements IStage {
     const content = message.content.toLowerCase().trim();
 
     if (content === 'yes') {
-      return QuestionnaireStageUtils.setStage(
-        phil,
-        message.userId,
-        Stages.Country
-      );
+      return setStage(phil, message.userId, CountryStage);
     }
 
     if (content === 'no') {
@@ -36,11 +32,11 @@ export default class LetsBeginStage implements IStage {
         );
       }
 
-      QuestionnaireStageUtils.setStage(phil, message.userId, Stages.Declined);
+      setStage(phil, message.userId, DeclinedStage);
       return;
     }
 
-    DiscordPromises.sendMessage(
+    sendMessage(
       phil.bot,
       message.channelId,
       "I didn't understand that, sorry. Can you please tell me `yes` or `no` for if you'd like to fill out the timezone questionnaire?"

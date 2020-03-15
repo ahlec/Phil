@@ -1,6 +1,6 @@
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
 import Database from '../database';
-import { DiscordPromises } from '../promises/discord';
+import { addReaction } from '../promises/discord';
 import ReactablePost from './post';
 
 export interface ReactableCreateArgsBase {
@@ -32,7 +32,7 @@ export abstract class ReactableFactoryBase<
     await this.removeAllOthers();
 
     for (const reaction of reactions) {
-      await DiscordPromises.addReaction(
+      await addReaction(
         this.bot,
         this.args.channelId,
         this.args.messageId,

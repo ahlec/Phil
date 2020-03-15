@@ -5,7 +5,7 @@ import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 type FieldTransformFunc<T> = (bucket: Bucket, value: T) => string;
@@ -41,7 +41,7 @@ function sendBucketToChannel(
   channelId: string,
   bucket: Bucket
 ): Promise<string> {
-  return DiscordPromises.sendEmbedMessage(phil.bot, channelId, {
+  return sendEmbedMessage(phil.bot, channelId, {
     color: EmbedColor.Info,
     fields: [
       createField(bucket, 'Reference Handle', bucket.handle),

@@ -1,8 +1,8 @@
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
-import BotUtils from '../utils';
+import { sendMessage } from '../promises/discord';
+import { getRandomArrayEntry } from '../utils';
 import Command, { LoggerDefinition } from './@types';
 
 const apologies = [
@@ -31,7 +31,7 @@ export default class ApologiseCommand extends Command {
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
   ): Promise<any> {
-    const apology = BotUtils.getRandomArrayEntry(apologies);
-    return DiscordPromises.sendMessage(phil.bot, message.channelId, apology);
+    const apology = getRandomArrayEntry(apologies);
+    return sendMessage(phil.bot, message.channelId, apology);
   }
 }

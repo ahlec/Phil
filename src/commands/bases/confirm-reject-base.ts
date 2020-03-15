@@ -5,7 +5,7 @@ import PublicMessage from '../../messages/public';
 import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
 import ServerConfig from '../../server-config';
-import { BotUtils } from '../../utils';
+import { isNumeric, sendErrorMessage, sendSuccessMessage } from '../../utils';
 import Command, { LoggerDefinition } from '../@types';
 
 interface ConfirmRejectResults {
@@ -100,7 +100,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
       );
     }
 
-    if (BotUtils.isNumeric(commandArgs[0])) {
+    if (isNumeric(commandArgs[0])) {
       const singleNumber = parseInt(commandArgs[0], 10);
       return [singleNumber];
     }
@@ -123,10 +123,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
       );
     }
 
-    if (
-      !BotUtils.isNumeric(separatedPieces[0]) ||
-      !BotUtils.isNumeric(separatedPieces[1])
-    ) {
+    if (!isNumeric(separatedPieces[0]) || !isNumeric(separatedPieces[1])) {
       throw new Error(
         'One or both of the arguments you provided in the range were not actually numbers.'
       );
@@ -217,7 +214,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
     results: ConfirmRejectResults
   ) {
     if (results.numSuccessful === 0) {
-      BotUtils.sendErrorMessage({
+      sendErrorMessage({
         bot: phil.bot,
         channelId,
         message: this.noItemsConfirmedMessage.replace(
@@ -228,7 +225,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
       return;
     }
 
-    BotUtils.sendSuccessMessage({
+    sendSuccessMessage({
       bot: phil.bot,
       channelId,
       message: (results.numSuccessful === 1

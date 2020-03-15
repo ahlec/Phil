@@ -2,7 +2,7 @@ import { Channel as DiscordIOChannel } from 'discord.io';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
 import ServerConfig from '../server-config';
-import BotUtils from '../utils';
+import { getRandomArrayEntry } from '../utils';
 import { LoggerDefinition } from './@types';
 import { ConfigCommandBase, ConfigProperty } from './bases/config-command-base';
 
@@ -30,7 +30,7 @@ function getChannelId(channel: DiscordIOChannel): string | null {
 
 function getRandomChannelId(serverConfig: ServerConfig): string {
   const channelIds = Object.keys(serverConfig.server.channels);
-  return BotUtils.getRandomArrayEntry(channelIds);
+  return getRandomArrayEntry(channelIds);
 }
 
 // -----------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     typeDefinition: RoleTypeDefinition,
 
     getRandomExampleValue: (model: ServerConfig) =>
-      BotUtils.getRandomArrayEntry(Object.keys(model.server.roles)),
+      getRandomArrayEntry(Object.keys(model.server.roles)),
     getValue: (model: ServerConfig) => {
       if (!model.adminRole) {
         return null;

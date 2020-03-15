@@ -3,9 +3,15 @@ import Feature from '../../features/feature';
 import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
 import Phil from '../../phil';
-import { DiscordPromises } from '../../promises/discord';
+import {
+  EditRoleOptions,
+  createRole,
+  editRole,
+  giveRoleToUser,
+  takeRoleFromUser,
+} from '../../promises/discord';
 import ServerConfig from '../../server-config';
-import { BotUtils } from '../../utils';
+import { sendSuccessMessage } from '../../utils';
 import Command, { LoggerDefinition } from '../@types';
 
 interface MemberUniqueRoleCommandBaseDetails {
@@ -45,14 +51,14 @@ export default abstract class MemberUniqueRoleCommandBase<
       message.server,
       message.userId
     );
-    await DiscordPromises.giveRoleToUser(
+    await giveRoleToUser(
       phil.bot,
       message.server.id,
       message.userId,
       newRole.id
     );
 
-    BotUtils.sendSuccessMessage({
+    await sendSuccessMessage({
       bot: phil.bot,
       channelId: message.channelId,
       message: this.getSuccessMessage(message.serverConfig, data),
@@ -72,9 +78,7 @@ export default abstract class MemberUniqueRoleCommandBase<
     role: DiscordIORole,
     data: TData
   ): boolean;
-  protected abstract getRoleConfig(
-    data: TData
-  ): DiscordPromises.EditRoleOptions;
+  protected abstract getRoleConfig(data: TData): EditRoleOptions;
   protected abstract getSuccessMessage(
     serverConfig: ServerConfig,
     data: TData
@@ -114,12 +118,7 @@ export default abstract class MemberUniqueRoleCommandBase<
         continue;
       }
 
-      await DiscordPromises.takeRoleFromUser(
-        phil.bot,
-        server.id,
-        userId,
-        roleId
-      );
+      await takeRoleFromUser(phil.bot, server.id, userId, roleId);
     }
   }
 
@@ -139,14 +138,9 @@ export default abstract class MemberUniqueRoleCommandBase<
       }
     }
 
-    const newRole = await DiscordPromises.createRole(phil.bot, server.id);
+    const newRole = await createRole(phil.bot, server.id);
     const roleOptions = this.getRoleConfig(data);
-    await DiscordPromises.editRole(
-      phil.bot,
-      server.id,
-      newRole.id,
-      roleOptions
-    );
+    await editRole(phil.bot, server.id, newRole.id, roleOptions);
     return newRole;
   }
 }

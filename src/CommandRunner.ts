@@ -9,7 +9,7 @@ import LoggerDefinition from './LoggerDefinition';
 import IPublicMessage from './messages/public';
 import PermissionLevel, { getPermissionLevelName } from './permission-level';
 import Phil from './phil';
-import BotUtils from './utils';
+import { sendErrorMessage } from './utils';
 
 const definition = new LoggerDefinition('Command Runner');
 
@@ -100,7 +100,7 @@ export default class CommandRunner extends Logger {
   }
 
   private reportInvalidCommand(message: IPublicMessage, input: InputMessage) {
-    BotUtils.sendErrorMessage({
+    sendErrorMessage({
       bot: this.bot,
       channelId: message.channelId,
       message: `There is no \`${message.serverConfig.commandPrefix}${input.commandName}\` command.`,
@@ -129,7 +129,7 @@ export default class CommandRunner extends Logger {
     input: InputMessage
   ) {
     const permissionLevelName = getPermissionLevelName(command.permissionLevel);
-    BotUtils.sendErrorMessage({
+    sendErrorMessage({
       bot: this.bot,
       channelId: message.channelId,
       message: `The \`${message.serverConfig.commandPrefix}${input.commandName}\` command requires ${permissionLevelName} privileges to use here.`,
@@ -150,7 +150,7 @@ export default class CommandRunner extends Logger {
 
   private async reportCommandError(err: Error, channelId: string) {
     this.error(err);
-    BotUtils.sendErrorMessage({
+    sendErrorMessage({
       bot: this.bot,
       channelId,
       message: err.message,

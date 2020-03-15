@@ -2,7 +2,7 @@ import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
 import Bucket from '../buckets';
 import Database, { DatabaseResult } from '../database';
 import EmbedColor from '../embed-color';
-import { DiscordPromises, EmbedData } from '../promises/discord';
+import { sendEmbedMessage, EmbedData } from '../promises/discord';
 import { PromptQueueReactableFactory } from '../reactables/prompt-queue/factory';
 import Prompt from './prompt';
 
@@ -142,7 +142,7 @@ export class PromptQueue {
     db: Database,
     postData: PromptQueuePostData
   ): Promise<string> {
-    const messageId = await DiscordPromises.sendEmbedMessage(
+    const messageId = await sendEmbedMessage(
       bot,
       postData.channelId,
       this.asEmbedObject()
@@ -171,9 +171,7 @@ export class PromptQueue {
     const lines: string[] = [];
     const promptNoun = this.count === 1 ? 'prompt' : 'prompts';
     lines.push(
-      `:calendar_spiral: The queue currently contains **${
-        this.count
-      } ${promptNoun}**.`
+      `:calendar_spiral: The queue currently contains **${this.count} ${promptNoun}**.`
     );
     lines.push('');
 

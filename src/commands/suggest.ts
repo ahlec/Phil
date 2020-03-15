@@ -5,10 +5,10 @@ import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import SubmissionSession from '../prompts/submission-session';
 import SuggestSessionReactableFactory from '../reactables/suggest-session/factory';
-import SuggestSessionReactableShared from '../reactables/suggest-session/shared';
+import { Emoji } from '../reactables/suggest-session/shared';
 import ServerConfig from '../server-config';
 import Command, { LoggerDefinition } from './@types';
 
@@ -24,11 +24,11 @@ function getBeginMessage(
   }** on the **${
     server.name
   }** server.\n\nWhen ${NOWRAP}you\'re finished, hit the ${
-    SuggestSessionReactableShared.Emoji.Stop
+    Emoji.Stop
   } reaction ${NOWRAP}or simply do nothing until your session runs out of time. ${NOWRAP}If you want to change which server or bucket you\'re submitting to, ${NOWRAP}use the \`${
     serverConfig.commandPrefix
   }suggest\`to start over.\n\nIf you want ${NOWRAP}these submissions to be anonymous during this session, hit the ${
-    SuggestSessionReactableShared.Emoji.MakeAnonymous
+    Emoji.MakeAnonymous
   } reaction below.`;
 }
 
@@ -87,7 +87,7 @@ export default class SuggestCommand extends Command {
     serverConfig: ServerConfig,
     session: SubmissionSession
   ) {
-    const messageId = await DiscordPromises.sendEmbedMessage(phil.bot, userId, {
+    const messageId = await sendEmbedMessage(phil.bot, userId, {
       color: EmbedColor.Info,
       description: getBeginMessage(phil, serverConfig, session),
       title: ':pencil: Begin Sending Suggestions :incoming_envelope:',

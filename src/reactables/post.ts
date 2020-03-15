@@ -1,6 +1,6 @@
 import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
 import Database from '../database';
-import { DiscordPromises } from '../promises/discord';
+import { removeOwnReaction } from '../promises/discord';
 
 export default class ReactablePost {
   public static async getFromMessageId(
@@ -66,7 +66,7 @@ export default class ReactablePost {
       this.messageId,
     ]);
     for (const reaction of this.monitoredReactions) {
-      await DiscordPromises.removeOwnReaction(
+      await removeOwnReaction(
         this.bot,
         this.channelId,
         this.messageId,

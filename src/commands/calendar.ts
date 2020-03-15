@@ -4,7 +4,7 @@ import Features from '../features/all-features';
 import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendMessageBuilder } from '../promises/discord';
 import ServerConfig from '../server-config';
 import Command, { LoggerDefinition } from './@types';
 
@@ -33,11 +33,7 @@ export default class CalendarCommand extends Command {
       month
     );
     const builder = this.composeMessageFromCalendar(message.server, calendar);
-    return DiscordPromises.sendMessageBuilder(
-      phil.bot,
-      message.channelId,
-      builder
-    );
+    return sendMessageBuilder(phil.bot, message.channelId, builder);
   }
 
   private determineMonth(

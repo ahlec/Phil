@@ -4,7 +4,7 @@ import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
 import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
-import BotUtils from '../../utils';
+import { sendSuccessMessage } from '../../utils';
 import Command, { LoggerDefinition } from '../@types';
 
 const FEATURES_LIST = Object.values(AllFeatures);
@@ -47,9 +47,7 @@ export default abstract class EnableDisableCommandBase extends Command {
     const feature = this.getFeatureByName(commandArgs[0]);
     if (!feature) {
       const errorMessage = this.formatParameterErrorMessage(
-        `There is no feature with the name \`${
-          commandArgs[0]
-        }\`. The features that I know about are as follows:`
+        `There is no feature with the name \`${commandArgs[0]}\`. The features that I know about are as follows:`
       );
       throw new Error(errorMessage);
     }
@@ -60,7 +58,7 @@ export default abstract class EnableDisableCommandBase extends Command {
       this.shouldEnableFeature
     );
 
-    await BotUtils.sendSuccessMessage({
+    await sendSuccessMessage({
       bot: phil.bot,
       channelId: message.channelId,
       message: this.getSuccessMessage(message, feature),

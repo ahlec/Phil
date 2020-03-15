@@ -3,7 +3,7 @@ import Database from '../database';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
 import ServerConfig from '../server-config';
-import BotUtils from '../utils';
+import { sendSuccessMessage } from '../utils';
 import Command, { LoggerDefinition } from './@types';
 
 import chronoNode = require('chrono-node');
@@ -39,7 +39,7 @@ export default class BirthdayCommand extends Command {
       "I've updated your birthday to be " +
       birthday.format('D MMMM') +
       '! Thank you! If I made a mistake, however, feel free to tell me your birthday again!';
-    BotUtils.sendSuccessMessage({
+    sendSuccessMessage({
       bot: phil.bot,
       channelId: message.channelId,
       message: reply,

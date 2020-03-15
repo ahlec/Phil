@@ -10,7 +10,7 @@ import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 import PrivateMessage from './messages/private';
 import Phil from './phil';
-import { DiscordPromises } from './promises/discord';
+import { sendEmbedMessage } from './promises/discord';
 const util = require('util');
 
 const LOGGER_DEFINITION = new LoggerDefinition('Direct Message Dispatcher');
@@ -44,17 +44,13 @@ export default class DirectMessageDispatcher extends Logger {
   private reportError(err: Error, processor: DirectMessageProcessor) {
     this.error(err);
 
-    DiscordPromises.sendEmbedMessage(
-      this.phil.bot,
-      GlobalConfig.botManagerUserId,
-      {
-        color: EmbedColor.Error,
-        description: util.inspect(err),
-        footer: {
-          text: 'processor: ' + processor.handle,
-        },
-        title: ':no_entry: Processor Error',
-      }
-    );
+    sendEmbedMessage(this.phil.bot, GlobalConfig.botManagerUserId, {
+      color: EmbedColor.Error,
+      description: util.inspect(err),
+      footer: {
+        text: 'processor: ' + processor.handle,
+      },
+      title: ':no_entry: Processor Error',
+    });
   }
 }

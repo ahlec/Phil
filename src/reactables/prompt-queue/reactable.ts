@@ -1,14 +1,14 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
 import Bucket from '../../buckets';
 import Phil from '../../phil';
-import { DiscordPromises } from '../../promises/discord';
+import { deleteMessage } from '../../promises/discord';
 import { PromptQueue } from '../../prompts/queue';
 import ReactablePost from '../../reactables/post';
 import ReactableType from '../../reactables/reactable-type';
-import PromptQueueReactableShared from './shared';
+import { Data, Emoji, ReactableHandle } from './shared';
 
 export default class PromptQueueReactable extends ReactableType {
-  public readonly handle = PromptQueueReactableShared.ReactableHandle;
+  public readonly handle = ReactableHandle;
 
   public async processReactionAdded(
     phil: Phil,
@@ -16,12 +16,12 @@ export default class PromptQueueReactable extends ReactableType {
     event: OfficialDiscordReactionEvent
   ): Promise<any> {
     switch (event.emoji.name) {
-      case PromptQueueReactableShared.Emoji.Previous: {
+      case Emoji.Previous: {
         await this.movePage(phil, post, -1);
         break;
       }
 
-      case PromptQueueReactableShared.Emoji.Next: {
+      case Emoji.Next: {
         await this.movePage(phil, post, 1);
         break;
       }
@@ -33,7 +33,7 @@ export default class PromptQueueReactable extends ReactableType {
     post: ReactablePost,
     pageDelta: number
   ): Promise<void> {
-    const data = post.jsonData as PromptQueueReactableShared.Data;
+    const data = post.jsonData as Data;
     const newPageNumber = data.currentPage + pageDelta;
 
     if (!this.canMoveToPage(data, newPageNumber)) {
@@ -59,21 +59,14 @@ export default class PromptQueueReactable extends ReactableType {
     );
 
     await post.remove(phil.db);
-    await DiscordPromises.deleteMessage(
-      phil.bot,
-      post.channelId,
-      post.messageId
-    );
+    await deleteMessage(phil.bot, post.channelId, post.messageId);
 
     await queue.postToChannel(phil.bot, phil.db, post);
 
     console.log('moving to page ' + newPageNumber);
   }
 
-  private canMoveToPage(
-    data: PromptQueueReactableShared.Data,
-    newPageNumber: number
-  ): boolean {
+  private canMoveToPage(data: Data, newPageNumber: number): boolean {
     return newPageNumber > 0 && newPageNumber <= data.totalNumberPages;
   }
 }

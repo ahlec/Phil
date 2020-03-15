@@ -5,7 +5,7 @@ import PermissionLevel from '../permission-level';
 import Phil from '../phil';
 import Requestable, { RequestableCreationDefinition } from '../requestables';
 import ServerConfig from '../server-config';
-import { BotUtils } from '../utils';
+import { sendSuccessMessage } from '../utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class DefineCommand extends Command {
@@ -55,7 +55,7 @@ export default class DefineCommand extends Command {
       'request` to grant the ' +
       definition.role.name +
       ' role.';
-    BotUtils.sendSuccessMessage({
+    await sendSuccessMessage({
       bot: phil.bot,
       channelId: message.channelId,
       message: reply,

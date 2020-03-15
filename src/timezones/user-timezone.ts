@@ -1,7 +1,11 @@
 import moment = require('moment-timezone');
 import Database from '../database';
-import TimezoneQuestionnaire from './questionnaire';
-import Stages from './questionnaire-stages/@all-stages';
+import { isCurrentlyDoingQuestionnaire } from './questionnaire';
+import {
+  DeclinedStage,
+  FinishedStage,
+  getFromNumber,
+} from './questionnaire-stages/@all-stages';
 import IStage from './questionnaire-stages/@stage';
 
 export default class UserTimezone {
@@ -31,7 +35,7 @@ export default class UserTimezone {
 
   private static determineStage(dbRow: any): IStage {
     const stageNo = parseInt(dbRow.stage, 10);
-    return Stages.getFromNumber(stageNo);
+    return getFromNumber(stageNo);
   }
 
   public readonly hasProvided: boolean;
@@ -41,11 +45,9 @@ export default class UserTimezone {
 
   private constructor(public readonly userId: string, dbRow: any) {
     const stage = UserTimezone.determineStage(dbRow);
-    this.hasProvided = stage === Stages.Finished;
-    this.hasDeclined = stage === Stages.Declined;
-    this.isCurrentlyDoingQuestionnaire = TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(
-      stage
-    );
+    this.hasProvided = stage === FinishedStage;
+    this.hasDeclined = stage === DeclinedStage;
+    this.isCurrentlyDoingQuestionnaire = isCurrentlyDoingQuestionnaire(stage);
 
     if (this.hasProvided) {
       this.timezoneName = dbRow.timezone_name;

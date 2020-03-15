@@ -1,5 +1,5 @@
 import EmbedColor from '../embed-color';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import {
   BotManagerCommand,
   LoggerDefinition,
@@ -13,7 +13,7 @@ export default class InviteCommand extends BotManagerCommand {
   }
 
   public async execute(phil: Phil, message: PrivateMessage): Promise<any> {
-    await DiscordPromises.sendEmbedMessage(phil.bot, message.userId, {
+    await sendEmbedMessage(phil.bot, message.userId, {
       color: EmbedColor.Info,
       description: phil.bot.inviteURL,
       title: ':gift: My Invite Link',

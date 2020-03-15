@@ -4,7 +4,7 @@ import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendMessage } from '../promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 export default class UnpauseCommand extends Command {
@@ -44,6 +44,6 @@ export default class UnpauseCommand extends Command {
       'pause ' +
       bucket.handle +
       '`.';
-    DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
+    sendMessage(phil.bot, message.channelId, reply);
   }
 }

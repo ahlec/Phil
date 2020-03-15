@@ -3,9 +3,9 @@ import * as moment from 'moment';
 import Bucket from '../buckets';
 import Database from '../database';
 import EmbedColor from '../embed-color';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage } from '../promises/discord';
 import ServerConfig from '../server-config';
-import { BotUtils } from '../utils';
+import { getUserDisplayName } from '../utils';
 import Submission from './submission';
 
 export interface PromptDatabaseSchema {
@@ -240,7 +240,7 @@ export default class Prompt {
       submissionText,
     } = this.submission;
 
-    return DiscordPromises.sendEmbedMessage(client, channelId, {
+    return sendEmbedMessage(client, channelId, {
       color: EmbedColor.Info,
       description: submissionText,
       footer: {
@@ -293,7 +293,7 @@ export default class Prompt {
     } else {
       const server = client.servers[this.submission.bucket.serverId];
       const user = client.users[this.submission.suggestingUserId];
-      const displayName = BotUtils.getUserDisplayName(user, server);
+      const displayName = getUserDisplayName(user, server);
 
       footer += `by ${displayName}`;
       if (!server.members[this.submission.suggestingUserId]) {
@@ -306,9 +306,7 @@ export default class Prompt {
       footer += ` and has been shown ${this.repetitionNumber} ${times} before`;
     }
 
-    footer += `. You can suggest your own by using ${
-      serverConfig.commandPrefix
-    }suggest.`;
+    footer += `. You can suggest your own by using ${serverConfig.commandPrefix}suggest.`;
     return footer;
   }
 }

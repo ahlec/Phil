@@ -4,7 +4,7 @@ import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendMessage } from '../promises/discord';
 import Submission from '../prompts/submission';
 import ServerConfig from '../server-config';
 import Command, { LoggerDefinition } from './@types';
@@ -69,7 +69,7 @@ export default class UnconfirmedCommand extends Command {
     phil: Phil,
     channelId: string
   ): Promise<string> {
-    return DiscordPromises.sendMessage(
+    return sendMessage(
       phil.bot,
       channelId,
       ':large_blue_diamond: There are no unconfirmed submissions in this bucket right now.'
@@ -85,9 +85,7 @@ export default class UnconfirmedCommand extends Command {
     const are = submissions.length === 1 ? 'is' : 'are';
     const submissionsNoun =
       submissions.length === 1 ? 'submission' : 'submissions';
-    let message = `:pencil: Here ${are} ${
-      submissions.length
-    } unconfirmed ${submissionsNoun}.`;
+    let message = `:pencil: Here ${are} ${submissions.length} unconfirmed ${submissionsNoun}.`;
 
     for (let index = 0; index < submissions.length; ++index) {
       message += `\n        \`${index + 1}\`: "${
@@ -105,6 +103,6 @@ export default class UnconfirmedCommand extends Command {
       serverConfig.commandPrefix +
       'confirm 2-7`)';
 
-    return DiscordPromises.sendMessage(phil.bot, channelId, message);
+    return sendMessage(phil.bot, channelId, message);
   }
 }

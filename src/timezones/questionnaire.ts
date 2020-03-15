@@ -1,6 +1,11 @@
-import Stages from './questionnaire-stages/@all-stages';
+import {
+  CountryStage,
+  LetsBeginStage,
+  FinishedStage,
+  getFromNumber,
+} from './questionnaire-stages/@all-stages';
 import IStage from './questionnaire-stages/@stage';
-import QuestionnaireStageUtils from './questionnaire-stages/@utils';
+import { sendStageMessage } from './questionnaire-stages/@utils';
 
 import Database from '../database';
 import { endOngoingDirectMessageProcesses } from '../DirectMessageUtils';
@@ -31,68 +36,64 @@ async function canStartQuestionnaire(
   return true;
 }
 
-export namespace TimezoneQuestionnaire {
-  export function isCurrentlyDoingQuestionnaire(stage: IStage): boolean {
-    return stage.stageNumber < Stages.Finished.stageNumber;
+export function isCurrentlyDoingQuestionnaire(stage: IStage): boolean {
+  return stage.stageNumber < FinishedStage.stageNumber;
+}
+
+export async function startQuestionnaire(
+  phil: Phil,
+  userId: string,
+  manuallyStartedQuestionnaire: boolean
+): Promise<boolean> {
+  const canStart = await canStartQuestionnaire(
+    phil.db,
+    userId,
+    manuallyStartedQuestionnaire
+  );
+  if (!canStart) {
+    return false;
   }
 
-  export async function startQuestionnaire(
-    phil: Phil,
-    userId: string,
-    manuallyStartedQuestionnaire: boolean
-  ): Promise<boolean> {
-    const canStart = await canStartQuestionnaire(
-      phil.db,
-      userId,
-      manuallyStartedQuestionnaire
-    );
-    if (!canStart) {
-      return false;
-    }
+  await endOngoingDirectMessageProcesses(phil, userId);
 
-    await endOngoingDirectMessageProcesses(phil, userId);
+  await phil.db.query('DELETE FROM timezones WHERE userid = $1', [userId]);
 
-    await phil.db.query('DELETE FROM timezones WHERE userid = $1', [userId]);
+  const initialStage = manuallyStartedQuestionnaire
+    ? CountryStage
+    : LetsBeginStage;
+  const username = phil.bot.users[userId].username;
+  await phil.db.query(
+    'INSERT INTO timezones(username, userid, stage) VALUES($1, $2, $3)',
+    [username, userId, initialStage.stageNumber]
+  );
 
-    const initialStage = manuallyStartedQuestionnaire
-      ? Stages.Country
-      : Stages.LetsBegin;
-    const username = phil.bot.users[userId].username;
-    await phil.db.query(
-      'INSERT INTO timezones(username, userid, stage) VALUES($1, $2, $3)',
-      [username, userId, initialStage.stageNumber]
-    );
+  await sendStageMessage(phil, userId, initialStage);
+  return true;
+}
 
-    await QuestionnaireStageUtils.sendStageMessage(phil, userId, initialStage);
-    return true;
+export async function getStageForUser(
+  db: Database,
+  userId: string
+): Promise<IStage | null> {
+  const results = await db.query(
+    'SELECT stage FROM timezones WHERE userid = $1 LIMIT 1',
+    [userId]
+  );
+  if (results.rowCount !== 1) {
+    return null;
   }
 
-  export async function getStageForUser(
-    db: Database,
-    userId: string
-  ): Promise<IStage | null> {
-    const results = await db.query(
-      'SELECT stage FROM timezones WHERE userid = $1 LIMIT 1',
-      [userId]
-    );
-    if (results.rowCount !== 1) {
-      return null;
-    }
+  const stageNo = parseInt(results.rows[0].stage, 10);
+  return getFromNumber(stageNo);
+}
 
-    const stageNo = parseInt(results.rows[0].stage, 10);
-    return Stages.getFromNumber(stageNo);
-  }
-
-  export async function endQuestionnaire(db: Database, userId: string) {
-    await db.execute(
-      `DELETE FROM
+export async function endQuestionnaire(db: Database, userId: string) {
+  await db.execute(
+    `DELETE FROM
         timezones
       WHERE
         userid = $1 AND
         stage < $2`,
-      [userId, Stages.Finished.stageNumber]
-    );
-  }
+    [userId, FinishedStage.stageNumber]
+  );
 }
-
-export default TimezoneQuestionnaire;

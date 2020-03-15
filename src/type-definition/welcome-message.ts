@@ -1,6 +1,6 @@
 import Phil from '../phil';
 import ServerConfig from '../server-config';
-import BotUtils from '../utils';
+import { truncateString } from '../utils';
 import {
   ParseResult,
   TypeDefinition,
@@ -54,7 +54,7 @@ class WelcomeMessageTypeDefinitionImplementation implements TypeDefinition {
       return '(None)';
     }
 
-    let truncated = BotUtils.truncateString(value, DISPLAY_CHARACTER_LIMIT);
+    let truncated = truncateString(value, DISPLAY_CHARACTER_LIMIT);
     const omittedTextLength = value.length - truncated.length;
     if (omittedTextLength > 0) {
       truncated += `... (and ${omittedTextLength} more character${omittedTextLength !==

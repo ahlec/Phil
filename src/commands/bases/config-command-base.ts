@@ -3,10 +3,10 @@ import { HelpGroup } from '../../help-groups';
 import PublicMessage from '../../messages/public';
 import PermissionLevel from '../../permission-level';
 import Phil from '../../phil';
-import { DiscordPromises, EmbedField } from '../../promises/discord';
+import { sendEmbedMessage, EmbedField } from '../../promises/discord';
 import ServerConfig from '../../server-config';
 import { TypeDefinition } from '../../type-definition/@type-definition';
-import BotUtils from '../../utils';
+import { getRandomArrayEntry } from '../../utils';
 import Command, { LoggerDefinition } from '../@types';
 import {
   ConfigAction,
@@ -149,7 +149,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       model
     )}`;
 
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+    return sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Info,
       description: response,
       title: this.titleCaseConfigurationFor + ' Configuration',
@@ -177,7 +177,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       model
     )}`;
 
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+    return sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Error,
       description: response,
       title: `${this.titleCaseConfigurationFor} Configuration: Unknown action`,
@@ -220,11 +220,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     action: ConfigAction<TModel>,
     model: TModel
   ): Promise<any> {
-    const response = `You attempted to use an unknown property with the **${
-      action.primaryKey
-    }** action.${NEWLINE}${NEWLINE}**PROPERTIES**${NEWLINE}The following are all of the properties that are recognized with the ${
-      message.serverConfig.commandPrefix
-    }${this.name} command:`;
+    const response = `You attempted to use an unknown property with the **${action.primaryKey}** action.${NEWLINE}${NEWLINE}**PROPERTIES**${NEWLINE}The following are all of the properties that are recognized with the ${message.serverConfig.commandPrefix}${this.name} command:`;
 
     const fields: EmbedField[] = [];
     for (const property of this.orderedProperties) {
@@ -241,13 +237,11 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       });
     }
 
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+    return sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Error,
       description: response,
       fields,
-      title: `${
-        this.titleCaseConfigurationFor
-      } Configuration: Unknown property`,
+      title: `${this.titleCaseConfigurationFor} Configuration: Unknown property`,
     });
   }
 
@@ -256,10 +250,8 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     serverConfig: ServerConfig,
     model: TModel
   ): string {
-    const demoProp = BotUtils.getRandomArrayEntry(this.orderedProperties);
-    let explanation = `**ACTIONS**${NEWLINE}The various actions that you can take with \`${
-      serverConfig.commandPrefix
-    }${this.name}\` are as follows:\`\`\``;
+    const demoProp = getRandomArrayEntry(this.orderedProperties);
+    let explanation = `**ACTIONS**${NEWLINE}The various actions that you can take with \`${serverConfig.commandPrefix}${this.name}\` are as follows:\`\`\``;
     const usageExamples: string[] = [];
     let specialUsageNotes = '';
 
@@ -270,9 +262,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
         lineEnd = '.';
       }
 
-      explanation += `● [${action.primaryKey}] - ${
-        action.description
-      }${lineEnd}`;
+      explanation += `● [${action.primaryKey}] - ${action.description}${lineEnd}`;
 
       usageExamples.push(
         this.createActionExampleUse(phil, serverConfig, action, demoProp, model)
@@ -289,9 +279,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
 
     let demoActionRequiringProperty: ConfigAction<TModel>;
     do {
-      demoActionRequiringProperty = BotUtils.getRandomArrayEntry(
-        this.orderedActions
-      );
+      demoActionRequiringProperty = getRandomArrayEntry(this.orderedActions);
     } while (!demoActionRequiringProperty.isPropertyRequired);
 
     explanation += `\`\`\`${NEWLINE}**USAGE**${NEWLINE}Using this command is a matter of combining an action and a property ${NOWRAP} (if appropriate), like so:${NEWLINE}\`\`\`${usageExamples.join(
@@ -314,9 +302,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     demoProperty: ConfigProperty<TModel>,
     model: TModel
   ): string {
-    let example = `${serverConfig.commandPrefix}${this.name} ${
-      action.primaryKey
-    }`;
+    let example = `${serverConfig.commandPrefix}${this.name} ${action.primaryKey}`;
 
     for (const parameter of action.parameters) {
       example += ' ';

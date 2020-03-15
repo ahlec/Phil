@@ -1,7 +1,7 @@
 import EmbedColor from '../../../embed-color';
 import PublicMessage from '../../../messages/public';
 import Phil from '../../../phil';
-import { DiscordPromises, EmbedField } from '../../../promises/discord';
+import { sendEmbedMessage, EmbedField } from '../../../promises/discord';
 import ServerConfig from '../../../server-config';
 import { ConfigCommandBase, ConfigProperty } from '../config-command-base';
 import {
@@ -34,7 +34,7 @@ export default class DisplayConfigAction<TModel>
       );
     }
 
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+    return sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Info,
       fields,
       title: command.titleCaseConfigurationFor + ' Configuration: Overview',
@@ -52,9 +52,7 @@ export default class DisplayConfigAction<TModel>
       serverConfig
     );
     return {
-      name: `:small_blue_diamond: ${property.displayName} [key: \`${
-        property.key
-      }\`]`,
+      name: `:small_blue_diamond: ${property.displayName} [key: \`${property.key}\`]`,
       value: displayValue,
     };
   }

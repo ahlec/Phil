@@ -2,7 +2,7 @@ import Features from '../features/all-features';
 import { HelpGroup } from '../help-groups';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendMessage } from '../promises/discord';
 import UserTimezone from '../timezones/user-timezone';
 import Command, { LoggerDefinition } from './@types';
 
@@ -32,11 +32,7 @@ export default class TimediffCommand extends Command {
 
     const mention = message.mentions[0];
     if (mention.userId === message.userId) {
-      return DiscordPromises.sendMessage(
-        phil.bot,
-        message.channelId,
-        ':unamused:'
-      );
+      return sendMessage(phil.bot, message.channelId, ':unamused:');
     }
 
     const ownTimezone = await UserTimezone.getForUser(phil.db, message.userId);
@@ -62,7 +58,7 @@ export default class TimediffCommand extends Command {
 
     const hoursApart = ownTimezone.getHoursApart(theirTimezone);
     const reply = this.composeReply(hoursApart, mention.user);
-    return DiscordPromises.sendMessage(phil.bot, message.channelId, reply);
+    return sendMessage(phil.bot, message.channelId, reply);
   }
 
   private composeReply(hoursApart: number, otherUser: string): string {

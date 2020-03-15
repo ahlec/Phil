@@ -2,7 +2,7 @@ import { Moment } from 'moment';
 import Features from '../features/all-features';
 import GlobalConfig from '../GlobalConfig';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendMessage } from '../promises/discord';
 import ServerConfig from '../server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
@@ -28,7 +28,7 @@ export default class BootyDayChrono extends Logger implements Chrono {
       return;
     }
 
-    DiscordPromises.sendMessage(
+    sendMessage(
       phil.bot,
       serverConfig.newsChannel.id,
       process.env.CUSTOM_EMOJI_PEEK +

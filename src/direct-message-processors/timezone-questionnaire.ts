@@ -1,6 +1,9 @@
 import PrivateMessage from '../messages/private';
 import Phil from '../phil';
-import TimezoneQuestionnaire from '../timezones/questionnaire';
+import {
+  isCurrentlyDoingQuestionnaire,
+  getStageForUser,
+} from '../timezones/questionnaire';
 import IStage from '../timezones/questionnaire-stages/@stage';
 import { DirectMessageProcessor, ProcessorActiveToken } from './@base';
 
@@ -16,17 +19,14 @@ export default class TimezoneQuestionnaireProcessor
     phil: Phil,
     message: PrivateMessage
   ): Promise<TimezoneQuestionnaireToken> {
-    const currentStage = await TimezoneQuestionnaire.getStageForUser(
-      phil.db,
-      message.userId
-    );
+    const currentStage = await getStageForUser(phil.db, message.userId);
     if (!currentStage) {
       return {
         isActive: false,
       };
     }
 
-    if (!TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(currentStage)) {
+    if (!isCurrentlyDoingQuestionnaire(currentStage)) {
       return {
         isActive: false,
       };

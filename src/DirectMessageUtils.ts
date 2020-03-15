@@ -1,6 +1,10 @@
 import Phil from './phil';
 import SubmissionSession from './prompts/submission-session';
-import TimezoneQuestionnaire from './timezones/questionnaire';
+import {
+  endQuestionnaire,
+  getStageForUser,
+  isCurrentlyDoingQuestionnaire,
+} from './timezones/questionnaire';
 
 export async function endOngoingDirectMessageProcesses(
   phil: Phil,
@@ -14,14 +18,8 @@ export async function endOngoingDirectMessageProcesses(
     await submissionSession.end(phil);
   }
 
-  const questionnaireStage = await TimezoneQuestionnaire.getStageForUser(
-    phil.db,
-    userId
-  );
-  if (
-    questionnaireStage &&
-    TimezoneQuestionnaire.isCurrentlyDoingQuestionnaire(questionnaireStage)
-  ) {
-    await TimezoneQuestionnaire.endQuestionnaire(phil.db, userId);
+  const questionnaireStage = await getStageForUser(phil.db, userId);
+  if (questionnaireStage && isCurrentlyDoingQuestionnaire(questionnaireStage)) {
+    await endQuestionnaire(phil.db, userId);
   }
 }

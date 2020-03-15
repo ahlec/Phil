@@ -1,7 +1,7 @@
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
-import YouTubePromises from '../promises/youtube';
+import { sendMessage } from '../promises/discord';
+import { searchYouTube } from '../promises/youtube';
 import Command, { LoggerDefinition } from './@types';
 
 export default class YoutubeCommand extends Command {
@@ -26,12 +26,12 @@ export default class YoutubeCommand extends Command {
       );
     }
 
-    const results = await YouTubePromises.search(query);
+    const results = await searchYouTube(query);
     if (results.length === 0 || !results[0].id) {
       throw new Error('There were no results on YouTube for you search.');
     }
 
     const link = 'https://youtu.be/' + results[0].id;
-    DiscordPromises.sendMessage(phil.bot, message.channelId, link);
+    sendMessage(phil.bot, message.channelId, link);
   }
 }

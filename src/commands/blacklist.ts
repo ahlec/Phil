@@ -7,10 +7,10 @@ import MessageBuilder from '../message-builder';
 import PublicMessage from '../messages/public';
 import PermissionLevel from '../permission-level';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendEmbedMessage, sendMessageBuilder } from '../promises/discord';
 import Requestable from '../requestables';
 import ServerConfig from '../server-config';
-import BotUtils from '../utils';
+import { getRandomArrayEntry, stitchTogetherArray } from '../utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class BlacklistCommand extends Command {
@@ -80,11 +80,7 @@ export default class BlacklistCommand extends Command {
       message.serverConfig,
       requestables
     );
-    return DiscordPromises.sendMessageBuilder(
-      phil.bot,
-      message.channelId,
-      reply
-    );
+    return sendMessageBuilder(phil.bot, message.channelId, reply);
   }
 
   private composeAllRequestablesList(
@@ -102,8 +98,8 @@ export default class BlacklistCommand extends Command {
       builder.append(this.composeRequestableListEntry(requestable));
     }
 
-    const randomRequestable = BotUtils.getRandomArrayEntry(requestables);
-    const randomRequestableString = BotUtils.getRandomArrayEntry(
+    const randomRequestable = getRandomArrayEntry(requestables);
+    const randomRequestableString = getRandomArrayEntry(
       randomRequestable.requestStrings
     );
 
@@ -119,7 +115,7 @@ export default class BlacklistCommand extends Command {
 
   private composeRequestableListEntry(requestable: Requestable): string {
     let entry = '- ';
-    entry += BotUtils.stitchTogetherArray(requestable.requestStrings);
+    entry += stitchTogetherArray(requestable.requestStrings);
     entry += ' to receive the "' + requestable.role.name + '" role\n';
     return entry;
   }
@@ -161,16 +157,12 @@ export default class BlacklistCommand extends Command {
       } on the blacklist for the **${requestable.role.name}** role:\n`;
       response += blacklistedUsers.map(username => `• ${username}`).join('\n');
     } else {
-      response = `There are **no** users on the blacklist for the **${
-        requestable.role.name
-      }** role.`;
+      response = `There are **no** users on the blacklist for the **${requestable.role.name}** role.`;
     }
 
-    response += `\n\nTo add or remove a user to the blacklist, use \`${
-      message.serverConfig.commandPrefix
-    }blacklist ${requestStringUsed} [user name]\` to toggle that user on the blacklist.`;
+    response += `\n\nTo add or remove a user to the blacklist, use \`${message.serverConfig.commandPrefix}blacklist ${requestStringUsed} [user name]\` to toggle that user on the blacklist.`;
 
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+    return sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Info,
       description: response,
       title: `:name_badge: "${requestable.role.name}" blacklist`,
@@ -190,7 +182,7 @@ export default class BlacklistCommand extends Command {
       this.error(`server: ${message.server.id}`);
       this.error(`member: ${member.id}`);
       this.error(result.message);
-      return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+      return sendEmbedMessage(phil.bot, message.channelId, {
         color: EmbedColor.Error,
         description: result.message,
         title: `:no_entry: Blacklist error encountered`,
@@ -205,7 +197,7 @@ export default class BlacklistCommand extends Command {
       const user = phil.bot.users[member.id];
       displayName = `${user.username}#${user.discriminator}`;
     }
-    return DiscordPromises.sendEmbedMessage(phil.bot, message.channelId, {
+    return sendEmbedMessage(phil.bot, message.channelId, {
       color: EmbedColor.Info,
       description: `**${displayName}** was ${
         isOnBlacklist ? 'added to' : 'removed from'

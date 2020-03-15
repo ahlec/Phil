@@ -1,16 +1,14 @@
 import { Client as DiscordIOClient } from 'discord.io';
 import Database from '../../database';
 import { ReactableCreateArgsBase, ReactableFactoryBase } from '../factory-base';
-import { PromptQueueReactableShared } from './shared';
+import { Data, Emoji, ReactableHandle } from './shared';
 
-interface CreateArgs
-  extends ReactableCreateArgsBase,
-    PromptQueueReactableShared.Data {}
+interface CreateArgs extends ReactableCreateArgsBase, Data {}
 
 export class PromptQueueReactableFactory extends ReactableFactoryBase<
   CreateArgs
 > {
-  protected readonly handle = PromptQueueReactableShared.ReactableHandle;
+  protected readonly handle = ReactableHandle;
 
   constructor(
     readonly bot: DiscordIOClient,
@@ -21,7 +19,7 @@ export class PromptQueueReactableFactory extends ReactableFactoryBase<
   }
 
   protected getJsonData(): any | null {
-    const data: PromptQueueReactableShared.Data = {
+    const data: Data = {
       bucket: this.args.bucket,
       currentPage: this.args.currentPage,
       pageSize: this.args.pageSize,
@@ -35,11 +33,11 @@ export class PromptQueueReactableFactory extends ReactableFactoryBase<
     const reactions: string[] = [];
 
     if (this.args.currentPage > 1) {
-      reactions.push(PromptQueueReactableShared.Emoji.Previous);
+      reactions.push(Emoji.Previous);
     }
 
     if (this.args.currentPage < this.args.totalNumberPages) {
-      reactions.push(PromptQueueReactableShared.Emoji.Next);
+      reactions.push(Emoji.Next);
     }
 
     return reactions;

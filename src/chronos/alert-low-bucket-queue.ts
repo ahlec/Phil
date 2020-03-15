@@ -1,7 +1,7 @@
 import Bucket from '../buckets';
 import Features from '../features/all-features';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
+import { sendMessage } from '../promises/discord';
 import { PromptQueue } from '../prompts/queue';
 import ServerConfig from '../server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
@@ -57,11 +57,7 @@ export default class AlertLowBucketQueueChrono extends Logger
     }\`) is growing short. There ${are}  **${
       queueLength > 0 ? queueLength : 'no'
     }** more ${promptNoun} in the queue.`;
-    DiscordPromises.sendMessage(
-      phil.bot,
-      serverConfig.botControlChannel.id,
-      message
-    );
+    sendMessage(phil.bot, serverConfig.botControlChannel.id, message);
 
     bucket.markAlertedEmptying(phil.db, true);
   }

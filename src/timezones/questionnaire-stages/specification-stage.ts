@@ -1,11 +1,11 @@
 import IStage from './@stage';
 import { CountryTimezones, TimezoneData } from './@timezone-data';
-import QuestionnaireStageUtils from './@utils';
+import { setTimezone } from './@utils';
 
 import Database from '../../database';
 import PrivateMessage from '../../messages/private';
 import Phil from '../../phil';
-import { DiscordPromises } from '../../promises/discord';
+import { sendMessage } from '../../promises/discord';
 
 export default class SpecificationStage implements IStage {
   public readonly stageNumber = 3;
@@ -26,7 +26,7 @@ export default class SpecificationStage implements IStage {
         timezoneData,
         "Sorry, that wasn't actually a number. Can you try again?"
       );
-      return DiscordPromises.sendMessage(phil.bot, message.userId, reply);
+      return sendMessage(phil.bot, message.userId, reply);
     }
 
     input = input - 1; // Front-facing, it's one-based
@@ -35,14 +35,10 @@ export default class SpecificationStage implements IStage {
         timezoneData,
         "That wasn't actually a number with a timezone I can understand. Can we try again?"
       );
-      return DiscordPromises.sendMessage(phil.bot, message.userId, reply);
+      return sendMessage(phil.bot, message.userId, reply);
     }
 
-    QuestionnaireStageUtils.setTimezone(
-      phil,
-      message.userId,
-      timezoneData.timezones[input].name
-    );
+    setTimezone(phil, message.userId, timezoneData.timezones[input].name);
   }
 
   private async getTimezoneDataFromCountryDb(

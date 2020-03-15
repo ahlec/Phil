@@ -1,8 +1,8 @@
 import Features from '../features/all-features';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
-import { DiscordPromises } from '../promises/discord';
-import BotUtils from '../utils';
+import { sendMessage } from '../promises/discord';
+import { sendErrorMessage } from '../utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class MapCommand extends Command {
@@ -21,7 +21,7 @@ export default class MapCommand extends Command {
     commandArgs: ReadonlyArray<string>
   ): Promise<any> {
     if (!message.serverConfig.fandomMapLink) {
-      return BotUtils.sendErrorMessage({
+      return sendErrorMessage({
         bot: phil.bot,
         channelId: message.channelId,
         message:
@@ -29,7 +29,7 @@ export default class MapCommand extends Command {
       });
     }
 
-    return DiscordPromises.sendMessage(
+    return sendMessage(
       phil.bot,
       message.channelId,
       message.serverConfig.fandomMapLink
