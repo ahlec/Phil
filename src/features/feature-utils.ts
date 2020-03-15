@@ -16,7 +16,7 @@ export async function getServerFeaturesStatus(
   db: Database,
   serverId: string
 ): Promise<BatchFeaturesEnabledLookup> {
-  const results = await db.query(
+  const results = await db.query<{ feature_id: string; is_enabled: string }>(
     'SELECT feature_id, is_enabled FROM server_features WHERE server_id = $1',
     [serverId]
   );

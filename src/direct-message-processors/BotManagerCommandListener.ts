@@ -36,7 +36,7 @@ export default class BotManagerCommandListener extends Logger
     };
   }
 
-  public async process(phil: Phil, message: PrivateMessage) {
+  public async process(phil: Phil, message: PrivateMessage): Promise<void> {
     const parseResult = this.parseCommand(message.content);
     if (!parseResult.isValid) {
       if (parseResult.error) {

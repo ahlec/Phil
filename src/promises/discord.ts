@@ -6,7 +6,7 @@ import { wait } from '../utils/delay';
 declare interface DiscordIOCallbackError {
   statusCode?: number;
   statusMessage?: string;
-  response?: any;
+  response?: unknown;
 }
 
 export interface EmbedField {
@@ -172,7 +172,7 @@ export function giveRoleToUser(
         serverID: serverId,
         userID: userId,
       },
-      (err, response) => {
+      err => {
         if (err) {
           reject(err);
           return;
@@ -189,7 +189,7 @@ export function takeRoleFromUser(
   serverId: string,
   userId: string,
   roleId: string
-): Promise<any> {
+): Promise<unknown> {
   return new Promise((resolve, reject) => {
     bot.removeFromRole(
       {
@@ -243,7 +243,7 @@ export function editRole(
         roleID: roleId,
         serverID: serverId,
       },
-      (err: Error, response: any) => {
+      err => {
         if (err) {
           reject(err);
           return;
@@ -307,15 +307,14 @@ export function addReaction(
   messageId: string,
   reaction: string
 ): Promise<void> {
-  const anyBot: any = bot;
   return new Promise((resolve, reject) => {
-    anyBot.addReaction(
+    bot.addReaction(
       {
         channelID: channelId,
         messageID: messageId,
         reaction,
       },
-      (err: DiscordIOCallbackError, response: any) => {
+      (err: DiscordIOCallbackError) => {
         if (err) {
           if (err.statusCode === 429) {
             const waitTime: number = err.response.retry_after;
@@ -343,16 +342,15 @@ export function removeOwnReaction(
   messageId: string,
   reaction: string
 ): Promise<void> {
-  const anyBot: any = bot;
   return new Promise((resolve, reject) => {
-    anyBot.removeReaction(
+    bot.removeReaction(
       {
         channelID: channelId,
         messageID: messageId,
         reaction,
         userID: bot.id,
       },
-      (err: DiscordIOCallbackError, response: any) => {
+      (err: DiscordIOCallbackError) => {
         if (err) {
           if (err.statusCode === 429) {
             const waitTime: number = err.response.retry_after;

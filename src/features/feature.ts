@@ -17,7 +17,7 @@ export default class Feature {
   }
 
   public async getIsEnabled(db: Database, serverId: string): Promise<boolean> {
-    const results = await db.query(
+    const results = await db.query<{ is_enabled: string }>(
       'SELECT is_enabled FROM server_features WHERE server_id = $1 AND feature_id = $2 LIMIT 1',
       [serverId, this.id]
     );

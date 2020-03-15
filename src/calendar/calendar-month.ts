@@ -44,7 +44,7 @@ export default class CalendarMonth {
     bot: DiscordIOClient,
     db: Database,
     server: DiscordIOServer
-  ) {
+  ): Promise<void> {
     const results = await db.query<{ userid: string; birthday_day: number }>(
       'SELECT userid, birthday_day FROM birthdays WHERE birthday_month = $1',
       [this.month]
@@ -65,7 +65,9 @@ export default class CalendarMonth {
     }
   }
 
-  private async addServerEventsForMonth(server: DiscordIOServer) {
+  private async addServerEventsForMonth(
+    server: DiscordIOServer
+  ): Promise<void> {
     if (server.id === GlobalConfig.hijackServerId) {
       this.addEvent(3, 'Hijack Booty Day.');
     }

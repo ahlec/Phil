@@ -5,7 +5,7 @@ always split prior to the max number of characters per message. */
 export default class MessageBuilder {
   public readonly messages: string[] = [];
 
-  public append(text: string) {
+  public append(text: string): void {
     if (!text) {
       return;
     }

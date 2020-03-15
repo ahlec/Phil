@@ -278,7 +278,7 @@ export default class Bucket {
     return this.internalAlertedBucketEmptying;
   }
 
-  public async setIsPaused(db: Database, isPaused: boolean) {
+  public async setIsPaused(db: Database, isPaused: boolean): Promise<void> {
     const rowsModified = await db.execute(
       'UPDATE prompt_buckets SET is_paused = $1 WHERE bucket_id = $2',
       [isPaused ? 1 : 0, this.id]
@@ -321,7 +321,10 @@ export default class Bucket {
     }
   }
 
-  public async markAlertedEmptying(db: Database, hasAlerted: boolean) {
+  public async markAlertedEmptying(
+    db: Database,
+    hasAlerted: boolean
+  ): Promise<void> {
     const rowsModified = await db.execute(
       'UPDATE prompt_buckets SET alerted_bucket_emptying = $1 WHERE bucket_id = $2',
       [hasAlerted ? 1 : 0, this.id]

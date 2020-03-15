@@ -25,7 +25,7 @@ export default class ChronoManager extends Logger {
     this.hasBeenStarted = false;
   }
 
-  public start() {
+  public start(): void {
     if (this.hasBeenStarted) {
       return;
     }
@@ -43,7 +43,10 @@ export default class ChronoManager extends Logger {
     this.processChronos(); // Also run at startup to make sure you get anything that ran earlier that day
   }
 
-  public getMinutesSinceLastMessageInChannel(channelId: string, now: Date) {
+  public getMinutesSinceLastMessageInChannel(
+    channelId: string,
+    now: Date
+  ): number {
     const minutesSinceLast = this.channelsLastMessageTable[channelId];
     if (!minutesSinceLast) {
       this.channelsLastMessageTable[channelId] = new Date(); // We'll set it here since we don't have a baseline but it helps us move past this section if the bot started out with the channel dead
@@ -58,19 +61,22 @@ export default class ChronoManager extends Logger {
     return Math.floor(millisecondsDiff / 1000 / 60);
   }
 
-  public recordNewMessageInChannel(channelId: string) {
+  public recordNewMessageInChannel(channelId: string): void {
     this.channelsLastMessageTable[channelId] = new Date();
   }
 
-  private processChronos = () => {
+  private processChronos = async (): Promise<void> => {
     const now = moment.utc();
     const hour = now.hours();
     const date = now.format('YYYY-M-DD');
     this.write(`processing chronos with UTC hour = ${hour} on UTC ${date}'`);
 
-    this.phil.db
-      .query(
-        `SELECT
+    const results = await this.phil.db.query<{
+      server_id: string;
+      chrono_id: string;
+      chrono_handle: string;
+    }>(
+      `SELECT
                 sc.server_id,
                 c.chrono_id,
                 c.chrono_handle
@@ -86,19 +92,18 @@ export default class ChronoManager extends Logger {
                 (sc.date_last_ran IS NULL OR sc.date_last_ran < $2)
             ORDER BY
                 c.utc_hour ASC`,
-        [hour, date]
-      )
-      .then(results => {
-        for (const dbRow of results.rows) {
-          this.processChronoInstance(
-            now,
-            dbRow.chrono_handle,
-            dbRow.chrono_id,
-            dbRow.server_id,
-            date
-          );
-        }
-      });
+      [hour, date]
+    );
+
+    for (const dbRow of results.rows) {
+      this.processChronoInstance(
+        now,
+        dbRow.chrono_handle,
+        dbRow.chrono_id,
+        dbRow.server_id,
+        date
+      );
+    }
   };
 
   private async processChronoInstance(
@@ -107,7 +112,7 @@ export default class ChronoManager extends Logger {
     chronoId: number,
     serverId: string,
     utcDate: string
-  ) {
+  ): Promise<void> {
     this.write(`Executing ${chronoHandle} for serverId ${serverId}`);
 
     const server = this.phil.bot.servers[serverId];
@@ -142,18 +147,18 @@ export default class ChronoManager extends Logger {
         await chronoDefinition.process(this.phil, serverConfig, now);
       }
 
-      this.markChronoProcessed(chronoId, serverId, utcDate);
+      await this.markChronoProcessed(chronoId, serverId, utcDate);
     } catch (err) {
-      this.reportChronoError(err, serverConfig, chronoHandle);
+      await this.reportChronoError(err, serverConfig, chronoHandle);
     }
   }
 
-  private markChronoProcessed(
+  private async markChronoProcessed(
     chronoId: number,
     serverId: string,
     utcDate: string
-  ) {
-    return this.phil.db.query(
+  ): Promise<void> {
+    await this.phil.db.query(
       `UPDATE server_chronos
             SET date_last_ran = $1
             WHERE server_id = $2 AND chrono_id = $3`,
@@ -161,16 +166,16 @@ export default class ChronoManager extends Logger {
     );
   }
 
-  private reportChronoError(
+  private async reportChronoError(
     err: Error | string,
     serverConfig: ServerConfig,
     chronoHandle: string
-  ) {
+  ): Promise<void> {
     this.error(
       `error running ${chronoHandle} for server ${serverConfig.server.id}`
     );
     this.error(err);
-    return sendEmbedMessage(this.phil.bot, serverConfig.botControlChannel.id, {
+    await sendEmbedMessage(this.phil.bot, serverConfig.botControlChannel.id, {
       color: EmbedColor.Error,
       description: inspect(err),
       footer: {

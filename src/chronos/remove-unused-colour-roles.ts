@@ -21,7 +21,7 @@ export default class RemoveUnusedColorRolesChrono extends Logger
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig) {
+  public async process(phil: Phil, serverConfig: ServerConfig): Promise<void> {
     const unusedColorRoles = this.getAllUnusedColorRoleIds(serverConfig.server);
     if (unusedColorRoles.length === 0) {
       return;

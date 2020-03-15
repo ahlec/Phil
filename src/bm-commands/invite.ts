@@ -12,7 +12,7 @@ export default class InviteCommand extends BotManagerCommand {
     super('invite', parentDefinition);
   }
 
-  public async execute(phil: Phil, message: PrivateMessage): Promise<any> {
+  public async execute(phil: Phil, message: PrivateMessage): Promise<void> {
     await sendEmbedMessage(phil.bot, message.userId, {
       color: EmbedColor.Info,
       description: phil.bot.inviteURL,

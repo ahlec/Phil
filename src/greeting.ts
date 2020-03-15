@@ -28,7 +28,7 @@ export default class Greeting extends Logger {
     }
   }
 
-  public async send(channelId: string) {
+  public async send(channelId: string): Promise<void> {
     try {
       const shouldWelcome = await this.shouldWelcomeMember();
       if (!shouldWelcome) {

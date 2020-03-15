@@ -15,7 +15,7 @@ export default class ServerDirectory extends Logger {
     super(new LoggerDefinition('Server Directory'));
   }
 
-  public clearCache() {
+  public clearCache(): void {
     this.configCache = {};
     this.write('Cache cleared.');
   }

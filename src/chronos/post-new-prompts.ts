@@ -23,7 +23,11 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
+  public async process(
+    phil: Phil,
+    serverConfig: ServerConfig,
+    now: Moment
+  ): Promise<void> {
     const serverBuckets = await Bucket.getAllForServer(
       phil.bot,
       phil.db,
@@ -46,7 +50,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     serverConfig: ServerConfig,
     now: Moment,
     bucket: Bucket
-  ) {
+  ): Promise<void> {
     const currentPrompt = await Prompt.getCurrentPrompt(
       phil.bot,
       phil.db,
@@ -122,7 +126,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     currentPrompt: Prompt | null,
     now: Moment,
     bucket: Bucket
-  ) {
+  ): boolean {
     if (!currentPrompt || !currentPrompt.promptDate) {
       return true;
     }

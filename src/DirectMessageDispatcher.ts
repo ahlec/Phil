@@ -26,25 +26,25 @@ export default class DirectMessageDispatcher extends Logger {
     super(LOGGER_DEFINITION);
   }
 
-  public async process(message: PrivateMessage) {
+  public async process(message: PrivateMessage): Promise<void> {
     for (const processor of this.processorsInPriorityOrder) {
       try {
         const token = await processor.canProcess(this.phil, message);
         if (token.isActive) {
           await processor.process(this.phil, message, token);
-          return;
         }
       } catch (err) {
-        this.reportError(err, processor);
-        return;
+        await this.reportError(err, processor);
       }
     }
   }
 
-  private reportError(err: Error, processor: DirectMessageProcessor) {
+  private async reportError(
+    err: Error,
+    processor: DirectMessageProcessor
+  ): Promise<void> {
     this.error(err);
-
-    sendEmbedMessage(this.phil.bot, GlobalConfig.botManagerUserId, {
+    await sendEmbedMessage(this.phil.bot, GlobalConfig.botManagerUserId, {
       color: EmbedColor.Error,
       description: inspect(err),
       footer: {

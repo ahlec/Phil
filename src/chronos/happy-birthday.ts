@@ -23,7 +23,11 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
+  public async process(
+    phil: Phil,
+    serverConfig: ServerConfig,
+    now: Moment
+  ): Promise<void> {
     const userIds = await this.getBirthdayUserIds(phil.db, serverConfig, now);
     const info = this.getInfo(phil, serverConfig, userIds);
     const birthdayWish = this.createBirthdayWish(info);
@@ -31,7 +35,7 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
       return;
     }
 
-    sendMessage(phil.bot, serverConfig.newsChannel.id, birthdayWish);
+    await sendMessage(phil.bot, serverConfig.newsChannel.id, birthdayWish);
   }
 
   private async getBirthdayUserIds(

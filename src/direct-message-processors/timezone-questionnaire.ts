@@ -42,12 +42,12 @@ export default class TimezoneQuestionnaireProcessor
     phil: Phil,
     message: PrivateMessage,
     rawToken: ProcessorActiveToken
-  ) {
+  ): Promise<void> {
     const token = rawToken as TimezoneQuestionnaireToken;
     if (!token.currentStage) {
       throw new Error('Cannot process an ongoing questionnaire');
     }
 
-    token.currentStage.processInput(phil, message);
+    await token.currentStage.processInput(phil, message);
   }
 }

@@ -18,7 +18,7 @@ export default class AlertLowBucketQueueChrono extends Logger
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig) {
+  public async process(phil: Phil, serverConfig: ServerConfig): Promise<void> {
     const serverBuckets = await Bucket.getAllForServer(
       phil.bot,
       phil.db,
@@ -49,7 +49,7 @@ export default class AlertLowBucketQueueChrono extends Logger
     serverConfig: ServerConfig,
     bucket: Bucket,
     queueLength: number
-  ) {
+  ): void {
     const are = queueLength === 1 ? 'is' : 'are';
     const promptNoun = queueLength === 1 ? 'prompt' : 'prompts';
     const message = `:warning: The queue for **${bucket.displayName}** (\`${

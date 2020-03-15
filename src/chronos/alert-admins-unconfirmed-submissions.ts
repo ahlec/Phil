@@ -17,7 +17,7 @@ export default class AlertAdminsUnconfirmedSubmissionsChrono extends Logger
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig) {
+  public async process(phil: Phil, serverConfig: ServerConfig): Promise<void> {
     const unconfirmedTally = await UnconfirmedSubmissionTally.collectForServer(
       phil.db,
       serverConfig.server.id
@@ -30,7 +30,7 @@ export default class AlertAdminsUnconfirmedSubmissionsChrono extends Logger
       return;
     }
 
-    sendEmbedMessage(phil.bot, serverConfig.botControlChannel.id, {
+    await sendEmbedMessage(phil.bot, serverConfig.botControlChannel.id, {
       color: EmbedColor.Info,
       description: reply,
       title: ':ballot_box: Unconfirmed Submissions',

@@ -15,7 +15,11 @@ export default class BootyDayChrono extends Logger implements Chrono {
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig, now: Moment) {
+  public async process(
+    phil: Phil,
+    serverConfig: ServerConfig,
+    now: Moment
+  ): Promise<void> {
     if (serverConfig.serverId !== GlobalConfig.hijackServerId) {
       this.write(
         `Server ${serverConfig.serverId} is not a Hijack server, skipping`
@@ -28,7 +32,7 @@ export default class BootyDayChrono extends Logger implements Chrono {
       return;
     }
 
-    sendMessage(
+    await sendMessage(
       phil.bot,
       serverConfig.newsChannel.id,
       process.env.CUSTOM_EMOJI_PEEK +

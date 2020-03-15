@@ -46,14 +46,6 @@ export function doesMemberUseRole(
   return false;
 }
 
-export function toStringDiscordError(err: any): string {
-  if (err.response) {
-    return '[Code ' + err.response.code + ': ' + err.response.message + ']';
-  }
-
-  return err.toString();
-}
-
 export function getRandomArrayEntry<T>(arr: ReadonlyArray<T>): T {
   const randomIndex = Math.floor(Math.random() * arr.length);
   return arr[randomIndex];

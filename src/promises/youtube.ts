@@ -9,7 +9,7 @@ export function searchYouTube(query: string): Promise<YoutubeVideo[]> {
   // Their typing definition for search is wrong, and the repo seems dead.
   // Unlikely that I can submit a fix and have it get pushed live.
 
-  const youtubeApi: any = new YouTube();
+  const youtubeApi = new YouTube();
   youtubeApi.setKey(GlobalConfig.youtubeApiKey);
 
   return new Promise((resolve, reject) => {

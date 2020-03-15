@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-function assertVariableExists(variableName: string) {
+function assertVariableExists(variableName: string): void {
   const envVariable = process.env[variableName];
   assert.ok(
     envVariable,
@@ -8,19 +8,19 @@ function assertVariableExists(variableName: string) {
   );
 }
 
-function assertCustomEmoji(variableName: string) {
+function assertCustomEmoji(variableName: string): void {
   assertVariableExists(variableName);
 
-  const envVariable = process.env[variableName]!;
+  const envVariable = process.env[variableName];
   assert.ok(
-    /<:[a-zA-Z0-9_]{2,}:[0-9]{10,}>/.test(envVariable),
+    /<:[a-zA-Z0-9_]{2,}:[0-9]{10,}>/.test(envVariable || ''),
     'The environment variable `' +
       variableName +
       '` is not in the proper custom emoji format. Type \\ before the custom emoji and copy in everything, including the < and >'
   );
 }
 
-export function ensureNecessaryEnvironmentVariables() {
+export function ensureNecessaryEnvironmentVariables(): void {
   assertCustomEmoji('CUSTOM_EMOJI_PEEK');
   assertCustomEmoji('CUSTOM_EMOJI_TRANSPARENT');
 }

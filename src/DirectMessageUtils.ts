@@ -9,7 +9,7 @@ import {
 export async function endOngoingDirectMessageProcesses(
   phil: Phil,
   userId: string
-) {
+): Promise<void> {
   const submissionSession = await SubmissionSession.getActiveSession(
     phil,
     userId

@@ -42,7 +42,7 @@ export default class CommandRunner extends Logger {
     return input !== null;
   }
 
-  public async runMessage(message: IPublicMessage) {
+  public async runMessage(message: IPublicMessage): Promise<void> {
     const input = InputMessage.parseFromMessage(
       message.serverConfig,
       message.content
@@ -77,7 +77,7 @@ export default class CommandRunner extends Logger {
     await this.runCommand(message, command, input);
   }
 
-  private logCommandRegistered(command: Command) {
+  private logCommandRegistered(command: Command): void {
     const aliases =
       command.aliases && command.aliases.length
         ? ` (aliases: ${command.aliases.map(alias => `'${alias}'`).join(', ')})`
@@ -85,7 +85,7 @@ export default class CommandRunner extends Logger {
     this.write(` > Registered '${command.name}'${aliases}`);
   }
 
-  private logInputReceived(message: IPublicMessage, input: InputMessage) {
+  private logInputReceived(message: IPublicMessage, input: InputMessage): void {
     this.write(
       `user ${message.user.username}${message.user.discriminator} used command ${message.serverConfig.commandPrefix}${input.commandName}`
     );
@@ -93,14 +93,17 @@ export default class CommandRunner extends Logger {
 
   private getCommandFromInputMessage(input: InputMessage): Command | null {
     if (input.commandName in this.commands) {
-      return this.commands[input.commandName]!;
+      return this.commands[input.commandName];
     }
 
     return null;
   }
 
-  private reportInvalidCommand(message: IPublicMessage, input: InputMessage) {
-    sendErrorMessage({
+  private async reportInvalidCommand(
+    message: IPublicMessage,
+    input: InputMessage
+  ): Promise<void> {
+    await sendErrorMessage({
       bot: this.bot,
       channelId: message.channelId,
       message: `There is no \`${message.serverConfig.commandPrefix}${input.commandName}\` command.`,
@@ -112,24 +115,26 @@ export default class CommandRunner extends Logger {
     message: IPublicMessage
   ): boolean {
     switch (command.permissionLevel) {
-      case PermissionLevel.General:
+      case PermissionLevel.General: {
         return true;
+      }
       case PermissionLevel.AdminOnly: {
         const member = message.server.members[message.userId];
         return message.serverConfig.isAdmin(member);
       }
-      default:
+      default: {
         return command.permissionLevel;
+      }
     }
   }
 
-  private reportCannotUseCommand(
+  private async reportCannotUseCommand(
     message: IPublicMessage,
     command: Command,
     input: InputMessage
-  ) {
+  ): Promise<void> {
     const permissionLevelName = getPermissionLevelName(command.permissionLevel);
-    sendErrorMessage({
+    await sendErrorMessage({
       bot: this.bot,
       channelId: message.channelId,
       message: `The \`${message.serverConfig.commandPrefix}${input.commandName}\` command requires ${permissionLevelName} privileges to use here.`,
@@ -140,7 +145,7 @@ export default class CommandRunner extends Logger {
     message: IPublicMessage,
     command: Command,
     input: InputMessage
-  ) {
+  ): Promise<void> {
     try {
       await command.processMessage(this.phil, message, input.commandArgs);
     } catch (err) {
@@ -148,9 +153,12 @@ export default class CommandRunner extends Logger {
     }
   }
 
-  private async reportCommandError(err: Error, channelId: string) {
+  private async reportCommandError(
+    err: Error,
+    channelId: string
+  ): Promise<void> {
     this.error(err);
-    sendErrorMessage({
+    await sendErrorMessage({
       bot: this.bot,
       channelId,
       message: err.message,

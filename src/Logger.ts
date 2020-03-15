@@ -1,23 +1,21 @@
-/* tslint:disable no-console */
-
+/* eslint-disable no-console */
 import LoggerDefinition from './LoggerDefinition';
 
 export default abstract class Logger {
   protected constructor(protected readonly definition: LoggerDefinition) {}
 
-  protected async write(msg: string) {
+  protected write(msg: string): void {
     console.log(this.definition.prefix, msg);
   }
 
-  protected async warn(msg: string) {
+  protected warn(msg: string): void {
     console.warn(this.definition.prefix, msg);
   }
 
-  protected async error(err: string | Error): Promise<void> {
+  protected error(err: string | Error): void {
     if (!err) {
-      return await this.error(
-        new Error('Called Logger.error without providing an error.')
-      );
+      this.error(new Error('Called Logger.error without providing an error.'));
+      return;
     }
 
     if (typeof err === 'string') {

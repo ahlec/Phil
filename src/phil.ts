@@ -23,7 +23,7 @@ import ReactableProcessor from './reactables/processor';
 import ServerDirectory from './server-directory';
 import { sendErrorMessage } from './utils';
 
-function ignoreDiscordCode(code: number) {
+function ignoreDiscordCode(code: number): boolean {
   return code === 1000; // General disconnect code
 }
 
@@ -54,7 +54,7 @@ export default class Phil extends Logger {
     this.reactableProcessor = new ReactableProcessor(this);
   }
 
-  public start() {
+  public start(): void {
     this.shouldSendDisconnectedMessage = false;
 
     this.bot.on('ready', this.onReady);
@@ -100,7 +100,7 @@ export default class Phil extends Logger {
     channelId: string,
     msg: string,
     event: OfficialDiscordPayload<OfficialDiscordMessage>
-  ) => {
+  ): Promise<void> => {
     const message = await parseMessage(this, event);
 
     if (this.isMessageFromPhil(message)) {
@@ -145,7 +145,7 @@ export default class Phil extends Logger {
 
   private handleOwnMessage(
     event: OfficialDiscordPayload<OfficialDiscordMessage>
-  ) {
+  ): void {
     const MESSAGE_TYPE_CHANNEL_PINNED_MESSAGE = 6; // https://discordapp.com/developers/docs/resources/channel#message-object-message-types
     if (event.d.type !== MESSAGE_TYPE_CHANNEL_PINNED_MESSAGE) {
       return;
@@ -167,7 +167,7 @@ export default class Phil extends Logger {
     }
   }
 
-  private onDisconnect = (err: Error, code: number) => {
+  private onDisconnect = (err: Error, code: number): void => {
     this.error(`Discord.io disconnected of its own accord. (Code: ${code})`);
     this.error(err);
     this.write('Attempting to reconnect now...');
@@ -175,7 +175,10 @@ export default class Phil extends Logger {
     this.bot.connect();
   };
 
-  private onMemberAdd = async (member: DiscordIOMember, event: any) => {
+  private onMemberAdd = async (
+    member: DiscordIOMember,
+    event: any
+  ): Promise<void> => {
     const serverId = (member as any).guild_id; // special field for this event
     const server = this.bot.servers[serverId];
     this.write(`A new member (${member.id}) has joined server ${serverId}.`);
@@ -203,7 +206,9 @@ export default class Phil extends Logger {
     }
   };
 
-  private onRawWebSocketEvent = (event: OfficialDiscordPayload<any>) => {
+  private onRawWebSocketEvent = (
+    event: OfficialDiscordPayload<unknown>
+  ): void => {
     if (event.t === 'MESSAGE_REACTION_ADD') {
       this.reactableProcessor.processReactionAdded(
         event.d as OfficialDiscordReactionEvent

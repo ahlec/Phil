@@ -27,18 +27,12 @@ export default class EvalBotManagerCommand extends BotManagerCommand {
     });
   }
 
-  private evaluateJavascript(phil: Phil, javascript: string): any {
-    /* tslint:disable:no-eval only-arrow-functions */
-    const evalFunc = function() {
-      return eval(javascript);
-    };
-    /* tslint:enable:no-eval only-arrow-functions */
-
+  private evaluateJavascript(phil: Phil, javascript: string): unknown {
     this.write('----------------------------------------');
     this.write('p!eval');
     this.write('');
     this.write(javascript);
-    const result = evalFunc.call(phil);
+    const result = eval.call(phil, javascript);
     this.write(`result: ${result}`);
     this.write(inspect(result));
     this.write('----------------------------------------');

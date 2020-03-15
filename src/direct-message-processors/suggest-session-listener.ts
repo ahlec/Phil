@@ -54,7 +54,7 @@ export default class SuggestSessionListener implements DirectMessageProcessor {
     phil: Phil,
     message: PrivateMessage,
     rawToken: ProcessorActiveToken
-  ) {
+  ): Promise<void> {
     const token = rawToken as SuggestSessionListenerToken;
     const validationResults = validatePromptSubmission(message.content);
     if (!validationResults.isValid || !token.currentSession) {
