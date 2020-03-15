@@ -1,19 +1,13 @@
-import {
-  Channel as DiscordIOChannel,
-  Member as DiscordIOMember,
-  Role as DiscordIORole,
-  Server as DiscordIOServer,
-} from 'discord.io';
+import * as discord from 'discord.io';
 import Database from './database';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 import { DEFAULT_PRONOUNS } from './pronouns/definitions';
 import Pronoun from './pronouns/pronoun';
 import { getPronounFromRole } from './pronouns/utils';
-const discord = require('discord.io');
 
 function doesRoleHavePermission(
-  role: DiscordIORole,
+  role: discord.Role,
   permission: number
 ): boolean {
   // TODO: Return to this function and determine if it's actually working?
@@ -32,7 +26,7 @@ function doesRoleHavePermission(
 export class ServerConfig extends Logger {
   public static async getFromId(
     db: Database,
-    server: DiscordIOServer
+    server: discord.Server
   ): Promise<ServerConfig | null> {
     const results = await db.query(
       'SELECT * FROM server_configs WHERE server_id = $1',
@@ -47,7 +41,7 @@ export class ServerConfig extends Logger {
 
   public static async initializeDefault(
     db: Database,
-    server: DiscordIOServer
+    server: discord.Server
   ): Promise<ServerConfig> {
     let botControlChannel = server.channels[server.id];
     if (!botControlChannel) {
@@ -82,14 +76,14 @@ export class ServerConfig extends Logger {
   public readonly serverId: string;
   public readonly fandomMapLink: string | null;
   private commandPrefixInternal: string;
-  private botControlChannelInternal: DiscordIOChannel;
-  private adminChannelInternal: DiscordIOChannel;
-  private introductionsChannelInternal: DiscordIOChannel;
-  private newsChannelInternal: DiscordIOChannel;
-  private adminRoleInternal: DiscordIORole;
+  private botControlChannelInternal: discord.Channel;
+  private adminChannelInternal: discord.Channel;
+  private introductionsChannelInternal: discord.Channel;
+  private newsChannelInternal: discord.Channel;
+  private adminRoleInternal: discord.Role;
   private welcomeMessageInternal: string | null;
 
-  private constructor(public readonly server: DiscordIOServer, dbRow: any) {
+  private constructor(public readonly server: discord.Server, dbRow: any) {
     super(new LoggerDefinition('Server Config'));
 
     this.serverId = dbRow.server_id;
@@ -135,7 +129,7 @@ export class ServerConfig extends Logger {
     return true;
   }
 
-  public get botControlChannel(): DiscordIOChannel {
+  public get botControlChannel(): discord.Channel {
     return this.botControlChannelInternal;
   }
 
@@ -156,7 +150,7 @@ export class ServerConfig extends Logger {
     return true;
   }
 
-  public get adminChannel(): DiscordIOChannel {
+  public get adminChannel(): discord.Channel {
     return this.adminChannelInternal;
   }
 
@@ -177,7 +171,7 @@ export class ServerConfig extends Logger {
     return true;
   }
 
-  public get introductionsChannel(): DiscordIOChannel {
+  public get introductionsChannel(): discord.Channel {
     return this.introductionsChannelInternal;
   }
 
@@ -198,7 +192,7 @@ export class ServerConfig extends Logger {
     return true;
   }
 
-  public get newsChannel(): DiscordIOChannel {
+  public get newsChannel(): discord.Channel {
     return this.newsChannelInternal;
   }
 
@@ -219,7 +213,7 @@ export class ServerConfig extends Logger {
     return true;
   }
 
-  public get adminRole(): DiscordIORole {
+  public get adminRole(): discord.Role {
     return this.adminRoleInternal;
   }
 
@@ -265,7 +259,7 @@ export class ServerConfig extends Logger {
   // Utility functions
   // -----------------------------------------------------------------------------
 
-  public isAdmin(member: DiscordIOMember): boolean {
+  public isAdmin(member: discord.Member): boolean {
     for (const memberRoleId of member.roles) {
       if (this.adminRole && this.adminRole.id === memberRoleId) {
         return true;
@@ -304,7 +298,7 @@ export class ServerConfig extends Logger {
     );
   }
 
-  public getPronounsForMember(member: DiscordIOMember): Pronoun {
+  public getPronounsForMember(member: discord.Member): Pronoun {
     for (const roleId of member.roles) {
       const role = this.server.roles[roleId];
       if (!role) {
@@ -320,7 +314,7 @@ export class ServerConfig extends Logger {
     return DEFAULT_PRONOUNS;
   }
 
-  private getChannel(channelId: string): DiscordIOChannel {
+  private getChannel(channelId: string): discord.Channel {
     if (channelId && this.server.channels[channelId]) {
       return this.server.channels[channelId];
     }

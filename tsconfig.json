@@ -5,6 +5,7 @@
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "removeComments": true,
+    "resolveJsonModule": true,
     "preserveConstEnums": true,
     "sourceMap": true,
     "strictNullChecks": true,

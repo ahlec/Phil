@@ -1,6 +1,5 @@
+import { YouTube } from 'youtube-node';
 import GlobalConfig from '../GlobalConfig';
-
-const YouTube = require('youtube-node');
 
 export interface YoutubeVideo {
   id: string;

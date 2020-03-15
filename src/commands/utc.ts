@@ -1,3 +1,4 @@
+import * as chronoNode from 'chrono-node';
 import * as moment from 'moment-timezone';
 import EmbedColor from '../embed-color';
 import Features from '../features/all-features';
@@ -7,8 +8,6 @@ import Phil from '../phil';
 import { sendEmbedMessage } from '../promises/discord';
 import UserTimezone from '../timezones/user-timezone';
 import Command, { LoggerDefinition } from './@types';
-
-import chronoNode = require('chrono-node');
 
 function formatTimeToString(time: moment.Moment): string {
   return time.format('HH:mm (h:mm A)');

@@ -1,13 +1,11 @@
-import { Moment } from 'moment';
+import * as chronoNode from 'chrono-node';
+import * as moment from 'moment';
 import Database from '../database';
 import PublicMessage from '../messages/public';
 import Phil from '../phil';
 import ServerConfig from '../server-config';
 import { sendSuccessMessage } from '../utils';
 import Command, { LoggerDefinition } from './@types';
-
-import chronoNode = require('chrono-node');
-import momentModuleFunc = require('moment');
 
 export default class BirthdayCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
@@ -49,7 +47,7 @@ export default class BirthdayCommand extends Command {
   private getInputFromCommandArgs(
     serverConfig: ServerConfig,
     commandArgs: ReadonlyArray<string>
-  ): Moment {
+  ): moment.Moment {
     const birthdayInput = commandArgs.join(' ').trim();
     if (birthdayInput.length === 0) {
       throw new Error(
@@ -68,14 +66,14 @@ export default class BirthdayCommand extends Command {
       );
     }
 
-    return momentModuleFunc(birthday);
+    return moment(birthday);
   }
 
   private async setBirthdayInDatabase(
     db: Database,
     username: string,
     userId: string,
-    birthday: Moment
+    birthday: moment.Moment
   ) {
     const day = birthday.date();
     const month = birthday.month() + 1;

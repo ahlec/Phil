@@ -11,7 +11,7 @@ import LoggerDefinition from './LoggerDefinition';
 import PrivateMessage from './messages/private';
 import Phil from './phil';
 import { sendEmbedMessage } from './promises/discord';
-const util = require('util');
+import { inspect } from 'util';
 
 const LOGGER_DEFINITION = new LoggerDefinition('Direct Message Dispatcher');
 
@@ -46,7 +46,7 @@ export default class DirectMessageDispatcher extends Logger {
 
     sendEmbedMessage(this.phil.bot, GlobalConfig.botManagerUserId, {
       color: EmbedColor.Error,
-      description: util.inspect(err),
+      description: inspect(err),
       footer: {
         text: 'processor: ' + processor.handle,
       },

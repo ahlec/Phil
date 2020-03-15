@@ -1,6 +1,6 @@
-const countryjs = require('countryjs');
-const countriesAndTimezones = require('countries-and-timezones');
-const fs = require('fs');
+import countryjs from 'countryjs';
+import countriesAndTimezones from 'countries-and-timezones';
+import fs from 'fs';
 
 const countryTimezones = {};
 const usaData = {

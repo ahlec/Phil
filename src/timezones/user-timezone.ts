@@ -1,4 +1,4 @@
-import moment = require('moment-timezone');
+import * as moment from 'moment-timezone';
 import Database from '../database';
 import { isCurrentlyDoingQuestionnaire } from './questionnaire';
 import {

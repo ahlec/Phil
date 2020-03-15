@@ -7,7 +7,7 @@ import PrivateMessage from '../../messages/private';
 import Phil from '../../phil';
 import { sendMessage } from '../../promises/discord';
 
-const moment = require('moment-timezone');
+import * as moment from 'moment-timezone';
 
 export default class ConfirmationStage implements IStage {
   public readonly stageNumber = 4;

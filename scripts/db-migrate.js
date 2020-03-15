@@ -1,7 +1,7 @@
 require('dotenv').config();
-const Postgrator = require('postgrator');
-const chalk = require('chalk');
-const path = require('path');
+import Postgrator from 'postgrator';
+import chalk from 'chalk';
+import path from 'path';
 
 const postgrator = new Postgrator({
   connectionString: process.env.DATABASE_URL,

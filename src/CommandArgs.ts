@@ -1,12 +1,11 @@
-import chronoNode = require('chrono-node');
+import * as chronoNode from 'chrono-node';
 import {
   Client as DiscordIOClient,
   Member as DiscordIOMember,
   Role as DiscordIORole,
   Server as DiscordIOServer,
 } from 'discord.io';
-import { Moment } from 'moment';
-import momentModuleFunc = require('moment');
+import * as moment from 'moment';
 import FuzzyFinder from './FuzzyFinder';
 
 function memberNameSelector(
@@ -115,9 +114,9 @@ export default class CommandArgs {
     return str;
   }
 
-  public readDate(name: string): Moment;
-  public readDate(name: string, optional: true): Moment | undefined;
-  public readDate(name: string, optional?: true): Moment | undefined {
+  public readDate(name: string): moment.Moment;
+  public readDate(name: string, optional: true): moment.Moment | undefined;
+  public readDate(name: string, optional?: true): moment.Moment | undefined {
     const pieces = this.queue.splice(0, 2);
     if (pieces.length !== 2 && !optional) {
       throw new Error(
@@ -137,7 +136,7 @@ export default class CommandArgs {
       );
     }
 
-    return momentModuleFunc(date);
+    return moment(date);
   }
 
   public readMember(

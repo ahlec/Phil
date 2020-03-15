@@ -1,7 +1,3 @@
-const url = require('url');
-const http = require('http');
-const https = require('https');
-
 import {
   Client as DiscordIOClient,
   Member as DiscordIOMember,
@@ -21,19 +17,6 @@ interface SendSuccessMessageOpts {
   readonly bot: DiscordIOClient;
   readonly channelId: string;
   readonly message: string;
-}
-
-export function getUrl(inputUrl: string): string {
-  const protocol = url.parse(inputUrl).protocol;
-  if (protocol === 'http:') {
-    return http.get(inputUrl);
-  }
-
-  if (protocol === 'https:') {
-    return https.get(inputUrl);
-  }
-
-  throw new Error("Unknown protocol '" + protocol + "'");
 }
 
 export function sendErrorMessage(

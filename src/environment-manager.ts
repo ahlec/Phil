@@ -1,4 +1,4 @@
-const assert = require('assert');
+import * as assert from 'assert';
 
 function assertVariableExists(variableName: string) {
   const envVariable = process.env[variableName];

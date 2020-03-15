@@ -1,3 +1,4 @@
+import * as chronoNode from 'chrono-node';
 import { Server as DiscordIOServer } from 'discord.io';
 import CalendarMonth from '../calendar/calendar-month';
 import Features from '../features/all-features';
@@ -7,8 +8,6 @@ import Phil from '../phil';
 import { sendMessageBuilder } from '../promises/discord';
 import ServerConfig from '../server-config';
 import Command, { LoggerDefinition } from './@types';
-
-const chronoNode = require('chrono-node');
 
 export default class CalendarCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
