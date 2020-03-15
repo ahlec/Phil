@@ -8,6 +8,6 @@ export interface Data {
 export const ReactableHandle = 'prompt-queue';
 
 export const Emoji = {
-  Previous: '◀',
   Next: '▶',
+  Previous: '◀',
 };

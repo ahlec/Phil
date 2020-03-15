@@ -91,10 +91,6 @@ export default class DefineCommand extends Command {
       .trim()
       .toLowerCase();
     for (const roleId in serverConfig.server.roles) {
-      if (!serverConfig.server.roles.hasOwnProperty(roleId)) {
-        continue;
-      }
-
       const role = serverConfig.server.roles[roleId];
       if (role.name.toLowerCase() === roleName) {
         return {

@@ -23,9 +23,9 @@ function getBeginMessage(
     session.bucket.displayName
   }** on the **${
     server.name
-  }** server.\n\nWhen ${NOWRAP}you\'re finished, hit the ${
+  }** server.\n\nWhen ${NOWRAP}you're finished, hit the ${
     Emoji.Stop
-  } reaction ${NOWRAP}or simply do nothing until your session runs out of time. ${NOWRAP}If you want to change which server or bucket you\'re submitting to, ${NOWRAP}use the \`${
+  } reaction ${NOWRAP}or simply do nothing until your session runs out of time. ${NOWRAP}If you want to change which server or bucket you're submitting to, ${NOWRAP}use the \`${
     serverConfig.commandPrefix
   }suggest\`to start over.\n\nIf you want ${NOWRAP}these submissions to be anonymous during this session, hit the ${
     Emoji.MakeAnonymous

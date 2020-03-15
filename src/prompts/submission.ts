@@ -80,7 +80,7 @@ export default class Submission {
     }
 
     const bucketIds = new Set<number>();
-    result.rows.forEach(({ bucket_id }) => bucketIds.add(bucket_id));
+    result.rows.forEach(({ bucket_id: bucketId }) => bucketIds.add(bucketId));
 
     const buckets = await Bucket.getFromBatchIds(client, db, bucketIds);
     result.rows.forEach(row => {

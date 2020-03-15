@@ -44,10 +44,6 @@ export default class RemoveUnusedColorRolesChrono extends Logger
   private getAllUnusedColorRoleIds(server: DiscordIOServer): RoleInfo[] {
     const colorRoles = [];
     for (const roleId in server.roles) {
-      if (!server.roles.hasOwnProperty(roleId)) {
-        continue;
-      }
-
       const role = server.roles[roleId];
       if (!role || !isHexColorRole(role)) {
         continue;

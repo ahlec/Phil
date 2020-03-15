@@ -83,8 +83,8 @@ export default class Prompt {
     }
 
     const submissionIds = new Set<number>();
-    result.rows.forEach(({ submission_id }) =>
-      submissionIds.add(submission_id)
+    result.rows.forEach(({ submission_id: submissionId }) =>
+      submissionIds.add(submissionId)
     );
 
     const submissions = await Submission.getFromBatchIds(

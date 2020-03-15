@@ -128,10 +128,6 @@ export default abstract class MemberUniqueRoleCommandBase<
     data: TData
   ): Promise<DiscordIORole> {
     for (const roleId in server.roles) {
-      if (!server.roles.hasOwnProperty(roleId)) {
-        continue;
-      }
-
       const role = server.roles[roleId];
       if (this.doesRoleMatchData(role, data)) {
         return role;

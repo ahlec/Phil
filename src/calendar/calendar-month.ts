@@ -50,7 +50,7 @@ export default class CalendarMonth {
       [this.month]
     );
 
-    for (const { userid, birthday_day } of results.rows) {
+    for (const { userid, birthday_day: birthdayDay } of results.rows) {
       if (!server.members[userid]) {
         continue;
       }
@@ -61,7 +61,7 @@ export default class CalendarMonth {
         continue;
       }
 
-      this.addEvent(birthday_day, '**' + userDisplayName + "**'s birthday.");
+      this.addEvent(birthdayDay, '**' + userDisplayName + "**'s birthday.");
     }
   }
 

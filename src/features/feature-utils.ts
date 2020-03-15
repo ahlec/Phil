@@ -23,10 +23,6 @@ export async function getServerFeaturesStatus(
   const lookup: BatchFeaturesEnabledLookup = {};
 
   for (const key in featuresLookup) {
-    if (!featuresLookup.hasOwnProperty(key)) {
-      continue;
-    }
-
     const featureId = featuresLookup[key].id;
     lookup[featureId] = true;
   }

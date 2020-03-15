@@ -68,11 +68,13 @@ export class PromptQueue {
       [bucket.id, pageSize, (pageNum - 1) * pageSize]
     );
     const promptIds = new Set<number>(
-      promptResults.rows.map(({ prompt_id }) => parseInt(prompt_id, 10))
+      promptResults.rows.map(({ prompt_id: promptId }) =>
+        parseInt(promptId, 10)
+      )
     );
     const batchPrompts = await Prompt.getFromBatchIds(client, db, promptIds);
     const orderedPrompts: Prompt[] = promptResults.rows.map(
-      ({ prompt_id }) => batchPrompts[parseInt(prompt_id, 10)]!
+      ({ prompt_id: promptId }) => batchPrompts[parseInt(promptId, 10)]!
     );
 
     const countResults = await db.query(

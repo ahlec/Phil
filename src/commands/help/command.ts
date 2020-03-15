@@ -26,10 +26,6 @@ function getAllCommandHelpInfo(
 ): ReadonlyArray<CommandHelpInfo> {
   const commandInfo: CommandHelpInfo[] = [];
   for (const commandName in commands) {
-    if (!commands.hasOwnProperty(commandName)) {
-      continue;
-    }
-
     const command = commands[commandName];
     if (!command) {
       continue;
@@ -66,10 +62,6 @@ function groupCommands(
 
   const helpGroups: HelpGroupInfo[] = [];
   for (const groupNum in groupLookup) {
-    if (!groupLookup.hasOwnProperty(groupNum)) {
-      continue;
-    }
-
     const group = groupLookup[groupNum];
     group.finish();
     helpGroups.push(group);
