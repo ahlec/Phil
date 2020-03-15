@@ -170,7 +170,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
       const actionResult = this.performActionOnSubmission(
         phil,
         serverConfig,
-        submissionId
+        parseInt(submissionId, 10)
       );
       if (!actionResult) {
         return PerformResult.Error;

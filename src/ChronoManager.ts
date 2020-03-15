@@ -99,7 +99,7 @@ export default class ChronoManager extends Logger {
       this.processChronoInstance(
         now,
         dbRow.chrono_handle,
-        dbRow.chrono_id,
+        parseInt(dbRow.chrono_id, 10),
         dbRow.server_id,
         date
       );

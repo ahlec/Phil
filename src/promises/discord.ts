@@ -1,18 +1,33 @@
-import { Client as DiscordIOClient, Role as DiscordIORole } from 'discord.io';
+import * as Discord from 'discord.io';
 import EmbedColor, { getColorValue } from '../embed-color';
 import MessageBuilder from '../message-builder';
 import { wait } from '../utils/delay';
-
-declare interface DiscordIOCallbackError {
-  statusCode?: number;
-  statusMessage?: string;
-  response?: unknown;
-}
 
 export interface EmbedField {
   name: string;
   value?: string;
   inline?: boolean;
+}
+
+function isIndexableObject(obj: unknown): obj is { [index: string]: unknown } {
+  return typeof obj === 'object' && obj !== null;
+}
+
+function isRateLimitErrorResponse(
+  response: unknown
+): response is { retry_after: number } {
+  if (!isIndexableObject(response)) {
+    return false;
+  }
+
+  if (
+    !('retry_after' in response) ||
+    typeof response.retry_after !== 'number'
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 export interface EmbedData {
@@ -42,7 +57,7 @@ export interface EditRoleOptions {
 }
 
 export function sendMessage(
-  bot: DiscordIOClient,
+  bot: Discord.Client,
   channelId: string,
   message: string
 ): Promise<string> {
@@ -65,7 +80,7 @@ export function sendMessage(
 }
 
 export async function sendMessageBuilder(
-  bot: DiscordIOClient,
+  bot: Discord.Client,
   channelId: string,
   messageBuilder: MessageBuilder
 ): Promise<string[]> {
@@ -79,7 +94,7 @@ export async function sendMessageBuilder(
 }
 
 export function sendEmbedMessage(
-  bot: DiscordIOClient,
+  bot: Discord.Client,
   channelId: string,
   embedData: EmbedData
 ): Promise<string> {
@@ -112,7 +127,7 @@ export function sendEmbedMessage(
 }
 
 export function editMessage(
-  bot: DiscordIOClient,
+  bot: Discord.Client,
   channelId: string,
   messageId: string,
   text: string
@@ -137,7 +152,7 @@ export function editMessage(
 }
 
 export function deleteMessage(
-  bot: DiscordIOClient,
+  bot: Discord.Client,
   channelId: string,
   messageId: string
 ): Promise<void> {
@@ -160,7 +175,7 @@ export function deleteMessage(
 }
 
 export function giveRoleToUser(
-  bot: DiscordIOClient,
+  bot: Discord.Client,
   serverId: string,
   userId: string,
   roleId: string
@@ -185,7 +200,7 @@ export function giveRoleToUser(
 }
 
 export function takeRoleFromUser(
-  bot: DiscordIOClient,
+  bot: Discord.Client,
   serverId: string,
   userId: string,
   roleId: string
@@ -210,9 +225,9 @@ export function takeRoleFromUser(
 }
 
 export function createRole(
-  bot: DiscordIOClient,
+  bot: Discord.Client,
   serverId: string
-): Promise<DiscordIORole> {
+): Promise<Discord.Role> {
   return new Promise((resolve, reject) => {
     bot.createRole(serverId, (err, response) => {
       if (err) {
@@ -226,7 +241,7 @@ export function createRole(
 }
 
 export function editRole(
-  bot: DiscordIOClient,
+  bot: Discord.Client,
   serverId: string,
   roleId: string,
   changes: EditRoleOptions
@@ -256,7 +271,7 @@ export function editRole(
 }
 
 export function deleteRole(
-  bot: DiscordIOClient,
+  bot: Discord.Client,
   serverId: string,
   roleId: string
 ): Promise<void> {
@@ -279,7 +294,7 @@ export function deleteRole(
 }
 
 export function pinMessage(
-  bot: DiscordIOClient,
+  bot: Discord.Client,
   channelId: string,
   messageId: string
 ): Promise<void> {
@@ -302,7 +317,7 @@ export function pinMessage(
 }
 
 export function addReaction(
-  bot: DiscordIOClient,
+  bot: Discord.Client,
   channelId: string,
   messageId: string,
   reaction: string
@@ -314,10 +329,13 @@ export function addReaction(
         messageID: messageId,
         reaction,
       },
-      (err: DiscordIOCallbackError) => {
+      err => {
         if (err) {
-          if (err.statusCode === 429) {
-            const waitTime: number = err.response.retry_after;
+          if (
+            err.statusCode === 429 &&
+            isRateLimitErrorResponse(err.response)
+          ) {
+            const { retry_after: waitTime } = err.response;
             if (waitTime) {
               wait(waitTime)
                 .then(() => addReaction(bot, channelId, messageId, reaction))
@@ -337,7 +355,7 @@ export function addReaction(
 }
 
 export function removeOwnReaction(
-  bot: DiscordIOClient,
+  bot: Discord.Client,
   channelId: string,
   messageId: string,
   reaction: string
@@ -350,10 +368,13 @@ export function removeOwnReaction(
         reaction,
         userID: bot.id,
       },
-      (err: DiscordIOCallbackError) => {
+      err => {
         if (err) {
-          if (err.statusCode === 429) {
-            const waitTime: number = err.response.retry_after;
+          if (
+            err.statusCode === 429 &&
+            isRateLimitErrorResponse(err.response)
+          ) {
+            const { retry_after: waitTime } = err.response;
             if (waitTime) {
               wait(waitTime)
                 .then(() =>

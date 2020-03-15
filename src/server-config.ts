@@ -331,8 +331,8 @@ export class ServerConfig extends Logger {
       return this.server.channels[channelId];
     }
 
-    const systemChannelId: string = this.server.system_channel_id;
-    if (this.server.channels[systemChannelId]) {
+    const { system_channel_id: systemChannelId } = this.server;
+    if (systemChannelId && this.server.channels[systemChannelId]) {
       return this.server.channels[systemChannelId];
     }
 
