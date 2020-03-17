@@ -1,6 +1,6 @@
-import { HelpGroup } from '../help-groups';
-import PublicMessage from '../messages/public';
-import Phil from '../phil';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
 import { deleteMessage, sendMessage } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
 

@@ -1,6 +1,6 @@
-import Features from '../features/all-features';
-import PublicMessage from '../messages/public';
-import Phil from '../phil';
+import Features from '@phil/features/all-features';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
 import { sendErrorMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';

@@ -1,10 +1,10 @@
-import Bucket from '../buckets';
-import EmbedColor from '../embed-color';
-import Features from '../features/all-features';
-import { HelpGroup } from '../help-groups';
-import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
-import Phil from '../phil';
+import Bucket from '@phil/buckets';
+import EmbedColor from '@phil/embed-color';
+import Features from '@phil/features/all-features';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import PermissionLevel from '@phil/permission-level';
+import Phil from '@phil/phil';
 import { sendEmbedMessage, EmbedField } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
 

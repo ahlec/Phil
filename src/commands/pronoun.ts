@@ -1,10 +1,10 @@
 import { Role as DiscordIORole } from 'discord.io';
-import Features from '../features/all-features';
+import Features from '@phil/features/all-features';
 import { EditRoleOptions } from '@phil/promises/discord';
-import { AllPronouns } from '../pronouns/definitions';
-import { Pronoun } from '../pronouns/pronoun';
-import { getPronounFromRole } from '../pronouns/utils';
-import ServerConfig from '../server-config';
+import { AllPronouns } from '@phil/pronouns/definitions';
+import { Pronoun } from '@phil/pronouns/pronoun';
+import { getPronounFromRole } from '@phil/pronouns/utils';
+import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry } from '@phil/utils';
 import { LoggerDefinition } from './@types';
 import MemberUniqueRoleCommandBase from './bases/member-unique-role-base';

@@ -1,9 +1,9 @@
-import Feature from '../../features/feature';
-import { BatchFeaturesEnabledLookup } from '../../features/feature-utils';
-import { HelpGroup } from '../../help-groups';
-import PermissionLevel from '../../permission-level';
-import { CODE_VERSION } from '../../versions';
-import ICommand from '../@types';
+import Feature from '@phil/features/feature';
+import { BatchFeaturesEnabledLookup } from '@phil/features/feature-utils';
+import { HelpGroup } from '@phil/help-groups';
+import PermissionLevel from '@phil/permission-level';
+import { CODE_VERSION } from '@phil/versions';
+import ICommand from '@phil/commands/@types';
 
 export default class CommandHelpInfo {
   public static sort(a: CommandHelpInfo, b: CommandHelpInfo): number {

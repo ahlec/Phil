@@ -1,8 +1,8 @@
-import Features from '../features/all-features';
-import { HelpGroup } from '../help-groups';
-import PublicMessage from '../messages/public';
-import Phil from '../phil';
-import { startQuestionnaire } from '../timezones/questionnaire';
+import Features from '@phil/features/all-features';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
+import { startQuestionnaire } from '@phil/timezones/questionnaire';
 import Command, { LoggerDefinition } from './@types';
 
 export default class TimezoneCommand extends Command {

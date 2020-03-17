@@ -1,11 +1,11 @@
-import Features from '../features/all-features';
-import { HelpGroup } from '../help-groups';
-import MessageBuilder from '../message-builder';
-import PublicMessage from '../messages/public';
-import Phil from '../phil';
+import Features from '@phil/features/all-features';
+import { HelpGroup } from '@phil/help-groups';
+import MessageBuilder from '@phil/message-builder';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
 import { giveRoleToUser, sendMessageBuilder } from '@phil/promises/discord';
-import Requestable from '../requestables';
-import ServerConfig from '../server-config';
+import Requestable from '@phil/requestables';
+import ServerConfig from '@phil/server-config';
 import {
   sendSuccessMessage,
   getRandomArrayEntry,

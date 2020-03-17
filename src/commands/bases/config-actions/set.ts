@@ -1,6 +1,6 @@
-import Phil from '../../../phil';
-import ServerConfig from '../../../server-config';
-import { ConfigProperty } from '../config-command-base';
+import Phil from '@phil/phil';
+import ServerConfig from '@phil/server-config';
+import { ConfigProperty } from '@phil/commands/bases/config-command-base';
 import { ConfigActionParameterType, ConfigActionPrimaryKey } from './@action';
 import MutateConfigActionBase, { GetNewValueResult } from './@mutate-base';
 
@@ -10,11 +10,7 @@ export default class SetConfigAction<TModel> extends MutateConfigActionBase<
   public readonly primaryKey = ConfigActionPrimaryKey.Set;
   public readonly aliases = ['show'];
   public readonly description = `sets the value of the property to a valid value of your choosing`;
-  public readonly specialUsageNotes = `It is in the special case of the **${
-    ConfigActionPrimaryKey.Set
-  }** action that you need to provide an extra final piece of information at the end: the desired new value. You can use the **${
-    ConfigActionPrimaryKey.Info
-  }** action to see rules for what a valid value should look like and what the property does, in order to understand what to change the value to.`;
+  public readonly specialUsageNotes = `It is in the special case of the **${ConfigActionPrimaryKey.Set}** action that you need to provide an extra final piece of information at the end: the desired new value. You can use the **${ConfigActionPrimaryKey.Info}** action to see rules for what a valid value should look like and what the property does, in order to understand what to change the value to.`;
   public readonly parameters = [
     ConfigActionParameterType.PropertyKey,
     ConfigActionParameterType.NewPropertyValue,

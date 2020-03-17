@@ -1,6 +1,9 @@
 import PublicMessage from '@phil/messages/public';
-import Phil from '../../../phil';
-import { ConfigCommandBase, ConfigProperty } from '../config-command-base';
+import Phil from '@phil/phil';
+import {
+  ConfigCommandBase,
+  ConfigProperty,
+} from '@phil/commands/bases/config-command-base';
 
 export enum ConfigActionParameterType {
   PropertyKey,

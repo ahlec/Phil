@@ -1,9 +1,9 @@
-import Features from '../features/all-features';
-import { HelpGroup } from '../help-groups';
-import PublicMessage from '../messages/public';
-import Phil from '../phil';
+import Features from '@phil/features/all-features';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
-import UserTimezone from '../timezones/user-timezone';
+import UserTimezone from '@phil/timezones/user-timezone';
 import Command, { LoggerDefinition } from './@types';
 
 export default class TimediffCommand extends Command {

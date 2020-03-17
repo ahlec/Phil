@@ -1,10 +1,10 @@
-import Feature from '../features/feature';
-import { HelpGroup } from '../help-groups';
-import Logger from '../Logger';
-import LoggerDefinition from '../LoggerDefinition';
-import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
-import Phil from '../phil';
+import Feature from '@phil/features/feature';
+import { HelpGroup } from '@phil/help-groups';
+import Logger from '@phil/Logger';
+import LoggerDefinition from '@phil/LoggerDefinition';
+import PublicMessage from '@phil/messages/public';
+import PermissionLevel from '@phil/permission-level';
+import Phil from '@phil/phil';
 
 export type CommandDetails = {
   aliases?: ReadonlyArray<string>;
@@ -52,4 +52,4 @@ export interface CommandLookup {
   [handle: string]: Command;
 }
 
-export { default as LoggerDefinition } from '../LoggerDefinition';
+export { default as LoggerDefinition } from '@phil/LoggerDefinition';

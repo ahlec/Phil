@@ -1,7 +1,7 @@
-import { HelpGroup } from '../help-groups';
-import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
-import Phil from '../phil';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import PermissionLevel from '@phil/permission-level';
+import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
 

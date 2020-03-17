@@ -1,12 +1,12 @@
 import * as chronoNode from 'chrono-node';
 import * as moment from 'moment-timezone';
-import EmbedColor from '../embed-color';
-import Features from '../features/all-features';
-import { HelpGroup } from '../help-groups';
-import PublicMessage from '../messages/public';
-import Phil from '../phil';
+import EmbedColor from '@phil/embed-color';
+import Features from '@phil/features/all-features';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
 import { sendEmbedMessage } from '@phil/promises/discord';
-import UserTimezone from '../timezones/user-timezone';
+import UserTimezone from '@phil/timezones/user-timezone';
 import Command, { LoggerDefinition } from './@types';
 
 function formatTimeToString(time: moment.Moment): string {

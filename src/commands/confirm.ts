@@ -1,8 +1,8 @@
-import { BucketFrequency } from '../buckets';
-import Phil from '../phil';
-import Prompt from '../prompts/prompt';
-import Submission from '../prompts/submission';
-import ServerConfig from '../server-config';
+import { BucketFrequency } from '@phil/buckets';
+import Phil from '@phil/phil';
+import Prompt from '@phil/prompts/prompt';
+import Submission from '@phil/prompts/submission';
+import ServerConfig from '@phil/server-config';
 import { LoggerDefinition } from './@types';
 import ConfirmRejectCommandBase from './bases/confirm-reject-base';
 

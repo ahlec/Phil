@@ -1,7 +1,7 @@
 import { Role as DiscordIORole } from 'discord.io';
-import Features from '../features/all-features';
+import Features from '@phil/features/all-features';
 import { EditRoleOptions } from '@phil/promises/discord';
-import ServerConfig from '../server-config';
+import ServerConfig from '@phil/server-config';
 import {
   getRandomArrayEntry,
   isValidHexColor,

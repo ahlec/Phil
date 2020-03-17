@@ -1,12 +1,12 @@
-import Database from '../../database';
-import Features from '../../features/all-features';
-import { HelpGroup } from '../../help-groups';
-import PublicMessage from '../../messages/public';
-import PermissionLevel from '../../permission-level';
-import Phil from '../../phil';
-import ServerConfig from '../../server-config';
+import Database from '@phil/database';
+import Features from '@phil/features/all-features';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import PermissionLevel from '@phil/permission-level';
+import Phil from '@phil/phil';
+import ServerConfig from '@phil/server-config';
 import { isNumeric, sendErrorMessage, sendSuccessMessage } from '@phil/utils';
-import Command, { LoggerDefinition } from '../@types';
+import Command, { LoggerDefinition } from '@phil/commands/@types';
 
 interface ConfirmRejectResults {
   numSuccessful: number;

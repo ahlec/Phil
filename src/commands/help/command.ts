@@ -1,10 +1,13 @@
-import { getServerFeaturesStatus } from '../../features/feature-utils';
-import { HelpGroup } from '../../help-groups';
-import MessageBuilder from '../../message-builder';
-import PublicMessage from '../../messages/public';
-import Phil from '../../phil';
+import { getServerFeaturesStatus } from '@phil/features/feature-utils';
+import { HelpGroup } from '@phil/help-groups';
+import MessageBuilder from '@phil/message-builder';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
-import Command, { CommandLookup, LoggerDefinition } from '../@types';
+import Command, {
+  CommandLookup,
+  LoggerDefinition,
+} from '@phil/commands/@types';
 import CommandHelpInfo from './command-help-info';
 import HelpGroupInfo from './help-group-info';
 

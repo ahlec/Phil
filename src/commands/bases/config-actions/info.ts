@@ -1,8 +1,11 @@
-import EmbedColor from '../../../embed-color';
+import EmbedColor from '@phil/embed-color';
 import PublicMessage from '@phil/messages/public';
-import Phil from '../../../phil';
+import Phil from '@phil/phil';
 import { sendEmbedMessage } from '@phil/promises/discord';
-import { ConfigCommandBase, ConfigProperty } from '../config-command-base';
+import {
+  ConfigCommandBase,
+  ConfigProperty,
+} from '@phil/commands/bases/config-command-base';
 import {
   ConfigAction,
   ConfigActionParameterType,

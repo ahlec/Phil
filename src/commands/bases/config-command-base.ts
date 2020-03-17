@@ -1,13 +1,13 @@
-import EmbedColor from '../../embed-color';
-import { HelpGroup } from '../../help-groups';
-import PublicMessage from '../../messages/public';
-import PermissionLevel from '../../permission-level';
-import Phil from '../../phil';
+import EmbedColor from '@phil/embed-color';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import PermissionLevel from '@phil/permission-level';
+import Phil from '@phil/phil';
 import { sendEmbedMessage, EmbedField } from '@phil/promises/discord';
-import ServerConfig from '../../server-config';
-import { TypeDefinition } from '../../type-definition/@type-definition';
+import ServerConfig from '@phil/server-config';
+import { TypeDefinition } from '@phil/type-definition/@type-definition';
 import { getRandomArrayEntry } from '@phil/utils';
-import Command, { LoggerDefinition } from '../@types';
+import Command, { LoggerDefinition } from '@phil/commands/@types';
 import {
   ConfigAction,
   ConfigActionParameterType,
