@@ -1,11 +1,11 @@
-import EmbedColor from '../embed-color';
-import Features from '../features/all-features';
-import { HelpGroup } from '../help-groups';
-import PublicMessage from '../messages/public';
-import Phil from '../phil';
-import { sendEmbedMessage } from '../promises/discord';
-import Leaderboard from '../prompts/leaderboard';
-import LeaderboardEntry from '../prompts/leaderboard-entry';
+import EmbedColor from '@phil/embed-color';
+import Features from '@phil/features/all-features';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
+import { sendEmbedMessage } from '@phil/promises/discord';
+import Leaderboard from '@phil/prompts/leaderboard';
+import LeaderboardEntry from '@phil/prompts/leaderboard-entry';
 import Command, { LoggerDefinition } from './@types';
 
 const RANKING_EMOJI: { [rank: number]: string } = {

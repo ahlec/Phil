@@ -1,12 +1,12 @@
-import Bucket from '../buckets';
-import Features from '../features/all-features';
-import { HelpGroup } from '../help-groups';
-import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
-import Phil from '../phil';
-import { sendMessage } from '../promises/discord';
-import Submission from '../prompts/submission';
-import ServerConfig from '../server-config';
+import Bucket from '@phil/buckets';
+import Features from '@phil/features/all-features';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import PermissionLevel from '@phil/permission-level';
+import Phil from '@phil/phil';
+import { sendMessage } from '@phil/promises/discord';
+import Submission from '@phil/prompts/submission';
+import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from './@types';
 
 const MAX_LIST_LENGTH = 10;

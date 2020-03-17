@@ -1,15 +1,15 @@
-import Bucket from '../buckets';
-import { endOngoingDirectMessageProcesses } from '../DirectMessageUtils';
-import EmbedColor from '../embed-color';
-import Features from '../features/all-features';
-import { HelpGroup } from '../help-groups';
-import PublicMessage from '../messages/public';
-import Phil from '../phil';
-import { sendEmbedMessage } from '../promises/discord';
-import SubmissionSession from '../prompts/submission-session';
-import SuggestSessionReactableFactory from '../reactables/suggest-session/factory';
-import { Emoji } from '../reactables/suggest-session/shared';
-import ServerConfig from '../server-config';
+import Bucket from '@phil/buckets';
+import { endOngoingDirectMessageProcesses } from '@phil/DirectMessageUtils';
+import EmbedColor from '@phil/embed-color';
+import Features from '@phil/features/all-features';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
+import { sendEmbedMessage } from '@phil/promises/discord';
+import SubmissionSession from '@phil/prompts/submission-session';
+import SuggestSessionReactableFactory from '@phil/reactables/suggest-session/factory';
+import { Emoji } from '@phil/reactables/suggest-session/shared';
+import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from './@types';
 
 function getBeginMessage(

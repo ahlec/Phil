@@ -1,7 +1,7 @@
 import * as Discord from 'discord.io';
-import EmbedColor, { getColorValue } from '../embed-color';
-import MessageBuilder from '../message-builder';
-import { wait } from '../utils/delay';
+import EmbedColor, { getColorValue } from '@phil/embed-color';
+import MessageBuilder from '@phil/message-builder';
+import { wait } from '@phil/utils/delay';
 
 export interface EmbedField {
   name: string;

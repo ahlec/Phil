@@ -1,10 +1,10 @@
 import * as chronoNode from 'chrono-node';
 import * as moment from 'moment';
-import Database from '../database';
-import PublicMessage from '../messages/public';
-import Phil from '../phil';
-import ServerConfig from '../server-config';
-import { sendSuccessMessage } from '../utils';
+import Database from '@phil/database';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
+import ServerConfig from '@phil/server-config';
+import { sendSuccessMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class BirthdayCommand extends Command {

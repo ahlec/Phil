@@ -1,6 +1,6 @@
-import Phil from '../phil';
-import ServerConfig from '../server-config';
-import { getUserDisplayName } from '../utils';
+import Phil from '@phil/phil';
+import ServerConfig from '@phil/server-config';
+import { getUserDisplayName } from '@phil/utils';
 import {
   ParseResult,
   TypeDefinition,

@@ -1,4 +1,4 @@
-import { sendSuccessMessage } from '../utils';
+import { sendSuccessMessage } from '@phil/utils';
 import {
   BotManagerCommand,
   LoggerDefinition,

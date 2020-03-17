@@ -24,6 +24,7 @@
     "discord.io": "https://github.com/ahlec/discord.io.git#gateway_v6",
     "fuse.js": "^3.4.2",
     "lodash": "^4.17.11",
+    "module-alias": "^2.2.2",
     "moment-timezone": "0.5.23",
     "node-cache": "^4.2.0",
     "pg": "7.8.0",
@@ -76,5 +77,9 @@
     "singleQuote": true,
     "printWidth": 80,
     "trailingComma": "es5"
+  },
+  "_moduleAliases": {
+    "@data": "build/data",
+    "@phil": "build/src"
   }
 }

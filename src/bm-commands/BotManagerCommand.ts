@@ -1,7 +1,7 @@
-import Logger from '../Logger';
-import LoggerDefinition from '../LoggerDefinition';
-import PrivateMessage from '../messages/private';
-import Phil from '../phil';
+import Logger from '@phil/Logger';
+import LoggerDefinition from '@phil/LoggerDefinition';
+import PrivateMessage from '@phil/messages/private';
+import Phil from '@phil/phil';
 
 export abstract class BotManagerCommand extends Logger {
   public constructor(

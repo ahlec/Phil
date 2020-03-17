@@ -1,12 +1,12 @@
 import { Moment } from 'moment';
-import Database from '../database';
-import Features from '../features/all-features';
-import Phil from '../phil';
-import { sendMessage } from '../promises/discord';
-import { GROUP_PRONOUNS } from '../pronouns/definitions';
-import { Pronoun } from '../pronouns/pronoun';
-import ServerConfig from '../server-config';
-import { getUserDisplayName } from '../utils';
+import Database from '@phil/database';
+import Features from '@phil/features/all-features';
+import Phil from '@phil/phil';
+import { sendMessage } from '@phil/promises/discord';
+import { GROUP_PRONOUNS } from '@phil/pronouns/definitions';
+import { Pronoun } from '@phil/pronouns/pronoun';
+import ServerConfig from '@phil/server-config';
+import { getUserDisplayName } from '@phil/utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 interface HappyBirthdayInfo {

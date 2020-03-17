@@ -1,8 +1,8 @@
-import { HelpGroup } from '../help-groups';
-import PublicMessage from '../messages/public';
-import Phil from '../phil';
-import { sendMessage } from '../promises/discord';
-import { getRandomArrayEntry } from '../utils';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
+import { sendMessage } from '@phil/promises/discord';
+import { getRandomArrayEntry } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
 const apologies = [

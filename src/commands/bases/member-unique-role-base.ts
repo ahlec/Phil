@@ -1,18 +1,18 @@
 import { Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
-import Feature from '../../features/feature';
-import { HelpGroup } from '../../help-groups';
-import PublicMessage from '../../messages/public';
-import Phil from '../../phil';
+import Feature from '@phil/features/feature';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
 import {
   EditRoleOptions,
   createRole,
   editRole,
   giveRoleToUser,
   takeRoleFromUser,
-} from '../../promises/discord';
-import ServerConfig from '../../server-config';
-import { sendSuccessMessage } from '../../utils';
-import Command, { LoggerDefinition } from '../@types';
+} from '@phil/promises/discord';
+import ServerConfig from '@phil/server-config';
+import { sendSuccessMessage } from '@phil/utils';
+import Command, { LoggerDefinition } from '@phil/commands/@types';
 
 interface MemberUniqueRoleCommandBaseDetails {
   aliases?: ReadonlyArray<string>;

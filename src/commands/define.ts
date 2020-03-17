@@ -1,11 +1,11 @@
-import Features from '../features/all-features';
-import { HelpGroup } from '../help-groups';
-import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
-import Phil from '../phil';
-import Requestable, { RequestableCreationDefinition } from '../requestables';
-import ServerConfig from '../server-config';
-import { sendSuccessMessage } from '../utils';
+import Features from '@phil/features/all-features';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import PermissionLevel from '@phil/permission-level';
+import Phil from '@phil/phil';
+import Requestable, { RequestableCreationDefinition } from '@phil/requestables';
+import ServerConfig from '@phil/server-config';
+import { sendSuccessMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class DefineCommand extends Command {

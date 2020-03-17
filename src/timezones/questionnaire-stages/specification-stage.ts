@@ -2,10 +2,10 @@ import Stage from './@stage';
 import { CountryTimezones, TimezoneData } from './@timezone-data';
 import { setTimezone } from './@utils';
 
-import Database from '../../database';
-import PrivateMessage from '../../messages/private';
-import Phil from '../../phil';
-import { sendMessage } from '../../promises/discord';
+import Database from '@phil/database';
+import PrivateMessage from '@phil/messages/private';
+import Phil from '@phil/phil';
+import { sendMessage } from '@phil/promises/discord';
 
 export default class SpecificationStage implements Stage {
   public readonly stageNumber = 3;

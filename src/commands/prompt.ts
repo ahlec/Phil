@@ -1,9 +1,9 @@
-import Bucket from '../buckets';
-import Features from '../features/all-features';
-import { HelpGroup } from '../help-groups';
-import PublicMessage from '../messages/public';
-import Phil from '../phil';
-import Prompt from '../prompts/prompt';
+import Bucket from '@phil/buckets';
+import Features from '@phil/features/all-features';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
+import Prompt from '@phil/prompts/prompt';
 import Command, { LoggerDefinition } from './@types';
 
 export default class PromptCommand extends Command {

@@ -1,9 +1,9 @@
-import EmbedColor from '../embed-color';
-import PrivateMessage from '../messages/private';
-import Phil from '../phil';
-import { sendEmbedMessage } from '../promises/discord';
-import SubmissionSession from '../prompts/submission-session';
-import SuggestSessionReactableFactory from '../reactables/suggest-session/factory';
+import EmbedColor from '@phil/embed-color';
+import PrivateMessage from '@phil/messages/private';
+import Phil from '@phil/phil';
+import { sendEmbedMessage } from '@phil/promises/discord';
+import SubmissionSession from '@phil/prompts/submission-session';
+import SuggestSessionReactableFactory from '@phil/reactables/suggest-session/factory';
 import { DirectMessageProcessor, ProcessorActiveToken } from './@base';
 
 type PromptValidateResult =

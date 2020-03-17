@@ -7,9 +7,9 @@ import {
 import IStage from './questionnaire-stages/@stage';
 import { sendStageMessage } from './questionnaire-stages/@utils';
 
-import Database from '../database';
-import { endOngoingDirectMessageProcesses } from '../DirectMessageUtils';
-import Phil from '../phil';
+import Database from '@phil/database';
+import { endOngoingDirectMessageProcesses } from '@phil/DirectMessageUtils';
+import Phil from '@phil/phil';
 
 async function canStartQuestionnaire(
   db: Database,

@@ -1,8 +1,8 @@
 import { ConfirmationStage } from './@all-stages';
 import Stage from './@stage';
 
-import Phil from '../../phil';
-import { sendMessage } from '../../promises/discord';
+import Phil from '@phil/phil';
+import { sendMessage } from '@phil/promises/discord';
 
 export async function sendStageMessage(
   phil: Phil,

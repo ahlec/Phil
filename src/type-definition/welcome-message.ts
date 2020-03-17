@@ -1,4 +1,4 @@
-import { truncateString } from '../utils';
+import { truncateString } from '@phil/utils';
 import {
   ParseResult,
   TypeDefinition,

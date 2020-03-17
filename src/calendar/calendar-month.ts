@@ -2,9 +2,9 @@ import {
   Client as DiscordIOClient,
   Server as DiscordIOServer,
 } from 'discord.io';
-import Database from '../database';
-import GlobalConfig from '../GlobalConfig';
-import { getUserDisplayName } from '../utils';
+import Database from '@phil/database';
+import GlobalConfig from '@phil/GlobalConfig';
+import { getUserDisplayName } from '@phil/utils';
 import { AllMonths, MonthDefinition } from './month-definition';
 
 type DayEventCollection = ReadonlyArray<string[]>;

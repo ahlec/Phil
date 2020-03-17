@@ -1,5 +1,5 @@
 import * as moment from 'moment-timezone';
-import Database from '../database';
+import Database from '@phil/database';
 import { isCurrentlyDoingQuestionnaire } from './questionnaire';
 import {
   DeclinedStage,

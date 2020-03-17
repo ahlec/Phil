@@ -1,6 +1,6 @@
-import Phil from '../../../phil';
-import ServerConfig from '../../../server-config';
-import { ConfigProperty } from '../config-command-base';
+import Phil from '@phil/phil';
+import ServerConfig from '@phil/server-config';
+import { ConfigProperty } from '@phil/commands/bases/config-command-base';
 import { ConfigActionParameterType, ConfigActionPrimaryKey } from './@action';
 import MutateConfigActionBase, { GetNewValueResult } from './@mutate-base';
 

@@ -1,16 +1,16 @@
 import { Member as DiscordIOMember } from 'discord.io';
-import CommandArgs from '../CommandArgs';
-import EmbedColor from '../embed-color';
-import Features from '../features/all-features';
-import { HelpGroup } from '../help-groups';
-import MessageBuilder from '../message-builder';
-import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
-import Phil from '../phil';
-import { sendEmbedMessage, sendMessageBuilder } from '../promises/discord';
-import Requestable from '../requestables';
-import ServerConfig from '../server-config';
-import { getRandomArrayEntry, stitchTogetherArray } from '../utils';
+import CommandArgs from '@phil/CommandArgs';
+import EmbedColor from '@phil/embed-color';
+import Features from '@phil/features/all-features';
+import { HelpGroup } from '@phil/help-groups';
+import MessageBuilder from '@phil/message-builder';
+import PublicMessage from '@phil/messages/public';
+import PermissionLevel from '@phil/permission-level';
+import Phil from '@phil/phil';
+import { sendEmbedMessage, sendMessageBuilder } from '@phil/promises/discord';
+import Requestable from '@phil/requestables';
+import ServerConfig from '@phil/server-config';
+import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class BlacklistCommand extends Command {

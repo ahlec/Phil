@@ -1,5 +1,5 @@
-import PrivateMessage from '../messages/private';
-import Phil from '../phil';
+import PrivateMessage from '@phil/messages/private';
+import Phil from '@phil/phil';
 
 export interface ProcessorActiveToken {
   // TODO: come up with a better name for this

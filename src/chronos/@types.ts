@@ -1,7 +1,7 @@
 import { Moment } from 'moment';
-import Feature from '../features/feature';
-import Phil from '../phil';
-import ServerConfig from '../server-config';
+import Feature from '@phil/features/feature';
+import Phil from '@phil/phil';
+import ServerConfig from '@phil/server-config';
 
 export default interface Chrono {
   readonly handle: string;
@@ -10,5 +10,5 @@ export default interface Chrono {
   process(phil: Phil, serverConfig: ServerConfig, now: Moment): Promise<void>;
 }
 
-export { default as Logger } from '../Logger';
-export { default as LoggerDefinition } from '../LoggerDefinition';
+export { default as Logger } from '@phil/Logger';
+export { default as LoggerDefinition } from '@phil/LoggerDefinition';

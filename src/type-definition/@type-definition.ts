@@ -1,5 +1,5 @@
-import Phil from '../phil';
-import ServerConfig from '../server-config';
+import Phil from '@phil/phil';
+import ServerConfig from '@phil/server-config';
 
 interface ParseSuccess {
   wasSuccessful: true;

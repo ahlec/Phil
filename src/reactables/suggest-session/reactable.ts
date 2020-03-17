@@ -1,10 +1,10 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
-import EmbedColor from '../../embed-color';
-import Phil from '../../phil';
-import { sendEmbedMessage } from '../../promises/discord';
-import SubmissionSession from '../../prompts/submission-session';
-import ReactablePost from '../post';
-import ReactableType from '../reactable-type';
+import EmbedColor from '@phil/embed-color';
+import Phil from '@phil/phil';
+import { sendEmbedMessage } from '@phil/promises/discord';
+import SubmissionSession from '@phil/prompts/submission-session';
+import ReactablePost from '@phil/reactables/post';
+import ReactableType from '@phil/reactables/reactable-type';
 import SuggestSessionReactableFactory from './factory';
 import { Emoji, ReactableHandle } from './shared';
 

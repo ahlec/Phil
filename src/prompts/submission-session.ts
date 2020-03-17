@@ -1,6 +1,6 @@
 import * as moment from 'moment';
-import Bucket from '../buckets';
-import Phil from '../phil';
+import Bucket from '@phil/buckets';
+import Phil from '@phil/phil';
 
 const SESSION_LENGTH_IN_MINUTES = 25;
 

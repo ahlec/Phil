@@ -1,13 +1,13 @@
 import { User as DiscordIOUser } from 'discord.io';
-import Greeting from '../greeting';
-import { HelpGroup } from '../help-groups';
-import PublicMessage from '../messages/public';
-import PermissionLevel from '../permission-level';
-import Phil from '../phil';
-import { sendErrorMessage } from '../utils';
+import Greeting from '@phil/greeting';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import PermissionLevel from '@phil/permission-level';
+import Phil from '@phil/phil';
+import { sendErrorMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
-import MemberTypeDefinition from '../type-definition/member';
+import MemberTypeDefinition from '@phil/type-definition/member';
 
 type GetUserResult =
   | { success: true; user: DiscordIOUser }

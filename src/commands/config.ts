@@ -1,8 +1,8 @@
 import { Channel as DiscordIOChannel } from 'discord.io';
-import PublicMessage from '../messages/public';
-import Phil from '../phil';
-import ServerConfig from '../server-config';
-import { getRandomArrayEntry } from '../utils';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
+import ServerConfig from '@phil/server-config';
+import { getRandomArrayEntry } from '@phil/utils';
 import { LoggerDefinition } from './@types';
 import { ConfigCommandBase, ConfigProperty } from './bases/config-command-base';
 
@@ -11,10 +11,10 @@ import DisplayConfigAction from './bases/config-actions/display';
 import InfoConfigAction from './bases/config-actions/info';
 import SetConfigAction from './bases/config-actions/set';
 
-import ChannelTypeDefinition from '../type-definition/channel';
-import CommandPrefixTypeDefinition from '../type-definition/command-prefix';
-import RoleTypeDefinition from '../type-definition/role';
-import WelcomeMessageTypeDefinition from '../type-definition/welcome-message';
+import ChannelTypeDefinition from '@phil/type-definition/channel';
+import CommandPrefixTypeDefinition from '@phil/type-definition/command-prefix';
+import RoleTypeDefinition from '@phil/type-definition/role';
+import WelcomeMessageTypeDefinition from '@phil/type-definition/welcome-message';
 
 // -----------------------------------------------------------------------------------
 // Utilities

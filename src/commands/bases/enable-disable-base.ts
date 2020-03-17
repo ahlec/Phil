@@ -1,11 +1,11 @@
-import AllFeatures from '../../features/all-features';
-import Feature from '../../features/feature';
-import { HelpGroup } from '../../help-groups';
-import PublicMessage from '../../messages/public';
-import PermissionLevel from '../../permission-level';
-import Phil from '../../phil';
-import { sendSuccessMessage } from '../../utils';
-import Command, { LoggerDefinition } from '../@types';
+import AllFeatures from '@phil/features/all-features';
+import Feature from '@phil/features/feature';
+import { HelpGroup } from '@phil/help-groups';
+import PublicMessage from '@phil/messages/public';
+import PermissionLevel from '@phil/permission-level';
+import Phil from '@phil/phil';
+import { sendSuccessMessage } from '@phil/utils';
+import Command, { LoggerDefinition } from '@phil/commands/@types';
 
 const FEATURES_LIST = Object.values(AllFeatures);
 

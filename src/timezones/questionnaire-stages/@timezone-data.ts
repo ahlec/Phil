@@ -1,4 +1,4 @@
-import * as countryTimezonesJson from '../../../data/country-timezones.json';
+import * as countryTimezonesJson from '@data/country-timezones.json';
 
 interface Timezone {
   readonly name: string;

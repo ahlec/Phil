@@ -1,12 +1,12 @@
 import * as chronoNode from 'chrono-node';
 import { Server as DiscordIOServer } from 'discord.io';
-import CalendarMonth from '../calendar/calendar-month';
-import Features from '../features/all-features';
-import MessageBuilder from '../message-builder';
-import PublicMessage from '../messages/public';
-import Phil from '../phil';
-import { sendMessageBuilder } from '../promises/discord';
-import ServerConfig from '../server-config';
+import CalendarMonth from '@phil/calendar/calendar-month';
+import Features from '@phil/features/all-features';
+import MessageBuilder from '@phil/message-builder';
+import PublicMessage from '@phil/messages/public';
+import Phil from '@phil/phil';
+import { sendMessageBuilder } from '@phil/promises/discord';
+import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from './@types';
 
 export default class CalendarCommand extends Command {

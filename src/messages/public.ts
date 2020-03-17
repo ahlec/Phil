@@ -3,8 +3,8 @@ import {
   OfficialDiscordMessage,
   OfficialDiscordPayload,
 } from 'official-discord';
-import Phil from '../phil';
-import ServerConfig from '../server-config';
+import Phil from '@phil/phil';
+import ServerConfig from '@phil/server-config';
 import MessageBase from './base';
 
 export class PublicMessage extends MessageBase {

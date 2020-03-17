@@ -1,5 +1,10 @@
 {
   "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@data/*": ["data/*"],
+      "@phil/*": ["src/*"]
+    },
     "module": "commonjs",
     "target": "ES2017",
     "noImplicitAny": true,

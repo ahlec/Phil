@@ -2,9 +2,9 @@ import { CountryStage, DeclinedStage } from './@all-stages';
 import Stage from './@stage';
 import { setStage } from './@utils';
 
-import PrivateMessage from '../../messages/private';
-import Phil from '../../phil';
-import { sendMessage } from '../../promises/discord';
+import PrivateMessage from '@phil/messages/private';
+import Phil from '@phil/phil';
+import { sendMessage } from '@phil/promises/discord';
 
 export default class LetsBeginStage implements Stage {
   public readonly stageNumber = 1;

@@ -1,4 +1,4 @@
-import Database from '../database';
+import Database from '@phil/database';
 
 interface DbRow {
   bucket_id: string;
