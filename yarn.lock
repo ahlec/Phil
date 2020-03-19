@@ -489,7 +489,7 @@ delayed-stream@~1.0.0:
 
 "discord.io@https://github.com/ahlec/discord.io.git#gateway_v6":
   version "2.5.3"
-  resolved "https://github.com/ahlec/discord.io.git#bf75daadd929d53ef9fa57e5320c3ef8dc2a90bc"
+  resolved "https://github.com/ahlec/discord.io.git#6feed158ae7568951eca65364624cf023d766f73"
   dependencies:
     cjopus "^0.0.4"
     tweetnacl "^0.14.0"

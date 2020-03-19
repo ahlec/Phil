@@ -2,9 +2,10 @@ import Feature from '@phil/features/feature';
 import { HelpGroup } from '@phil/help-groups';
 import Logger from '@phil/Logger';
 import LoggerDefinition from '@phil/LoggerDefinition';
-import PublicMessage from '@phil/messages/public';
+import PublicMessage from '@phil/discord/PublicMessage';
 import PermissionLevel from '@phil/permission-level';
-import Phil from '@phil/phil';
+import Database from '@phil/database';
+import DiscordClient from '@phil/discord/Client';
 
 export type CommandDetails = {
   aliases?: ReadonlyArray<string>;
@@ -42,7 +43,8 @@ export default abstract class Command extends Logger {
   }
 
   public abstract processMessage(
-    phil: Phil,
+    discordClient: DiscordClient,
+    database: Database,
     message: PublicMessage,
     commandArgs: ReadonlyArray<string>
   ): Promise<void>;

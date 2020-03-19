@@ -1,9 +1,9 @@
-import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
-import Phil from '@phil/phil';
-import { sendEmbedMessage } from '@phil/promises/discord';
+import PublicMessage from '@phil/discord/PublicMessage';
+import DiscordClient from '@phil/discord/Client';
+import { EmbedColor } from '@phil/discord/Channel';
+import Database from '@phil/database';
 import Leaderboard from '@phil/prompts/leaderboard';
 import LeaderboardEntry from '@phil/prompts/leaderboard-entry';
 import Command, { LoggerDefinition } from './@types';
@@ -89,25 +89,25 @@ export default class LeaderboardCommand extends Command {
   }
 
   public async processMessage(
-    phil: Phil,
+    discordClient: DiscordClient,
+    database: Database,
     message: PublicMessage
   ): Promise<void> {
     const leaderboard = await Leaderboard.getLeaderboard(
-      phil.bot,
-      phil.db,
+      discordClient,
+      database,
       message.server
     );
     const reply = createLeaderboardMessage(leaderboard);
 
-    await sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Info,
-      description: reply,
-      footer: {
-        text:
-          'You can increase your score by submitting prompts! Use ' +
-          message.serverConfig.commandPrefix +
-          'suggest in a direct message with me!',
-      },
+    const { channel } = message;
+    await channel.sendMessage({
+      color: EmbedColor.PowderBlue,
+      contents: reply,
+      footer:
+        'You can increase your score by submitting prompts! Use ' +
+        message.serverConfig.commandPrefix +
+        'suggest in a direct message with me!',
       title: 'Hijack Prompt of the Day Leaderboard',
     });
   }

@@ -1,16 +1,13 @@
-import {
-  Client as DiscordIOClient,
-  Server as DiscordIOServer,
-} from 'discord.io';
-import { getUserDisplayName } from '@phil/utils';
+import DiscordClient from '@phil/discord/Client';
+import Server from '@phil/discord/Server';
 
 export default class LeaderboardEntry {
   public readonly displayName: string;
   public readonly isStillInServer: boolean;
 
   constructor(
-    bot: DiscordIOClient,
-    server: DiscordIOServer,
+    discordClient: DiscordClient,
+    server: Server,
     public readonly userId: string,
     public readonly score: number
   ) {

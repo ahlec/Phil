@@ -1,7 +1,7 @@
-import { Client as DiscordIOClient } from 'discord.io';
 import * as moment from 'moment';
 import Bucket from '@phil/buckets';
 import Database from '@phil/database';
+import DiscordClient from '@phil/discord/Client';
 
 export interface SubmissionDatabaseSchema {
   submission_id: number;
@@ -14,7 +14,7 @@ export interface SubmissionDatabaseSchema {
 
 export default class Submission {
   public static async getFromId(
-    client: DiscordIOClient,
+    discordClient: DiscordClient,
     db: Database,
     submissionId: number
   ): Promise<Submission | null> {
@@ -41,7 +41,7 @@ export default class Submission {
       return null;
     }
 
-    const bucket = await Bucket.getFromId(client, db, result.bucket_id);
+    const bucket = await Bucket.getFromId(discordClient, db, result.bucket_id);
     if (!bucket) {
       return null;
     }
@@ -50,7 +50,7 @@ export default class Submission {
   }
 
   public static async getFromBatchIds(
-    client: DiscordIOClient,
+    discordClient: DiscordClient,
     db: Database,
     ids: ReadonlySet<number>
   ): Promise<{ [id: number]: Submission | undefined }> {
@@ -84,7 +84,7 @@ export default class Submission {
     const bucketIds = new Set<number>();
     result.rows.forEach(({ bucket_id: bucketId }) => bucketIds.add(bucketId));
 
-    const buckets = await Bucket.getFromBatchIds(client, db, bucketIds);
+    const buckets = await Bucket.getFromBatchIds(discordClient, db, bucketIds);
     result.rows.forEach(row => {
       const bucket = buckets[row.bucket_id];
       if (!bucket) {

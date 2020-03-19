@@ -1,9 +1,7 @@
-import {
-  Client as DiscordIOClient,
-  Server as DiscordIOServer,
-} from 'discord.io';
+import { Server as DiscordIOServer } from 'discord.io';
 import * as moment from 'moment';
 import Database from './database';
+import DiscordClient from './discord/Client';
 import Phil from './phil';
 import ServerConfig from './server-config';
 import { getRandomArrayEntry } from './utils';
@@ -97,7 +95,7 @@ interface DbRow {
 
 export default class Bucket {
   public static async getFromId(
-    bot: DiscordIOClient,
+    discordClient: DiscordClient,
     db: Database,
     bucketId: number
   ): Promise<Bucket | null> {
@@ -109,11 +107,11 @@ export default class Bucket {
       return null;
     }
 
-    return new Bucket(bot, results.rows[0]);
+    return new Bucket(discordClient, results.rows[0]);
   }
 
   public static async getFromBatchIds(
-    bot: DiscordIOClient,
+    discordClient: DiscordClient,
     db: Database,
     ids: ReadonlySet<number>
   ): Promise<{ [id: number]: Bucket | undefined }> {
@@ -133,7 +131,7 @@ export default class Bucket {
     );
 
     result.rows.forEach(row => {
-      const bucket = new Bucket(bot, row);
+      const bucket = new Bucket(discordClient, row);
       returnValue[bucket.id] = bucket;
     });
 
@@ -141,7 +139,7 @@ export default class Bucket {
   }
 
   public static async getFromChannelId(
-    bot: DiscordIOClient,
+    discordClient: DiscordClient,
     db: Database,
     channelId: string
   ): Promise<Bucket | null> {
@@ -153,11 +151,11 @@ export default class Bucket {
       return null;
     }
 
-    return new Bucket(bot, results.rows[0]);
+    return new Bucket(discordClient, results.rows[0]);
   }
 
   public static async getFromReferenceHandle(
-    bot: DiscordIOClient,
+    discordClient: DiscordClient,
     db: Database,
     server: DiscordIOServer,
     referenceHandle: string
@@ -170,11 +168,11 @@ export default class Bucket {
       return null;
     }
 
-    return new Bucket(bot, results.rows[0]);
+    return new Bucket(discordClient, results.rows[0]);
   }
 
   public static async getAllForServer(
-    bot: DiscordIOClient,
+    discordClient: DiscordClient,
     db: Database,
     serverId: string
   ): Promise<Bucket[]> {
@@ -182,11 +180,12 @@ export default class Bucket {
       'SELECT * FROM prompt_buckets WHERE server_id = $1',
       [serverId]
     );
-    return results.rows.map(row => new Bucket(bot, row));
+    return results.rows.map(row => new Bucket(discordClient, row));
   }
 
   public static async retrieveFromCommandArgs(
-    phil: Phil,
+    discordClient: DiscordClient,
+    db: Database,
     commandArgs: ReadonlyArray<string>,
     serverConfig: ServerConfig,
     commandName: string,
@@ -195,8 +194,8 @@ export default class Bucket {
     const firstParameter = commandArgs[0];
     if (!firstParameter || firstParameter.length === 0) {
       const serverBuckets = await Bucket.getAllForServer(
-        phil.bot,
-        phil.db,
+        discordClient,
+        db,
         serverConfig.server.id
       );
       return getOnlyBucketOnServer(
@@ -208,15 +207,15 @@ export default class Bucket {
     }
 
     const bucket = await Bucket.getFromReferenceHandle(
-      phil.bot,
-      phil.db,
+      discordClient,
+      db,
       serverConfig.server,
       firstParameter
     );
     if (bucket === null || (!allowInvalidServers && !bucket.isValid)) {
       const serverBuckets = await Bucket.getAllForServer(
-        phil.bot,
-        phil.db,
+        discordClient,
+        db,
         serverConfig.server.id
       );
       throw multipleUnspecifiedBucketsError(
@@ -230,7 +229,7 @@ export default class Bucket {
   }
 
   private static determineIsBucketValid(
-    bot: DiscordIOClient,
+    bot: DiscordClient,
     dbRow: DbRow
   ): boolean {
     const server = bot.servers[dbRow.server_id];
@@ -265,8 +264,8 @@ export default class Bucket {
   public readonly promptTitleFormat: string;
   public internalAlertedBucketEmptying: boolean;
 
-  private constructor(bot: DiscordIOClient, dbRow: DbRow) {
-    const isValid = Bucket.determineIsBucketValid(bot, dbRow);
+  private constructor(discordClient: DiscordClient, dbRow: DbRow) {
+    const isValid = Bucket.determineIsBucketValid(discordClient, dbRow);
     let bucketFrequency = frequencyFromStrings[dbRow.frequency];
     if (bucketFrequency === undefined) {
       bucketFrequency = BucketFrequency.Daily;
@@ -350,12 +349,15 @@ export default class Bucket {
     this.internalAlertedBucketEmptying = hasAlerted;
   }
 
-  public canUserSubmitTo(bot: DiscordIOClient, userId: string): boolean {
+  public canUserSubmitTo(
+    discordClient: DiscordClient,
+    userId: string
+  ): boolean {
     if (!this.requiredRoleId) {
       return true;
     }
 
-    const server = bot.servers[this.serverId];
+    const server = discordClient.servers[this.serverId];
     const member = server.members[userId];
     if (member.roles.includes(this.requiredRoleId)) {
       return true;

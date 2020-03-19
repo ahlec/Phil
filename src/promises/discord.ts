@@ -31,23 +31,23 @@ function isRateLimitErrorResponse(
 }
 
 export interface EmbedData {
-  author?: {
+  _author?: {
     icon_url?: string;
     name: string;
     url?: string;
   };
-  color: EmbedColor;
-  description?: string;
-  fields?: EmbedField[];
-  thumbnail?: {
+  color: EmbedColor; // USED
+  description?: string; // USED
+  fields?: EmbedField[]; // USED
+  _thumbnail?: {
     url: string;
   };
-  title: string;
-  timestamp?: Date;
-  url?: string;
+  title: string; // USED
+  _timestamp?: Date;
+  _url?: string;
   footer?: {
-    icon_url?: string;
-    text: string;
+    _icon_url?: string;
+    text: string; // USED
   };
 }
 
@@ -102,15 +102,15 @@ export function sendEmbedMessage(
     bot.sendMessage(
       {
         embed: {
-          author: embedData.author,
+          author: embedData._author,
           color: getColorValue(embedData.color),
-          description: embedData.description,
-          fields: embedData.fields as [EmbedField],
-          footer: embedData.footer,
-          thumbnail: embedData.thumbnail,
-          timestamp: embedData.timestamp,
-          title: embedData.title,
-          url: embedData.url,
+          description: embedData._description,
+          fields: embedData._fields as [EmbedField],
+          footer: embedData._footer,
+          thumbnail: embedData._thumbnail,
+          timestamp: embedData._timestamp,
+          title: embedData._title,
+          url: embedData._url,
         },
         to: channelId,
       },

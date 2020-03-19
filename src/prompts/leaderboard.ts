@@ -1,8 +1,6 @@
-import {
-  Client as DiscordIOClient,
-  Server as DiscordIOServer,
-} from 'discord.io';
 import Database, { DatabaseResult } from '@phil/database';
+import DiscordClient from '@phil/discord/Client';
+import Server from '@phil/discord/Server';
 import LeaderboardEntry from './leaderboard-entry';
 
 const LEADERBOARD_SIZE = 10;
@@ -14,9 +12,9 @@ interface DbResultsRow {
 
 export default class Leaderboard {
   public static async getLeaderboard(
-    client: DiscordIOClient,
+    client: DiscordClient,
     db: Database,
-    server: DiscordIOServer
+    server: Server
   ): Promise<Leaderboard> {
     const results = await db.query<DbResultsRow>(
       `SELECT
@@ -36,7 +34,7 @@ export default class Leaderboard {
         ORDER BY
           score DESC
         LIMIT $2`,
-      [server.id, LEADERBOARD_SIZE]
+      [server.serverId, LEADERBOARD_SIZE]
     );
     return new Leaderboard(client, server, results);
   }
@@ -44,8 +42,8 @@ export default class Leaderboard {
   public readonly entries: ReadonlyArray<LeaderboardEntry>;
 
   private constructor(
-    client: DiscordIOClient,
-    server: DiscordIOServer,
+    client: DiscordClient,
+    server: Server,
     results: DatabaseResult<DbResultsRow>
   ) {
     const mutableEntries: LeaderboardEntry[] = [];

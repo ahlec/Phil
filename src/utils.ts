@@ -1,10 +1,10 @@
-import {
-  Client as DiscordIOClient,
-  Member as DiscordIOMember,
-  Role as DiscordIORole,
-  Server as DiscordIOServer,
-  User as DiscordIOUser,
-} from 'discord.io';
+// import {
+//   Client as DiscordIOClient,
+//   Member as DiscordIOMember,
+//   Role as DiscordIORole,
+//   Server as DiscordIOServer,
+//   User as DiscordIOUser,
+// } from 'discord.io';
 import { sendMessage } from './promises/discord';
 
 interface SendErrorMessageOpts {
@@ -31,19 +31,6 @@ export function sendSuccessMessage(
 ): Promise<string> {
   const message = ':white_check_mark: **SUCCESS.** ' + options.message;
   return sendMessage(options.bot, options.channelId, message);
-}
-
-export function doesMemberUseRole(
-  member: DiscordIOMember,
-  roleId: string
-): boolean {
-  for (const memberRoleId of member.roles) {
-    if (memberRoleId === roleId) {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 export function getRandomArrayEntry<T>(arr: ReadonlyArray<T>): T {
@@ -96,22 +83,6 @@ export function stitchTogetherArray(values: ReadonlyArray<string>): string {
   }
 
   return str;
-}
-
-export function getUserDisplayName(
-  user: DiscordIOUser,
-  server: DiscordIOServer
-): string | null {
-  if (!user) {
-    return null;
-  }
-
-  const member = server.members[user.id];
-  if (member && member.nick && member.nick.length > 0) {
-    return member.nick;
-  }
-
-  return user.username;
 }
 
 export function truncateString(message: string, maxCharacters: number): string {
