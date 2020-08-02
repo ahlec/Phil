@@ -6,7 +6,7 @@
   "main": "main.js",
   "author": "ahlec",
   "engines": {
-    "node": ">=8.11.1",
+    "node": ">=12.x",
     "yarn": "^1.6.4"
   },
   "scripts": {
