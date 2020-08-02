@@ -1,11 +1,10 @@
 import {
   Client as DiscordIOClient,
-  Member as DiscordIOMember,
   Role as DiscordIORole,
   Server as DiscordIOServer,
   User as DiscordIOUser,
 } from 'discord.io';
-import { sendMessage } from './promises/discord';
+import { sendMessage, getMemberRolesInServer } from './promises/discord';
 
 interface SendErrorMessageOpts {
   readonly bot: DiscordIOClient;
@@ -33,11 +32,14 @@ export function sendSuccessMessage(
   return sendMessage(options.bot, options.channelId, message);
 }
 
-export function doesMemberUseRole(
-  member: DiscordIOMember,
+export async function doesMemberUseRole(
+  client: DiscordIOClient,
+  serverId: string,
+  memberId: string,
   roleId: string
-): boolean {
-  for (const memberRoleId of member.roles) {
+): Promise<boolean> {
+  const memberRoles = await getMemberRolesInServer(client, serverId, memberId);
+  for (const memberRoleId of memberRoles) {
     if (memberRoleId === roleId) {
       return true;
     }

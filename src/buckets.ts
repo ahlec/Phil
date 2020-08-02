@@ -7,6 +7,7 @@ import Database from './database';
 import Phil from './phil';
 import ServerConfig from './server-config';
 import { getRandomArrayEntry } from './utils';
+import { getMemberRolesInServer } from './promises/discord';
 
 export enum BucketFrequency {
   Daily = 0,
@@ -350,14 +351,20 @@ export default class Bucket {
     this.internalAlertedBucketEmptying = hasAlerted;
   }
 
-  public canUserSubmitTo(bot: DiscordIOClient, userId: string): boolean {
+  public async canUserSubmitTo(
+    bot: DiscordIOClient,
+    userId: string
+  ): Promise<boolean> {
     if (!this.requiredRoleId) {
       return true;
     }
 
-    const server = bot.servers[this.serverId];
-    const member = server.members[userId];
-    if (member.roles.includes(this.requiredRoleId)) {
+    const memberRoles = await getMemberRolesInServer(
+      bot,
+      this.serverId,
+      userId
+    );
+    if (memberRoles.includes(this.requiredRoleId)) {
       return true;
     }
 

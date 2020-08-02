@@ -29,7 +29,7 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
     now: Moment
   ): Promise<void> {
     const userIds = await this.getBirthdayUserIds(phil.db, serverConfig, now);
-    const info = this.getInfo(phil, serverConfig, userIds);
+    const info = await this.getInfo(phil, serverConfig, userIds);
     const birthdayWish = this.createBirthdayWish(info);
     if (birthdayWish === '') {
       return;
@@ -64,11 +64,11 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
     return userIds;
   }
 
-  private getInfo(
+  private async getInfo(
     phil: Phil,
     serverConfig: ServerConfig,
     userIds: string[]
-  ): HappyBirthdayInfo {
+  ): Promise<HappyBirthdayInfo> {
     const names = [];
     for (const userId of userIds) {
       const user = phil.bot.users[userId];
@@ -83,7 +83,7 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
     let pronoun = GROUP_PRONOUNS;
     if (userIds.length === 1) {
       const member = serverConfig.server.members[userIds[0]];
-      pronoun = serverConfig.getPronounsForMember(member);
+      pronoun = await serverConfig.getPronounsForMember(phil.bot, member.id);
     }
 
     return {

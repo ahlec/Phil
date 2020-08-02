@@ -9,6 +9,7 @@ import {
   editRole,
   giveRoleToUser,
   takeRoleFromUser,
+  getMemberRolesInServer,
 } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
 import { sendSuccessMessage } from '@phil/utils';
@@ -110,9 +111,12 @@ export default abstract class MemberUniqueRoleCommandBase<
     server: DiscordIOServer,
     userId: string
   ): Promise<void> {
-    const member = server.members[userId];
-
-    for (const roleId of member.roles) {
+    const memberRoles = await getMemberRolesInServer(
+      phil.bot,
+      server.id,
+      userId
+    );
+    for (const roleId of memberRoles) {
       const role = server.roles[roleId];
       if (!this.isRolePartOfUniquePool(role)) {
         continue;

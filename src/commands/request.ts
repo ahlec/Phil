@@ -3,7 +3,11 @@ import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
 import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
-import { giveRoleToUser, sendMessageBuilder } from '@phil/promises/discord';
+import {
+  giveRoleToUser,
+  sendMessageBuilder,
+  getMemberRolesInServer,
+} from '@phil/promises/discord';
 import Requestable from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
 import {
@@ -45,7 +49,8 @@ export default class RequestCommand extends Command {
       );
     }
 
-    this.ensureUserCanRequestRole(
+    await this.ensureUserCanRequestRole(
+      phil,
       message.serverConfig,
       message.userId,
       requestable
@@ -64,19 +69,24 @@ export default class RequestCommand extends Command {
     });
   }
 
-  private ensureUserCanRequestRole(
+  private async ensureUserCanRequestRole(
+    phil: Phil,
     serverConfig: ServerConfig,
     userId: string,
     requestable: Requestable
-  ): void {
+  ): Promise<void> {
     if (requestable.blacklistedUserIds.has(userId)) {
       throw new Error(
         `You are unable to request the "${requestable.role.name}" role at this time.`
       );
     }
 
-    const member = serverConfig.server.members[userId];
-    if (member.roles.indexOf(requestable.role.id) >= 0) {
+    const memberRoles = await getMemberRolesInServer(
+      phil.bot,
+      serverConfig.serverId,
+      userId
+    );
+    if (memberRoles.indexOf(requestable.role.id) >= 0) {
       throw new Error(
         `You already have the "${requestable.role.name}" role. You can use \`${serverConfig.commandPrefix}remove\` to remove the role if you wish.`
       );

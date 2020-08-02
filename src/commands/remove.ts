@@ -1,11 +1,14 @@
 import * as Discord from 'discord.io';
-import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
 import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
-import { takeRoleFromUser, sendMessageBuilder } from '@phil/promises/discord';
+import {
+  takeRoleFromUser,
+  sendMessageBuilder,
+  getMemberRolesInServer,
+} from '@phil/promises/discord';
 import Requestable from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
 import {
@@ -46,7 +49,12 @@ export default class RemoveCommand extends Command {
       );
     }
 
-    this.ensureUserHasRole(message.server, message.userId, requestable);
+    await this.ensureUserHasRole(
+      phil,
+      message.server,
+      message.userId,
+      requestable
+    );
 
     await takeRoleFromUser(
       phil.bot,
@@ -62,14 +70,18 @@ export default class RemoveCommand extends Command {
     });
   }
 
-  private ensureUserHasRole(
+  private async ensureUserHasRole(
+    phil: Phil,
     server: Discord.Server,
     userId: string,
     requestable: Requestable
-  ): Discord.Role {
-    const member = server.members[userId];
-
-    if (member.roles.indexOf(requestable.role.id) < 0) {
+  ): Promise<Discord.Role> {
+    const memberRoles = await getMemberRolesInServer(
+      phil.bot,
+      server.id,
+      userId
+    );
+    if (memberRoles.indexOf(requestable.role.id) < 0) {
       throw new Error(
         'I haven\'t given you the "' + requestable.role.name + '" role.'
       );
@@ -83,7 +95,7 @@ export default class RemoveCommand extends Command {
     message: PublicMessage
   ): Promise<void> {
     const userRequestables = await this.getAllRequestablesUserHas(
-      phil.db,
+      phil,
       message.serverConfig,
       message.userId
     );
@@ -103,12 +115,12 @@ export default class RemoveCommand extends Command {
   }
 
   private async getAllRequestablesUserHas(
-    db: Database,
+    phil: Phil,
     serverConfig: ServerConfig,
     userId: string
   ): Promise<Requestable[]> {
     const requestables = await Requestable.getAllRequestables(
-      db,
+      phil.db,
       serverConfig.server
     );
     if (requestables.length === 0) {
@@ -119,10 +131,14 @@ export default class RemoveCommand extends Command {
       );
     }
 
-    const member = serverConfig.server.members[userId];
+    const memberRoles = await getMemberRolesInServer(
+      phil.bot,
+      serverConfig.serverId,
+      userId
+    );
     const requestablesUserHas = [];
     for (const requestable of requestables) {
-      if (member.roles.indexOf(requestable.role.id) >= 0) {
+      if (memberRoles.indexOf(requestable.role.id) >= 0) {
         requestablesUserHas.push(requestable);
       }
     }

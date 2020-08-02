@@ -69,7 +69,8 @@ export default class CommandRunner extends Logger {
       }
     }
 
-    if (!this.canUserUseCommand(command, message)) {
+    const canUseCommand = await this.canUserUseCommand(command, message);
+    if (!canUseCommand) {
       this.reportCannotUseCommand(message, command, input);
       return;
     }
@@ -113,14 +114,13 @@ export default class CommandRunner extends Logger {
   private canUserUseCommand(
     command: Command,
     message: IPublicMessage
-  ): boolean {
+  ): Promise<boolean> {
     switch (command.permissionLevel) {
       case PermissionLevel.General: {
-        return true;
+        return Promise.resolve(true);
       }
       case PermissionLevel.AdminOnly: {
-        const member = message.server.members[message.userId];
-        return message.serverConfig.isAdmin(member);
+        return message.serverConfig.isAdmin(this.bot, message.userId);
       }
       default: {
         return command.permissionLevel;

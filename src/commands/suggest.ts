@@ -56,7 +56,7 @@ export default class SuggestCommand extends Command {
     );
     if (
       bucket.requiredRoleId &&
-      !bucket.canUserSubmitTo(phil.bot, message.userId)
+      !(await bucket.canUserSubmitTo(phil.bot, message.userId))
     ) {
       const role = message.server.roles[bucket.requiredRoleId];
       throw new Error(

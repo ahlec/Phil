@@ -3,7 +3,7 @@ import EmbedColor from '@phil/embed-color';
 import Phil from '@phil/phil';
 import { deleteRole, sendEmbedMessage } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
-import { doesMemberUseRole, isHexColorRole } from '@phil/utils';
+import { isHexColorRole } from '@phil/utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 interface RoleInfo {
@@ -49,7 +49,7 @@ export default class RemoveUnusedColorRolesChrono extends Logger
         continue;
       }
 
-      if (!this.isRoleUnused(server, roleId)) {
+      if (this.isRoleInUse(server, roleId)) {
         continue;
       }
 
@@ -62,13 +62,20 @@ export default class RemoveUnusedColorRolesChrono extends Logger
     return colorRoles;
   }
 
-  private isRoleUnused(server: DiscordIOServer, roleId: string): boolean {
+  private isRoleInUse(server: DiscordIOServer, roleId: string): boolean {
     for (const memberId in server.members) {
-      if (doesMemberUseRole(server.members[memberId], roleId)) {
-        return false;
+      const member = server.members[memberId];
+      if (!member) {
+        continue;
+      }
+
+      for (const memberRoleId of member.roles) {
+        if (memberRoleId === roleId) {
+          return true;
+        }
       }
     }
 
-    return true;
+    return false;
   }
 }

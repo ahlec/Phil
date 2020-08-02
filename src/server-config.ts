@@ -5,6 +5,7 @@ import LoggerDefinition from './LoggerDefinition';
 import { DEFAULT_PRONOUNS } from './pronouns/definitions';
 import Pronoun from './pronouns/pronoun';
 import { getPronounFromRole } from './pronouns/utils';
+import { getMemberRolesInServer } from './promises/discord';
 
 function doesRoleHavePermission(
   role: discord.Role,
@@ -271,8 +272,16 @@ export class ServerConfig extends Logger {
   // Utility functions
   // -----------------------------------------------------------------------------
 
-  public isAdmin(member: discord.Member): boolean {
-    for (const memberRoleId of member.roles) {
+  public async isAdmin(
+    client: discord.Client,
+    memberId: string
+  ): Promise<boolean> {
+    const memberRoles = await getMemberRolesInServer(
+      client,
+      this.serverId,
+      memberId
+    );
+    for (const memberRoleId of memberRoles) {
       if (this.adminRole && this.adminRole.id === memberRoleId) {
         return true;
       }
@@ -296,7 +305,7 @@ export class ServerConfig extends Logger {
     }
 
     // The owner of the server is also an admin
-    return this.server.owner_id === member.id;
+    return this.server.owner_id === memberId;
   }
 
   public isAdminChannel(channelId: string): boolean {
@@ -310,8 +319,16 @@ export class ServerConfig extends Logger {
     );
   }
 
-  public getPronounsForMember(member: discord.Member): Pronoun {
-    for (const roleId of member.roles) {
+  public async getPronounsForMember(
+    client: discord.Client,
+    memberId: string
+  ): Promise<Pronoun> {
+    const memberRoles = await getMemberRolesInServer(
+      client,
+      this.serverId,
+      memberId
+    );
+    for (const roleId of memberRoles) {
       const role = this.server.roles[roleId];
       if (!role) {
         continue;
