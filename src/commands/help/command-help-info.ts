@@ -19,7 +19,7 @@ export default class CommandHelpInfo {
   }
 
   private static isVersionNew(version: number): boolean {
-    return version >= CODE_VERSION.major - 1;
+    return version >= CODE_VERSION.majorVersion - 1;
   }
 
   public readonly name: string;

@@ -16,7 +16,7 @@ export default class VersionBotManagerCommand extends BotManagerCommand {
     await sendMessage(
       phil.bot,
       message.channelId,
-      `**Code**: v${CODE_VERSION.format()}\n**Database**: v${DATABASE_VERSION}`
+      `**Code**: v${CODE_VERSION.displayString}\n**Database**: v${DATABASE_VERSION}`
     );
   }
 }

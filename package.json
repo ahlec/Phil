@@ -26,18 +26,14 @@
     "lodash": "^4.17.11",
     "module-alias": "^2.2.2",
     "moment-timezone": "0.5.23",
-    "node-cache": "^4.2.0",
     "pg": "8.3.3",
-    "semver": "^6.2.0",
     "youtube-node": "https://github.com/ahlec/youtube-node.git#fix-callback-typing"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.120",
     "@types/moment-timezone": "^0.5.4",
     "@types/node": "^12.6.2",
-    "@types/node-cache": "^4.1.1",
     "@types/pg": "^7.14.4",
-    "@types/semver": "^6.0.1",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
     "countries-and-timezones": "1.0.1",

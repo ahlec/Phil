@@ -77,13 +77,6 @@
   dependencies:
     moment ">=2.14.0"
 
-"@types/node-cache@^4.1.1":
-  version "4.1.3"
-  resolved "https://registry.yarnpkg.com/@types/node-cache/-/node-cache-4.1.3.tgz#524b8b13b787dec4fe982b9d77b251f7d59416f4"
-  integrity sha512-3hsqnv3H1zkOhjygJaJUYmgz5+FcPO3vejBX7cE9/cnuINOJYrzkfOnUCvpwGe9kMZANIHJA7J5pOdeyv52OEw==
-  dependencies:
-    "@types/node" "*"
-
 "@types/node@*", "@types/node@^12.6.2":
   version "12.6.2"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.6.2.tgz#a5ccec6abb6060d5f20d256fb03ed743e9774999"
@@ -103,11 +96,6 @@
   dependencies:
     "@types/node" "*"
     "@types/pg-types" "*"
-
-"@types/semver@^6.0.1":
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/@types/semver/-/semver-6.0.1.tgz#a984b405c702fa5a7ec6abc56b37f2ba35ef5af6"
-  integrity sha512-ffCdcrEE5h8DqVxinQjo+2d1q+FV5z7iNtPofw3JsrltSoSVlOGaW0rY8XxtO9XukdTn8TaCGWmk2VFGhI70mg==
 
 "@typescript-eslint/eslint-plugin@^4.0.1":
   version "4.0.1"
@@ -368,10 +356,6 @@ chrono-node@1.3.5:
 cjopus@^0.0.4:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/cjopus/-/cjopus-0.0.4.tgz#46f3cfc96b83f7d78446de8b4cfd994b5889a9a0"
-
-clone@2.x:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/clone/-/clone-2.1.2.tgz#1b7f4b9f591f1e8f83670401600345a02887435f"
 
 color-convert@^1.9.0:
   version "1.9.3"
@@ -1021,7 +1005,7 @@ levn@^0.4.1:
     prelude-ls "^1.2.1"
     type-check "~0.4.0"
 
-lodash@4.x, lodash@^4.17.11, lodash@^4.17.2:
+lodash@^4.17.11, lodash@^4.17.2:
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
 
@@ -1121,13 +1105,6 @@ newline@0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/newline/-/newline-0.0.3.tgz#0f6a74493223dba04fe7dbfb6cdc804bf7e46dd0"
   integrity sha1-D2p0STIj26BP59v7bNyAS/fkbdA=
-
-node-cache@^4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/node-cache/-/node-cache-4.2.0.tgz#48ac796a874e762582692004a376d26dfa875811"
-  dependencies:
-    clone "2.x"
-    lodash "4.x"
 
 oauth-sign@~0.9.0:
   version "0.9.0"
@@ -1403,11 +1380,6 @@ safer-buffer@^2.0.2, safer-buffer@^2.1.0, safer-buffer@~2.1.0:
 semver@4.3.2:
   version "4.3.2"
   resolved "https://registry.yarnpkg.com/semver/-/semver-4.3.2.tgz#c7a07158a80bedd052355b770d82d6640f803be7"
-
-semver@^6.2.0:
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-6.2.0.tgz#4d813d9590aaf8a9192693d6c85b9344de5901db"
-  integrity sha512-jdFC1VdUGT/2Scgbimf7FSx9iJLXoqfglSF+gJeuNWVpiE37OIbc1jywR/GJyFdz3mnkz2/id0L0J/cr0izR5A==
 
 semver@^7.2.1, semver@^7.3.2:
   version "7.3.2"
