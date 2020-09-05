@@ -13,9 +13,18 @@ function isIndexableObject(obj: unknown): obj is { [index: string]: unknown } {
   return typeof obj === 'object' && obj !== null;
 }
 
-function isRateLimitErrorResponse(
-  response: unknown
-): response is { retry_after: number } {
+function isRateLimitError(
+  err: unknown
+): err is { statusCode: 429; response: { retry_after: number } } {
+  if (!isIndexableObject(err)) {
+    return false;
+  }
+
+  const { statusCode, response } = err;
+  if (statusCode !== 429) {
+    return false;
+  }
+
   if (!isIndexableObject(response)) {
     return false;
   }
@@ -316,83 +325,75 @@ export function pinMessage(
   });
 }
 
-export function addReaction(
+export async function addReaction(
   bot: Discord.Client,
   channelId: string,
   messageId: string,
   reaction: string
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
-    bot.addReaction(
-      {
-        channelID: channelId,
-        messageID: messageId,
-        reaction,
-      },
-      err => {
-        if (err) {
-          if (
-            err.statusCode === 429 &&
-            isRateLimitErrorResponse(err.response)
-          ) {
-            const { retry_after: waitTime } = err.response;
-            if (waitTime) {
-              wait(waitTime)
-                .then(() => addReaction(bot, channelId, messageId, reaction))
-                .then(resolve);
-              return;
-            }
+  try {
+    await new Promise<void>((resolve, reject) => {
+      bot.addReaction(
+        {
+          channelID: channelId,
+          messageID: messageId,
+          reaction,
+        },
+        (err): void => {
+          if (err) {
+            reject(err);
+            return;
           }
 
-          reject(err);
-          return;
+          resolve();
         }
+      );
+    });
+  } catch (err) {
+    if (isRateLimitError(err)) {
+      await wait(err.response.retry_after);
+      await addReaction(bot, channelId, messageId, reaction);
+      return;
+    }
 
-        resolve();
-      }
-    );
-  });
+    throw err;
+  }
 }
 
-export function removeOwnReaction(
+export async function removeOwnReaction(
   bot: Discord.Client,
   channelId: string,
   messageId: string,
   reaction: string
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
-    bot.removeReaction(
-      {
-        channelID: channelId,
-        messageID: messageId,
-        reaction,
-        userID: bot.id,
-      },
-      err => {
-        if (err) {
-          if (
-            err.statusCode === 429 &&
-            isRateLimitErrorResponse(err.response)
-          ) {
-            const { retry_after: waitTime } = err.response;
-            if (waitTime) {
-              wait(waitTime)
-                .then(() =>
-                  removeOwnReaction(bot, channelId, messageId, reaction)
-                )
-                .then(resolve);
-              return;
-            }
+  try {
+    await new Promise<void>((resolve, reject) => {
+      bot.removeReaction(
+        {
+          channelID: channelId,
+          messageID: messageId,
+          reaction,
+          userID: bot.id,
+        },
+        (err): void => {
+          if (err) {
+            reject(err);
+            return;
           }
 
-          reject(err);
-          return;
+          resolve();
         }
+      );
+    });
+  } catch (err) {
+    if (isRateLimitError(err)) {
+      await wait(err.response.retry_after);
+      await removeOwnReaction(bot, channelId, messageId, reaction);
+      return;
+    }
 
-        resolve();
-      }
-    );
-  });
+    throw err;
+  }
 }
 
 interface ApiServerMember {
@@ -413,8 +414,18 @@ function fetchServerMemberFromApi(
       ++numApiInvocations;
       bot.getMembers(
         {
+          /**
+           * We'll be hopefully moving away from discord.io which has been a huge
+           * fucking thorn for way too long, especially with TypeScript.
+           */
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           after: offsetUserId,
+          /**
+           * We'll be hopefully moving away from discord.io which has been a huge
+           * fucking thorn for way too long, especially with TypeScript.
+           */
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           serverID: serverId,
         },
