@@ -27,7 +27,7 @@
     "module-alias": "^2.2.2",
     "moment-timezone": "0.5.23",
     "node-cache": "^4.2.0",
-    "pg": "7.8.0",
+    "pg": "8.3.3",
     "semver": "^6.2.0",
     "youtube-node": "https://github.com/ahlec/youtube-node.git#fix-callback-typing"
   },
@@ -36,7 +36,7 @@
     "@types/moment-timezone": "^0.5.4",
     "@types/node": "^12.6.2",
     "@types/node-cache": "^4.1.1",
-    "@types/pg": "^7.4.4",
+    "@types/pg": "^7.14.4",
     "@types/semver": "^6.0.1",
     "@typescript-eslint/eslint-plugin": "^2.23.0",
     "@typescript-eslint/parser": "^2.23.0",
@@ -53,7 +53,7 @@
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-react": "^7.12.3",
     "eslint-plugin-standard": "^4.0.0",
-    "postgrator": "^3.7.0",
+    "postgrator": "^4.0.1",
     "prettier": "^1.15.3",
     "typescript": "^3.2.2"
   },
