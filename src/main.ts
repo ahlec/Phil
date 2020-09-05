@@ -1,5 +1,3 @@
-import 'module-alias/register';
-
 import Database from './database';
 import { ensureNecessaryEnvironmentVariables } from './environment-manager';
 import Phil from './phil';

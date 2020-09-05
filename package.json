@@ -11,29 +11,28 @@
   },
   "scripts": {
     "start": "heroku local web",
-    "build": "tsc",
-    "clean": "rm -rf ./build",
     "lint": "eslint \"./{src,scripts}/**/*.{js,ts}\"",
-    "run-bot": "node build/src/main.js",
+    "run-bot": "ts-node -r tsconfig-paths/register ./src/main.ts",
     "db-migrate": "node scripts/db-migrate.js"
   },
-  "heroku-run-build-script": true,
   "dependencies": {
+    "@types/lodash": "^4.14.161",
+    "@types/moment-timezone": "^0.5.30",
+    "@types/node": "^14.6.4",
+    "@types/pg": "^7.14.4",
     "chalk": "^4.1.0",
     "chrono-node": "1.3.5",
     "discord.io": "https://github.com/ahlec/discord.io.git#gateway_v6",
     "fuse.js": "^3.4.2",
     "lodash": "^4.17.20",
-    "module-alias": "^2.2.2",
     "moment-timezone": "0.5.31",
     "pg": "8.3.3",
+    "ts-node": "^9.0.0",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^4.0.2",    
     "youtube-node": "https://github.com/ahlec/youtube-node.git#fix-callback-typing"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.161",
-    "@types/moment-timezone": "^0.5.30",
-    "@types/node": "^14.6.4",
-    "@types/pg": "^7.14.4",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
     "countries-and-timezones": "1.0.1",
@@ -43,8 +42,7 @@
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-promise": "^4.0.1",
     "postgrator": "^4.0.1",
-    "prettier": "^2.1.1",
-    "typescript": "^3.2.2"
+    "prettier": "^2.1.1"
   },
   "repository": {
     "type": "git",
@@ -66,9 +64,5 @@
     "singleQuote": true,
     "printWidth": 80,
     "trailingComma": "es5"
-  },
-  "_moduleAliases": {
-    "@data": "build/data",
-    "@phil": "build/src"
   }
 }
