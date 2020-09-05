@@ -133,7 +133,7 @@ export default class Bucket {
       [[...ids]]
     );
 
-    result.rows.forEach(row => {
+    result.rows.forEach((row) => {
       const bucket = new Bucket(bot, row);
       returnValue[bucket.id] = bucket;
     });
@@ -183,7 +183,7 @@ export default class Bucket {
       'SELECT * FROM prompt_buckets WHERE server_id = $1',
       [serverId]
     );
-    return results.rows.map(row => new Bucket(bot, row));
+    return results.rows.map((row) => new Bucket(bot, row));
   }
 
   public static async retrieveFromCommandArgs(

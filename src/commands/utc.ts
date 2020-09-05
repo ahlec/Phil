@@ -92,9 +92,7 @@ export default class UtcCommand extends Command {
   private createReply(inputTime: moment.Moment, timezoneName: string): string {
     let reply = formatTimeToString(inputTime) + ' local time is **';
 
-    const timezoneOffset = moment()
-      .tz(timezoneName)
-      .utcOffset();
+    const timezoneOffset = moment().tz(timezoneName).utcOffset();
     inputTime.utcOffset(timezoneOffset);
     const utcTime = inputTime.tz('Etc/UTC');
     reply += formatTimeToString(utcTime);

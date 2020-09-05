@@ -98,7 +98,7 @@ for (const countryData of allCountries) {
 }
 
 const jsonContent = JSON.stringify(countryTimezones, null, 4);
-fs.writeFile('../data/country-timezones.json', jsonContent, 'utf8', function(
+fs.writeFile('../data/country-timezones.json', jsonContent, 'utf8', function (
   err
 ) {
   if (err) {

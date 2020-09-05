@@ -9,7 +9,7 @@ export default class InputMessage {
       return null;
     }
 
-    const words = message.split(' ').filter(word => word.trim().length > 0);
+    const words = message.split(' ').filter((word) => word.trim().length > 0);
     if (!words.length) {
       return null;
     }

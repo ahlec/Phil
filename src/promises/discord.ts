@@ -196,7 +196,7 @@ export function giveRoleToUser(
         serverID: serverId,
         userID: userId,
       },
-      err => {
+      (err) => {
         if (err) {
           reject(err);
           return;
@@ -267,7 +267,7 @@ export function editRole(
         roleID: roleId,
         serverID: serverId,
       },
-      err => {
+      (err) => {
         if (err) {
           reject(err);
           return;
@@ -443,7 +443,9 @@ function fetchServerMemberFromApi(
             );
           }
 
-          const targetMember = data.find(member => member.user.id === memberId);
+          const targetMember = data.find(
+            (member) => member.user.id === memberId
+          );
           if (targetMember) {
             resolve(targetMember);
             return;

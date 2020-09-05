@@ -27,7 +27,7 @@ export default abstract class Logger {
     console.error(this.definition.prefix, identifier, err.message);
     if (err.stack) {
       const stackTrace = err.stack.split('\n');
-      stackTrace.forEach(line =>
+      stackTrace.forEach((line) =>
         console.error(this.definition.prefix, identifier, '\t', line.trim())
       );
     } else {

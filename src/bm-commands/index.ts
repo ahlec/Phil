@@ -4,9 +4,9 @@ import EvalBotManagerCommand from './eval';
 import InviteBotManagerCommand from './invite';
 import VersionBotManagerCommand from './version';
 
-const COMMAND_CONSTRUCTORS: ReadonlyArray<
-  new (parentDefinition: LoggerDefinition) => BotManagerCommand
-> = [
+const COMMAND_CONSTRUCTORS: ReadonlyArray<new (
+  parentDefinition: LoggerDefinition
+) => BotManagerCommand> = [
   ClearCacheBotManagerCommand,
   EvalBotManagerCommand,
   InviteBotManagerCommand,

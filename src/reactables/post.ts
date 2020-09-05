@@ -41,7 +41,7 @@ export default class ReactablePost {
             WHERE user_id = $1 AND reactable_type = $2`,
       [userId, handle]
     );
-    return results.rows.map(row => new ReactablePost(bot, row));
+    return results.rows.map((row) => new ReactablePost(bot, row));
   }
 
   public readonly messageId: string;

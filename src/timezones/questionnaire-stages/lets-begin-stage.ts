@@ -10,7 +10,7 @@ export default class LetsBeginStage implements Stage {
   public readonly stageNumber = 1;
 
   public async getMessage(): Promise<string> {
-    return 'Hey! You mentioned some times in your recent message on the server. Would you be willing to tell me what timezone you\'re in so that I can convert them to UTC in the future? Just say `yes` or `no`.';
+    return "Hey! You mentioned some times in your recent message on the server. Would you be willing to tell me what timezone you're in so that I can convert them to UTC in the future? Just say `yes` or `no`.";
   }
 
   public async processInput(

@@ -9,7 +9,8 @@ import Chrono, { Logger, LoggerDefinition } from './@types';
 const PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD = 5;
 
 const HANDLE = 'alert-low-bucket-queue';
-export default class AlertLowBucketQueueChrono extends Logger
+export default class AlertLowBucketQueueChrono
+  extends Logger
   implements Chrono {
   public readonly handle = HANDLE;
   public readonly requiredFeature = Features.Prompts;

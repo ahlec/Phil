@@ -71,14 +71,14 @@ export default abstract class EnableDisableCommandBase extends Command {
   ): string;
 
   private getFeatureByName(name: string): Feature | null {
-    return FEATURES_LIST.find(feature => feature.is(name)) || null;
+    return FEATURES_LIST.find((feature) => feature.is(name)) || null;
   }
 
   private formatParameterErrorMessage(message: string): string {
     const lines = [
       message,
       '',
-      ...FEATURES_LIST.map(feature => feature.getInformationalDisplayLine()),
+      ...FEATURES_LIST.map((feature) => feature.getInformationalDisplayLine()),
     ];
     return lines.join('\n');
   }

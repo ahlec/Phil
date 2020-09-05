@@ -48,8 +48,9 @@ class WelcomeMessageTypeDefinitionImplementation implements TypeDefinition {
     let truncated = truncateString(value, DISPLAY_CHARACTER_LIMIT);
     const omittedTextLength = value.length - truncated.length;
     if (omittedTextLength > 0) {
-      truncated += `... (and ${omittedTextLength} more character${omittedTextLength !==
-        1 && 's'})`;
+      truncated += `... (and ${omittedTextLength} more character${
+        omittedTextLength !== 1 && 's'
+      })`;
     }
 
     return truncated;

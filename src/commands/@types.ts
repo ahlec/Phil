@@ -13,7 +13,8 @@ export type CommandDetails = {
   versionAdded: number;
 } & (
   | { helpGroup: HelpGroup.None }
-  | { helpGroup?: HelpGroup; helpDescription: string });
+  | { helpGroup?: HelpGroup; helpDescription: string }
+);
 
 export default abstract class Command extends Logger {
   public readonly aliases: ReadonlyArray<string>;

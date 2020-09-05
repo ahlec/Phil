@@ -34,7 +34,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
       serverConfig.server.id
     );
 
-    const processes = serverBuckets.map(bucket => {
+    const processes = serverBuckets.map((bucket) => {
       if (bucket.isPaused || !bucket.isValid) {
         return Promise.resolve();
       }

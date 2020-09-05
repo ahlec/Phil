@@ -12,7 +12,8 @@ interface RoleInfo {
 }
 
 const HANDLE = 'remove-unused-colour-roles';
-export default class RemoveUnusedColorRolesChrono extends Logger
+export default class RemoveUnusedColorRolesChrono
+  extends Logger
   implements Chrono {
   public readonly handle = HANDLE;
   public readonly requiredFeature = null; // Even if not using, still clean up

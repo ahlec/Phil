@@ -85,7 +85,7 @@ export default class Submission {
     result.rows.forEach(({ bucket_id: bucketId }) => bucketIds.add(bucketId));
 
     const buckets = await Bucket.getFromBatchIds(client, db, bucketIds);
-    result.rows.forEach(row => {
+    result.rows.forEach((row) => {
       const bucket = buckets[row.bucket_id];
       if (!bucket) {
         return;
@@ -123,7 +123,7 @@ export default class Submission {
       [bucket.id, maxNumResults]
     );
 
-    return rows.map(dbRow => new Submission(bucket, dbRow));
+    return rows.map((dbRow) => new Submission(bucket, dbRow));
   }
 
   // @description Gets the submission(s) from the provided bucket that were approved
@@ -162,7 +162,7 @@ export default class Submission {
       [bucket.id, maxNumResults]
     );
 
-    return rows.map(dbRow => new Submission(bucket, dbRow));
+    return rows.map((dbRow) => new Submission(bucket, dbRow));
   }
 
   public readonly id: number;

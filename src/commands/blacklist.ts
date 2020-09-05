@@ -155,7 +155,9 @@ export default class BlacklistCommand extends Command {
       }** ${
         blacklistedUsers.length === 1 ? 'user' : 'users'
       } on the blacklist for the **${requestable.role.name}** role:\n`;
-      response += blacklistedUsers.map(username => `• ${username}`).join('\n');
+      response += blacklistedUsers
+        .map((username) => `• ${username}`)
+        .join('\n');
     } else {
       response = `There are **no** users on the blacklist for the **${requestable.role.name}** role.`;
     }

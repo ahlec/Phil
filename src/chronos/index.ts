@@ -8,9 +8,9 @@ import HappyBirthdayChrono from './happy-birthday';
 import PostNewPromptsChrono from './post-new-prompts';
 import RemoveUnusedColorRolesChrono from './remove-unused-colour-roles';
 
-const Chronos: ReadonlyArray<
-  new (parentDefinition: LoggerDefnition) => Chrono
-> = [
+const Chronos: ReadonlyArray<new (
+  parentDefinition: LoggerDefnition
+) => Chrono> = [
   AlertAdminsUnconfirmedSubmissionsChrono,
   AlertLowBucketQueueChrono,
   BootyDayChrono,

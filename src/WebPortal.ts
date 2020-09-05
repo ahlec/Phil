@@ -37,9 +37,9 @@ function getEndpoint(endpoint: string): Promise<string> {
   const url = resolve(GlobalConfig.webportalUrl, endpoint);
   return new Promise<string>((resolve, reject) => {
     const request = get(url);
-    request.on('error', err => reject(err));
+    request.on('error', (err) => reject(err));
     request.on('response', (response: IncomingMessage) => {
-      response.on('error', err => reject(err));
+      response.on('error', (err) => reject(err));
       response.on('data', (chunk: string | Buffer) =>
         resolve(chunk.toString())
       );

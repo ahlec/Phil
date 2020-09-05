@@ -8,7 +8,8 @@ import { getRandomArrayEntry } from '@phil/utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 const HANDLE = 'alert-admins-unconfirmed-submissions';
-export default class AlertAdminsUnconfirmedSubmissionsChrono extends Logger
+export default class AlertAdminsUnconfirmedSubmissionsChrono
+  extends Logger
   implements Chrono {
   public readonly handle = HANDLE;
   public readonly requiredFeature = Features.Prompts;

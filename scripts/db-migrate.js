@@ -36,7 +36,7 @@ async function determineTargetVersion() {
 async function doMigration(targetVersion) {
   console.log(chalk.magenta('Migrating to version:'), targetVersion);
   const migrations = await postgrator.migrate(targetVersion);
-  migrations.forEach(migration => console.log(migration));
+  migrations.forEach((migration) => console.log(migration));
 }
 
 async function main() {

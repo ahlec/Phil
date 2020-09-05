@@ -20,7 +20,7 @@ export default class FuzzyFinder<TValue, TSelectorData> {
   ) {
     const searchValues: ReadonlyArray<FuzzyValue<TValue>> = Object.keys(
       values
-    ).map(id => ({
+    ).map((id) => ({
       name: nameSelector(values[id], selectorData),
       value: values[id],
     }));

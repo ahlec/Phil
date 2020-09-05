@@ -11,9 +11,7 @@ interface InvalidPrefixCharacterDefinition {
   indefiniteArticle: string;
 }
 
-const InvalidPrefixCharacters: ReadonlyArray<
-  InvalidPrefixCharacterDefinition
-> = [
+const InvalidPrefixCharacters: ReadonlyArray<InvalidPrefixCharacterDefinition> = [
   { character: '`', indefiniteArticle: 'a', name: 'tilde' },
   { character: '#', indefiniteArticle: 'a', name: 'hash symbol' },
   { character: '@', indefiniteArticle: 'an', name: 'at sign' },

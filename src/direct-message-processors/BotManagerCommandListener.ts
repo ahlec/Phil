@@ -15,7 +15,8 @@ const MESSAGE_PREFIX = '> ';
 
 const HANDLE = 'bot-manager-command-listener';
 
-export default class BotManagerCommandListener extends Logger
+export default class BotManagerCommandListener
+  extends Logger
   implements DirectMessageProcessor {
   public readonly handle = HANDLE;
   private readonly commands: Map<string, BotManagerCommand>;
@@ -89,7 +90,7 @@ export default class BotManagerCommandListener extends Logger
 
     return {
       error: `Unknown command (known commands: ${this.commandNames
-        .map(name => `\`${name}\``)
+        .map((name) => `\`${name}\``)
         .join(', ')})`,
       isValid: false,
     };

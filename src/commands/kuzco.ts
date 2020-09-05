@@ -37,14 +37,8 @@ export default class KuzcoCommand extends Command {
 
     const indexOfSecondArgument = Math.ceil(commandArgs.length / 2);
     return [
-      commandArgs
-        .slice(0, indexOfSecondArgument)
-        .join(' ')
-        .trim(),
-      commandArgs
-        .slice(indexOfSecondArgument)
-        .join(' ')
-        .trim(),
+      commandArgs.slice(0, indexOfSecondArgument).join(' ').trim(),
+      commandArgs.slice(indexOfSecondArgument).join(' ').trim(),
     ];
   }
 

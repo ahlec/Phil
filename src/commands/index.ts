@@ -33,9 +33,9 @@ import WelcomeCommand from './welcome';
 import YoutubeCommand from './youtube';
 
 // REGULAR_COMMANDS are all commands *other than* p!help
-const REGULAR_COMMANDS: ReadonlyArray<
-  new (parentDefinition: LoggerDefinition) => Command
-> = [
+const REGULAR_COMMANDS: ReadonlyArray<new (
+  parentDefinition: LoggerDefinition
+) => Command> = [
   ApologiseCommand,
   BirthdayCommand,
   BlacklistCommand,

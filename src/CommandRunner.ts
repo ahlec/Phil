@@ -81,7 +81,9 @@ export default class CommandRunner extends Logger {
   private logCommandRegistered(command: Command): void {
     const aliases =
       command.aliases && command.aliases.length
-        ? ` (aliases: ${command.aliases.map(alias => `'${alias}'`).join(', ')})`
+        ? ` (aliases: ${command.aliases
+            .map((alias) => `'${alias}'`)
+            .join(', ')})`
         : '';
     this.write(` > Registered '${command.name}'${aliases}`);
   }

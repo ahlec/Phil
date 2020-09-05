@@ -34,7 +34,7 @@ export default class UnconfirmedSubmissionTally {
       [serverId]
     );
 
-    return results.rows.map(row => new UnconfirmedSubmissionTally(row));
+    return results.rows.map((row) => new UnconfirmedSubmissionTally(row));
   }
 
   public readonly bucketId: number;

@@ -56,14 +56,18 @@ export default class Requestable {
     db: Database,
     server: DiscordIOServer
   ): Promise<Requestable[]> {
-    const requestStrings = (await db.query(
-      'SELECT request_string, role_id FROM requestable_roles WHERE server_id = $1',
-      [server.id]
-    )).transform(groupRequestStrings);
-    const blacklistLookup = (await db.query(
-      'SELECT user_id, role_id FROM requestable_blacklist WHERE server_id = $1',
-      [server.id]
-    )).transform(groupBlacklist);
+    const requestStrings = (
+      await db.query(
+        'SELECT request_string, role_id FROM requestable_roles WHERE server_id = $1',
+        [server.id]
+      )
+    ).transform(groupRequestStrings);
+    const blacklistLookup = (
+      await db.query(
+        'SELECT user_id, role_id FROM requestable_blacklist WHERE server_id = $1',
+        [server.id]
+      )
+    ).transform(groupBlacklist);
     const requestables = [];
     for (const roleId in requestStrings) {
       const role = server.roles[roleId];
@@ -106,10 +110,12 @@ export default class Requestable {
       );
     }
 
-    const blacklist = (await db.query<{ user_id: string }>(
-      'SELECT user_id FROM requestable_blacklist WHERE role_id = $1 AND server_id = $2',
-      [roleId, server.id]
-    )).toSet(({ user_id: userId }) => userId);
+    const blacklist = (
+      await db.query<{ user_id: string }>(
+        'SELECT user_id FROM requestable_blacklist WHERE role_id = $1 AND server_id = $2',
+        [roleId, server.id]
+      )
+    ).toSet(({ user_id: userId }) => userId);
 
     return new Requestable(role, [], blacklist, server.id); // TODO: We need to get the list of request strings here!!
   }

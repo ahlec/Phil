@@ -91,7 +91,7 @@ export default class Prompt {
       db,
       submissionIds
     );
-    result.rows.forEach(row => {
+    result.rows.forEach((row) => {
       const submission = submissions[parseInt(row.submission_id, 10)];
       if (!submission) {
         return;

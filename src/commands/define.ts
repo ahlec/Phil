@@ -85,11 +85,7 @@ export default class DefineCommand extends Command {
       );
     }
 
-    const roleName = commandArgs
-      .slice(1)
-      .join(' ')
-      .trim()
-      .toLowerCase();
+    const roleName = commandArgs.slice(1).join(' ').trim().toLowerCase();
     for (const roleId in serverConfig.server.roles) {
       const role = serverConfig.server.roles[roleId];
       if (role.name.toLowerCase() === roleName) {

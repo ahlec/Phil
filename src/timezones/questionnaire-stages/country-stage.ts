@@ -11,7 +11,7 @@ export default class CountryStage implements Stage {
   public readonly stageNumber = 2;
 
   public async getMessage(): Promise<string> {
-    return 'Alright! Let\'s get started! Can you start by telling me the name of the country you\'re in? I\'ll never display this information publicly in the chat.';
+    return "Alright! Let's get started! Can you start by telling me the name of the country you're in? I'll never display this information publicly in the chat.";
   }
 
   public async processInput(
