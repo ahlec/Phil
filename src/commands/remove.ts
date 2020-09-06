@@ -1,14 +1,9 @@
-import * as Discord from 'discord.io';
-import CommandInvocation from '@phil/CommandInvocation';
+import Member from '@phil/discord/Member';
 
+import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
-import Phil from '@phil/phil';
-import {
-  takeRoleFromUser,
-  getMemberRolesInServer,
-} from '@phil/promises/discord';
 import Requestable from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
@@ -28,75 +23,65 @@ class RemoveCommand extends Command {
 
   public async invoke(
     invocation: CommandInvocation,
-    database: Database,
-    legacyPhil: Phil
+    database: Database
   ): Promise<void> {
+    const member = await invocation.context.server.getMember(invocation.userId);
+    if (!member) {
+      await invocation.respond({
+        error:
+          "I don't seem to know about you yet. Would you make sure an admin sees this so we can get you sorted out?",
+        type: 'error',
+      });
+      return;
+    }
+
     if (invocation.commandArgs.length === 0) {
-      return this.processNoCommandArgs(legacyPhil, database, invocation);
+      return this.processNoCommandArgs(invocation, database, member);
     }
 
     const requestable = await Requestable.getFromRequestString(
+      invocation.context.server,
       database,
-      invocation.server,
       invocation.commandArgs[0]
     );
     if (!requestable) {
-      throw new Error(
-        'There is no requestable by the name of `' +
+      await invocation.respond({
+        error:
+          'There is no requestable by the name of `' +
           invocation.commandArgs[0] +
-          '`.'
-      );
+          '`.',
+        type: 'error',
+      });
+      return;
     }
 
-    await this.ensureUserHasRole(
-      legacyPhil,
-      invocation.server,
-      invocation.userId,
-      requestable
+    const doesMemberHaveRole = member.roles.some(
+      (role): boolean => role.id === requestable.role.id
     );
+    if (!doesMemberHaveRole) {
+      await invocation.respond({
+        error: 'I haven\'t given you the "' + requestable.role.name + '" role.',
+        type: 'error',
+      });
+      return;
+    }
 
-    await takeRoleFromUser(
-      legacyPhil.bot,
-      invocation.server.id,
-      invocation.userId,
-      requestable.role.id
-    );
+    await member.removeRole(requestable.role);
     await invocation.respond({
       text: 'I\'ve removed the "' + requestable.role.name + '" role from you.',
       type: 'success',
     });
   }
 
-  private async ensureUserHasRole(
-    legacyPhil: Phil,
-    server: Discord.Server,
-    userId: string,
-    requestable: Requestable
-  ): Promise<Discord.Role> {
-    const memberRoles = await getMemberRolesInServer(
-      legacyPhil.bot,
-      server.id,
-      userId
-    );
-    if (memberRoles.indexOf(requestable.role.id) < 0) {
-      throw new Error(
-        'I haven\'t given you the "' + requestable.role.name + '" role.'
-      );
-    }
-
-    return requestable.role;
-  }
-
   private async processNoCommandArgs(
-    legacyPhil: Phil,
+    invocation: CommandInvocation,
     database: Database,
-    invocation: CommandInvocation
+    member: Member
   ): Promise<void> {
     const userRequestables = await this.getAllRequestablesUserHas(
-      legacyPhil,
+      invocation,
       database,
-      invocation.context.serverConfig,
-      invocation.userId
+      member
     );
     if (userRequestables.length === 0) {
       throw new Error(
@@ -117,41 +102,31 @@ class RemoveCommand extends Command {
   }
 
   private async getAllRequestablesUserHas(
-    legacyPhil: Phil,
+    invocation: CommandInvocation,
     database: Database,
-    serverConfig: ServerConfig,
-    userId: string
-  ): Promise<Requestable[]> {
+    member: Member
+  ): Promise<readonly Requestable[]> {
     const requestables = await Requestable.getAllRequestables(
-      database,
-      serverConfig.server
+      invocation.context.server,
+      database
     );
     if (requestables.length === 0) {
       throw new Error(
         'There are no requestable roles defined. An admin should use `' +
-          serverConfig.commandPrefix +
+          invocation.context.serverConfig.commandPrefix +
           'define` to create some roles.'
       );
     }
 
-    const memberRoles = await getMemberRolesInServer(
-      legacyPhil.bot,
-      serverConfig.serverId,
-      userId
+    const memberRoleIds = new Set(member.roles.map((role): string => role.id));
+    return requestables.filter((requestable): boolean =>
+      memberRoleIds.has(requestable.role.id)
     );
-    const requestablesUserHas = [];
-    for (const requestable of requestables) {
-      if (memberRoles.indexOf(requestable.role.id) >= 0) {
-        requestablesUserHas.push(requestable);
-      }
-    }
-
-    return requestablesUserHas;
   }
 
   private composeAllRequestablesList(
     serverConfig: ServerConfig,
-    requestables: Requestable[]
+    requestables: readonly Requestable[]
   ): MessageBuilder {
     const builder = new MessageBuilder();
     builder.append(

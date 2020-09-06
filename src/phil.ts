@@ -24,6 +24,7 @@ import ServerDirectory from './server-directory';
 import { sendErrorMessage } from './utils';
 import CommandInvocation from './CommandInvocation';
 import ServerBucketsCollection from './ServerBucketsCollection';
+import Server from './discord/Server';
 
 function ignoreDiscordCode(code: number): boolean {
   return code === 1000; // General disconnect code
@@ -128,6 +129,7 @@ export default class Phil extends Logger {
             message.server.id
           ),
           channelId: message.channelId,
+          server: new Server(this.bot, message.server, message.server.id),
           serverConfig: message.serverConfig,
         },
         message

@@ -1,9 +1,11 @@
-import { Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
+import Server from '@phil/discord/Server';
+import Role from '@phil/discord/Role';
+
 import Database from './database';
 
 export interface RequestableCreationDefinition {
   name: string;
-  role: DiscordIORole;
+  role: Role;
 }
 
 interface Result {
@@ -53,24 +55,24 @@ export default class Requestable {
   }
 
   public static async getAllRequestables(
-    db: Database,
-    server: DiscordIOServer
+    server: Server,
+    database: Database
   ): Promise<Requestable[]> {
     const requestStrings = (
-      await db.query(
+      await database.query(
         'SELECT request_string, role_id FROM requestable_roles WHERE server_id = $1',
         [server.id]
       )
     ).transform(groupRequestStrings);
     const blacklistLookup = (
-      await db.query(
+      await database.query(
         'SELECT user_id, role_id FROM requestable_blacklist WHERE server_id = $1',
         [server.id]
       )
     ).transform(groupBlacklist);
     const requestables = [];
     for (const roleId in requestStrings) {
-      const role = server.roles[roleId];
+      const role = server.getRole(roleId);
       if (role === undefined || role === null) {
         continue;
       }
@@ -86,12 +88,12 @@ export default class Requestable {
   }
 
   public static async getFromRequestString(
-    db: Database,
-    server: DiscordIOServer,
+    server: Server,
+    database: Database,
     requestString: string
   ): Promise<Requestable | null> {
     requestString = requestString.toLowerCase();
-    const results = await db.query<{ role_id: string }>(
+    const results = await database.query<{ role_id: string }>(
       'SELECT role_id FROM requestable_roles WHERE request_string = $1 AND server_id = $2',
       [requestString, server.id]
     );
@@ -101,8 +103,8 @@ export default class Requestable {
     }
 
     const roleId = results.rows[0].role_id;
-    const role = server.roles[roleId];
-    if (!role || role === null) {
+    const role = server.getRole(roleId);
+    if (!role) {
       throw new Error(
         'There is still a requestable role by the name of `' +
           requestString +
@@ -111,7 +113,7 @@ export default class Requestable {
     }
 
     const blacklist = (
-      await db.query<{ user_id: string }>(
+      await database.query<{ user_id: string }>(
         'SELECT user_id FROM requestable_blacklist WHERE role_id = $1 AND server_id = $2',
         [roleId, server.id]
       )
@@ -121,11 +123,11 @@ export default class Requestable {
   }
 
   public static async createRequestable(
-    db: Database,
-    server: DiscordIOServer,
+    server: Server,
+    database: Database,
     info: RequestableCreationDefinition
   ): Promise<void> {
-    await db.query('INSERT INTO requestable_roles VALUES($1, $2, $3)', [
+    await database.query('INSERT INTO requestable_roles VALUES($1, $2, $3)', [
       info.name,
       info.role.id,
       server.id,
@@ -133,7 +135,7 @@ export default class Requestable {
   }
 
   constructor(
-    public readonly role: DiscordIORole,
+    public readonly role: Role,
     public readonly requestStrings: ReadonlyArray<string>,
     private readonly mutableBlacklistedUserIds: Set<string>,
     private readonly serverId: string

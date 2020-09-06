@@ -1,11 +1,12 @@
 import * as chronoNode from 'chrono-node';
-import { Server as DiscordIOServer } from 'discord.io';
+
+import Server from '@phil/discord/Server';
+
 import CommandInvocation from '@phil/CommandInvocation';
 import CalendarMonth from '@phil/calendar/calendar-month';
 import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import MessageBuilder from '@phil/message-builder';
-import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from './@types';
 
@@ -21,21 +22,19 @@ class CalendarCommand extends Command {
 
   public async invoke(
     invocation: CommandInvocation,
-    database: Database,
-    legacyPhil: Phil
+    database: Database
   ): Promise<void> {
     const month = this.determineMonth(
       invocation.context.serverConfig,
       invocation.commandArgs
     );
     const calendar = await CalendarMonth.getForMonth(
-      legacyPhil.bot,
+      invocation.context.server,
       database,
-      invocation.server,
       month
     );
     const builder = this.composeMessageFromCalendar(
-      invocation.server,
+      invocation.context.server,
       calendar
     );
     await invocation.respond({
@@ -69,7 +68,7 @@ class CalendarCommand extends Command {
   }
 
   private composeMessageFromCalendar(
-    server: DiscordIOServer,
+    server: Server,
     calendar: CalendarMonth
   ): MessageBuilder {
     const builder = new MessageBuilder();

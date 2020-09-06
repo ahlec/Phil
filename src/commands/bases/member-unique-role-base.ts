@@ -1,25 +1,24 @@
-import { Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
+import Member from '@phil/discord/Member';
+import Role from '@phil/discord/Role';
+import Server from '@phil/discord/Server';
+
+import GlobalConfig from '@phil/GlobalConfig';
 import CommandInvocation from '@phil/CommandInvocation';
 import Feature from '@phil/features/feature';
 import { HelpGroup } from '@phil/help-groups';
-import Phil from '@phil/phil';
-import {
-  EditRoleOptions,
-  createRole,
-  editRole,
-  giveRoleToUser,
-  takeRoleFromUser,
-  getMemberRolesInServer,
-} from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from '@phil/commands/@types';
-import Database from '@phil/database';
 
 interface MemberUniqueRoleCommandBaseDetails {
   aliases?: ReadonlyArray<string>;
   feature?: Feature;
   helpDescription: string;
   versionAdded: number;
+}
+
+export interface RoleConfig {
+  name: string;
+  color?: number;
 }
 
 abstract class MemberUniqueRoleCommandBase<TData> extends Command {
@@ -37,32 +36,24 @@ abstract class MemberUniqueRoleCommandBase<TData> extends Command {
     });
   }
 
-  public async invoke(
-    invocation: CommandInvocation,
-    database: Database,
-    legacyPhil: Phil
-  ): Promise<void> {
+  public async invoke(invocation: CommandInvocation): Promise<void> {
+    const member = await invocation.context.server.getMember(invocation.userId);
+    if (!member) {
+      await invocation.respond({
+        error: `I don't seem to know about you yet. Strange. Maybe <@${GlobalConfig.botManagerUserId}> can help.`,
+        type: 'error',
+      });
+      return;
+    }
+
     const data = this.getDataFromCommandArgs(
       invocation.context.serverConfig,
       invocation.commandArgs
     );
-    const newRole = await this.getRoleFromData(
-      legacyPhil,
-      invocation.server,
-      data
-    );
+    const role = await this.getRoleFromData(invocation.context.server, data);
 
-    await this.removeAllRolesInPoolFromUser(
-      legacyPhil,
-      invocation.server,
-      invocation.userId
-    );
-    await giveRoleToUser(
-      legacyPhil.bot,
-      invocation.server.id,
-      invocation.userId,
-      newRole.id
-    );
+    await this.removeAllRolesInPoolFromUser(member);
+    await member.giveRole(role);
 
     await invocation.respond({
       text: this.getSuccessMessage(invocation.context.serverConfig, data),
@@ -78,12 +69,9 @@ abstract class MemberUniqueRoleCommandBase<TData> extends Command {
     serverConfig: ServerConfig
   ): string;
   protected abstract tryParseInput(input: string): TData | null;
-  protected abstract isRolePartOfUniquePool(role: DiscordIORole): boolean;
-  protected abstract doesRoleMatchData(
-    role: DiscordIORole,
-    data: TData
-  ): boolean;
-  protected abstract getRoleConfig(data: TData): EditRoleOptions;
+  protected abstract isRolePartOfUniquePool(role: Role): boolean;
+  protected abstract doesRoleMatchData(role: Role, data: TData): boolean;
+  protected abstract getRoleConfig(data: TData): RoleConfig;
   protected abstract getSuccessMessage(
     serverConfig: ServerConfig,
     data: TData
@@ -110,42 +98,27 @@ abstract class MemberUniqueRoleCommandBase<TData> extends Command {
     return data;
   }
 
-  private async removeAllRolesInPoolFromUser(
-    legacyPhil: Phil,
-    server: DiscordIOServer,
-    userId: string
-  ): Promise<void> {
-    const memberRoles = await getMemberRolesInServer(
-      legacyPhil.bot,
-      server.id,
-      userId
+  private async removeAllRolesInPoolFromUser(member: Member): Promise<void> {
+    const rolesToRemove = member.roles.filter((role): boolean =>
+      this.isRolePartOfUniquePool(role)
     );
-    for (const roleId of memberRoles) {
-      const role = server.roles[roleId];
-      if (!this.isRolePartOfUniquePool(role)) {
-        continue;
-      }
-
-      await takeRoleFromUser(legacyPhil.bot, server.id, userId, roleId);
+    if (!rolesToRemove.length) {
+      return;
     }
+
+    await Promise.all(rolesToRemove.map((role) => member.removeRole(role)));
   }
 
-  private async getRoleFromData(
-    phil: Phil,
-    server: DiscordIOServer,
-    data: TData
-  ): Promise<DiscordIORole> {
-    for (const roleId in server.roles) {
-      const role = server.roles[roleId];
-      if (this.doesRoleMatchData(role, data)) {
-        return role;
-      }
+  private async getRoleFromData(server: Server, data: TData): Promise<Role> {
+    const existing = server.roles.find((role): boolean =>
+      this.doesRoleMatchData(role, data)
+    );
+    if (existing) {
+      return existing;
     }
 
-    const newRole = await createRole(phil.bot, server.id);
     const roleOptions = this.getRoleConfig(data);
-    await editRole(phil.bot, server.id, newRole.id, roleOptions);
-    return newRole;
+    return server.createRole(roleOptions.name, roleOptions);
   }
 }
 

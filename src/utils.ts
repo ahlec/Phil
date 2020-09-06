@@ -6,6 +6,8 @@ import {
 } from 'discord.io';
 import { sendMessage, getMemberRolesInServer } from './promises/discord';
 
+import Role from '@phil/discord/Role';
+
 interface SendErrorMessageOpts {
   readonly bot: DiscordIOClient;
   readonly channelId: string;
@@ -57,7 +59,7 @@ export function isValidHexColor(input: string): boolean {
   return /^#[0-9A-F]{6}$/i.test(input);
 }
 
-export function isHexColorRole(role: DiscordIORole): boolean {
+export function isHexColorRole(role: Role | DiscordIORole): boolean {
   const isHex = isValidHexColor(role.name);
   return isHex;
 }

@@ -1,24 +1,20 @@
-import {
-  Client as DiscordIOClient,
-  Server as DiscordIOServer,
-} from 'discord.io';
+import Server from '@phil/discord/Server';
+
 import Database from '@phil/database';
 import GlobalConfig from '@phil/GlobalConfig';
-import { getUserDisplayName } from '@phil/utils';
 import { AllMonths, MonthDefinition } from './month-definition';
 
 type DayEventCollection = ReadonlyArray<string[]>;
 
-export default class CalendarMonth {
+class CalendarMonth {
   public static async getForMonth(
-    bot: DiscordIOClient,
-    db: Database,
-    server: DiscordIOServer,
+    server: Server,
+    database: Database,
     month: number
   ): Promise<CalendarMonth> {
     const calendar = new CalendarMonth(month);
-    await calendar.addBirthdaysForMonth(bot, db, server);
-    await calendar.addServerEventsForMonth(server);
+    await calendar.addBirthdaysForMonth(server, database);
+    calendar.addServerEventsForMonth(server);
     return calendar;
   }
 
@@ -41,35 +37,36 @@ export default class CalendarMonth {
   }
 
   private async addBirthdaysForMonth(
-    bot: DiscordIOClient,
-    db: Database,
-    server: DiscordIOServer
+    server: Server,
+    db: Database
   ): Promise<void> {
     const results = await db.query<{ userid: string; birthday_day: number }>(
       'SELECT userid, birthday_day FROM birthdays WHERE birthday_month = $1',
       [this.month]
     );
 
-    for (const { userid, birthday_day: birthdayDay } of results.rows) {
-      if (!server.members[userid]) {
-        continue;
-      }
+    await Promise.all(
+      results.rows.map(
+        async (row): Promise<void> => {
+          const member = await server.getMember(row.userid);
+          if (!member) {
+            return;
+          }
 
-      const user = bot.users[userid];
-      const userDisplayName = getUserDisplayName(user, server);
-      if (!userDisplayName) {
-        continue;
-      }
-
-      this.addEvent(birthdayDay, '**' + userDisplayName + "**'s birthday.");
-    }
+          this.addEvent(
+            row.birthday_day,
+            '**' + member.displayName + "**'s birthday."
+          );
+        }
+      )
+    );
   }
 
-  private async addServerEventsForMonth(
-    server: DiscordIOServer
-  ): Promise<void> {
+  private addServerEventsForMonth(server: Server): void {
     if (server.id === GlobalConfig.hijackServerId) {
       this.addEvent(3, 'Hijack Booty Day.');
     }
   }
 }
+
+export default CalendarMonth;

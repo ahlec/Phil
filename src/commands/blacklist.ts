@@ -1,4 +1,5 @@
-import { Member as DiscordIOMember } from 'discord.io';
+import Member from '@phil/discord/Member';
+
 import CommandInvocation from '@phil/CommandInvocation';
 import CommandArgs from '@phil/CommandArgs';
 import Database from '@phil/database';
@@ -6,7 +7,6 @@ import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
 import PermissionLevel from '@phil/permission-level';
-import Phil from '@phil/phil';
 import Requestable from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
@@ -26,8 +26,7 @@ class BlacklistCommand extends Command {
 
   public async invoke(
     invocation: CommandInvocation,
-    database: Database,
-    legacyPhil: Phil
+    database: Database
   ): Promise<void> {
     const commandArgs = new CommandArgs(invocation.commandArgs);
     if (commandArgs.isEmpty) {
@@ -36,8 +35,8 @@ class BlacklistCommand extends Command {
 
     const requestString = commandArgs.readString('requestString');
     const requestable = await Requestable.getFromRequestString(
+      invocation.context.server,
       database,
-      invocation.server,
       requestString
     );
     if (!requestable) {
@@ -46,23 +45,16 @@ class BlacklistCommand extends Command {
       );
     }
 
-    const member = commandArgs.readMember(
+    const member = await commandArgs.readMember(
       'targetUser',
-      legacyPhil.bot,
-      invocation.server,
-      true
+      invocation.context.server,
+      { isOptional: true }
     );
     if (!member) {
-      return this.replyWithBlacklist(
-        invocation,
-        legacyPhil,
-        requestable,
-        requestString
-      );
+      return this.replyWithBlacklist(invocation, requestable, requestString);
     }
 
     await this.toggleMember(
-      legacyPhil,
       invocation,
       database,
       requestable,
@@ -76,8 +68,8 @@ class BlacklistCommand extends Command {
     database: Database
   ): Promise<void> {
     const requestables = await Requestable.getAllRequestables(
-      database,
-      invocation.server
+      invocation.context.server,
+      database
     );
     if (requestables.length === 0) {
       throw new Error(
@@ -136,41 +128,26 @@ class BlacklistCommand extends Command {
 
   private async replyWithBlacklist(
     invocation: CommandInvocation,
-    legacyPhil: Phil,
     requestable: Requestable,
     requestStringUsed: string
   ): Promise<void> {
-    const blacklistedUsers = Array.from(requestable.blacklistedUserIds).map(
-      (userId: string) => {
-        const user = legacyPhil.bot.users[userId];
-        if (!user) {
-          return `User ${userId} (no longer known by Phil)`;
-        }
-
-        const username = `${user.username}#${user.discriminator}`;
-        const member = invocation.server.members[userId];
-
-        if (!member) {
-          return `${username} - no longer in this server`;
-        }
-
-        if (!member.nick) {
-          return `${username}`;
-        }
-
-        return `${member.nick} (${username})`;
-      }
+    const blacklist = await Promise.all(
+      Array.from(requestable.blacklistedUserIds).map(
+        (userId: string): Promise<Member | null> =>
+          invocation.context.server.getMember(userId)
+      )
     );
+    const blacklistedMembers = blacklist.filter((el): el is Member => !!el);
 
     let response: string;
-    if (blacklistedUsers.length) {
-      response = `There ${blacklistedUsers.length === 1 ? 'is' : 'are'} **${
-        blacklistedUsers.length
+    if (blacklistedMembers.length) {
+      response = `There ${blacklistedMembers.length === 1 ? 'is' : 'are'} **${
+        blacklistedMembers.length
       }** ${
-        blacklistedUsers.length === 1 ? 'user' : 'users'
+        blacklistedMembers.length === 1 ? 'user' : 'users'
       } on the blacklist for the **${requestable.role.name}** role:\n`;
-      response += blacklistedUsers
-        .map((username) => `• ${username}`)
+      response += blacklistedMembers
+        .map((member) => `• ${member.displayName}`)
         .join('\n');
     } else {
       response = `There are **no** users on the blacklist for the **${requestable.role.name}** role.`;
@@ -189,18 +166,21 @@ class BlacklistCommand extends Command {
   }
 
   private async toggleMember(
-    legacyPhil: Phil,
     invocation: CommandInvocation,
     database: Database,
     requestable: Requestable,
     requestStringUsed: string,
-    member: DiscordIOMember
+    member: Member
   ): Promise<void> {
-    const result = await requestable.toggleUserBlacklist(member.id, database);
+    const result = await requestable.toggleUserBlacklist(
+      member.userId,
+      database
+    );
+
     if (!result.success) {
       this.error(`requestable: ${requestable.role.id} - ${requestStringUsed}`);
-      this.error(`server: ${invocation.server.id}`);
-      this.error(`member: ${member.id}`);
+      this.error(`server: ${invocation.context.server.id}`);
+      this.error(`member: ${member.userId}`);
       this.error(result.message);
       await invocation.respond({
         color: 'red',
@@ -213,24 +193,18 @@ class BlacklistCommand extends Command {
       return;
     }
 
-    const isOnBlacklist = requestable.blacklistedUserIds.has(member.id);
-    let displayName: string;
-    if (member.nick) {
-      displayName = member.nick;
-    } else {
-      const user = legacyPhil.bot.users[member.id];
-      displayName = `${user.username}#${user.discriminator}`;
-    }
-
+    const isOnBlacklist = requestable.blacklistedUserIds.has(member.userId);
     await invocation.respond({
       color: 'powder-blue',
-      description: `**${displayName}** was ${
+      description: `**${member.displayName}** was ${
         isOnBlacklist ? 'added to' : 'removed from'
       } the blacklist for all requestables that give **${
         requestable.role.name
       }**.\n\nYou can undo this by using \`${
         invocation.context.serverConfig.commandPrefix
-      }blacklist ${requestStringUsed} ${displayName}\` to toggle the member's presence on the list.`,
+      }blacklist ${requestStringUsed} ${
+        member.displayName
+      }\` to toggle the member's presence on the list.`,
       fields: null,
       footer: null,
       title: `:name_badge: "${requestable.role.name}" blacklist`,

@@ -52,7 +52,7 @@ abstract class EnableDisableCommandBase extends Command {
 
     await feature.setIsEnabled(
       database,
-      invocation.server.id,
+      invocation.context.server.id,
       this.shouldEnableFeature
     );
 

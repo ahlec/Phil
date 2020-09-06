@@ -1,10 +1,7 @@
-import {
-  Client as DiscordIOClient,
-  Server as DiscordIOServer,
-  User as DiscordIOUser,
-} from 'discord.io';
+import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
 
 import MessageTemplate from '@phil/discord/MessageTemplate';
+import Server from '@phil/discord/Server';
 
 import Bucket from './buckets';
 import { Mention } from '@phil/messages/base';
@@ -25,6 +22,7 @@ import { getRandomArrayEntry } from './utils';
 interface InvocationContext {
   buckets: ServerBucketsCollection;
   channelId: string;
+  server: Server;
   serverConfig: ServerConfig;
 }
 
@@ -127,10 +125,6 @@ class CommandInvocation {
 
   public get mentions(): readonly Mention[] {
     return this.message.mentions;
-  }
-
-  public get server(): DiscordIOServer {
-    return this.message.server;
   }
 
   public get user(): DiscordIOUser {

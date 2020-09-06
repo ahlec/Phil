@@ -1,8 +1,6 @@
-import {
-  Client as DiscordIOClient,
-  Server as DiscordIOServer,
-} from 'discord.io';
-import Database, { DatabaseResult } from '@phil/database';
+import Server from '@phil/discord/Server';
+
+import Database from '@phil/database';
 import LeaderboardEntry from './leaderboard-entry';
 
 const LEADERBOARD_SIZE = 10;
@@ -12,11 +10,10 @@ interface DbResultsRow {
   score: string;
 }
 
-export default class Leaderboard {
+class Leaderboard {
   public static async getLeaderboard(
-    client: DiscordIOClient,
-    db: Database,
-    server: DiscordIOServer
+    server: Server,
+    db: Database
   ): Promise<Leaderboard> {
     const results = await db.query<DbResultsRow>(
       `SELECT
@@ -38,28 +35,24 @@ export default class Leaderboard {
         LIMIT $2`,
       [server.id, LEADERBOARD_SIZE]
     );
-    return new Leaderboard(client, server, results);
+
+    const entries = await Promise.all(
+      results.rows.map(
+        async (row): Promise<LeaderboardEntry> => {
+          const member = await server.getMember(row.suggesting_userid);
+          return new LeaderboardEntry(
+            member,
+            row.suggesting_userid,
+            parseInt(row.score, 10)
+          );
+        }
+      )
+    );
+
+    return new Leaderboard(entries);
   }
 
-  public readonly entries: ReadonlyArray<LeaderboardEntry>;
-
-  private constructor(
-    client: DiscordIOClient,
-    server: DiscordIOServer,
-    results: DatabaseResult<DbResultsRow>
-  ) {
-    const mutableEntries: LeaderboardEntry[] = [];
-    for (const row of results.rows) {
-      mutableEntries.push(
-        new LeaderboardEntry(
-          client,
-          server,
-          row.suggesting_userid,
-          parseInt(row.score, 10)
-        )
-      );
-    }
-
-    this.entries = mutableEntries;
-  }
+  private constructor(public readonly entries: readonly LeaderboardEntry[]) {}
 }
+
+export default Leaderboard;

@@ -1,23 +1,17 @@
-import {
-  Client as DiscordIOClient,
-  Server as DiscordIOServer,
-} from 'discord.io';
-import { getUserDisplayName } from '@phil/utils';
+import Member from '@phil/discord/Member';
 
-export default class LeaderboardEntry {
+class LeaderboardEntry {
   public readonly displayName: string;
   public readonly isStillInServer: boolean;
 
-  constructor(
-    bot: DiscordIOClient,
-    server: DiscordIOServer,
+  public constructor(
+    member: Member | null,
     public readonly userId: string,
     public readonly score: number
   ) {
-    const user = bot.users[this.userId];
-    const currentUserDisplayName = getUserDisplayName(user, server);
-
-    this.displayName = currentUserDisplayName || userId;
-    this.isStillInServer = server.members[this.userId] != null;
+    this.displayName = member?.displayName || userId;
+    this.isStillInServer = !!member;
   }
 }
+
+export default LeaderboardEntry;

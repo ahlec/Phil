@@ -2,7 +2,6 @@ import CommandInvocation from '@phil/CommandInvocation';
 import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import Phil from '@phil/phil';
 import Leaderboard from '@phil/prompts/leaderboard';
 import LeaderboardEntry from '@phil/prompts/leaderboard-entry';
 import Command, { LoggerDefinition } from './@types';
@@ -89,13 +88,11 @@ class LeaderboardCommand extends Command {
 
   public async invoke(
     invocation: CommandInvocation,
-    database: Database,
-    legacyPhil: Phil
+    database: Database
   ): Promise<void> {
     const leaderboard = await Leaderboard.getLeaderboard(
-      legacyPhil.bot,
-      database,
-      invocation.server
+      invocation.context.server,
+      database
     );
     const reply = createLeaderboardMessage(leaderboard);
 

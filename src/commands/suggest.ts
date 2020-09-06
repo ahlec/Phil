@@ -52,10 +52,15 @@ class SuggestCommand extends Command {
       bucket.requiredRoleId &&
       !(await bucket.canUserSubmitTo(legacyPhil.bot, invocation.userId))
     ) {
-      const role = invocation.server.roles[bucket.requiredRoleId];
+      const role = invocation.context.server.getRole(bucket.requiredRoleId);
+      if (!role) {
+        throw new Error(
+          "Hmmm, in order to submit prompts to this bucket, you need to have a role that doesn't exist anymore. That doesn't seem right. Could you make sure an admin knows about this?"
+        );
+      }
+
       throw new Error(
-        'In order to be able to submit a prompt to this bucket, you must have \
-                the **' +
+        'In order to be able to submit a prompt to this bucket, you must have the **' +
           role.name +
           '** role.'
       );

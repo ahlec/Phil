@@ -1,23 +1,14 @@
 import * as chronoNode from 'chrono-node';
-import {
-  Client as DiscordIOClient,
-  Member as DiscordIOMember,
-  Role as DiscordIORole,
-  Server as DiscordIOServer,
-} from 'discord.io';
+import { Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
 import * as moment from 'moment';
+
+import Member from '@phil/discord/Member';
+import Server from '@phil/discord/Server';
+
 import FuzzyFinder from './FuzzyFinder';
 
-function memberNameSelector(
-  member: DiscordIOMember,
-  client: DiscordIOClient
-): string {
-  if (member.nick) {
-    return member.nick;
-  }
-
-  const user = client.users[member.id];
-  return user.username;
+function memberNameSelector(member: Member): string {
+  return member.displayName;
 }
 
 function roleNameSelector(role: DiscordIORole): string {
@@ -141,38 +132,36 @@ export default class CommandArgs {
 
   public readMember(
     name: string,
-    client: DiscordIOClient,
-    server: DiscordIOServer
-  ): DiscordIOMember;
+    server: Server,
+    options?: { isOptional?: false }
+  ): Promise<Member>;
   public readMember(
     name: string,
-    client: DiscordIOClient,
-    server: DiscordIOServer,
-    optional: true
-  ): DiscordIOMember | undefined;
-  public readMember(
+    server: Server,
+    options: { isOptional: true }
+  ): Promise<Member | null>;
+  public async readMember(
     name: string,
-    client: DiscordIOClient,
-    server: DiscordIOServer,
-    optional?: true
-  ): DiscordIOMember | undefined {
+    server: Server,
+    { isOptional = false }: { isOptional?: boolean } = {}
+  ): Promise<Member | null> {
     const firstPiece = this.queue.shift();
-    if (!firstPiece && !optional) {
+    if (!firstPiece && !isOptional) {
       throw new Error(`'${name}' was not provided.`);
     }
 
     if (!firstPiece) {
-      return undefined;
+      return null;
     }
 
-    let member: DiscordIOMember | undefined = server.members[firstPiece];
+    let member = await server.getMember(firstPiece);
     if (member) {
       return member;
     }
 
     const mentionResults = firstPiece.match(USER_MENTION_REGEX);
     if (mentionResults && mentionResults.length >= 2) {
-      member = server.members[mentionResults[1]];
+      member = await server.getMember(mentionResults[1]);
       if (member) {
         return member;
       }
@@ -180,7 +169,12 @@ export default class CommandArgs {
 
     let searchString = firstPiece;
     let numToPop = 0;
-    const finder = new FuzzyFinder(server.members, memberNameSelector, client);
+    const lookup: { [userId: string]: Member } = {};
+    server.members.forEach((member): void => {
+      lookup[member.userId] = member;
+    });
+
+    const finder = new FuzzyFinder(lookup, memberNameSelector);
     while (numToPop <= this.queue.length) {
       member = finder.search(searchString);
       if (member) {
@@ -192,11 +186,11 @@ export default class CommandArgs {
       ++numToPop;
     }
 
-    if (!optional) {
+    if (!isOptional) {
       throw new Error(`Could not find a user from '${searchString}'.`);
     }
 
-    return undefined;
+    return null;
   }
 
   public readRole(name: string, server: DiscordIOServer): DiscordIORole;
@@ -219,7 +213,7 @@ export default class CommandArgs {
       return undefined;
     }
 
-    let role: DiscordIORole | undefined = server.roles[firstPiece];
+    let role: DiscordIORole | null | undefined = server.roles[firstPiece];
     if (role) {
       return role;
     }

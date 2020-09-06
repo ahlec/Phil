@@ -99,7 +99,7 @@ class HelpCommand extends Command {
     );
     const featuresEnabledLookup = await getServerFeaturesStatus(
       database,
-      invocation.server.id
+      invocation.context.server.id
     );
     const builder = new MessageBuilder();
 

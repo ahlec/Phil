@@ -4,7 +4,7 @@ import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
 import Phil from '@phil/phil';
-import { giveRoleToUser, getMemberRolesInServer } from '@phil/promises/discord';
+import { getMemberRolesInServer } from '@phil/promises/discord';
 import Requestable from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
@@ -32,8 +32,8 @@ class RequestCommand extends Command {
     }
 
     const requestable = await Requestable.getFromRequestString(
+      invocation.context.server,
       database,
-      invocation.server,
       invocation.commandArgs[0]
     );
     if (!requestable) {
@@ -44,6 +44,11 @@ class RequestCommand extends Command {
       );
     }
 
+    const member = await invocation.context.server.getMember(invocation.userId);
+    if (!member) {
+      return;
+    }
+
     await this.ensureUserCanRequestRole(
       legacyPhil,
       invocation.context.serverConfig,
@@ -51,12 +56,8 @@ class RequestCommand extends Command {
       requestable
     );
 
-    await giveRoleToUser(
-      legacyPhil.bot,
-      invocation.server.id,
-      invocation.userId,
-      requestable.role.id
-    );
+    await member.giveRole(requestable.role);
+
     await invocation.respond({
       text: `You have been granted the "${requestable.role.name}" role!`,
       type: 'success',
@@ -92,8 +93,8 @@ class RequestCommand extends Command {
     database: Database
   ): Promise<void> {
     const requestables = await Requestable.getAllRequestables(
-      database,
-      invocation.server
+      invocation.context.server,
+      database
     );
     if (requestables.length === 0) {
       throw new Error(

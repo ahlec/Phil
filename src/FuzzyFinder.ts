@@ -37,10 +37,10 @@ export default class FuzzyFinder<TValue, TSelectorData> {
     });
   }
 
-  public search(searchString: string): TValue | undefined {
+  public search(searchString: string): TValue | null {
     const result = this.fuse.search(searchString);
     if (!result.length) {
-      return;
+      return null;
     }
 
     return result[0].item.value;

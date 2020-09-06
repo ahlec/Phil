@@ -1,4 +1,5 @@
-import { Role as DiscordIORole } from 'discord.io';
+import Role from '@phil/discord/Role';
+
 import Features from '@phil/features/all-features';
 import { EditRoleOptions } from '@phil/promises/discord';
 import { AllPronouns } from '@phil/pronouns/definitions';
@@ -60,12 +61,12 @@ class PronounCommand extends MemberUniqueRoleCommandBase<Pronoun> {
     return pronoun;
   }
 
-  protected isRolePartOfUniquePool(role: DiscordIORole): boolean {
+  protected isRolePartOfUniquePool(role: Role): boolean {
     const pronoun = getPronounFromRole(role);
     return pronoun !== null;
   }
 
-  protected doesRoleMatchData(role: DiscordIORole, data: Pronoun): boolean {
+  protected doesRoleMatchData(role: Role, data: Pronoun): boolean {
     const rolePronoun = getPronounFromRole(role);
     return data === rolePronoun;
   }

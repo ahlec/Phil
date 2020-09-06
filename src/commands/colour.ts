@@ -1,4 +1,5 @@
-import { Role as DiscordIORole } from 'discord.io';
+import Role from '@phil/discord/Role';
+
 import Features from '@phil/features/all-features';
 import { EditRoleOptions } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
@@ -71,11 +72,11 @@ class ColourCommand extends MemberUniqueRoleCommandBase<string> {
     return input.toUpperCase();
   }
 
-  protected isRolePartOfUniquePool(role: DiscordIORole): boolean {
+  protected isRolePartOfUniquePool(role: Role): boolean {
     return isHexColorRole(role);
   }
 
-  protected doesRoleMatchData(role: DiscordIORole, data: string): boolean {
+  protected doesRoleMatchData(role: Role, data: string): boolean {
     return role.name === data;
   }
 
