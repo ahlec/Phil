@@ -82,13 +82,13 @@ class BlacklistCommand extends Command {
     if (requestables.length === 0) {
       throw new Error(
         'There are no requestable roles defined. An admin should use `' +
-          invocation.serverConfig.commandPrefix +
+          invocation.context.serverConfig.commandPrefix +
           'define` to create some roles.'
       );
     }
 
     const reply = this.composeAllRequestablesList(
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       requestables
     );
     await invocation.respond({
@@ -176,7 +176,7 @@ class BlacklistCommand extends Command {
       response = `There are **no** users on the blacklist for the **${requestable.role.name}** role.`;
     }
 
-    response += `\n\nTo add or remove a user to the blacklist, use \`${invocation.serverConfig.commandPrefix}blacklist ${requestStringUsed} [user name]\` to toggle that user on the blacklist.`;
+    response += `\n\nTo add or remove a user to the blacklist, use \`${invocation.context.serverConfig.commandPrefix}blacklist ${requestStringUsed} [user name]\` to toggle that user on the blacklist.`;
 
     await invocation.respond({
       color: 'powder-blue',
@@ -229,7 +229,7 @@ class BlacklistCommand extends Command {
       } the blacklist for all requestables that give **${
         requestable.role.name
       }**.\n\nYou can undo this by using \`${
-        invocation.serverConfig.commandPrefix
+        invocation.context.serverConfig.commandPrefix
       }blacklist ${requestStringUsed} ${displayName}\` to toggle the member's presence on the list.`,
       fields: null,
       footer: null,

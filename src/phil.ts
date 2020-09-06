@@ -22,6 +22,7 @@ import PublicMessage from './messages/public';
 import ReactableProcessor from './reactables/processor';
 import ServerDirectory from './server-directory';
 import { sendErrorMessage } from './utils';
+import CommandInvocation from './CommandInvocation';
 
 function ignoreDiscordCode(code: number): boolean {
   return code === 1000; // General disconnect code
@@ -117,8 +118,16 @@ export default class Phil extends Logger {
         this.chronoManager.recordNewMessageInChannel(channelId);
       }
 
-      if (this.commandRunner.isCommand(message)) {
-        this.commandRunner.runMessage(message);
+      const invocation = CommandInvocation.parseFromMessage(
+        this.bot,
+        {
+          channelId: message.channelId,
+          serverConfig: message.serverConfig,
+        },
+        message
+      );
+      if (invocation) {
+        this.commandRunner.invoke(invocation, message);
       }
     } else {
       this.directMessageDispatcher.process(message);

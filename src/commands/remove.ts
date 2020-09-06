@@ -95,19 +95,19 @@ class RemoveCommand extends Command {
     const userRequestables = await this.getAllRequestablesUserHas(
       legacyPhil,
       database,
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       invocation.userId
     );
     if (userRequestables.length === 0) {
       throw new Error(
         "I haven't given you any requestable roles yet. You use `" +
-          invocation.serverConfig.commandPrefix +
+          invocation.context.serverConfig.commandPrefix +
           'request` in order to obtain these roles.'
       );
     }
 
     const reply = this.composeAllRequestablesList(
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       userRequestables
     );
     await invocation.respond({

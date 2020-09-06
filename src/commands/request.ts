@@ -46,7 +46,7 @@ class RequestCommand extends Command {
 
     await this.ensureUserCanRequestRole(
       legacyPhil,
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       invocation.userId,
       requestable
     );
@@ -98,13 +98,13 @@ class RequestCommand extends Command {
     if (requestables.length === 0) {
       throw new Error(
         'There are no requestable roles defined. An admin should use `' +
-          invocation.serverConfig.commandPrefix +
+          invocation.context.serverConfig.commandPrefix +
           'define` to create some roles.'
       );
     }
 
     const reply = this.composeAllRequestablesList(
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       requestables
     );
     await invocation.respond({

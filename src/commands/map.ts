@@ -13,7 +13,7 @@ class MapCommand extends Command {
   }
 
   public async invoke(invocation: CommandInvocation): Promise<void> {
-    if (!invocation.serverConfig.fandomMapLink) {
+    if (!invocation.context.serverConfig.fandomMapLink) {
       await invocation.respond({
         error:
           'This server has not provided a link to a shared map of the fandom.',
@@ -23,7 +23,7 @@ class MapCommand extends Command {
     }
 
     await invocation.respond({
-      text: invocation.serverConfig.fandomMapLink,
+      text: invocation.context.serverConfig.fandomMapLink,
       type: 'plain',
     });
   }

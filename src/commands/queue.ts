@@ -30,7 +30,7 @@ class QueueCommand extends Command {
     const bucket = await Bucket.retrieveFromCommandArgs(
       legacyPhil,
       invocation.commandArgs,
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       'queue',
       false
     );
@@ -42,7 +42,10 @@ class QueueCommand extends Command {
       MAX_QUEUE_DISPLAY_LENGTH
     );
 
-    await queue.postToChannel(legacyPhil.bot, database, invocation);
+    await queue.postToChannel(legacyPhil.bot, database, {
+      channelId: invocation.context.channelId,
+      user: invocation.user,
+    });
   }
 }
 

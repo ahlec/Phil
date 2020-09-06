@@ -66,8 +66,8 @@ abstract class ConfirmRejectCommandBase extends Command {
       const result = await this.performAction(
         legacyPhil,
         database,
-        invocation.serverConfig,
-        invocation.channelId,
+        invocation.context.serverConfig,
+        invocation.context.channelId,
         confirmNumber
       );
       this.write(`result of number ${confirmNumber}: ${result}`);
@@ -214,7 +214,7 @@ abstract class ConfirmRejectCommandBase extends Command {
       await invocation.respond({
         error: this.noItemsConfirmedMessage.replace(
           /\{commandPrefix\}/g,
-          invocation.serverConfig.commandPrefix
+          invocation.context.serverConfig.commandPrefix
         ),
         type: 'error',
       });
@@ -225,7 +225,10 @@ abstract class ConfirmRejectCommandBase extends Command {
       text: (results.numSuccessful === 1
         ? this.oneItemConfirmedMessage
         : this.multipleItemsConfirmedMessage
-      ).replace(/\{commandPrefix\}/g, invocation.serverConfig.commandPrefix),
+      ).replace(
+        /\{commandPrefix\}/g,
+        invocation.context.serverConfig.commandPrefix
+      ),
       type: 'success',
     });
   }

@@ -31,11 +31,11 @@ class InfoConfigAction<TModel> implements ConfigAction<TModel> {
     const currentValue = property.getValue(model);
     const displayValue = property.typeDefinition.toDisplayFormat(
       currentValue,
-      invocation.serverConfig
+      invocation.context.serverConfig
     );
     const displayDefaultValue = property.typeDefinition.toDisplayFormat(
       property.defaultValue,
-      invocation.serverConfig
+      invocation.context.serverConfig
     );
     let response = `${
       property.description
@@ -47,9 +47,9 @@ class InfoConfigAction<TModel> implements ConfigAction<TModel> {
     const randomDisplayValue = property.typeDefinition.toMultilineCodeblockDisplayFormat(
       randomExample,
       phil,
-      invocation.serverConfig
+      invocation.context.serverConfig
     );
-    response += `${NEWLINE}**EXAMPLES**${NEWLINE}\`\`\`${invocation.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Set} ${property.key} ${randomDisplayValue}${NEWLINE}${invocation.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Clear} ${property.key}\`\`\``;
+    response += `${NEWLINE}**EXAMPLES**${NEWLINE}\`\`\`${invocation.context.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Set} ${property.key} ${randomDisplayValue}${NEWLINE}${invocation.context.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Clear} ${property.key}\`\`\``;
 
     await invocation.respond({
       color: 'powder-blue',

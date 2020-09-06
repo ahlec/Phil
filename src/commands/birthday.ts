@@ -19,7 +19,7 @@ class BirthdayCommand extends Command {
     database: Database
   ): Promise<void> {
     const birthday = this.getInputFromCommandArgs(
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       invocation.commandArgs
     );
 

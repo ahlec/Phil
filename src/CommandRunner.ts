@@ -34,21 +34,10 @@ export default class CommandRunner extends Logger {
     }
   }
 
-  public isCommand(message: PublicMessage): boolean {
-    const invocation = CommandInvocation.parseFromMessage(
-      this.bot,
-      message.serverConfig,
-      message
-    );
-    return !!invocation;
-  }
-
-  public async runMessage(message: PublicMessage): Promise<void> {
-    const invocation = CommandInvocation.parseFromMessage(
-      this.bot,
-      message.serverConfig,
-      message
-    );
+  public async invoke(
+    invocation: CommandInvocation,
+    message: PublicMessage
+  ): Promise<void> {
     if (invocation === null) {
       return;
     }

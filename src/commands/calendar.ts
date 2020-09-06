@@ -25,7 +25,7 @@ class CalendarCommand extends Command {
     legacyPhil: Phil
   ): Promise<void> {
     const month = this.determineMonth(
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       invocation.commandArgs
     );
     const calendar = await CalendarMonth.getForMonth(

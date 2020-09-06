@@ -15,7 +15,7 @@ class EnableCommand extends EnableDisableCommandBase {
     invocation: CommandInvocation,
     feature: Feature
   ): string {
-    return `The **${feature.displayName}** feature is no longer disabled. You can disable this feature by using \`${invocation.serverConfig.commandPrefix}disable\`.`;
+    return `The **${feature.displayName}** feature is no longer disabled. You can disable this feature by using \`${invocation.context.serverConfig.commandPrefix}disable\`.`;
   }
 }
 

@@ -38,7 +38,7 @@ abstract class MutateConfigActionBase<TModel> implements ConfigAction<TModel> {
   ): Promise<void> {
     const newValue = this.getNewValue(
       phil,
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       property,
       mutableArgs
     );
@@ -83,7 +83,7 @@ abstract class MutateConfigActionBase<TModel> implements ConfigAction<TModel> {
     } property must obey the ${NOWRAP}following rules:${command.getPropertyRulesDisplayList(
       property
     )}${NEWLINE}${NEWLINE}To learn more about this property, including viewing example values you can ${NOWRAP}use for your server, use the command \`${
-      invocation.serverConfig.commandPrefix
+      invocation.context.serverConfig.commandPrefix
     }${command.name} ${ConfigActionPrimaryKey.Info} ${property.key}\`.`;
 
     await invocation.respond({
@@ -109,7 +109,7 @@ abstract class MutateConfigActionBase<TModel> implements ConfigAction<TModel> {
       } successfully to now be \`${property.typeDefinition.toMultilineCodeblockDisplayFormat(
         newValue,
         phil,
-        invocation.serverConfig
+        invocation.context.serverConfig
       )}\`.`,
       fields: null,
       footer: null,

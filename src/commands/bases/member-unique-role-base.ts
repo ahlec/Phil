@@ -43,7 +43,7 @@ abstract class MemberUniqueRoleCommandBase<TData> extends Command {
     legacyPhil: Phil
   ): Promise<void> {
     const data = this.getDataFromCommandArgs(
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       invocation.commandArgs
     );
     const newRole = await this.getRoleFromData(
@@ -65,7 +65,7 @@ abstract class MemberUniqueRoleCommandBase<TData> extends Command {
     );
 
     await invocation.respond({
-      text: this.getSuccessMessage(invocation.serverConfig, data),
+      text: this.getSuccessMessage(invocation.context.serverConfig, data),
       type: 'success',
     });
   }

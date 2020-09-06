@@ -105,7 +105,7 @@ class LeaderboardCommand extends Command {
       fields: null,
       footer:
         'You can increase your score by submitting prompts! Use ' +
-        invocation.serverConfig.commandPrefix +
+        invocation.context.serverConfig.commandPrefix +
         'suggest in a direct message with me!',
       title: 'Hijack Prompt of the Day Leaderboard',
       type: 'embed',

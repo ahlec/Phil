@@ -25,7 +25,7 @@ class NewsCommand extends Command {
     const echoedMessage = this.getEchoedStatementFromInvocation(invocation);
     await sendMessage(
       legacyPhil.bot,
-      invocation.serverConfig.newsChannel.id,
+      invocation.context.serverConfig.newsChannel.id,
       echoedMessage
     );
   }
@@ -39,7 +39,7 @@ class NewsCommand extends Command {
     if (echoedMessage.length === 0) {
       throw new Error(
         'You must provide a message to this function that you would like Phil to repeat in #news. For instance, `' +
-          invocation.serverConfig.commandPrefix +
+          invocation.context.serverConfig.commandPrefix +
           'news A New Guardian has been Chosen!`'
       );
     }

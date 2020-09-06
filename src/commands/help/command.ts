@@ -94,8 +94,8 @@ class HelpCommand extends Command {
     invocation: CommandInvocation,
     database: Database
   ): Promise<void> {
-    const isAdminChannel = invocation.serverConfig.isAdminChannel(
-      invocation.channelId
+    const isAdminChannel = invocation.context.serverConfig.isAdminChannel(
+      invocation.context.channelId
     );
     const featuresEnabledLookup = await getServerFeaturesStatus(
       database,

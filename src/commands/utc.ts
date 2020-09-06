@@ -30,9 +30,9 @@ class UtcCommand extends Command {
     if (!inputTime) {
       throw new Error(
         'You must provide a time to this command so that I know what to convert to UTC. You can try using `' +
-          invocation.serverConfig.commandPrefix +
+          invocation.context.serverConfig.commandPrefix +
           'utc 5pm` or `' +
-          invocation.serverConfig.commandPrefix +
+          invocation.context.serverConfig.commandPrefix +
           'utc tomorrow at 11:30` to try it out.'
       );
     }
@@ -41,7 +41,7 @@ class UtcCommand extends Command {
     if (!timezone || !timezone.hasProvided) {
       throw new Error(
         'In order to use this command, you must first provide your timezone to me so I know how to convert your local time. You can use `' +
-          invocation.serverConfig.commandPrefix +
+          invocation.context.serverConfig.commandPrefix +
           'timezone` to start that process.'
       );
     }
@@ -59,7 +59,7 @@ class UtcCommand extends Command {
       fields: null,
       footer:
         "Converted from user's local timezone to UTC. If the time provided is incorrect, your timezone might need to be updated. Use " +
-        invocation.serverConfig.commandPrefix +
+        invocation.context.serverConfig.commandPrefix +
         'timezone to change/set.',
       title: 'Timezone Conversion',
       type: 'embed',

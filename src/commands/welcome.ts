@@ -30,9 +30,9 @@ class WelcomeCommand extends Command {
     database: Database,
     legacyPhil: Phil
   ): Promise<void> {
-    if (!invocation.serverConfig.welcomeMessage) {
+    if (!invocation.context.serverConfig.welcomeMessage) {
       await invocation.respond({
-        error: `Your server is not configured with a welcome message. An admin can ${NOWRAP}change this by using \`${invocation.serverConfig.commandPrefix}config set ${NOWRAP}welcome-message\`.`,
+        error: `Your server is not configured with a welcome message. An admin can ${NOWRAP}change this by using \`${invocation.context.serverConfig.commandPrefix}config set ${NOWRAP}welcome-message\`.`,
         type: 'error',
       });
       return;
@@ -48,14 +48,14 @@ class WelcomeCommand extends Command {
     }
 
     const { user } = result;
-    const member = invocation.serverConfig.server.members[user.id];
+    const member = invocation.context.serverConfig.server.members[user.id];
     const greeting = new Greeting(
       legacyPhil.bot,
       database,
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       member
     );
-    await greeting.send(invocation.channelId);
+    await greeting.send(invocation.context.channelId);
   }
 
   private getUser(phil: Phil, invocation: CommandInvocation): GetUserResult {
@@ -80,7 +80,7 @@ class WelcomeCommand extends Command {
     const validityResult = MemberTypeDefinition.isValid(
       userId,
       phil,
-      invocation.serverConfig
+      invocation.context.serverConfig
     );
     if (validityResult.isValid !== true) {
       return {

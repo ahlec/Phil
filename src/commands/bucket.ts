@@ -85,7 +85,7 @@ class BucketCommand extends Command {
     const bucket = await Bucket.retrieveFromCommandArgs(
       legacyPhil,
       invocation.commandArgs,
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       'bucket',
       true
     );

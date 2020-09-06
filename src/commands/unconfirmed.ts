@@ -29,12 +29,12 @@ class UnconfirmedCommand extends Command {
   ): Promise<void> {
     await database.query(
       'DELETE FROM submission_confirmation_queue WHERE channel_id = $1',
-      [invocation.channelId]
+      [invocation.context.channelId]
     );
     const bucket = await Bucket.retrieveFromCommandArgs(
       legacyPhil,
       invocation.commandArgs,
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       'unconfirmed',
       false
     );
@@ -53,7 +53,7 @@ class UnconfirmedCommand extends Command {
       const submission = submissions[index];
       await database.query(
         'INSERT INTO submission_confirmation_queue VALUES($1, $2, $3)',
-        [invocation.channelId, submission.id, index]
+        [invocation.context.channelId, submission.id, index]
       );
     }
 
@@ -87,12 +87,12 @@ class UnconfirmedCommand extends Command {
 
     message +=
       '\nConfirm submissions with `' +
-      invocation.serverConfig.commandPrefix +
+      invocation.context.serverConfig.commandPrefix +
       'confirm`. You can specify a single submission by using its number (`';
     message +=
-      invocation.serverConfig.commandPrefix +
+      invocation.context.serverConfig.commandPrefix +
       'confirm 3`) or a range of submissions using a hyphen (`' +
-      invocation.serverConfig.commandPrefix +
+      invocation.context.serverConfig.commandPrefix +
       'confirm 2-7`)';
 
     await invocation.respond({

@@ -28,7 +28,7 @@ class UnpauseCommand extends Command {
     const bucket = await Bucket.retrieveFromCommandArgs(
       legacyPhil,
       invocation.commandArgs,
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       'bucket',
       true
     );
@@ -40,7 +40,7 @@ class UnpauseCommand extends Command {
       '** (' +
       bucket.handle +
       ') has been unpaused. You can pause it once more by using `' +
-      invocation.serverConfig.commandPrefix +
+      invocation.context.serverConfig.commandPrefix +
       'pause ' +
       bucket.handle +
       '`.';

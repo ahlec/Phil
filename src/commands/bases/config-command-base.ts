@@ -149,7 +149,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       this.configurationFor
     } configuration. ${NOWRAP}Within this command, there are numerous actions you can take to allow you to ${NOWRAP}understand Phil, his configuration, and how you can make him fit your server's ${NOWRAP}needs.${NEWLINE}${NEWLINE}${this.getActionsExplanation(
       legacyPhil,
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       model
     )}`;
 
@@ -180,7 +180,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
   ): Promise<void> {
     const response = `You attempted to use an unrecognized action with this command.${NEWLINE}${NEWLINE}${this.getActionsExplanation(
       phil,
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       model
     )}`;
 
@@ -231,13 +231,13 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     action: ConfigAction<TModel>,
     model: TModel
   ): Promise<void> {
-    const response = `You attempted to use an unknown property with the **${action.primaryKey}** action.${NEWLINE}${NEWLINE}**PROPERTIES**${NEWLINE}The following are all of the properties that are recognized with the ${invocation.serverConfig.commandPrefix}${this.name} command:`;
+    const response = `You attempted to use an unknown property with the **${action.primaryKey}** action.${NEWLINE}${NEWLINE}**PROPERTIES**${NEWLINE}The following are all of the properties that are recognized with the ${invocation.context.serverConfig.commandPrefix}${this.name} command:`;
 
     const fields: EmbedField[] = [];
     for (const property of this.orderedProperties) {
       const exampleUse = this.createActionExampleUse(
         phil,
-        invocation.serverConfig,
+        invocation.context.serverConfig,
         action,
         property,
         model

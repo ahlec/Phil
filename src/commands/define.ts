@@ -25,7 +25,7 @@ class DefineCommand extends Command {
   ): Promise<void> {
     const definition = this.getDefinitionData(
       invocation.commandArgs,
-      invocation.serverConfig
+      invocation.context.serverConfig
     );
     if (!Requestable.checkIsValidRequestableName(definition.name)) {
       throw new Error(
@@ -53,7 +53,7 @@ class DefineCommand extends Command {
       '`' +
       definition.name +
       '` has been set up for use with `' +
-      invocation.serverConfig.commandPrefix +
+      invocation.context.serverConfig.commandPrefix +
       'request` to grant the ' +
       definition.role.name +
       ' role.';

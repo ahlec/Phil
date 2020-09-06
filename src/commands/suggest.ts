@@ -51,7 +51,7 @@ class SuggestCommand extends Command {
     const bucket = await Bucket.retrieveFromCommandArgs(
       legacyPhil,
       invocation.commandArgs,
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       this.name,
       false
     );
@@ -82,7 +82,7 @@ class SuggestCommand extends Command {
     await this.sendDirectMessage(
       legacyPhil,
       invocation.userId,
-      invocation.serverConfig,
+      invocation.context.serverConfig,
       session
     );
   }

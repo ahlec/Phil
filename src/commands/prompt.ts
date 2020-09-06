@@ -25,7 +25,7 @@ class PromptCommand extends Command {
     const bucket = await Bucket.getFromChannelId(
       legacyPhil.bot,
       database,
-      invocation.channelId
+      invocation.context.channelId
     );
     if (!bucket) {
       throw new Error('This channel is not configured to work with prompts.');
@@ -39,12 +39,12 @@ class PromptCommand extends Command {
     if (!prompt) {
       throw new Error(
         "There's no prompt right now. That probably means that I'm out of them! Why don't you suggest more by sending me `" +
-          invocation.serverConfig.commandPrefix +
+          invocation.context.serverConfig.commandPrefix +
           'suggest` and including your prompt?'
       );
     }
 
-    await prompt.sendToChannel(legacyPhil.bot, invocation.serverConfig);
+    await prompt.sendToChannel(legacyPhil.bot, invocation.context.serverConfig);
   }
 }
 

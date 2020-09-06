@@ -31,7 +31,11 @@ class DisplayConfigAction<TModel> implements ConfigAction<TModel> {
     const fields: EmbedField[] = [];
     for (const property of command.orderedProperties) {
       fields.push(
-        this.getDisplayRequestField(model, property, invocation.serverConfig)
+        this.getDisplayRequestField(
+          model,
+          property,
+          invocation.context.serverConfig
+        )
       );
     }
 

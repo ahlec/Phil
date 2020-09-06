@@ -19,10 +19,15 @@ import {
 import EmbedColor from './embed-color';
 import MessageBuilder from './message-builder';
 
+interface InvocationContext {
+  channelId: string;
+  serverConfig: ServerConfig;
+}
+
 class CommandInvocation {
   public static parseFromMessage(
     client: DiscordIOClient,
-    serverConfig: ServerConfig,
+    context: InvocationContext,
     message: PublicMessage
   ): CommandInvocation | null {
     if (!message.content) {
@@ -37,17 +42,19 @@ class CommandInvocation {
     }
 
     const prompt = words[0].toLowerCase();
-    if (!prompt.startsWith(serverConfig.commandPrefix)) {
+    if (!prompt.startsWith(context.serverConfig.commandPrefix)) {
       return null;
     }
 
-    const commandName = prompt.substr(serverConfig.commandPrefix.length);
+    const commandName = prompt.substr(
+      context.serverConfig.commandPrefix.length
+    );
     return new CommandInvocation(
       client,
       commandName,
       words.slice(1),
       message,
-      serverConfig
+      context
     );
   }
 
@@ -56,12 +63,8 @@ class CommandInvocation {
     public readonly commandName: string,
     public readonly commandArgs: ReadonlyArray<string>,
     private readonly message: PublicMessage,
-    public readonly serverConfig: ServerConfig
+    public readonly context: InvocationContext
   ) {}
-
-  public get channelId(): string {
-    return this.message.channelId;
-  }
 
   public get mentions(): readonly Mention[] {
     return this.message.mentions;
