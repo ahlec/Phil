@@ -26,11 +26,11 @@ export interface ConfigAction<TModel> {
   readonly parameters: ReadonlyArray<ConfigActionParameterType>;
 
   process(
-    command: ConfigCommandBase<TModel>,
-    phil: Phil,
     invocation: CommandInvocation,
-    mutableArgs: string[],
+    command: ConfigCommandBase<TModel>,
+    model: TModel,
     property: ConfigProperty<TModel> | null,
-    model: TModel
+    phil: Phil,
+    mutableArgs: string[]
   ): Promise<void>;
 }

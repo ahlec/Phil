@@ -1,5 +1,4 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import Phil from '@phil/phil';
 import { EmbedField } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
 import {
@@ -21,11 +20,8 @@ class DisplayConfigAction<TModel> implements ConfigAction<TModel> {
   public readonly parameters: ReadonlyArray<ConfigActionParameterType> = [];
 
   public async process(
-    command: ConfigCommandBase<TModel>,
-    phil: Phil,
     invocation: CommandInvocation,
-    mutableArgs: string[],
-    _: ConfigProperty<TModel>,
+    command: ConfigCommandBase<TModel>,
     model: TModel
   ): Promise<void> {
     const fields: EmbedField[] = [];

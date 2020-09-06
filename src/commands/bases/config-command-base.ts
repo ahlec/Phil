@@ -210,7 +210,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       }
     }
 
-    await action.process(this, phil, invocation, mutableArgs, property, model);
+    await action.process(invocation, this, model, property, phil, mutableArgs);
   }
 
   private getSpecifiedProperty(

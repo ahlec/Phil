@@ -21,12 +21,11 @@ class InfoConfigAction<TModel> implements ConfigAction<TModel> {
   public readonly parameters = [ConfigActionParameterType.PropertyKey];
 
   public async process(
-    command: ConfigCommandBase<TModel>,
-    phil: Phil,
     invocation: CommandInvocation,
-    mutableArgs: string[],
+    command: ConfigCommandBase<TModel>,
+    model: TModel,
     property: ConfigProperty<TModel>,
-    model: TModel
+    phil: Phil
   ): Promise<void> {
     const currentValue = property.getValue(model);
     const displayValue = property.typeDefinition.toDisplayFormat(

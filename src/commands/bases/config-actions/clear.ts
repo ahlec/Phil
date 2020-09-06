@@ -1,5 +1,3 @@
-import Phil from '@phil/phil';
-import ServerConfig from '@phil/server-config';
 import { ConfigProperty } from '@phil/commands/bases/config-command-base';
 import { ConfigActionParameterType, ConfigActionPrimaryKey } from './@action';
 import MutateConfigActionBase, { GetNewValueResult } from './@mutate-base';
@@ -14,11 +12,7 @@ class ClearConfigAction<TModel> extends MutateConfigActionBase<TModel> {
 
   protected readonly pastTenseVerb = 'reset';
 
-  protected getNewValue(
-    phil: Phil,
-    serverConfig: ServerConfig,
-    property: ConfigProperty<TModel>
-  ): GetNewValueResult {
+  protected getNewValue(property: ConfigProperty<TModel>): GetNewValueResult {
     return {
       parsedValue: property.defaultValue,
       wasSuccessful: true,

@@ -29,17 +29,17 @@ abstract class MutateConfigActionBase<TModel> implements ConfigAction<TModel> {
   protected abstract readonly pastTenseVerb: string;
 
   public async process(
-    command: ConfigCommandBase<TModel>,
-    phil: Phil,
     invocation: CommandInvocation,
-    mutableArgs: string[],
+    command: ConfigCommandBase<TModel>,
+    model: TModel,
     property: ConfigProperty<TModel>,
-    model: TModel
+    phil: Phil,
+    mutableArgs: string[]
   ): Promise<void> {
     const newValue = this.getNewValue(
+      property,
       phil,
       invocation.context.serverConfig,
-      property,
       mutableArgs
     );
     if (newValue.wasSuccessful === false) {
@@ -63,9 +63,9 @@ abstract class MutateConfigActionBase<TModel> implements ConfigAction<TModel> {
   }
 
   protected abstract getNewValue(
+    property: ConfigProperty<TModel>,
     phil: Phil,
     serverConfig: ServerConfig,
-    property: ConfigProperty<TModel>,
     mutableArgs: string[]
   ): GetNewValueResult;
 

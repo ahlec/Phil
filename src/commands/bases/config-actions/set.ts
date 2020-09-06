@@ -17,9 +17,9 @@ class SetConfigAction<TModel> extends MutateConfigActionBase<TModel> {
   protected readonly pastTenseVerb = 'set';
 
   protected getNewValue(
+    property: ConfigProperty<TModel>,
     phil: Phil,
     serverConfig: ServerConfig,
-    property: ConfigProperty<TModel>,
     mutableArgs: string[]
   ): GetNewValueResult {
     const rawInput = mutableArgs.join(' ');
