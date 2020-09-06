@@ -14,6 +14,7 @@ import {
   sendEmbedMessage,
   sendMessageBuilder,
   sendMessage,
+  deleteMessage,
 } from './promises/discord';
 import EmbedColor from './embed-color';
 import MessageBuilder from './message-builder';
@@ -57,13 +58,6 @@ class CommandInvocation {
     private readonly message: PublicMessage,
     public readonly serverConfig: ServerConfig
   ) {}
-
-  /**
-   * Message ID
-   */
-  public get id(): string {
-    return this.message.id;
-  }
 
   public get channelId(): string {
     return this.message.channelId;
@@ -164,6 +158,18 @@ class CommandInvocation {
         return response;
       }
     }
+  }
+
+  /**
+   * Deletes the Discord message that invoked this command. That is,
+   * this will delete the user-sent message that triggered this command.
+   */
+  public deleteInvocationMessage(): Promise<void> {
+    return deleteMessage(
+      this.discordClient,
+      this.message.channelId,
+      this.message.id
+    );
   }
 }
 
