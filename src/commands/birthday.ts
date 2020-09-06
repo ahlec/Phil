@@ -1,7 +1,7 @@
 import * as chronoNode from 'chrono-node';
 import * as moment from 'moment';
+import CommandInvocation from '@phil/CommandInvocation';
 import Database from '@phil/database';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 import { sendSuccessMessage } from '@phil/utils';
@@ -18,18 +18,17 @@ export default class BirthdayCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
     const birthday = this.getInputFromCommandArgs(
-      message.serverConfig,
-      commandArgs
+      invocation.serverConfig,
+      invocation.commandArgs
     );
 
     await this.setBirthdayInDatabase(
       phil.db,
-      message.user.username,
-      message.userId,
+      invocation.user.username,
+      invocation.userId,
       birthday
     );
 
@@ -39,7 +38,7 @@ export default class BirthdayCommand extends Command {
       '! Thank you! If I made a mistake, however, feel free to tell me your birthday again!';
     await sendSuccessMessage({
       bot: phil.bot,
-      channelId: message.channelId,
+      channelId: invocation.channelId,
       message: reply,
     });
   }

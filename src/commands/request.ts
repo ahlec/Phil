@@ -1,7 +1,7 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import {
   giveRoleToUser,
@@ -31,40 +31,41 @@ export default class RequestCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
-    if (commandArgs.length === 0) {
-      return this.processNoCommandArgs(phil, message);
+    if (invocation.commandArgs.length === 0) {
+      return this.processNoCommandArgs(phil, invocation);
     }
 
     const requestable = await Requestable.getFromRequestString(
       phil.db,
-      message.server,
-      commandArgs[0]
+      invocation.server,
+      invocation.commandArgs[0]
     );
     if (!requestable) {
       throw new Error(
-        'There is no requestable by the name of `' + commandArgs[0] + '`.'
+        'There is no requestable by the name of `' +
+          invocation.commandArgs[0] +
+          '`.'
       );
     }
 
     await this.ensureUserCanRequestRole(
       phil,
-      message.serverConfig,
-      message.userId,
+      invocation.serverConfig,
+      invocation.userId,
       requestable
     );
 
     await giveRoleToUser(
       phil.bot,
-      message.server.id,
-      message.userId,
+      invocation.server.id,
+      invocation.userId,
       requestable.role.id
     );
     await sendSuccessMessage({
       bot: phil.bot,
-      channelId: message.channelId,
+      channelId: invocation.channelId,
       message: `You have been granted the "${requestable.role.name}" role!`,
     });
   }
@@ -95,25 +96,25 @@ export default class RequestCommand extends Command {
 
   private async processNoCommandArgs(
     phil: Phil,
-    message: PublicMessage
+    invocation: CommandInvocation
   ): Promise<void> {
     const requestables = await Requestable.getAllRequestables(
       phil.db,
-      message.server
+      invocation.server
     );
     if (requestables.length === 0) {
       throw new Error(
         'There are no requestable roles defined. An admin should use `' +
-          message.serverConfig.commandPrefix +
+          invocation.serverConfig.commandPrefix +
           'define` to create some roles.'
       );
     }
 
     const reply = this.composeAllRequestablesList(
-      message.serverConfig,
+      invocation.serverConfig,
       requestables
     );
-    await sendMessageBuilder(phil.bot, message.channelId, reply);
+    await sendMessageBuilder(phil.bot, invocation.channelId, reply);
   }
 
   private composeAllRequestablesList(

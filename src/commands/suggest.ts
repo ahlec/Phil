@@ -1,9 +1,9 @@
 import Bucket from '@phil/buckets';
+import CommandInvocation from '@phil/CommandInvocation';
 import { endOngoingDirectMessageProcesses } from '@phil/DirectMessageUtils';
 import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import { sendEmbedMessage } from '@phil/promises/discord';
 import SubmissionSession from '@phil/prompts/submission-session';
@@ -44,21 +44,20 @@ export default class SuggestCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
     const bucket = await Bucket.retrieveFromCommandArgs(
       phil,
-      commandArgs,
-      message.serverConfig,
+      invocation.commandArgs,
+      invocation.serverConfig,
       this.name,
       false
     );
     if (
       bucket.requiredRoleId &&
-      !(await bucket.canUserSubmitTo(phil.bot, message.userId))
+      !(await bucket.canUserSubmitTo(phil.bot, invocation.userId))
     ) {
-      const role = message.server.roles[bucket.requiredRoleId];
+      const role = invocation.server.roles[bucket.requiredRoleId];
       throw new Error(
         'In order to be able to submit a prompt to this bucket, you must have \
                 the **' +
@@ -67,11 +66,11 @@ export default class SuggestCommand extends Command {
       );
     }
 
-    await endOngoingDirectMessageProcesses(phil, message.userId);
+    await endOngoingDirectMessageProcesses(phil, invocation.userId);
 
     const session = await SubmissionSession.startNewSession(
       phil,
-      message.userId,
+      invocation.userId,
       bucket
     );
     if (!session) {
@@ -80,8 +79,8 @@ export default class SuggestCommand extends Command {
 
     await this.sendDirectMessage(
       phil,
-      message.userId,
-      message.serverConfig,
+      invocation.userId,
+      invocation.serverConfig,
       session
     );
   }

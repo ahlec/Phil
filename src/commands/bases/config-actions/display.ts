@@ -1,5 +1,5 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import EmbedColor from '@phil/embed-color';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import { sendEmbedMessage, EmbedField } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
@@ -25,7 +25,7 @@ export default class DisplayConfigAction<TModel>
   public async process(
     command: ConfigCommandBase<TModel>,
     phil: Phil,
-    message: PublicMessage,
+    invocation: CommandInvocation,
     mutableArgs: string[],
     _: ConfigProperty<TModel>,
     model: TModel
@@ -33,11 +33,11 @@ export default class DisplayConfigAction<TModel>
     const fields: EmbedField[] = [];
     for (const property of command.orderedProperties) {
       fields.push(
-        this.getDisplayRequestField(model, property, message.serverConfig)
+        this.getDisplayRequestField(model, property, invocation.serverConfig)
       );
     }
 
-    await sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, invocation.channelId, {
       color: EmbedColor.Info,
       fields,
       title: command.titleCaseConfigurationFor + ' Configuration: Overview',

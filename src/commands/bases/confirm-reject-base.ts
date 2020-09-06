@@ -1,7 +1,7 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
@@ -52,10 +52,9 @@ export default abstract class ConfirmRejectCommandBase extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
-    const numbers = this.getNumbersFromCommandArgs(commandArgs);
+    const numbers = this.getNumbersFromCommandArgs(invocation.commandArgs);
     const results: ConfirmRejectResults = {
       numFailed: 0,
       numSuccessful: 0,
@@ -65,8 +64,8 @@ export default abstract class ConfirmRejectCommandBase extends Command {
       confirmNumber = confirmNumber - 1; // Public facing, it's 1-based, but in the database it's 0-based
       const result = await this.performAction(
         phil,
-        message.serverConfig,
-        message.channelId,
+        invocation.serverConfig,
+        invocation.channelId,
         confirmNumber
       );
       this.write(`result of number ${confirmNumber}: ${result}`);
@@ -79,8 +78,8 @@ export default abstract class ConfirmRejectCommandBase extends Command {
 
     await this.sendCompletionMessage(
       phil,
-      message.serverConfig,
-      message.channelId,
+      invocation.serverConfig,
+      invocation.channelId,
       results
     );
   }

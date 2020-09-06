@@ -1,6 +1,6 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import { startQuestionnaire } from '@phil/timezones/questionnaire';
 import Command, { LoggerDefinition } from './@types';
@@ -19,8 +19,8 @@ export default class TimezoneCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage
+    invocation: CommandInvocation
   ): Promise<void> {
-    await startQuestionnaire(phil, message.userId, true);
+    await startQuestionnaire(phil, invocation.userId, true);
   }
 }

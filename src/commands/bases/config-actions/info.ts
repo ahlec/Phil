@@ -1,5 +1,5 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import EmbedColor from '@phil/embed-color';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import { sendEmbedMessage } from '@phil/promises/discord';
 import {
@@ -25,7 +25,7 @@ export default class InfoConfigAction<TModel> implements ConfigAction<TModel> {
   public async process(
     command: ConfigCommandBase<TModel>,
     phil: Phil,
-    message: PublicMessage,
+    invocation: CommandInvocation,
     mutableArgs: string[],
     property: ConfigProperty<TModel>,
     model: TModel
@@ -33,11 +33,11 @@ export default class InfoConfigAction<TModel> implements ConfigAction<TModel> {
     const currentValue = property.getValue(model);
     const displayValue = property.typeDefinition.toDisplayFormat(
       currentValue,
-      message.serverConfig
+      invocation.serverConfig
     );
     const displayDefaultValue = property.typeDefinition.toDisplayFormat(
       property.defaultValue,
-      message.serverConfig
+      invocation.serverConfig
     );
     let response = `${
       property.description
@@ -49,11 +49,11 @@ export default class InfoConfigAction<TModel> implements ConfigAction<TModel> {
     const randomDisplayValue = property.typeDefinition.toMultilineCodeblockDisplayFormat(
       randomExample,
       phil,
-      message.serverConfig
+      invocation.serverConfig
     );
-    response += `${NEWLINE}**EXAMPLES**${NEWLINE}\`\`\`${message.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Set} ${property.key} ${randomDisplayValue}${NEWLINE}${message.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Clear} ${property.key}\`\`\``;
+    response += `${NEWLINE}**EXAMPLES**${NEWLINE}\`\`\`${invocation.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Set} ${property.key} ${randomDisplayValue}${NEWLINE}${invocation.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Clear} ${property.key}\`\`\``;
 
-    await sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, invocation.channelId, {
       color: EmbedColor.Info,
       description: response,
       title: `${command.titleCaseConfigurationFor} Configuration: ${property.displayName}`,

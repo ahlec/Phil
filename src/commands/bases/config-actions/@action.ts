@@ -1,4 +1,4 @@
-import PublicMessage from '@phil/messages/public';
+import CommandInvocation from '@phil/CommandInvocation';
 import Phil from '@phil/phil';
 import {
   ConfigCommandBase,
@@ -28,7 +28,7 @@ export interface ConfigAction<TModel> {
   process(
     command: ConfigCommandBase<TModel>,
     phil: Phil,
-    message: PublicMessage,
+    invocation: CommandInvocation,
     mutableArgs: string[],
     property: ConfigProperty<TModel> | null,
     model: TModel

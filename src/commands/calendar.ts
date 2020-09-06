@@ -1,9 +1,9 @@
 import * as chronoNode from 'chrono-node';
 import { Server as DiscordIOServer } from 'discord.io';
+import CommandInvocation from '@phil/CommandInvocation';
 import CalendarMonth from '@phil/calendar/calendar-month';
 import Features from '@phil/features/all-features';
 import MessageBuilder from '@phil/message-builder';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import { sendMessageBuilder } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
@@ -21,18 +21,23 @@ export default class CalendarCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
-    const month = this.determineMonth(message.serverConfig, commandArgs);
+    const month = this.determineMonth(
+      invocation.serverConfig,
+      invocation.commandArgs
+    );
     const calendar = await CalendarMonth.getForMonth(
       phil.bot,
       phil.db,
-      message.server,
+      invocation.server,
       month
     );
-    const builder = this.composeMessageFromCalendar(message.server, calendar);
-    await sendMessageBuilder(phil.bot, message.channelId, builder);
+    const builder = this.composeMessageFromCalendar(
+      invocation.server,
+      calendar
+    );
+    await sendMessageBuilder(phil.bot, invocation.channelId, builder);
   }
 
   private determineMonth(

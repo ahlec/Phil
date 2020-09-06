@@ -1,7 +1,7 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import { getServerFeaturesStatus } from '@phil/features/feature-utils';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
 import Command, {
@@ -93,14 +93,14 @@ export default class HelpCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage
+    invocation: CommandInvocation
   ): Promise<void> {
-    const isAdminChannel = message.serverConfig.isAdminChannel(
-      message.channelId
+    const isAdminChannel = invocation.serverConfig.isAdminChannel(
+      invocation.channelId
     );
     const featuresEnabledLookup = await getServerFeaturesStatus(
       phil.db,
-      message.server.id
+      invocation.server.id
     );
     const builder = new MessageBuilder();
 
@@ -113,7 +113,7 @@ export default class HelpCommand extends Command {
     }
 
     for (const helpMessage of builder.messages) {
-      await sendMessage(phil.bot, message.channelId, helpMessage);
+      await sendMessage(phil.bot, invocation.channelId, helpMessage);
     }
   }
 }

@@ -1,5 +1,6 @@
 import { Channel as DiscordIOChannel } from 'discord.io';
-import PublicMessage from '@phil/messages/public';
+
+import CommandInvocation from '@phil/CommandInvocation';
 import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry } from '@phil/utils';
@@ -175,8 +176,8 @@ export default class ConfigCommand extends ConfigCommandBase<ServerConfig> {
 
   protected async getModel(
     phil: Phil,
-    message: PublicMessage
+    invocation: CommandInvocation
   ): Promise<ServerConfig> {
-    return message.serverConfig;
+    return invocation.serverConfig;
   }
 }

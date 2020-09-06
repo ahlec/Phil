@@ -1,9 +1,9 @@
 import * as chronoNode from 'chrono-node';
 import * as moment from 'moment-timezone';
+import CommandInvocation from '@phil/CommandInvocation';
 import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import { sendEmbedMessage } from '@phil/promises/discord';
 import UserTimezone from '@phil/timezones/user-timezone';
@@ -26,25 +26,24 @@ export default class UtcCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
-    const inputTime = this.getTimeFromCommandArgs(commandArgs);
+    const inputTime = this.getTimeFromCommandArgs(invocation.commandArgs);
     if (!inputTime) {
       throw new Error(
         'You must provide a time to this command so that I know what to convert to UTC. You can try using `' +
-          message.serverConfig.commandPrefix +
+          invocation.serverConfig.commandPrefix +
           'utc 5pm` or `' +
-          message.serverConfig.commandPrefix +
+          invocation.serverConfig.commandPrefix +
           'utc tomorrow at 11:30` to try it out.'
       );
     }
 
-    const timezone = await UserTimezone.getForUser(phil.db, message.userId);
+    const timezone = await UserTimezone.getForUser(phil.db, invocation.userId);
     if (!timezone || !timezone.hasProvided) {
       throw new Error(
         'In order to use this command, you must first provide your timezone to me so I know how to convert your local time. You can use `' +
-          message.serverConfig.commandPrefix +
+          invocation.serverConfig.commandPrefix +
           'timezone` to start that process.'
       );
     }
@@ -56,13 +55,13 @@ export default class UtcCommand extends Command {
     }
 
     const reply = this.createReply(inputTime, timezone.timezoneName);
-    await sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, invocation.channelId, {
       color: EmbedColor.Timezone,
       description: reply,
       footer: {
         text:
           "Converted from user's local timezone to UTC. If the time provided is incorrect, your timezone might need to be updated. Use " +
-          message.serverConfig.commandPrefix +
+          invocation.serverConfig.commandPrefix +
           'timezone to change/set.',
       },
       title: 'Timezone Conversion',

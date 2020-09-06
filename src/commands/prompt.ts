@@ -1,7 +1,7 @@
 import Bucket from '@phil/buckets';
+import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import Prompt from '@phil/prompts/prompt';
 import Command, { LoggerDefinition } from './@types';
@@ -18,12 +18,12 @@ export default class PromptCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage
+    invocation: CommandInvocation
   ): Promise<void> {
     const bucket = await Bucket.getFromChannelId(
       phil.bot,
       phil.db,
-      message.channelId
+      invocation.channelId
     );
     if (!bucket) {
       throw new Error('This channel is not configured to work with prompts.');
@@ -33,11 +33,11 @@ export default class PromptCommand extends Command {
     if (!prompt) {
       throw new Error(
         "There's no prompt right now. That probably means that I'm out of them! Why don't you suggest more by sending me `" +
-          message.serverConfig.commandPrefix +
+          invocation.serverConfig.commandPrefix +
           'suggest` and including your prompt?'
       );
     }
 
-    await prompt.sendToChannel(phil.bot, message.serverConfig);
+    await prompt.sendToChannel(phil.bot, invocation.serverConfig);
   }
 }

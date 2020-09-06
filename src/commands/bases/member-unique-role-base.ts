@@ -1,7 +1,7 @@
 import { Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
+import CommandInvocation from '@phil/CommandInvocation';
 import Feature from '@phil/features/feature';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import {
   EditRoleOptions,
@@ -41,28 +41,30 @@ export default abstract class MemberUniqueRoleCommandBase<
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
-    const data = this.getDataFromCommandArgs(message.serverConfig, commandArgs);
-    const newRole = await this.getRoleFromData(phil, message.server, data);
+    const data = this.getDataFromCommandArgs(
+      invocation.serverConfig,
+      invocation.commandArgs
+    );
+    const newRole = await this.getRoleFromData(phil, invocation.server, data);
 
     await this.removeAllRolesInPoolFromUser(
       phil,
-      message.server,
-      message.userId
+      invocation.server,
+      invocation.userId
     );
     await giveRoleToUser(
       phil.bot,
-      message.server.id,
-      message.userId,
+      invocation.server.id,
+      invocation.userId,
       newRole.id
     );
 
     await sendSuccessMessage({
       bot: phil.bot,
-      channelId: message.channelId,
-      message: this.getSuccessMessage(message.serverConfig, data),
+      channelId: invocation.channelId,
+      message: this.getSuccessMessage(invocation.serverConfig, data),
     });
   }
 

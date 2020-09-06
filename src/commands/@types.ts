@@ -1,8 +1,8 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import Feature from '@phil/features/feature';
 import { HelpGroup } from '@phil/help-groups';
 import Logger from '@phil/Logger';
 import LoggerDefinition from '@phil/LoggerDefinition';
-import PublicMessage from '@phil/messages/public';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 
@@ -44,8 +44,7 @@ export default abstract class Command extends Logger {
 
   public abstract processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void>;
 }
 

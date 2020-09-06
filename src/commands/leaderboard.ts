@@ -1,7 +1,7 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import { sendEmbedMessage } from '@phil/promises/discord';
 import Leaderboard from '@phil/prompts/leaderboard';
@@ -90,22 +90,22 @@ export default class LeaderboardCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage
+    invocation: CommandInvocation
   ): Promise<void> {
     const leaderboard = await Leaderboard.getLeaderboard(
       phil.bot,
       phil.db,
-      message.server
+      invocation.server
     );
     const reply = createLeaderboardMessage(leaderboard);
 
-    await sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, invocation.channelId, {
       color: EmbedColor.Info,
       description: reply,
       footer: {
         text:
           'You can increase your score by submitting prompts! Use ' +
-          message.serverConfig.commandPrefix +
+          invocation.serverConfig.commandPrefix +
           'suggest in a direct message with me!',
       },
       title: 'Hijack Prompt of the Day Leaderboard',

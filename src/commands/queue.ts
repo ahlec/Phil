@@ -1,7 +1,7 @@
 import Bucket from '@phil/buckets';
+import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import { PromptQueue } from '@phil/prompts/queue';
@@ -23,13 +23,12 @@ export default class QueueCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
     const bucket = await Bucket.retrieveFromCommandArgs(
       phil,
-      commandArgs,
-      message.serverConfig,
+      invocation.commandArgs,
+      invocation.serverConfig,
       'queue',
       false
     );
@@ -41,6 +40,6 @@ export default class QueueCommand extends Command {
       MAX_QUEUE_DISPLAY_LENGTH
     );
 
-    await queue.postToChannel(phil.bot, phil.db, message);
+    await queue.postToChannel(phil.bot, phil.db, invocation);
   }
 }

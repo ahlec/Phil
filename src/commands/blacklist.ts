@@ -1,10 +1,10 @@
 import { Member as DiscordIOMember } from 'discord.io';
+import CommandInvocation from '@phil/CommandInvocation';
 import CommandArgs from '@phil/CommandArgs';
 import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
-import PublicMessage from '@phil/messages/public';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import { sendEmbedMessage, sendMessageBuilder } from '@phil/promises/discord';
@@ -27,18 +27,17 @@ export default class BlacklistCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    rawCommandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
-    const commandArgs = new CommandArgs(rawCommandArgs);
+    const commandArgs = new CommandArgs(invocation.commandArgs);
     if (commandArgs.isEmpty) {
-      return this.processNoCommandArgs(phil, message);
+      return this.processNoCommandArgs(phil, invocation);
     }
 
     const requestString = commandArgs.readString('requestString');
     const requestable = await Requestable.getFromRequestString(
       phil.db,
-      message.server,
+      invocation.server,
       requestString
     );
     if (!requestable) {
@@ -50,37 +49,48 @@ export default class BlacklistCommand extends Command {
     const member = commandArgs.readMember(
       'targetUser',
       phil.bot,
-      message.server,
+      invocation.server,
       true
     );
     if (!member) {
-      return this.replyWithBlacklist(phil, message, requestable, requestString);
+      return this.replyWithBlacklist(
+        phil,
+        invocation,
+        requestable,
+        requestString
+      );
     }
 
-    await this.toggleMember(phil, message, requestable, requestString, member);
+    await this.toggleMember(
+      phil,
+      invocation,
+      requestable,
+      requestString,
+      member
+    );
   }
 
   private async processNoCommandArgs(
     phil: Phil,
-    message: PublicMessage
+    invocation: CommandInvocation
   ): Promise<void> {
     const requestables = await Requestable.getAllRequestables(
       phil.db,
-      message.server
+      invocation.server
     );
     if (requestables.length === 0) {
       throw new Error(
         'There are no requestable roles defined. An admin should use `' +
-          message.serverConfig.commandPrefix +
+          invocation.serverConfig.commandPrefix +
           'define` to create some roles.'
       );
     }
 
     const reply = this.composeAllRequestablesList(
-      message.serverConfig,
+      invocation.serverConfig,
       requestables
     );
-    await sendMessageBuilder(phil.bot, message.channelId, reply);
+    await sendMessageBuilder(phil.bot, invocation.channelId, reply);
   }
 
   private composeAllRequestablesList(
@@ -122,7 +132,7 @@ export default class BlacklistCommand extends Command {
 
   private async replyWithBlacklist(
     phil: Phil,
-    message: PublicMessage,
+    invocation: CommandInvocation,
     requestable: Requestable,
     requestStringUsed: string
   ): Promise<void> {
@@ -134,7 +144,7 @@ export default class BlacklistCommand extends Command {
         }
 
         const username = `${user.username}#${user.discriminator}`;
-        const member = message.server.members[userId];
+        const member = invocation.server.members[userId];
 
         if (!member) {
           return `${username} - no longer in this server`;
@@ -162,9 +172,9 @@ export default class BlacklistCommand extends Command {
       response = `There are **no** users on the blacklist for the **${requestable.role.name}** role.`;
     }
 
-    response += `\n\nTo add or remove a user to the blacklist, use \`${message.serverConfig.commandPrefix}blacklist ${requestStringUsed} [user name]\` to toggle that user on the blacklist.`;
+    response += `\n\nTo add or remove a user to the blacklist, use \`${invocation.serverConfig.commandPrefix}blacklist ${requestStringUsed} [user name]\` to toggle that user on the blacklist.`;
 
-    await sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, invocation.channelId, {
       color: EmbedColor.Info,
       description: response,
       title: `:name_badge: "${requestable.role.name}" blacklist`,
@@ -173,7 +183,7 @@ export default class BlacklistCommand extends Command {
 
   private async toggleMember(
     phil: Phil,
-    message: PublicMessage,
+    invocation: CommandInvocation,
     requestable: Requestable,
     requestStringUsed: string,
     member: DiscordIOMember
@@ -181,10 +191,10 @@ export default class BlacklistCommand extends Command {
     const result = await requestable.toggleUserBlacklist(member.id, phil.db);
     if (!result.success) {
       this.error(`requestable: ${requestable.role.id} - ${requestStringUsed}`);
-      this.error(`server: ${message.server.id}`);
+      this.error(`server: ${invocation.server.id}`);
       this.error(`member: ${member.id}`);
       this.error(result.message);
-      await sendEmbedMessage(phil.bot, message.channelId, {
+      await sendEmbedMessage(phil.bot, invocation.channelId, {
         color: EmbedColor.Error,
         description: result.message,
         title: `:no_entry: Blacklist error encountered`,
@@ -201,14 +211,14 @@ export default class BlacklistCommand extends Command {
       displayName = `${user.username}#${user.discriminator}`;
     }
 
-    await sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, invocation.channelId, {
       color: EmbedColor.Info,
       description: `**${displayName}** was ${
         isOnBlacklist ? 'added to' : 'removed from'
       } the blacklist for all requestables that give **${
         requestable.role.name
       }**.\n\nYou can undo this by using \`${
-        message.serverConfig.commandPrefix
+        invocation.serverConfig.commandPrefix
       }blacklist ${requestStringUsed} ${displayName}\` to toggle the member's presence on the list.`,
       title: `:name_badge: "${requestable.role.name}" blacklist`,
     });

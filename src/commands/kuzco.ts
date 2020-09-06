@@ -1,5 +1,5 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import { deleteMessage, sendMessage } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
@@ -16,14 +16,13 @@ export default class KuzcoCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
-    const poison = this.getPoison(commandArgs);
+    const poison = this.getPoison(invocation.commandArgs);
     const reply = this.createReply(poison);
 
-    await deleteMessage(phil.bot, message.channelId, message.id);
-    await sendMessage(phil.bot, message.channelId, reply);
+    await deleteMessage(phil.bot, invocation.channelId, invocation.id);
+    await sendMessage(phil.bot, invocation.channelId, reply);
   }
 
   private getPoison(commandArgs: ReadonlyArray<string>): string[] {

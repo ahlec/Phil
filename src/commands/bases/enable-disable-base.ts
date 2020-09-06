@@ -1,7 +1,7 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import AllFeatures from '@phil/features/all-features';
 import Feature from '@phil/features/feature';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import { sendSuccessMessage } from '@phil/utils';
@@ -34,39 +34,38 @@ export default abstract class EnableDisableCommandBase extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
-    if (commandArgs.length < 1) {
+    if (invocation.commandArgs.length < 1) {
       const errorMessage = this.formatParameterErrorMessage(
         `You must specify one of the features listed below when using this command:`
       );
       throw new Error(errorMessage);
     }
 
-    const feature = this.getFeatureByName(commandArgs[0]);
+    const feature = this.getFeatureByName(invocation.commandArgs[0]);
     if (!feature) {
       const errorMessage = this.formatParameterErrorMessage(
-        `There is no feature with the name \`${commandArgs[0]}\`. The features that I know about are as follows:`
+        `There is no feature with the name \`${invocation.commandArgs[0]}\`. The features that I know about are as follows:`
       );
       throw new Error(errorMessage);
     }
 
     await feature.setIsEnabled(
       phil.db,
-      message.server.id,
+      invocation.server.id,
       this.shouldEnableFeature
     );
 
     await sendSuccessMessage({
       bot: phil.bot,
-      channelId: message.channelId,
-      message: this.getSuccessMessage(message, feature),
+      channelId: invocation.channelId,
+      message: this.getSuccessMessage(invocation, feature),
     });
   }
 
   protected abstract getSuccessMessage(
-    message: PublicMessage,
+    invocation: CommandInvocation,
     feature: Feature
   ): string;
 

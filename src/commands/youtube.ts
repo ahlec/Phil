@@ -1,4 +1,4 @@
-import PublicMessage from '@phil/messages/public';
+import CommandInvocation from '@phil/CommandInvocation';
 import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
 import { searchYouTube } from '@phil/promises/youtube';
@@ -16,10 +16,9 @@ export default class YoutubeCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
-    const query = commandArgs.join(' ').trim();
+    const query = invocation.commandArgs.join(' ').trim();
     if (query.length === 0) {
       throw new Error(
         'You must provide some text to tell me what to search for.'
@@ -32,6 +31,6 @@ export default class YoutubeCommand extends Command {
     }
 
     const link = 'https://youtu.be/' + results[0].id;
-    await sendMessage(phil.bot, message.channelId, link);
+    await sendMessage(phil.bot, invocation.channelId, link);
   }
 }

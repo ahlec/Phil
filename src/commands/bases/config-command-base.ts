@@ -1,6 +1,6 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import EmbedColor from '@phil/embed-color';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import { sendEmbedMessage, EmbedField } from '@phil/promises/discord';
@@ -90,23 +90,22 @@ export abstract class ConfigCommandBase<TModel> extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
-    const mutableArgs: string[] = [...commandArgs];
-    const model = await this.getModel(phil, message, mutableArgs);
+    const mutableArgs: string[] = [...invocation.commandArgs];
+    const model = await this.getModel(phil, invocation, mutableArgs);
     if (!mutableArgs.length) {
-      await this.processNoAction(phil, message, model);
+      await this.processNoAction(phil, invocation, model);
       return;
     }
 
     const action = this.determineAction(mutableArgs);
     if (!action) {
-      await this.sendUnknownActionResponse(phil, message, model);
+      await this.sendUnknownActionResponse(phil, invocation, model);
       return;
     }
 
-    await this.processAction(phil, message, mutableArgs, model, action);
+    await this.processAction(phil, invocation, mutableArgs, model, action);
   }
 
   public getPropertyRulesDisplayList(property: ConfigProperty<TModel>): string {
@@ -121,7 +120,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
 
   protected abstract getModel(
     phil: Phil,
-    message: PublicMessage,
+    invocation: CommandInvocation,
     mutableArgs: string[]
   ): Promise<TModel>;
 
@@ -140,18 +139,18 @@ export abstract class ConfigCommandBase<TModel> extends Command {
 
   private async processNoAction(
     phil: Phil,
-    message: PublicMessage,
+    invocation: CommandInvocation,
     model: TModel
   ): Promise<void> {
     const response = `This is the command for changing ${
       this.configurationFor
     } configuration. ${NOWRAP}Within this command, there are numerous actions you can take to allow you to ${NOWRAP}understand Phil, his configuration, and how you can make him fit your server's ${NOWRAP}needs.${NEWLINE}${NEWLINE}${this.getActionsExplanation(
       phil,
-      message.serverConfig,
+      invocation.serverConfig,
       model
     )}`;
 
-    await sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, invocation.channelId, {
       color: EmbedColor.Info,
       description: response,
       title: this.titleCaseConfigurationFor + ' Configuration',
@@ -170,16 +169,16 @@ export abstract class ConfigCommandBase<TModel> extends Command {
 
   private async sendUnknownActionResponse(
     phil: Phil,
-    message: PublicMessage,
+    invocation: CommandInvocation,
     model: TModel
   ): Promise<void> {
     const response = `You attempted to use an unrecognized action with this command.${NEWLINE}${NEWLINE}${this.getActionsExplanation(
       phil,
-      message.serverConfig,
+      invocation.serverConfig,
       model
     )}`;
 
-    await sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, invocation.channelId, {
       color: EmbedColor.Error,
       description: response,
       title: `${this.titleCaseConfigurationFor} Configuration: Unknown action`,
@@ -188,7 +187,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
 
   private async processAction(
     phil: Phil,
-    message: PublicMessage,
+    invocation: CommandInvocation,
     mutableArgs: string[],
     model: TModel,
     action: ConfigAction<TModel>
@@ -197,12 +196,12 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     if (action.isPropertyRequired) {
       property = this.getSpecifiedProperty(mutableArgs);
       if (!property) {
-        await this.sendUnknownPropertyResponse(phil, message, action, model);
+        await this.sendUnknownPropertyResponse(phil, invocation, action, model);
         return;
       }
     }
 
-    await action.process(this, phil, message, mutableArgs, property, model);
+    await action.process(this, phil, invocation, mutableArgs, property, model);
   }
 
   private getSpecifiedProperty(
@@ -219,17 +218,17 @@ export abstract class ConfigCommandBase<TModel> extends Command {
 
   private async sendUnknownPropertyResponse(
     phil: Phil,
-    message: PublicMessage,
+    invocation: CommandInvocation,
     action: ConfigAction<TModel>,
     model: TModel
   ): Promise<void> {
-    const response = `You attempted to use an unknown property with the **${action.primaryKey}** action.${NEWLINE}${NEWLINE}**PROPERTIES**${NEWLINE}The following are all of the properties that are recognized with the ${message.serverConfig.commandPrefix}${this.name} command:`;
+    const response = `You attempted to use an unknown property with the **${action.primaryKey}** action.${NEWLINE}${NEWLINE}**PROPERTIES**${NEWLINE}The following are all of the properties that are recognized with the ${invocation.serverConfig.commandPrefix}${this.name} command:`;
 
     const fields: EmbedField[] = [];
     for (const property of this.orderedProperties) {
       const exampleUse = this.createActionExampleUse(
         phil,
-        message.serverConfig,
+        invocation.serverConfig,
         action,
         property,
         model
@@ -240,7 +239,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       });
     }
 
-    await sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, invocation.channelId, {
       color: EmbedColor.Error,
       description: response,
       fields,

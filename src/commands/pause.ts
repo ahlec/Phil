@@ -1,7 +1,7 @@
 import Bucket from '@phil/buckets';
+import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
@@ -20,13 +20,12 @@ export default class PauseCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
     const bucket = await Bucket.retrieveFromCommandArgs(
       phil,
-      commandArgs,
-      message.serverConfig,
+      invocation.commandArgs,
+      invocation.serverConfig,
       'bucket',
       true
     );
@@ -38,10 +37,10 @@ export default class PauseCommand extends Command {
       '** (' +
       bucket.handle +
       ') has been paused. You can resume it by using `' +
-      message.serverConfig.commandPrefix +
+      invocation.serverConfig.commandPrefix +
       'unpause ' +
       bucket.handle +
       '`.';
-    await sendMessage(phil.bot, message.channelId, reply);
+    await sendMessage(phil.bot, invocation.channelId, reply);
   }
 }

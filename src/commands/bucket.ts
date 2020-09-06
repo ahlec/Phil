@@ -1,8 +1,8 @@
 import Bucket from '@phil/buckets';
+import CommandInvocation from '@phil/CommandInvocation';
 import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import { sendEmbedMessage, EmbedField } from '@phil/promises/discord';
@@ -77,16 +77,15 @@ export default class BucketCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
     const bucket = await Bucket.retrieveFromCommandArgs(
       phil,
-      commandArgs,
-      message.serverConfig,
+      invocation.commandArgs,
+      invocation.serverConfig,
       'bucket',
       true
     );
-    await sendBucketToChannel(phil, message.channelId, bucket);
+    await sendBucketToChannel(phil, invocation.channelId, bucket);
   }
 }

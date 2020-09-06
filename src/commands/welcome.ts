@@ -1,7 +1,7 @@
 import { User as DiscordIOUser } from 'discord.io';
+import CommandInvocation from '@phil/CommandInvocation';
 import Greeting from '@phil/greeting';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import { sendErrorMessage } from '@phil/utils';
@@ -27,52 +27,49 @@ export default class WelcomeCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
-    if (!message.serverConfig.welcomeMessage) {
+    if (!invocation.serverConfig.welcomeMessage) {
       await sendErrorMessage({
         bot: phil.bot,
-        channelId: message.channelId,
-        message: `Your server is not configured with a welcome message. An admin can ${NOWRAP}change this by using \`${message.serverConfig.commandPrefix}config set ${NOWRAP}welcome-message\`.`,
+        channelId: invocation.channelId,
+        message: `Your server is not configured with a welcome message. An admin can ${NOWRAP}change this by using \`${invocation.serverConfig.commandPrefix}config set ${NOWRAP}welcome-message\`.`,
       });
       return;
     }
 
-    const result = this.getUser(phil, message, commandArgs);
+    const result = this.getUser(phil, invocation);
     if (result.success !== true) {
       await sendErrorMessage({
         bot: phil.bot,
-        channelId: message.channelId,
+        channelId: invocation.channelId,
         message: result.error,
       });
       return;
     }
 
     const { user } = result;
-    const member = message.serverConfig.server.members[user.id];
+    const member = invocation.serverConfig.server.members[user.id];
     const greeting = new Greeting(
       phil.bot,
       phil.db,
-      message.serverConfig,
+      invocation.serverConfig,
       member
     );
-    await greeting.send(message.channelId);
+    await greeting.send(invocation.channelId);
   }
 
-  private getUser(
-    phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
-  ): GetUserResult {
-    if (commandArgs.length < 1) {
+  private getUser(phil: Phil, invocation: CommandInvocation): GetUserResult {
+    if (invocation.commandArgs.length < 1) {
       return {
         success: true,
-        user: message.user,
+        user: invocation.user,
       };
     }
 
-    const parseResult = MemberTypeDefinition.tryParse(commandArgs[0]);
+    const parseResult = MemberTypeDefinition.tryParse(
+      invocation.commandArgs[0]
+    );
     if (parseResult.wasSuccessful !== true) {
       return {
         error: parseResult.errorMessage,
@@ -84,7 +81,7 @@ export default class WelcomeCommand extends Command {
     const validityResult = MemberTypeDefinition.isValid(
       userId,
       phil,
-      message.serverConfig
+      invocation.serverConfig
     );
     if (validityResult.isValid !== true) {
       return {

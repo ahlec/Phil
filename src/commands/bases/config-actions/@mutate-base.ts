@@ -1,5 +1,5 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import EmbedColor from '@phil/embed-color';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import { sendEmbedMessage } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
@@ -34,14 +34,14 @@ export default abstract class MutateConfigActionBase<TModel>
   public async process(
     command: ConfigCommandBase<TModel>,
     phil: Phil,
-    message: PublicMessage,
+    invocation: CommandInvocation,
     mutableArgs: string[],
     property: ConfigProperty<TModel>,
     model: TModel
   ): Promise<void> {
     const newValue = this.getNewValue(
       phil,
-      message.serverConfig,
+      invocation.serverConfig,
       property,
       mutableArgs
     );
@@ -49,7 +49,7 @@ export default abstract class MutateConfigActionBase<TModel>
       await this.sendInvalidInputResponse(
         command,
         phil,
-        message,
+        invocation,
         property,
         newValue.errorMessage
       );
@@ -59,7 +59,7 @@ export default abstract class MutateConfigActionBase<TModel>
     await property.setValue(phil, model, newValue.parsedValue);
     await this.sendMutateSuccessMessage(
       phil,
-      message,
+      invocation,
       property,
       newValue.parsedValue
     );
@@ -75,7 +75,7 @@ export default abstract class MutateConfigActionBase<TModel>
   private async sendInvalidInputResponse(
     command: ConfigCommandBase<TModel>,
     phil: Phil,
-    message: PublicMessage,
+    invocation: CommandInvocation,
     property: ConfigProperty<TModel>,
     errorMessage: string
   ): Promise<void> {
@@ -86,10 +86,10 @@ export default abstract class MutateConfigActionBase<TModel>
     } property must obey the ${NOWRAP}following rules:${command.getPropertyRulesDisplayList(
       property
     )}${NEWLINE}${NEWLINE}To learn more about this property, including viewing example values you can ${NOWRAP}use for your server, use the command \`${
-      message.serverConfig.commandPrefix
+      invocation.serverConfig.commandPrefix
     }${command.name} ${ConfigActionPrimaryKey.Info} ${property.key}\`.`;
 
-    await sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, invocation.channelId, {
       color: EmbedColor.Error,
       description: response,
       title: `${property.displayName}: Invalid Input`,
@@ -98,18 +98,18 @@ export default abstract class MutateConfigActionBase<TModel>
 
   private async sendMutateSuccessMessage(
     phil: Phil,
-    message: PublicMessage,
+    invocation: CommandInvocation,
     property: ConfigProperty<TModel>,
     newValue: string | null
   ): Promise<void> {
-    await sendEmbedMessage(phil.bot, message.channelId, {
+    await sendEmbedMessage(phil.bot, invocation.channelId, {
       color: EmbedColor.Success,
       description: `The value of the **${property.displayName.toLowerCase()}** has been ${
         this.pastTenseVerb
       } successfully to now be \`${property.typeDefinition.toMultilineCodeblockDisplayFormat(
         newValue,
         phil,
-        message.serverConfig
+        invocation.serverConfig
       )}\`.`,
       title: `${property.displayName} Changed Successfully`,
     });

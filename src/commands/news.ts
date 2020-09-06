@@ -1,5 +1,5 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
@@ -18,31 +18,26 @@ export default class NewsCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
-    const echoedMessage = this.getEchoedStatementFromCommandArgs(
-      message,
-      commandArgs
-    );
+    const echoedMessage = this.getEchoedStatementFromInvocation(invocation);
     await sendMessage(
       phil.bot,
-      message.serverConfig.newsChannel.id,
+      invocation.serverConfig.newsChannel.id,
       echoedMessage
     );
   }
 
-  private getEchoedStatementFromCommandArgs(
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+  private getEchoedStatementFromInvocation(
+    invocation: CommandInvocation
   ): string {
-    let echoedMessage = commandArgs.join(' ').trim();
+    let echoedMessage = invocation.commandArgs.join(' ').trim();
     echoedMessage = echoedMessage.replace(/`/g, '');
 
     if (echoedMessage.length === 0) {
       throw new Error(
         'You must provide a message to this function that you would like Phil to repeat in #news. For instance, `' +
-          message.serverConfig.commandPrefix +
+          invocation.serverConfig.commandPrefix +
           'news A New Guardian has been Chosen!`'
       );
     }

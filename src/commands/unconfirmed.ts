@@ -1,7 +1,7 @@
 import Bucket from '@phil/buckets';
+import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
@@ -25,17 +25,16 @@ export default class UnconfirmedCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
     await phil.db.query(
       'DELETE FROM submission_confirmation_queue WHERE channel_id = $1',
-      [message.channelId]
+      [invocation.channelId]
     );
     const bucket = await Bucket.retrieveFromCommandArgs(
       phil,
-      commandArgs,
-      message.serverConfig,
+      invocation.commandArgs,
+      invocation.serverConfig,
       'unconfirmed',
       false
     );
@@ -46,7 +45,7 @@ export default class UnconfirmedCommand extends Command {
       MAX_LIST_LENGTH
     );
     if (submissions.length === 0) {
-      await this.outputNoUnconfirmedSubmissions(phil, message.channelId);
+      await this.outputNoUnconfirmedSubmissions(phil, invocation.channelId);
       return;
     }
 
@@ -54,14 +53,14 @@ export default class UnconfirmedCommand extends Command {
       const submission = submissions[index];
       await phil.db.query(
         'INSERT INTO submission_confirmation_queue VALUES($1, $2, $3)',
-        [message.channelId, submission.id, index]
+        [invocation.channelId, submission.id, index]
       );
     }
 
     await this.outputList(
       phil,
-      message.serverConfig,
-      message.channelId,
+      invocation.serverConfig,
+      invocation.channelId,
       submissions
     );
   }

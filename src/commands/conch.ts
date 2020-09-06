@@ -1,5 +1,5 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
 import { getRandomArrayEntry } from '@phil/utils';
@@ -31,10 +31,10 @@ export default class ConchCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage
+    invocation: CommandInvocation
   ): Promise<void> {
     const conchReply = getRandomArrayEntry(conchReplies);
     const reply = ':shell: The Magic Conch Shell says: **' + conchReply + '**.';
-    await sendMessage(phil.bot, message.channelId, reply);
+    await sendMessage(phil.bot, invocation.channelId, reply);
   }
 }

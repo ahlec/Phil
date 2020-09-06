@@ -1,5 +1,5 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import Feature from '@phil/features/feature';
-import PublicMessage from '@phil/messages/public';
 import { LoggerDefinition } from './@types';
 import EnableDisableCommandBase from './bases/enable-disable-base';
 
@@ -12,9 +12,9 @@ export default class EnableCommand extends EnableDisableCommandBase {
   }
 
   protected getSuccessMessage(
-    message: PublicMessage,
+    invocation: CommandInvocation,
     feature: Feature
   ): string {
-    return `The **${feature.displayName}** feature is no longer disabled. You can disable this feature by using \`${message.serverConfig.commandPrefix}disable\`.`;
+    return `The **${feature.displayName}** feature is no longer disabled. You can disable this feature by using \`${invocation.serverConfig.commandPrefix}disable\`.`;
   }
 }

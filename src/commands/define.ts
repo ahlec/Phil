@@ -1,6 +1,6 @@
+import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import PublicMessage from '@phil/messages/public';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import Requestable, { RequestableCreationDefinition } from '@phil/requestables';
@@ -22,12 +22,11 @@ export default class DefineCommand extends Command {
 
   public async processMessage(
     phil: Phil,
-    message: PublicMessage,
-    commandArgs: ReadonlyArray<string>
+    invocation: CommandInvocation
   ): Promise<void> {
     const definition = this.getDefinitionData(
-      commandArgs,
-      message.serverConfig
+      invocation.commandArgs,
+      invocation.serverConfig
     );
     if (!Requestable.checkIsValidRequestableName(definition.name)) {
       throw new Error(
@@ -37,7 +36,7 @@ export default class DefineCommand extends Command {
 
     const existing = await Requestable.getFromRequestString(
       phil.db,
-      message.server,
+      invocation.server,
       definition.name
     );
     if (existing) {
@@ -46,18 +45,18 @@ export default class DefineCommand extends Command {
       );
     }
 
-    await Requestable.createRequestable(phil.db, message.server, definition);
+    await Requestable.createRequestable(phil.db, invocation.server, definition);
     const reply =
       '`' +
       definition.name +
       '` has been set up for use with `' +
-      message.serverConfig.commandPrefix +
+      invocation.serverConfig.commandPrefix +
       'request` to grant the ' +
       definition.role.name +
       ' role.';
     await sendSuccessMessage({
       bot: phil.bot,
-      channelId: message.channelId,
+      channelId: invocation.channelId,
       message: reply,
     });
   }
