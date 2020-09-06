@@ -13,6 +13,7 @@ import {
 } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from '@phil/commands/@types';
+import Database from '@phil/database';
 
 interface MemberUniqueRoleCommandBaseDetails {
   aliases?: ReadonlyArray<string>;
@@ -36,23 +37,28 @@ abstract class MemberUniqueRoleCommandBase<TData> extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     const data = this.getDataFromCommandArgs(
       invocation.serverConfig,
       invocation.commandArgs
     );
-    const newRole = await this.getRoleFromData(phil, invocation.server, data);
+    const newRole = await this.getRoleFromData(
+      legacyPhil,
+      invocation.server,
+      data
+    );
 
     await this.removeAllRolesInPoolFromUser(
-      phil,
+      legacyPhil,
       invocation.server,
       invocation.userId
     );
     await giveRoleToUser(
-      phil.bot,
+      legacyPhil.bot,
       invocation.server.id,
       invocation.userId,
       newRole.id
@@ -105,12 +111,12 @@ abstract class MemberUniqueRoleCommandBase<TData> extends Command {
   }
 
   private async removeAllRolesInPoolFromUser(
-    phil: Phil,
+    legacyPhil: Phil,
     server: DiscordIOServer,
     userId: string
   ): Promise<void> {
     const memberRoles = await getMemberRolesInServer(
-      phil.bot,
+      legacyPhil.bot,
       server.id,
       userId
     );
@@ -120,7 +126,7 @@ abstract class MemberUniqueRoleCommandBase<TData> extends Command {
         continue;
       }
 
-      await takeRoleFromUser(phil.bot, server.id, userId, roleId);
+      await takeRoleFromUser(legacyPhil.bot, server.id, userId, roleId);
     }
   }
 

@@ -1,4 +1,4 @@
-import Phil from '@phil/phil';
+import Database from '@phil/database';
 import ServerConfig from '@phil/server-config';
 import { LoggerDefinition } from './@types';
 import ConfirmRejectCommandBase from './bases/confirm-reject-base';
@@ -18,12 +18,12 @@ class RejectCommand extends ConfirmRejectCommandBase {
   }
 
   protected async performActionOnSubmission(
-    phil: Phil,
+    database: Database,
     serverConfig: ServerConfig,
     submissionId: number
   ): Promise<boolean> {
     try {
-      await phil.db.execute(
+      await database.execute(
         `DELETE FROM
           submission
         WHERE

@@ -1,7 +1,7 @@
 import CommandInvocation from '@phil/CommandInvocation';
+import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import Phil from '@phil/phil';
 import UserTimezone from '@phil/timezones/user-timezone';
 import Command, { LoggerDefinition } from './@types';
 
@@ -16,9 +16,9 @@ class TimediffCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database
   ): Promise<void> {
     if (invocation.mentions.length !== 1) {
       throw new Error(
@@ -38,7 +38,7 @@ class TimediffCommand extends Command {
     }
 
     const ownTimezone = await UserTimezone.getForUser(
-      phil.db,
+      database,
       invocation.userId
     );
     if (!ownTimezone || !ownTimezone.hasProvided) {
@@ -50,7 +50,7 @@ class TimediffCommand extends Command {
     }
 
     const theirTimezone = await UserTimezone.getForUser(
-      phil.db,
+      database,
       mention.userId
     );
     if (!theirTimezone || !theirTimezone.hasProvided) {

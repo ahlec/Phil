@@ -1,6 +1,7 @@
 import { Member as DiscordIOMember } from 'discord.io';
 import CommandInvocation from '@phil/CommandInvocation';
 import CommandArgs from '@phil/CommandArgs';
+import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
@@ -23,18 +24,19 @@ class BlacklistCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     const commandArgs = new CommandArgs(invocation.commandArgs);
     if (commandArgs.isEmpty) {
-      return this.processNoCommandArgs(phil, invocation);
+      return this.processNoCommandArgs(invocation, database);
     }
 
     const requestString = commandArgs.readString('requestString');
     const requestable = await Requestable.getFromRequestString(
-      phil.db,
+      database,
       invocation.server,
       requestString
     );
@@ -46,22 +48,23 @@ class BlacklistCommand extends Command {
 
     const member = commandArgs.readMember(
       'targetUser',
-      phil.bot,
+      legacyPhil.bot,
       invocation.server,
       true
     );
     if (!member) {
       return this.replyWithBlacklist(
-        phil,
         invocation,
+        legacyPhil,
         requestable,
         requestString
       );
     }
 
     await this.toggleMember(
-      phil,
+      legacyPhil,
       invocation,
+      database,
       requestable,
       requestString,
       member
@@ -69,11 +72,11 @@ class BlacklistCommand extends Command {
   }
 
   private async processNoCommandArgs(
-    phil: Phil,
-    invocation: CommandInvocation
+    invocation: CommandInvocation,
+    database: Database
   ): Promise<void> {
     const requestables = await Requestable.getAllRequestables(
-      phil.db,
+      database,
       invocation.server
     );
     if (requestables.length === 0) {
@@ -132,14 +135,14 @@ class BlacklistCommand extends Command {
   }
 
   private async replyWithBlacklist(
-    phil: Phil,
     invocation: CommandInvocation,
+    legacyPhil: Phil,
     requestable: Requestable,
     requestStringUsed: string
   ): Promise<void> {
     const blacklistedUsers = Array.from(requestable.blacklistedUserIds).map(
       (userId: string) => {
-        const user = phil.bot.users[userId];
+        const user = legacyPhil.bot.users[userId];
         if (!user) {
           return `User ${userId} (no longer known by Phil)`;
         }
@@ -186,13 +189,14 @@ class BlacklistCommand extends Command {
   }
 
   private async toggleMember(
-    phil: Phil,
+    legacyPhil: Phil,
     invocation: CommandInvocation,
+    database: Database,
     requestable: Requestable,
     requestStringUsed: string,
     member: DiscordIOMember
   ): Promise<void> {
-    const result = await requestable.toggleUserBlacklist(member.id, phil.db);
+    const result = await requestable.toggleUserBlacklist(member.id, database);
     if (!result.success) {
       this.error(`requestable: ${requestable.role.id} - ${requestStringUsed}`);
       this.error(`server: ${invocation.server.id}`);
@@ -214,7 +218,7 @@ class BlacklistCommand extends Command {
     if (member.nick) {
       displayName = member.nick;
     } else {
-      const user = phil.bot.users[member.id];
+      const user = legacyPhil.bot.users[member.id];
       displayName = `${user.username}#${user.discriminator}`;
     }
 

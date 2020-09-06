@@ -1,6 +1,5 @@
 import CommandInvocation from '@phil/CommandInvocation';
 import { HelpGroup } from '@phil/help-groups';
-import Phil from '@phil/phil';
 import { getRandomArrayEntry } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
@@ -25,10 +24,7 @@ class ApologiseCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
-  ): Promise<void> {
+  public async invoke(invocation: CommandInvocation): Promise<void> {
     const apology = getRandomArrayEntry(apologies);
     await invocation.respond({
       text: apology,

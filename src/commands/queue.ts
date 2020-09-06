@@ -1,5 +1,6 @@
 import Bucket from '@phil/buckets';
 import CommandInvocation from '@phil/CommandInvocation';
+import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
@@ -21,26 +22,27 @@ class QueueCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     const bucket = await Bucket.retrieveFromCommandArgs(
-      phil,
+      legacyPhil,
       invocation.commandArgs,
       invocation.serverConfig,
       'queue',
       false
     );
     const queue = await PromptQueue.getPromptQueue(
-      phil.bot,
-      phil.db,
+      legacyPhil.bot,
+      database,
       bucket,
       1,
       MAX_QUEUE_DISPLAY_LENGTH
     );
 
-    await queue.postToChannel(phil.bot, phil.db, invocation);
+    await queue.postToChannel(legacyPhil.bot, database, invocation);
   }
 }
 

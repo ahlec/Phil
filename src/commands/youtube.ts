@@ -1,5 +1,4 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import Phil from '@phil/phil';
 import { searchYouTube } from '@phil/promises/youtube';
 import Command, { LoggerDefinition } from './@types';
 
@@ -13,10 +12,7 @@ class YoutubeCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
-  ): Promise<void> {
+  public async invoke(invocation: CommandInvocation): Promise<void> {
     const query = invocation.commandArgs.join(' ').trim();
     if (query.length === 0) {
       throw new Error(

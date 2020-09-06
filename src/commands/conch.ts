@@ -1,6 +1,5 @@
 import CommandInvocation from '@phil/CommandInvocation';
 import { HelpGroup } from '@phil/help-groups';
-import Phil from '@phil/phil';
 import { getRandomArrayEntry } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
@@ -28,10 +27,7 @@ class ConchCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
-  ): Promise<void> {
+  public async invoke(invocation: CommandInvocation): Promise<void> {
     const conchReply = getRandomArrayEntry(conchReplies);
     const reply = ':shell: The Magic Conch Shell says: **' + conchReply + '**.';
     await invocation.respond({

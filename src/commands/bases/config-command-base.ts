@@ -11,6 +11,7 @@ import {
   ConfigAction,
   ConfigActionParameterType,
 } from './config-actions/@action';
+import Database from '@phil/database';
 
 export interface ConfigProperty<TModel> {
   readonly defaultValue: string | null;
@@ -87,24 +88,31 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     );
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     const mutableArgs: string[] = [...invocation.commandArgs];
-    const model = await this.getModel(phil, invocation, mutableArgs);
+    const model = await this.getModel(invocation);
     if (!mutableArgs.length) {
-      await this.processNoAction(phil, invocation, model);
+      await this.processNoAction(legacyPhil, invocation, model);
       return;
     }
 
     const action = this.determineAction(mutableArgs);
     if (!action) {
-      await this.sendUnknownActionResponse(phil, invocation, model);
+      await this.sendUnknownActionResponse(legacyPhil, invocation, model);
       return;
     }
 
-    await this.processAction(phil, invocation, mutableArgs, model, action);
+    await this.processAction(
+      legacyPhil,
+      invocation,
+      mutableArgs,
+      model,
+      action
+    );
   }
 
   public getPropertyRulesDisplayList(property: ConfigProperty<TModel>): string {
@@ -117,11 +125,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     return response;
   }
 
-  protected abstract getModel(
-    phil: Phil,
-    invocation: CommandInvocation,
-    mutableArgs: string[]
-  ): Promise<TModel>;
+  protected abstract getModel(invocation: CommandInvocation): Promise<TModel>;
 
   private compareConfigProperties(
     a: ConfigProperty<TModel>,
@@ -137,14 +141,14 @@ export abstract class ConfigCommandBase<TModel> extends Command {
   }
 
   private async processNoAction(
-    phil: Phil,
+    legacyPhil: Phil,
     invocation: CommandInvocation,
     model: TModel
   ): Promise<void> {
     const response = `This is the command for changing ${
       this.configurationFor
     } configuration. ${NOWRAP}Within this command, there are numerous actions you can take to allow you to ${NOWRAP}understand Phil, his configuration, and how you can make him fit your server's ${NOWRAP}needs.${NEWLINE}${NEWLINE}${this.getActionsExplanation(
-      phil,
+      legacyPhil,
       invocation.serverConfig,
       model
     )}`;
@@ -255,7 +259,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
   }
 
   private getActionsExplanation(
-    phil: Phil,
+    legacyPhil: Phil,
     serverConfig: ServerConfig,
     model: TModel
   ): string {
@@ -274,7 +278,13 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       explanation += `● [${action.primaryKey}] - ${action.description}${lineEnd}`;
 
       usageExamples.push(
-        this.createActionExampleUse(phil, serverConfig, action, demoProp, model)
+        this.createActionExampleUse(
+          legacyPhil,
+          serverConfig,
+          action,
+          demoProp,
+          model
+        )
       );
 
       if (action.specialUsageNotes) {
@@ -305,7 +315,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
   }
 
   private createActionExampleUse(
-    phil: Phil,
+    legacyPhil: Phil,
     serverConfig: ServerConfig,
     action: ConfigAction<TModel>,
     demoProperty: ConfigProperty<TModel>,
@@ -316,7 +326,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     for (const parameter of action.parameters) {
       example += ' ';
       example += this.getActionParameterExampleValue(
-        phil,
+        legacyPhil,
         serverConfig,
         parameter,
         demoProperty,
@@ -328,7 +338,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
   }
 
   private getActionParameterExampleValue(
-    phil: Phil,
+    legacyPhil: Phil,
     serverConfig: ServerConfig,
     parameterType: ConfigActionParameterType,
     demoProperty: ConfigProperty<TModel>,
@@ -341,7 +351,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
         const randomValue = demoProperty.getRandomExampleValue(model);
         return demoProperty.typeDefinition.toMultilineCodeblockDisplayFormat(
           randomValue,
-          phil,
+          legacyPhil,
           serverConfig
         );
       }

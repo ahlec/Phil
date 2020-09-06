@@ -1,9 +1,9 @@
 import CommandInvocation from '@phil/CommandInvocation';
+import Database from '@phil/database';
 import AllFeatures from '@phil/features/all-features';
 import Feature from '@phil/features/feature';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
-import Phil from '@phil/phil';
 import Command, { LoggerDefinition } from '@phil/commands/@types';
 
 const FEATURES_LIST = Object.values(AllFeatures);
@@ -31,9 +31,9 @@ abstract class EnableDisableCommandBase extends Command {
     this.shouldEnableFeature = details.shouldEnableFeature;
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database
   ): Promise<void> {
     if (invocation.commandArgs.length < 1) {
       const errorMessage = this.formatParameterErrorMessage(
@@ -51,7 +51,7 @@ abstract class EnableDisableCommandBase extends Command {
     }
 
     await feature.setIsEnabled(
-      phil.db,
+      database,
       invocation.server.id,
       this.shouldEnableFeature
     );

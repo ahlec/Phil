@@ -1,4 +1,5 @@
 import CommandInvocation from '@phil/CommandInvocation';
+import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import Phil from '@phil/phil';
@@ -86,13 +87,14 @@ class LeaderboardCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     const leaderboard = await Leaderboard.getLeaderboard(
-      phil.bot,
-      phil.db,
+      legacyPhil.bot,
+      database,
       invocation.server
     );
     const reply = createLeaderboardMessage(leaderboard);

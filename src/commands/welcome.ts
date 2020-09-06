@@ -7,6 +7,7 @@ import Phil from '@phil/phil';
 import Command, { LoggerDefinition } from './@types';
 
 import MemberTypeDefinition from '@phil/type-definition/member';
+import Database from '@phil/database';
 
 type GetUserResult =
   | { success: true; user: DiscordIOUser }
@@ -24,9 +25,10 @@ class WelcomeCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     if (!invocation.serverConfig.welcomeMessage) {
       await invocation.respond({
@@ -36,7 +38,7 @@ class WelcomeCommand extends Command {
       return;
     }
 
-    const result = this.getUser(phil, invocation);
+    const result = this.getUser(legacyPhil, invocation);
     if (result.success !== true) {
       await invocation.respond({
         error: result.error,
@@ -48,8 +50,8 @@ class WelcomeCommand extends Command {
     const { user } = result;
     const member = invocation.serverConfig.server.members[user.id];
     const greeting = new Greeting(
-      phil.bot,
-      phil.db,
+      legacyPhil.bot,
+      database,
       invocation.serverConfig,
       member
     );

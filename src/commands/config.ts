@@ -175,7 +175,6 @@ class ConfigCommand extends ConfigCommandBase<ServerConfig> {
   }
 
   protected async getModel(
-    phil: Phil,
     invocation: CommandInvocation
   ): Promise<ServerConfig> {
     return invocation.serverConfig;

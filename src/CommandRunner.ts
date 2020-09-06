@@ -156,7 +156,7 @@ export default class CommandRunner extends Logger {
     invocation: CommandInvocation
   ): Promise<void> {
     try {
-      await command.processMessage(this.phil, invocation);
+      await command.invoke(invocation, this.phil.db, this.phil);
     } catch (err) {
       await this.reportCommandError(err, message.channelId);
     }

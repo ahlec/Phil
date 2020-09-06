@@ -1,10 +1,11 @@
 import { BucketFrequency } from '@phil/buckets';
-import Phil from '@phil/phil';
+import Database from '@phil/database';
 import Prompt from '@phil/prompts/prompt';
 import Submission from '@phil/prompts/submission';
 import ServerConfig from '@phil/server-config';
 import { LoggerDefinition } from './@types';
 import ConfirmRejectCommandBase from './bases/confirm-reject-base';
+import Phil from '@phil/phil';
 
 const successMessageEnd =
   ' confirmed. You may continue using `{commandPrefix}confirm` or start over by using `{commandPrefix}unconfirmed`.';
@@ -21,11 +22,12 @@ class ConfirmCommand extends ConfirmRejectCommandBase {
   }
 
   protected async performActionOnSubmission(
-    phil: Phil,
+    database: Database,
     serverConfig: ServerConfig,
-    submissionId: number
+    submissionId: number,
+    legacyPhil: Phil
   ): Promise<boolean> {
-    const numApproved = await phil.db.execute(
+    const numApproved = await database.execute(
       `UPDATE
         submission
       SET
@@ -40,15 +42,15 @@ class ConfirmCommand extends ConfirmRejectCommandBase {
     }
 
     const submission = await Submission.getFromId(
-      phil.bot,
-      phil.db,
+      legacyPhil.bot,
+      database,
       submissionId
     );
     if (!submission) {
       return false;
     }
 
-    const prompt = await Prompt.queueSubscription(phil.db, submission);
+    const prompt = await Prompt.queueSubscription(database, submission);
     if (!prompt) {
       return false;
     }
@@ -59,7 +61,7 @@ class ConfirmCommand extends ConfirmRejectCommandBase {
       return true;
     }
 
-    await prompt.publish(phil.bot, phil.db, serverConfig);
+    await prompt.publish(legacyPhil.bot, database, serverConfig);
     return true;
   }
 }

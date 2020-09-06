@@ -13,6 +13,7 @@ import Requestable from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
+import Database from '@phil/database';
 
 class RemoveCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
@@ -25,16 +26,17 @@ class RemoveCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     if (invocation.commandArgs.length === 0) {
-      return this.processNoCommandArgs(phil, invocation);
+      return this.processNoCommandArgs(legacyPhil, database, invocation);
     }
 
     const requestable = await Requestable.getFromRequestString(
-      phil.db,
+      database,
       invocation.server,
       invocation.commandArgs[0]
     );
@@ -47,14 +49,14 @@ class RemoveCommand extends Command {
     }
 
     await this.ensureUserHasRole(
-      phil,
+      legacyPhil,
       invocation.server,
       invocation.userId,
       requestable
     );
 
     await takeRoleFromUser(
-      phil.bot,
+      legacyPhil.bot,
       invocation.server.id,
       invocation.userId,
       requestable.role.id
@@ -66,13 +68,13 @@ class RemoveCommand extends Command {
   }
 
   private async ensureUserHasRole(
-    phil: Phil,
+    legacyPhil: Phil,
     server: Discord.Server,
     userId: string,
     requestable: Requestable
   ): Promise<Discord.Role> {
     const memberRoles = await getMemberRolesInServer(
-      phil.bot,
+      legacyPhil.bot,
       server.id,
       userId
     );
@@ -86,11 +88,13 @@ class RemoveCommand extends Command {
   }
 
   private async processNoCommandArgs(
-    phil: Phil,
+    legacyPhil: Phil,
+    database: Database,
     invocation: CommandInvocation
   ): Promise<void> {
     const userRequestables = await this.getAllRequestablesUserHas(
-      phil,
+      legacyPhil,
+      database,
       invocation.serverConfig,
       invocation.userId
     );
@@ -113,12 +117,13 @@ class RemoveCommand extends Command {
   }
 
   private async getAllRequestablesUserHas(
-    phil: Phil,
+    legacyPhil: Phil,
+    database: Database,
     serverConfig: ServerConfig,
     userId: string
   ): Promise<Requestable[]> {
     const requestables = await Requestable.getAllRequestables(
-      phil.db,
+      database,
       serverConfig.server
     );
     if (requestables.length === 0) {
@@ -130,7 +135,7 @@ class RemoveCommand extends Command {
     }
 
     const memberRoles = await getMemberRolesInServer(
-      phil.bot,
+      legacyPhil.bot,
       serverConfig.serverId,
       userId
     );

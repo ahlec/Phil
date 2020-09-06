@@ -6,6 +6,7 @@ import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import { EmbedField } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
+import Database from '@phil/database';
 
 type FieldTransformFunc<T> = (bucket: Bucket, value: T) => string;
 
@@ -76,12 +77,13 @@ class BucketCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     const bucket = await Bucket.retrieveFromCommandArgs(
-      phil,
+      legacyPhil,
       invocation.commandArgs,
       invocation.serverConfig,
       'bucket',

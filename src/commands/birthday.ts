@@ -2,7 +2,6 @@ import * as chronoNode from 'chrono-node';
 import * as moment from 'moment';
 import CommandInvocation from '@phil/CommandInvocation';
 import Database from '@phil/database';
-import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from './@types';
 
@@ -15,9 +14,9 @@ class BirthdayCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database
   ): Promise<void> {
     const birthday = this.getInputFromCommandArgs(
       invocation.serverConfig,
@@ -25,7 +24,7 @@ class BirthdayCommand extends Command {
     );
 
     await this.setBirthdayInDatabase(
-      phil.db,
+      database,
       invocation.user.username,
       invocation.userId,
       birthday

@@ -4,6 +4,7 @@ import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
+import Database from '@phil/database';
 
 class NewsCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
@@ -16,13 +17,14 @@ class NewsCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     const echoedMessage = this.getEchoedStatementFromInvocation(invocation);
     await sendMessage(
-      phil.bot,
+      legacyPhil.bot,
       invocation.serverConfig.newsChannel.id,
       echoedMessage
     );

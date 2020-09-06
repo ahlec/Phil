@@ -1,8 +1,8 @@
 import CommandInvocation from '@phil/CommandInvocation';
+import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
-import Phil from '@phil/phil';
 import Requestable, { RequestableCreationDefinition } from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from './@types';
@@ -19,9 +19,9 @@ class DefineCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database
   ): Promise<void> {
     const definition = this.getDefinitionData(
       invocation.commandArgs,
@@ -34,7 +34,7 @@ class DefineCommand extends Command {
     }
 
     const existing = await Requestable.getFromRequestString(
-      phil.db,
+      database,
       invocation.server,
       definition.name
     );
@@ -44,7 +44,11 @@ class DefineCommand extends Command {
       );
     }
 
-    await Requestable.createRequestable(phil.db, invocation.server, definition);
+    await Requestable.createRequestable(
+      database,
+      invocation.server,
+      definition
+    );
     const reply =
       '`' +
       definition.name +

@@ -1,9 +1,9 @@
 import * as chronoNode from 'chrono-node';
 import * as moment from 'moment-timezone';
 import CommandInvocation from '@phil/CommandInvocation';
+import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import Phil from '@phil/phil';
 import UserTimezone from '@phil/timezones/user-timezone';
 import Command, { LoggerDefinition } from './@types';
 
@@ -22,9 +22,9 @@ class UtcCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database
   ): Promise<void> {
     const inputTime = this.getTimeFromCommandArgs(invocation.commandArgs);
     if (!inputTime) {
@@ -37,7 +37,7 @@ class UtcCommand extends Command {
       );
     }
 
-    const timezone = await UserTimezone.getForUser(phil.db, invocation.userId);
+    const timezone = await UserTimezone.getForUser(database, invocation.userId);
     if (!timezone || !timezone.hasProvided) {
       throw new Error(
         'In order to use this command, you must first provide your timezone to me so I know how to convert your local time. You can use `' +

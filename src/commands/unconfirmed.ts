@@ -6,6 +6,7 @@ import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import Submission from '@phil/prompts/submission';
 import Command, { LoggerDefinition } from './@types';
+import Database from '@phil/database';
 
 const MAX_LIST_LENGTH = 10;
 
@@ -21,16 +22,17 @@ class UnconfirmedCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
-    await phil.db.query(
+    await database.query(
       'DELETE FROM submission_confirmation_queue WHERE channel_id = $1',
       [invocation.channelId]
     );
     const bucket = await Bucket.retrieveFromCommandArgs(
-      phil,
+      legacyPhil,
       invocation.commandArgs,
       invocation.serverConfig,
       'unconfirmed',
@@ -38,7 +40,7 @@ class UnconfirmedCommand extends Command {
     );
 
     const submissions = await Submission.getUnconfirmed(
-      phil.db,
+      database,
       bucket,
       MAX_LIST_LENGTH
     );
@@ -49,7 +51,7 @@ class UnconfirmedCommand extends Command {
 
     for (let index = 0; index < submissions.length; ++index) {
       const submission = submissions[index];
-      await phil.db.query(
+      await database.query(
         'INSERT INTO submission_confirmation_queue VALUES($1, $2, $3)',
         [invocation.channelId, submission.id, index]
       );

@@ -1,5 +1,6 @@
 import Bucket from '@phil/buckets';
 import CommandInvocation from '@phil/CommandInvocation';
+import Database from '@phil/database';
 import { endOngoingDirectMessageProcesses } from '@phil/DirectMessageUtils';
 import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
@@ -42,12 +43,13 @@ class SuggestCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     const bucket = await Bucket.retrieveFromCommandArgs(
-      phil,
+      legacyPhil,
       invocation.commandArgs,
       invocation.serverConfig,
       this.name,
@@ -55,7 +57,7 @@ class SuggestCommand extends Command {
     );
     if (
       bucket.requiredRoleId &&
-      !(await bucket.canUserSubmitTo(phil.bot, invocation.userId))
+      !(await bucket.canUserSubmitTo(legacyPhil.bot, invocation.userId))
     ) {
       const role = invocation.server.roles[bucket.requiredRoleId];
       throw new Error(
@@ -66,10 +68,10 @@ class SuggestCommand extends Command {
       );
     }
 
-    await endOngoingDirectMessageProcesses(phil, invocation.userId);
+    await endOngoingDirectMessageProcesses(legacyPhil, invocation.userId);
 
     const session = await SubmissionSession.startNewSession(
-      phil,
+      legacyPhil,
       invocation.userId,
       bucket
     );
@@ -78,7 +80,7 @@ class SuggestCommand extends Command {
     }
 
     await this.sendDirectMessage(
-      phil,
+      legacyPhil,
       invocation.userId,
       invocation.serverConfig,
       session
@@ -86,26 +88,26 @@ class SuggestCommand extends Command {
   }
 
   private async sendDirectMessage(
-    phil: Phil,
+    legacyPhil: Phil,
     userId: string,
     serverConfig: ServerConfig,
     session: SubmissionSession
   ): Promise<void> {
-    const messageId = await sendEmbedMessage(phil.bot, userId, {
+    const messageId = await sendEmbedMessage(legacyPhil.bot, userId, {
       color: EmbedColor.Info,
-      description: getBeginMessage(phil, serverConfig, session),
+      description: getBeginMessage(legacyPhil, serverConfig, session),
       title: ':pencil: Begin Sending Suggestions :incoming_envelope:',
     });
 
     const reactableFactory = new SuggestSessionReactableFactory(
-      phil.bot,
-      phil.db,
+      legacyPhil.bot,
+      legacyPhil.db,
       {
         canMakeAnonymous: true,
         channelId: userId,
         messageId,
         timeLimit: session.remainingTime.asMinutes(),
-        user: phil.bot.users[userId],
+        user: legacyPhil.bot.users[userId],
       }
     );
     await reactableFactory.create();

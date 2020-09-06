@@ -3,10 +3,10 @@ import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
-import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 import { isNumeric } from '@phil/utils';
 import Command, { LoggerDefinition } from '@phil/commands/@types';
+import Phil from '@phil/phil';
 
 interface ConfirmRejectResults {
   numSuccessful: number;
@@ -50,9 +50,10 @@ abstract class ConfirmRejectCommandBase extends Command {
     this.multipleItemsConfirmedMessage = details.multipleItemsConfirmedMessage;
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     const numbers = this.getNumbersFromCommandArgs(invocation.commandArgs);
     const results: ConfirmRejectResults = {
@@ -63,7 +64,8 @@ abstract class ConfirmRejectCommandBase extends Command {
     for (let confirmNumber of numbers) {
       confirmNumber = confirmNumber - 1; // Public facing, it's 1-based, but in the database it's 0-based
       const result = await this.performAction(
-        phil,
+        legacyPhil,
+        database,
         invocation.serverConfig,
         invocation.channelId,
         confirmNumber
@@ -76,13 +78,14 @@ abstract class ConfirmRejectCommandBase extends Command {
       }
     }
 
-    await this.sendCompletionMessage(phil, invocation, results);
+    await this.sendCompletionMessage(invocation, results);
   }
 
   protected abstract performActionOnSubmission(
-    phil: Phil,
+    database: Database,
     serverConfig: ServerConfig,
-    submissionId: number
+    submissionId: number,
+    legacyPhil: Phil
   ): Promise<boolean>;
 
   private getNumbersFromCommandArgs(
@@ -140,13 +143,14 @@ abstract class ConfirmRejectCommandBase extends Command {
   }
 
   private async performAction(
-    phil: Phil,
+    legacyPhil: Phil,
+    database: Database,
     serverConfig: ServerConfig,
     channelId: string,
     confirmNumber: number
   ): Promise<PerformResult> {
     try {
-      const results = await phil.db.query<{ submission_id: string }>(
+      const results = await database.query<{ submission_id: string }>(
         `SELECT
           submission_id
         FROM
@@ -162,16 +166,17 @@ abstract class ConfirmRejectCommandBase extends Command {
 
       const submissionId = results.rows[0].submission_id;
       const actionResult = this.performActionOnSubmission(
-        phil,
+        database,
         serverConfig,
-        parseInt(submissionId, 10)
+        parseInt(submissionId, 10),
+        legacyPhil
       );
       if (!actionResult) {
         return PerformResult.Error;
       }
 
       await this.removeNumberFromConfirmationQueue(
-        phil.db,
+        database,
         channelId,
         confirmNumber
       );
@@ -202,7 +207,6 @@ abstract class ConfirmRejectCommandBase extends Command {
   }
 
   private async sendCompletionMessage(
-    phil: Phil,
     invocation: CommandInvocation,
     results: ConfirmRejectResults
   ): Promise<void> {

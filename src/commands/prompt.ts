@@ -1,5 +1,6 @@
 import Bucket from '@phil/buckets';
 import CommandInvocation from '@phil/CommandInvocation';
+import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import Phil from '@phil/phil';
@@ -16,20 +17,25 @@ class PromptCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     const bucket = await Bucket.getFromChannelId(
-      phil.bot,
-      phil.db,
+      legacyPhil.bot,
+      database,
       invocation.channelId
     );
     if (!bucket) {
       throw new Error('This channel is not configured to work with prompts.');
     }
 
-    const prompt = await Prompt.getCurrentPrompt(phil.bot, phil.db, bucket);
+    const prompt = await Prompt.getCurrentPrompt(
+      legacyPhil.bot,
+      database,
+      bucket
+    );
     if (!prompt) {
       throw new Error(
         "There's no prompt right now. That probably means that I'm out of them! Why don't you suggest more by sending me `" +
@@ -38,7 +44,7 @@ class PromptCommand extends Command {
       );
     }
 
-    await prompt.sendToChannel(phil.bot, invocation.serverConfig);
+    await prompt.sendToChannel(legacyPhil.bot, invocation.serverConfig);
   }
 }
 

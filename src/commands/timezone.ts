@@ -4,6 +4,7 @@ import { HelpGroup } from '@phil/help-groups';
 import Phil from '@phil/phil';
 import { startQuestionnaire } from '@phil/timezones/questionnaire';
 import Command, { LoggerDefinition } from './@types';
+import Database from '@phil/database';
 
 class TimezoneCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
@@ -17,11 +18,12 @@ class TimezoneCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
-    await startQuestionnaire(phil, invocation.userId, true);
+    await startQuestionnaire(legacyPhil, invocation.userId, true);
   }
 }
 

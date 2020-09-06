@@ -1,4 +1,5 @@
 import CommandInvocation from '@phil/CommandInvocation';
+import Database from '@phil/database';
 import Feature from '@phil/features/feature';
 import { HelpGroup } from '@phil/help-groups';
 import Logger from '@phil/Logger';
@@ -42,9 +43,10 @@ abstract class Command extends Logger {
     }
   }
 
-  public abstract processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public abstract invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhilReference: Phil
   ): Promise<void>;
 }
 

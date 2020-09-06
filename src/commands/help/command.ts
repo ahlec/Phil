@@ -1,8 +1,8 @@
 import CommandInvocation from '@phil/CommandInvocation';
+import Database from '@phil/database';
 import { getServerFeaturesStatus } from '@phil/features/feature-utils';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
-import Phil from '@phil/phil';
 import Command, {
   CommandLookup,
   LoggerDefinition,
@@ -90,15 +90,15 @@ class HelpCommand extends Command {
     this.helpGroups = groupCommands(allHelpInfo);
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database
   ): Promise<void> {
     const isAdminChannel = invocation.serverConfig.isAdminChannel(
       invocation.channelId
     );
     const featuresEnabledLookup = await getServerFeaturesStatus(
-      phil.db,
+      database,
       invocation.server.id
     );
     const builder = new MessageBuilder();

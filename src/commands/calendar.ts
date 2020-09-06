@@ -2,6 +2,7 @@ import * as chronoNode from 'chrono-node';
 import { Server as DiscordIOServer } from 'discord.io';
 import CommandInvocation from '@phil/CommandInvocation';
 import CalendarMonth from '@phil/calendar/calendar-month';
+import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import MessageBuilder from '@phil/message-builder';
 import Phil from '@phil/phil';
@@ -18,17 +19,18 @@ class CalendarCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     const month = this.determineMonth(
       invocation.serverConfig,
       invocation.commandArgs
     );
     const calendar = await CalendarMonth.getForMonth(
-      phil.bot,
-      phil.db,
+      legacyPhil.bot,
+      database,
       invocation.server,
       month
     );

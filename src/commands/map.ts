@@ -1,6 +1,5 @@
 import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
-import Phil from '@phil/phil';
 import Command, { LoggerDefinition } from './@types';
 
 class MapCommand extends Command {
@@ -13,10 +12,7 @@ class MapCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
-  ): Promise<void> {
+  public async invoke(invocation: CommandInvocation): Promise<void> {
     if (!invocation.serverConfig.fandomMapLink) {
       await invocation.respond({
         error:

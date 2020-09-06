@@ -1,4 +1,5 @@
 import CommandInvocation from '@phil/CommandInvocation';
+import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
@@ -21,16 +22,17 @@ class RequestCommand extends Command {
     });
   }
 
-  public async processMessage(
-    phil: Phil,
-    invocation: CommandInvocation
+  public async invoke(
+    invocation: CommandInvocation,
+    database: Database,
+    legacyPhil: Phil
   ): Promise<void> {
     if (invocation.commandArgs.length === 0) {
-      return this.processNoCommandArgs(phil, invocation);
+      return this.processNoCommandArgs(invocation, database);
     }
 
     const requestable = await Requestable.getFromRequestString(
-      phil.db,
+      database,
       invocation.server,
       invocation.commandArgs[0]
     );
@@ -43,14 +45,14 @@ class RequestCommand extends Command {
     }
 
     await this.ensureUserCanRequestRole(
-      phil,
+      legacyPhil,
       invocation.serverConfig,
       invocation.userId,
       requestable
     );
 
     await giveRoleToUser(
-      phil.bot,
+      legacyPhil.bot,
       invocation.server.id,
       invocation.userId,
       requestable.role.id
@@ -62,7 +64,7 @@ class RequestCommand extends Command {
   }
 
   private async ensureUserCanRequestRole(
-    phil: Phil,
+    legacyPhil: Phil,
     serverConfig: ServerConfig,
     userId: string,
     requestable: Requestable
@@ -74,7 +76,7 @@ class RequestCommand extends Command {
     }
 
     const memberRoles = await getMemberRolesInServer(
-      phil.bot,
+      legacyPhil.bot,
       serverConfig.serverId,
       userId
     );
@@ -86,11 +88,11 @@ class RequestCommand extends Command {
   }
 
   private async processNoCommandArgs(
-    phil: Phil,
-    invocation: CommandInvocation
+    invocation: CommandInvocation,
+    database: Database
   ): Promise<void> {
     const requestables = await Requestable.getAllRequestables(
-      phil.db,
+      database,
       invocation.server
     );
     if (requestables.length === 0) {
