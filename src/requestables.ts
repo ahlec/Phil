@@ -1,3 +1,4 @@
+import Member from '@phil/discord/Member';
 import Server from '@phil/discord/Server';
 import Role from '@phil/discord/Role';
 
@@ -48,7 +49,16 @@ function groupBlacklist(
   return groups;
 }
 
-export default class Requestable {
+type CanRequestDetermination =
+  | {
+      allowed: true;
+    }
+  | {
+      allowed: false;
+      reason: 'on-blacklist' | 'already-have-role';
+    };
+
+class Requestable {
   public static checkIsValidRequestableName(name: string): boolean {
     // Only alphanumeric (with dashes) and must be 2+ characters in length
     return /^[A-Za-z0-9-]{2,}$/.test(name);
@@ -178,6 +188,31 @@ export default class Requestable {
     return { message: '', success: true };
   }
 
+  public async determineRequestability(
+    member: Member
+  ): Promise<CanRequestDetermination> {
+    if (this.blacklistedUserIds.has(member.user.id)) {
+      return {
+        allowed: false,
+        reason: 'on-blacklist',
+      };
+    }
+
+    const existingRole = member.roles.find(
+      (role): boolean => role.id === this.role.id
+    );
+    if (existingRole) {
+      return {
+        allowed: false,
+        reason: 'already-have-role',
+      };
+    }
+
+    return {
+      allowed: true,
+    };
+  }
+
   public async removeFromBlacklist(
     userId: string,
     db: Database
@@ -224,3 +259,5 @@ export default class Requestable {
     return this.addToBlacklist(userId, db);
   }
 }
+
+export default Requestable;

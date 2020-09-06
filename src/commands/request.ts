@@ -3,8 +3,6 @@ import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
-import Phil from '@phil/phil';
-import { getMemberRolesInServer } from '@phil/promises/discord';
 import Requestable from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
@@ -24,8 +22,7 @@ class RequestCommand extends Command {
 
   public async invoke(
     invocation: CommandInvocation,
-    database: Database,
-    legacyPhil: Phil
+    database: Database
   ): Promise<void> {
     if (invocation.commandArgs.length === 0) {
       return this.processNoCommandArgs(invocation, database);
@@ -37,11 +34,10 @@ class RequestCommand extends Command {
       invocation.commandArgs[0]
     );
     if (!requestable) {
-      throw new Error(
-        'There is no requestable by the name of `' +
-          invocation.commandArgs[0] +
-          '`.'
-      );
+      return invocation.respond({
+        error: `There is no requestable by the name of \`${invocation.commandArgs[0]}\`.`,
+        type: 'error',
+      });
     }
 
     const member = await invocation.context.server.getMember(invocation.userId);
@@ -49,12 +45,28 @@ class RequestCommand extends Command {
       return;
     }
 
-    await this.ensureUserCanRequestRole(
-      legacyPhil,
-      invocation.context.serverConfig,
-      invocation.userId,
-      requestable
-    );
+    const requestability = await requestable.determineRequestability(member);
+    if (!requestability.allowed) {
+      switch (requestability.reason) {
+        case 'on-blacklist': {
+          return invocation.respond({
+            error: `You are unable to request the "${requestable.role.name}" role at this time.`,
+            type: 'error',
+          });
+        }
+        case 'already-have-role': {
+          return invocation.respond({
+            error: `You already have the "${requestable.role.name}" role. You can use \`${invocation.context.serverConfig.commandPrefix}remove\` to remove the role if you wish.`,
+            type: 'error',
+          });
+        }
+        default: {
+          // This doesn't produce an error if we've handled every value in the union.
+          // If this produces an error, don't remove the line -- handle the missing value!
+          return requestability.reason;
+        }
+      }
+    }
 
     await member.giveRole(requestable.role);
 
@@ -62,30 +74,6 @@ class RequestCommand extends Command {
       text: `You have been granted the "${requestable.role.name}" role!`,
       type: 'success',
     });
-  }
-
-  private async ensureUserCanRequestRole(
-    legacyPhil: Phil,
-    serverConfig: ServerConfig,
-    userId: string,
-    requestable: Requestable
-  ): Promise<void> {
-    if (requestable.blacklistedUserIds.has(userId)) {
-      throw new Error(
-        `You are unable to request the "${requestable.role.name}" role at this time.`
-      );
-    }
-
-    const memberRoles = await getMemberRolesInServer(
-      legacyPhil.bot,
-      serverConfig.serverId,
-      userId
-    );
-    if (memberRoles.indexOf(requestable.role.id) >= 0) {
-      throw new Error(
-        `You already have the "${requestable.role.name}" role. You can use \`${serverConfig.commandPrefix}remove\` to remove the role if you wish.`
-      );
-    }
   }
 
   private async processNoCommandArgs(
