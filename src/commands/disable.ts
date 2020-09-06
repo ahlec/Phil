@@ -3,7 +3,7 @@ import Feature from '@phil/features/feature';
 import { LoggerDefinition } from './@types';
 import EnableDisableCommandBase from './bases/enable-disable-base';
 
-export default class DisableCommand extends EnableDisableCommandBase {
+class DisableCommand extends EnableDisableCommandBase {
   public constructor(parentDefinition: LoggerDefinition) {
     super('disable', parentDefinition, {
       helpDescription: "Disables a feature of Phil's.",
@@ -18,3 +18,5 @@ export default class DisableCommand extends EnableDisableCommandBase {
     return `The **${feature.displayName}** feature is now disabled. You can enable this feature again by using \`${invocation.serverConfig.commandPrefix}enable\`.`;
   }
 }
+
+export default DisableCommand;

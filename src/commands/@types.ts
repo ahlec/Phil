@@ -16,7 +16,7 @@ export type CommandDetails = {
   | { helpGroup?: HelpGroup; helpDescription: string }
 );
 
-export default abstract class Command extends Logger {
+abstract class Command extends Logger {
   public readonly aliases: ReadonlyArray<string>;
   public readonly feature: Feature | null;
   public readonly permissionLevel: PermissionLevel;
@@ -53,3 +53,5 @@ export interface CommandLookup {
 }
 
 export { default as LoggerDefinition } from '@phil/LoggerDefinition';
+
+export default Command;

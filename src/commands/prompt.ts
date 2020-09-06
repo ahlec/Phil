@@ -6,7 +6,7 @@ import Phil from '@phil/phil';
 import Prompt from '@phil/prompts/prompt';
 import Command, { LoggerDefinition } from './@types';
 
-export default class PromptCommand extends Command {
+class PromptCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('prompt', parentDefinition, {
       feature: Features.Prompts,
@@ -41,3 +41,5 @@ export default class PromptCommand extends Command {
     await prompt.sendToChannel(phil.bot, invocation.serverConfig);
   }
 }
+
+export default PromptCommand;

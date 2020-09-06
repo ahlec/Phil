@@ -6,7 +6,7 @@ import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import Command, { LoggerDefinition } from './@types';
 
-export default class PauseCommand extends Command {
+class PauseCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('pause', parentDefinition, {
       feature: Features.Prompts,
@@ -46,3 +46,5 @@ export default class PauseCommand extends Command {
     });
   }
 }
+
+export default PauseCommand;

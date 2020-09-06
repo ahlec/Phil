@@ -32,7 +32,7 @@ function getBeginMessage(
   } reaction below.`;
 }
 
-export default class SuggestCommand extends Command {
+class SuggestCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('suggest', parentDefinition, {
       feature: Features.Prompts,
@@ -111,3 +111,5 @@ export default class SuggestCommand extends Command {
     await reactableFactory.create();
   }
 }
+
+export default SuggestCommand;

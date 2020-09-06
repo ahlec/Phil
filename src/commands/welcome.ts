@@ -14,7 +14,7 @@ type GetUserResult =
 
 const NOWRAP = '';
 
-export default class WelcomeCommand extends Command {
+class WelcomeCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('welcome', parentDefinition, {
       helpDescription: 'Tests the welcome message for the server.',
@@ -101,3 +101,5 @@ export default class WelcomeCommand extends Command {
     };
   }
 }
+
+export default WelcomeCommand;

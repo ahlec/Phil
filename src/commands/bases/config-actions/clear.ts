@@ -4,9 +4,7 @@ import { ConfigProperty } from '@phil/commands/bases/config-command-base';
 import { ConfigActionParameterType, ConfigActionPrimaryKey } from './@action';
 import MutateConfigActionBase, { GetNewValueResult } from './@mutate-base';
 
-export default class ClearConfigAction<TModel> extends MutateConfigActionBase<
-  TModel
-> {
+class ClearConfigAction<TModel> extends MutateConfigActionBase<TModel> {
   public readonly primaryKey = ConfigActionPrimaryKey.Clear;
   public readonly aliases = ['reset'];
   public readonly description = `resets the value of the property to the default for that property`;
@@ -27,3 +25,5 @@ export default class ClearConfigAction<TModel> extends MutateConfigActionBase<
     };
   }
 }
+
+export default ClearConfigAction;

@@ -73,7 +73,7 @@ function groupCommands(
   return helpGroups;
 }
 
-export default class HelpCommand extends Command {
+class HelpCommand extends Command {
   private readonly helpGroups: ReadonlyArray<HelpGroupInfo>;
 
   public constructor(
@@ -119,3 +119,5 @@ export default class HelpCommand extends Command {
     }
   }
 }
+
+export default HelpCommand;

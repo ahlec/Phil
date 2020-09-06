@@ -9,7 +9,7 @@ import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
-export default class RequestCommand extends Command {
+class RequestCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('request', parentDefinition, {
       aliases: ['giveme'],
@@ -148,3 +148,5 @@ export default class RequestCommand extends Command {
     return entry;
   }
 }
+
+export default RequestCommand;

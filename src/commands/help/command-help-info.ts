@@ -5,7 +5,7 @@ import PermissionLevel from '@phil/permission-level';
 import { CODE_VERSION } from '@phil/versions';
 import ICommand from '@phil/commands/@types';
 
-export default class CommandHelpInfo {
+class CommandHelpInfo {
   public static sort(a: CommandHelpInfo, b: CommandHelpInfo): number {
     if (a.name === b.name) {
       return 0;
@@ -91,3 +91,5 @@ export default class CommandHelpInfo {
     return message;
   }
 }
+
+export default CommandHelpInfo;

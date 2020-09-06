@@ -9,7 +9,7 @@ import Command, { LoggerDefinition } from './@types';
 
 const MAX_LIST_LENGTH = 10;
 
-export default class UnconfirmedCommand extends Command {
+class UnconfirmedCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('unconfirmed', parentDefinition, {
       feature: Features.Prompts,
@@ -99,3 +99,5 @@ export default class UnconfirmedCommand extends Command {
     });
   }
 }
+
+export default UnconfirmedCommand;

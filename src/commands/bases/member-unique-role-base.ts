@@ -21,9 +21,7 @@ interface MemberUniqueRoleCommandBaseDetails {
   versionAdded: number;
 }
 
-export default abstract class MemberUniqueRoleCommandBase<
-  TData
-> extends Command {
+abstract class MemberUniqueRoleCommandBase<TData> extends Command {
   public constructor(
     name: string,
     parentDefinition: LoggerDefinition,
@@ -144,3 +142,5 @@ export default abstract class MemberUniqueRoleCommandBase<
     return newRole;
   }
 }
+
+export default MemberUniqueRoleCommandBase;

@@ -18,7 +18,7 @@ const conchReplies = [
   'Try asking again',
 ];
 
-export default class ConchCommand extends Command {
+class ConchCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('conch', parentDefinition, {
       aliases: ['magicconch', 'mc'],
@@ -40,3 +40,5 @@ export default class ConchCommand extends Command {
     });
   }
 }
+
+export default ConchCommand;

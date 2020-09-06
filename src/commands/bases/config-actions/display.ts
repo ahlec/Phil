@@ -12,8 +12,7 @@ import {
   ConfigActionPrimaryKey,
 } from './@action';
 
-export default class DisplayConfigAction<TModel>
-  implements ConfigAction<TModel> {
+class DisplayConfigAction<TModel> implements ConfigAction<TModel> {
   public readonly primaryKey = ConfigActionPrimaryKey.Display;
   public readonly aliases = ['show'];
   public readonly description = `view a list of all of the configuration properties as well as their current values`;
@@ -62,3 +61,5 @@ export default class DisplayConfigAction<TModel>
     };
   }
 }
+
+export default DisplayConfigAction;

@@ -3,7 +3,7 @@ import Features from '@phil/features/all-features';
 import Phil from '@phil/phil';
 import Command, { LoggerDefinition } from './@types';
 
-export default class MapCommand extends Command {
+class MapCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('map', parentDefinition, {
       feature: Features.FandomMap,
@@ -32,3 +32,5 @@ export default class MapCommand extends Command {
     });
   }
 }
+
+export default MapCommand;

@@ -8,7 +8,7 @@ import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from './@types';
 
-export default class CalendarCommand extends Command {
+class CalendarCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('calendar', parentDefinition, {
       feature: Features.Calendar,
@@ -99,3 +99,5 @@ export default class CalendarCommand extends Command {
     return builder;
   }
 }
+
+export default CalendarCommand;

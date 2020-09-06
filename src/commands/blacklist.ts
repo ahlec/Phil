@@ -11,7 +11,7 @@ import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
-export default class BlacklistCommand extends Command {
+class BlacklistCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('blacklist', parentDefinition, {
       feature: Features.Requestables,
@@ -234,3 +234,5 @@ export default class BlacklistCommand extends Command {
     });
   }
 }
+
+export default BlacklistCommand;

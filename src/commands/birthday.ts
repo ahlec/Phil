@@ -6,7 +6,7 @@ import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from './@types';
 
-export default class BirthdayCommand extends Command {
+class BirthdayCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('birthday', parentDefinition, {
       helpDescription:
@@ -98,3 +98,5 @@ export default class BirthdayCommand extends Command {
     throw new Error('Unable to update or insert into the database');
   }
 }
+
+export default BirthdayCommand;

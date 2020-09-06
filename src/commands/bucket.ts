@@ -64,7 +64,7 @@ function sendBucketToChannel(
   });
 }
 
-export default class BucketCommand extends Command {
+class BucketCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('bucket', parentDefinition, {
       feature: Features.Prompts,
@@ -90,3 +90,5 @@ export default class BucketCommand extends Command {
     await sendBucketToChannel(invocation, bucket);
   }
 }
+
+export default BucketCommand;

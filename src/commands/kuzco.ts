@@ -3,7 +3,7 @@ import { HelpGroup } from '@phil/help-groups';
 import Phil from '@phil/phil';
 import Command, { LoggerDefinition } from './@types';
 
-export default class KuzcoCommand extends Command {
+class KuzcoCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('kuzco', parentDefinition, {
       aliases: ['poison'],
@@ -63,3 +63,5 @@ export default class KuzcoCommand extends Command {
     );
   }
 }
+
+export default KuzcoCommand;

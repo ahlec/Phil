@@ -5,7 +5,7 @@ import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
-export default class NewsCommand extends Command {
+class NewsCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('news', parentDefinition, {
       helpDescription:
@@ -45,3 +45,5 @@ export default class NewsCommand extends Command {
     return echoedMessage;
   }
 }
+
+export default NewsCommand;

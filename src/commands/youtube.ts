@@ -3,7 +3,7 @@ import Phil from '@phil/phil';
 import { searchYouTube } from '@phil/promises/youtube';
 import Command, { LoggerDefinition } from './@types';
 
-export default class YoutubeCommand extends Command {
+class YoutubeCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('youtube', parentDefinition, {
       aliases: ['yt'],
@@ -36,3 +36,5 @@ export default class YoutubeCommand extends Command {
     });
   }
 }
+
+export default YoutubeCommand;

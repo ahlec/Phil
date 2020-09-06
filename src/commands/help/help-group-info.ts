@@ -3,7 +3,7 @@ import { getHeaderForGroup, HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
 import CommandHelpInfo from './command-help-info';
 
-export default class HelpGroupInfo {
+class HelpGroupInfo {
   public static sort(a: HelpGroupInfo, b: HelpGroupInfo): number {
     return a.helpGroup - b.helpGroup;
   }
@@ -52,3 +52,5 @@ export default class HelpGroupInfo {
     }
   }
 }
+
+export default HelpGroupInfo;

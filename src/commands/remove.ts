@@ -14,7 +14,7 @@ import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
-export default class RemoveCommand extends Command {
+class RemoveCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('remove', parentDefinition, {
       feature: Features.Requestables,
@@ -181,3 +181,5 @@ export default class RemoveCommand extends Command {
     return entry;
   }
 }
+
+export default RemoveCommand;

@@ -13,7 +13,7 @@ interface EnableDisableCommandBaseDetails {
   shouldEnableFeature: boolean;
 }
 
-export default abstract class EnableDisableCommandBase extends Command {
+abstract class EnableDisableCommandBase extends Command {
   private readonly shouldEnableFeature: boolean;
 
   protected constructor(
@@ -80,3 +80,5 @@ export default abstract class EnableDisableCommandBase extends Command {
     return lines.join('\n');
   }
 }
+
+export default EnableDisableCommandBase;

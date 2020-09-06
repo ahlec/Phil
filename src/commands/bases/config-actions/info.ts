@@ -12,7 +12,7 @@ import {
 
 const NEWLINE = '\n';
 
-export default class InfoConfigAction<TModel> implements ConfigAction<TModel> {
+class InfoConfigAction<TModel> implements ConfigAction<TModel> {
   public readonly primaryKey = ConfigActionPrimaryKey.Info;
   public readonly aliases = ['show'];
   public readonly description = `see detailed information about a configuration property as well its current value`;
@@ -61,3 +61,5 @@ export default class InfoConfigAction<TModel> implements ConfigAction<TModel> {
     });
   }
 }
+
+export default InfoConfigAction;

@@ -75,7 +75,7 @@ function createLeaderboardMessage(leaderboard: Leaderboard): string {
   return leaderboardMessage;
 }
 
-export default class LeaderboardCommand extends Command {
+class LeaderboardCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('leaderboard', parentDefinition, {
       feature: Features.Prompts,
@@ -110,3 +110,5 @@ export default class LeaderboardCommand extends Command {
     });
   }
 }
+
+export default LeaderboardCommand;

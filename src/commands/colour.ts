@@ -28,7 +28,7 @@ const compliments = [
 ];
 
 // TData = valid string hex code (ie #000000)
-export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
+class ColourCommand extends MemberUniqueRoleCommandBase<string> {
   public constructor(parentDefinition: LoggerDefinition) {
     super('colour', parentDefinition, {
       aliases: ['color'],
@@ -95,3 +95,5 @@ export default class ColourCommand extends MemberUniqueRoleCommandBase<string> {
     return 'Your colour has been changed to **' + data + '**. ' + compliment;
   }
 }
+
+export default ColourCommand;

@@ -4,9 +4,7 @@ import { ConfigProperty } from '@phil/commands/bases/config-command-base';
 import { ConfigActionParameterType, ConfigActionPrimaryKey } from './@action';
 import MutateConfigActionBase, { GetNewValueResult } from './@mutate-base';
 
-export default class SetConfigAction<TModel> extends MutateConfigActionBase<
-  TModel
-> {
+class SetConfigAction<TModel> extends MutateConfigActionBase<TModel> {
   public readonly primaryKey = ConfigActionPrimaryKey.Set;
   public readonly aliases = ['show'];
   public readonly description = `sets the value of the property to a valid value of your choosing`;
@@ -52,3 +50,5 @@ export default class SetConfigAction<TModel> extends MutateConfigActionBase<
     return result;
   }
 }
+
+export default SetConfigAction;

@@ -6,7 +6,7 @@ import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import Command, { LoggerDefinition } from './@types';
 
-export default class UnpauseCommand extends Command {
+class UnpauseCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('unpause', parentDefinition, {
       aliases: ['resume'],
@@ -48,3 +48,5 @@ export default class UnpauseCommand extends Command {
     });
   }
 }
+
+export default UnpauseCommand;

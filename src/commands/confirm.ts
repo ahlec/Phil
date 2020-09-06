@@ -9,7 +9,7 @@ import ConfirmRejectCommandBase from './bases/confirm-reject-base';
 const successMessageEnd =
   ' confirmed. You may continue using `{commandPrefix}confirm` or start over by using `{commandPrefix}unconfirmed`.';
 
-export default class ConfirmCommand extends ConfirmRejectCommandBase {
+class ConfirmCommand extends ConfirmRejectCommandBase {
   public constructor(parentDefinition: LoggerDefinition) {
     super('confirm', parentDefinition, {
       multipleItemsConfirmedMessage: `Submissions were ${successMessageEnd}`,
@@ -63,3 +63,5 @@ export default class ConfirmCommand extends ConfirmRejectCommandBase {
     return true;
   }
 }
+
+export default ConfirmCommand;

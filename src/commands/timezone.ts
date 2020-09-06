@@ -5,7 +5,7 @@ import Phil from '@phil/phil';
 import { startQuestionnaire } from '@phil/timezones/questionnaire';
 import Command, { LoggerDefinition } from './@types';
 
-export default class TimezoneCommand extends Command {
+class TimezoneCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('timezone', parentDefinition, {
       aliases: ['timezones', 'tz'],
@@ -24,3 +24,5 @@ export default class TimezoneCommand extends Command {
     await startQuestionnaire(phil, invocation.userId, true);
   }
 }
+
+export default TimezoneCommand;

@@ -7,7 +7,7 @@ import Requestable, { RequestableCreationDefinition } from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from './@types';
 
-export default class DefineCommand extends Command {
+class DefineCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('define', parentDefinition, {
       feature: Features.Requestables,
@@ -96,3 +96,5 @@ export default class DefineCommand extends Command {
     throw new Error('There is no role with the name of `' + roleName + '`.');
   }
 }
+
+export default DefineCommand;

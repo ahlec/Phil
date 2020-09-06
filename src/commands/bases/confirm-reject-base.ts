@@ -27,7 +27,7 @@ interface ConfirmRejectCommandBaseDetails {
   versionAdded: number;
 }
 
-export default abstract class ConfirmRejectCommandBase extends Command {
+abstract class ConfirmRejectCommandBase extends Command {
   private readonly noItemsConfirmedMessage: string;
   private readonly oneItemConfirmedMessage: string;
   private readonly multipleItemsConfirmedMessage: string;
@@ -226,3 +226,5 @@ export default abstract class ConfirmRejectCommandBase extends Command {
     });
   }
 }
+
+export default ConfirmRejectCommandBase;

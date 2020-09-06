@@ -18,8 +18,7 @@ export type GetNewValueResult =
   | { wasSuccessful: false; errorMessage: string }
   | { wasSuccessful: true; parsedValue: string | null };
 
-export default abstract class MutateConfigActionBase<TModel>
-  implements ConfigAction<TModel> {
+abstract class MutateConfigActionBase<TModel> implements ConfigAction<TModel> {
   public abstract readonly primaryKey: ConfigActionPrimaryKey;
   public abstract readonly aliases: ReadonlyArray<string>;
   public abstract readonly description: string;
@@ -119,3 +118,5 @@ export default abstract class MutateConfigActionBase<TModel>
     });
   }
 }
+
+export default MutateConfigActionBase;

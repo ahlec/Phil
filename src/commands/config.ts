@@ -157,7 +157,7 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
 // Command
 // -----------------------------------------------------------------------------------
 
-export default class ConfigCommand extends ConfigCommandBase<ServerConfig> {
+class ConfigCommand extends ConfigCommandBase<ServerConfig> {
   constructor(parentDefinition: LoggerDefinition) {
     super('config', parentDefinition, {
       configurationFor: 'server',
@@ -181,3 +181,5 @@ export default class ConfigCommand extends ConfigCommandBase<ServerConfig> {
     return invocation.serverConfig;
   }
 }
+
+export default ConfigCommand;

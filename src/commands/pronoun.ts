@@ -18,9 +18,7 @@ for (const pronoun of AllPronouns) {
   pronounUsageToPronouns[pronoun.reflexive.toLowerCase()] = pronoun;
 }
 
-export default class PronounCommand extends MemberUniqueRoleCommandBase<
-  Pronoun
-> {
+class PronounCommand extends MemberUniqueRoleCommandBase<Pronoun> {
   public constructor(parentDefinition: LoggerDefinition) {
     super('pronoun', parentDefinition, {
       aliases: ['pronouns'],
@@ -148,3 +146,5 @@ export default class PronounCommand extends MemberUniqueRoleCommandBase<
     return message;
   }
 }
+
+export default PronounCommand;

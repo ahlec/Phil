@@ -5,7 +5,7 @@ import Phil from '@phil/phil';
 import UserTimezone from '@phil/timezones/user-timezone';
 import Command, { LoggerDefinition } from './@types';
 
-export default class TimediffCommand extends Command {
+class TimediffCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('timediff', parentDefinition, {
       feature: Features.TimezoneProcessing,
@@ -97,3 +97,5 @@ export default class TimediffCommand extends Command {
     );
   }
 }
+
+export default TimediffCommand;

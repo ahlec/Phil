@@ -16,7 +16,7 @@ const apologies = [
   'On my Yeti honour and pride, I shall never do this again.',
 ];
 
-export default class ApologiseCommand extends Command {
+class ApologiseCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('apologise', parentDefinition, {
       aliases: ['apologize'],
@@ -36,3 +36,5 @@ export default class ApologiseCommand extends Command {
     });
   }
 }
+
+export default ApologiseCommand;

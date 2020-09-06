@@ -9,7 +9,7 @@ import Command, { LoggerDefinition } from './@types';
 
 const MAX_QUEUE_DISPLAY_LENGTH = 10;
 
-export default class QueueCommand extends Command {
+class QueueCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('queue', parentDefinition, {
       feature: Features.Prompts,
@@ -43,3 +43,5 @@ export default class QueueCommand extends Command {
     await queue.postToChannel(phil.bot, phil.db, invocation);
   }
 }
+
+export default QueueCommand;

@@ -11,7 +11,7 @@ function formatTimeToString(time: moment.Moment): string {
   return time.format('HH:mm (h:mm A)');
 }
 
-export default class UtcCommand extends Command {
+class UtcCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('utc', parentDefinition, {
       aliases: ['gmt'],
@@ -98,3 +98,5 @@ export default class UtcCommand extends Command {
     return reply;
   }
 }
+
+export default UtcCommand;
