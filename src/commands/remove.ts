@@ -7,17 +7,13 @@ import MessageBuilder from '@phil/message-builder';
 import Phil from '@phil/phil';
 import {
   takeRoleFromUser,
-  sendMessageBuilder,
   getMemberRolesInServer,
 } from '@phil/promises/discord';
 import Requestable from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
-import {
-  getRandomArrayEntry,
-  sendSuccessMessage,
-  stitchTogetherArray,
-} from '@phil/utils';
+import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
+
 export default class RemoveCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
     super('remove', parentDefinition, {
@@ -63,11 +59,9 @@ export default class RemoveCommand extends Command {
       invocation.userId,
       requestable.role.id
     );
-    await sendSuccessMessage({
-      bot: phil.bot,
-      channelId: invocation.channelId,
-      message:
-        'I\'ve removed the "' + requestable.role.name + '" role from you.',
+    await invocation.respond({
+      text: 'I\'ve removed the "' + requestable.role.name + '" role from you.',
+      type: 'success',
     });
   }
 
@@ -112,7 +106,10 @@ export default class RemoveCommand extends Command {
       invocation.serverConfig,
       userRequestables
     );
-    await sendMessageBuilder(phil.bot, invocation.channelId, reply);
+    await invocation.respond({
+      text: reply,
+      type: 'plain',
+    });
   }
 
   private async getAllRequestablesUserHas(

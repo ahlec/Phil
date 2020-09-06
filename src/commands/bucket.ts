@@ -1,11 +1,10 @@
 import Bucket from '@phil/buckets';
 import CommandInvocation from '@phil/CommandInvocation';
-import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
-import { sendEmbedMessage, EmbedField } from '@phil/promises/discord';
+import { EmbedField } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 type FieldTransformFunc<T> = (bucket: Bucket, value: T) => string;
@@ -39,12 +38,12 @@ function formatChannel(bucket: Bucket, value: string): string {
 }
 
 function sendBucketToChannel(
-  phil: Phil,
-  channelId: string,
+  invocation: CommandInvocation,
   bucket: Bucket
-): Promise<string> {
-  return sendEmbedMessage(phil.bot, channelId, {
-    color: EmbedColor.Info,
+): Promise<void> {
+  return invocation.respond({
+    color: 'powder-blue',
+    description: null,
     fields: [
       createField(bucket, 'Reference Handle', bucket.handle),
       createField(bucket, 'Display Name', bucket.displayName),
@@ -59,7 +58,9 @@ function sendBucketToChannel(
       createField(bucket, 'Is Paused', bucket.isPaused, formatBoolean),
       createField(bucket, 'Frequency', bucket.frequencyDisplayName),
     ],
+    footer: null,
     title: ':writing_hand: Prompt Bucket: ' + bucket.handle,
+    type: 'embed',
   });
 }
 
@@ -86,6 +87,6 @@ export default class BucketCommand extends Command {
       'bucket',
       true
     );
-    await sendBucketToChannel(phil, invocation.channelId, bucket);
+    await sendBucketToChannel(invocation, bucket);
   }
 }

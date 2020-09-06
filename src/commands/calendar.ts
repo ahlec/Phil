@@ -5,7 +5,6 @@ import CalendarMonth from '@phil/calendar/calendar-month';
 import Features from '@phil/features/all-features';
 import MessageBuilder from '@phil/message-builder';
 import Phil from '@phil/phil';
-import { sendMessageBuilder } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from './@types';
 
@@ -37,7 +36,10 @@ export default class CalendarCommand extends Command {
       invocation.server,
       calendar
     );
-    await sendMessageBuilder(phil.bot, invocation.channelId, builder);
+    await invocation.respond({
+      text: builder,
+      type: 'plain',
+    });
   }
 
   private determineMonth(

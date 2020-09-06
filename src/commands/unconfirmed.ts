@@ -4,9 +4,7 @@ import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 import Submission from '@phil/prompts/submission';
-import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from './@types';
 
 const MAX_LIST_LENGTH = 10;
@@ -45,7 +43,7 @@ export default class UnconfirmedCommand extends Command {
       MAX_LIST_LENGTH
     );
     if (submissions.length === 0) {
-      await this.outputNoUnconfirmedSubmissions(phil, invocation.channelId);
+      await this.outputNoUnconfirmedSubmissions(invocation);
       return;
     }
 
@@ -57,29 +55,21 @@ export default class UnconfirmedCommand extends Command {
       );
     }
 
-    await this.outputList(
-      phil,
-      invocation.serverConfig,
-      invocation.channelId,
-      submissions
-    );
+    await this.outputList(invocation, submissions);
   }
 
   private async outputNoUnconfirmedSubmissions(
-    phil: Phil,
-    channelId: string
+    invocation: CommandInvocation
   ): Promise<void> {
-    await sendMessage(
-      phil.bot,
-      channelId,
-      ':large_blue_diamond: There are no unconfirmed submissions in this bucket right now.'
-    );
+    await invocation.respond({
+      text:
+        ':large_blue_diamond: There are no unconfirmed submissions in this bucket right now.',
+      type: 'plain',
+    });
   }
 
   private async outputList(
-    phil: Phil,
-    serverConfig: ServerConfig,
-    channelId: string,
+    invocation: CommandInvocation,
     submissions: Submission[]
   ): Promise<void> {
     const are = submissions.length === 1 ? 'is' : 'are';
@@ -95,14 +85,17 @@ export default class UnconfirmedCommand extends Command {
 
     message +=
       '\nConfirm submissions with `' +
-      serverConfig.commandPrefix +
+      invocation.serverConfig.commandPrefix +
       'confirm`. You can specify a single submission by using its number (`';
     message +=
-      serverConfig.commandPrefix +
+      invocation.serverConfig.commandPrefix +
       'confirm 3`) or a range of submissions using a hyphen (`' +
-      serverConfig.commandPrefix +
+      invocation.serverConfig.commandPrefix +
       'confirm 2-7`)';
 
-    await sendMessage(phil.bot, channelId, message);
+    await invocation.respond({
+      text: message,
+      type: 'plain',
+    });
   }
 }

@@ -1,7 +1,6 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import EmbedColor from '@phil/embed-color';
 import Phil from '@phil/phil';
-import { sendEmbedMessage, EmbedField } from '@phil/promises/discord';
+import { EmbedField } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
 import {
   ConfigCommandBase,
@@ -37,10 +36,13 @@ export default class DisplayConfigAction<TModel>
       );
     }
 
-    await sendEmbedMessage(phil.bot, invocation.channelId, {
-      color: EmbedColor.Info,
+    await invocation.respond({
+      color: 'powder-blue',
+      description: null,
       fields,
+      footer: null,
       title: command.titleCaseConfigurationFor + ' Configuration: Overview',
+      type: 'embed',
     });
   }
 

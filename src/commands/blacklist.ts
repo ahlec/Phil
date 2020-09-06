@@ -1,13 +1,11 @@
 import { Member as DiscordIOMember } from 'discord.io';
 import CommandInvocation from '@phil/CommandInvocation';
 import CommandArgs from '@phil/CommandArgs';
-import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
-import { sendEmbedMessage, sendMessageBuilder } from '@phil/promises/discord';
 import Requestable from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
@@ -90,7 +88,10 @@ export default class BlacklistCommand extends Command {
       invocation.serverConfig,
       requestables
     );
-    await sendMessageBuilder(phil.bot, invocation.channelId, reply);
+    await invocation.respond({
+      text: reply,
+      type: 'plain',
+    });
   }
 
   private composeAllRequestablesList(
@@ -174,10 +175,13 @@ export default class BlacklistCommand extends Command {
 
     response += `\n\nTo add or remove a user to the blacklist, use \`${invocation.serverConfig.commandPrefix}blacklist ${requestStringUsed} [user name]\` to toggle that user on the blacklist.`;
 
-    await sendEmbedMessage(phil.bot, invocation.channelId, {
-      color: EmbedColor.Info,
+    await invocation.respond({
+      color: 'powder-blue',
       description: response,
+      fields: null,
+      footer: null,
       title: `:name_badge: "${requestable.role.name}" blacklist`,
+      type: 'embed',
     });
   }
 
@@ -194,10 +198,13 @@ export default class BlacklistCommand extends Command {
       this.error(`server: ${invocation.server.id}`);
       this.error(`member: ${member.id}`);
       this.error(result.message);
-      await sendEmbedMessage(phil.bot, invocation.channelId, {
-        color: EmbedColor.Error,
+      await invocation.respond({
+        color: 'red',
         description: result.message,
+        fields: null,
+        footer: null,
         title: `:no_entry: Blacklist error encountered`,
+        type: 'embed',
       });
       return;
     }
@@ -211,8 +218,8 @@ export default class BlacklistCommand extends Command {
       displayName = `${user.username}#${user.discriminator}`;
     }
 
-    await sendEmbedMessage(phil.bot, invocation.channelId, {
-      color: EmbedColor.Info,
+    await invocation.respond({
+      color: 'powder-blue',
       description: `**${displayName}** was ${
         isOnBlacklist ? 'added to' : 'removed from'
       } the blacklist for all requestables that give **${
@@ -220,7 +227,10 @@ export default class BlacklistCommand extends Command {
       }**.\n\nYou can undo this by using \`${
         invocation.serverConfig.commandPrefix
       }blacklist ${requestStringUsed} ${displayName}\` to toggle the member's presence on the list.`,
+      fields: null,
+      footer: null,
       title: `:name_badge: "${requestable.role.name}" blacklist`,
+      type: 'embed',
     });
   }
 }

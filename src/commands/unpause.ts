@@ -4,7 +4,6 @@ import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 export default class UnpauseCommand extends Command {
@@ -43,6 +42,9 @@ export default class UnpauseCommand extends Command {
       'pause ' +
       bucket.handle +
       '`.';
-    await sendMessage(phil.bot, invocation.channelId, reply);
+    await invocation.respond({
+      text: reply,
+      type: 'plain',
+    });
   }
 }

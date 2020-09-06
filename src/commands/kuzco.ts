@@ -1,7 +1,7 @@
 import CommandInvocation from '@phil/CommandInvocation';
 import { HelpGroup } from '@phil/help-groups';
 import Phil from '@phil/phil';
-import { deleteMessage, sendMessage } from '@phil/promises/discord';
+import { deleteMessage } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 export default class KuzcoCommand extends Command {
@@ -22,7 +22,10 @@ export default class KuzcoCommand extends Command {
     const reply = this.createReply(poison);
 
     await deleteMessage(phil.bot, invocation.channelId, invocation.id);
-    await sendMessage(phil.bot, invocation.channelId, reply);
+    await invocation.respond({
+      text: reply,
+      type: 'plain',
+    });
   }
 
   private getPoison(commandArgs: ReadonlyArray<string>): string[] {

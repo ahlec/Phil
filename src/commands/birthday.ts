@@ -4,7 +4,6 @@ import CommandInvocation from '@phil/CommandInvocation';
 import Database from '@phil/database';
 import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
-import { sendSuccessMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class BirthdayCommand extends Command {
@@ -36,10 +35,9 @@ export default class BirthdayCommand extends Command {
       "I've updated your birthday to be " +
       birthday.format('D MMMM') +
       '! Thank you! If I made a mistake, however, feel free to tell me your birthday again!';
-    await sendSuccessMessage({
-      bot: phil.bot,
-      channelId: invocation.channelId,
-      message: reply,
+    await invocation.respond({
+      text: reply,
+      type: 'success',
     });
   }
 

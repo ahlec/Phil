@@ -1,9 +1,7 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import Phil from '@phil/phil';
-import { sendEmbedMessage } from '@phil/promises/discord';
 import Leaderboard from '@phil/prompts/leaderboard';
 import LeaderboardEntry from '@phil/prompts/leaderboard-entry';
 import Command, { LoggerDefinition } from './@types';
@@ -99,16 +97,16 @@ export default class LeaderboardCommand extends Command {
     );
     const reply = createLeaderboardMessage(leaderboard);
 
-    await sendEmbedMessage(phil.bot, invocation.channelId, {
-      color: EmbedColor.Info,
+    await invocation.respond({
+      color: 'powder-blue',
       description: reply,
-      footer: {
-        text:
-          'You can increase your score by submitting prompts! Use ' +
-          invocation.serverConfig.commandPrefix +
-          'suggest in a direct message with me!',
-      },
+      fields: null,
+      footer:
+        'You can increase your score by submitting prompts! Use ' +
+        invocation.serverConfig.commandPrefix +
+        'suggest in a direct message with me!',
       title: 'Hijack Prompt of the Day Leaderboard',
+      type: 'embed',
     });
   }
 }

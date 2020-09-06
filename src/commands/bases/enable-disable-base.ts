@@ -4,7 +4,6 @@ import Feature from '@phil/features/feature';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
-import { sendSuccessMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from '@phil/commands/@types';
 
 const FEATURES_LIST = Object.values(AllFeatures);
@@ -57,10 +56,9 @@ export default abstract class EnableDisableCommandBase extends Command {
       this.shouldEnableFeature
     );
 
-    await sendSuccessMessage({
-      bot: phil.bot,
-      channelId: invocation.channelId,
-      message: this.getSuccessMessage(invocation, feature),
+    await invocation.respond({
+      text: this.getSuccessMessage(invocation, feature),
+      type: 'success',
     });
   }
 

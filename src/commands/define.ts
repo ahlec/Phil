@@ -5,7 +5,6 @@ import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import Requestable, { RequestableCreationDefinition } from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
-import { sendSuccessMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class DefineCommand extends Command {
@@ -54,10 +53,9 @@ export default class DefineCommand extends Command {
       'request` to grant the ' +
       definition.role.name +
       ' role.';
-    await sendSuccessMessage({
-      bot: phil.bot,
-      channelId: invocation.channelId,
-      message: reply,
+    await invocation.respond({
+      text: reply,
+      type: 'success',
     });
   }
 

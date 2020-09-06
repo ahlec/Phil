@@ -1,7 +1,5 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import EmbedColor from '@phil/embed-color';
 import Phil from '@phil/phil';
-import { sendEmbedMessage } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
 import {
   ConfigCommandBase,
@@ -89,10 +87,13 @@ export default abstract class MutateConfigActionBase<TModel>
       invocation.serverConfig.commandPrefix
     }${command.name} ${ConfigActionPrimaryKey.Info} ${property.key}\`.`;
 
-    await sendEmbedMessage(phil.bot, invocation.channelId, {
-      color: EmbedColor.Error,
+    await invocation.respond({
+      color: 'red',
       description: response,
+      fields: null,
+      footer: null,
       title: `${property.displayName}: Invalid Input`,
+      type: 'embed',
     });
   }
 
@@ -102,8 +103,8 @@ export default abstract class MutateConfigActionBase<TModel>
     property: ConfigProperty<TModel>,
     newValue: string | null
   ): Promise<void> {
-    await sendEmbedMessage(phil.bot, invocation.channelId, {
-      color: EmbedColor.Success,
+    await invocation.respond({
+      color: 'green',
       description: `The value of the **${property.displayName.toLowerCase()}** has been ${
         this.pastTenseVerb
       } successfully to now be \`${property.typeDefinition.toMultilineCodeblockDisplayFormat(
@@ -111,7 +112,10 @@ export default abstract class MutateConfigActionBase<TModel>
         phil,
         invocation.serverConfig
       )}\`.`,
+      fields: null,
+      footer: null,
       title: `${property.displayName} Changed Successfully`,
+      type: 'embed',
     });
   }
 }

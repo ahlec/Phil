@@ -3,18 +3,10 @@ import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
 import Phil from '@phil/phil';
-import {
-  giveRoleToUser,
-  sendMessageBuilder,
-  getMemberRolesInServer,
-} from '@phil/promises/discord';
+import { giveRoleToUser, getMemberRolesInServer } from '@phil/promises/discord';
 import Requestable from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
-import {
-  sendSuccessMessage,
-  getRandomArrayEntry,
-  stitchTogetherArray,
-} from '@phil/utils';
+import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class RequestCommand extends Command {
@@ -63,10 +55,9 @@ export default class RequestCommand extends Command {
       invocation.userId,
       requestable.role.id
     );
-    await sendSuccessMessage({
-      bot: phil.bot,
-      channelId: invocation.channelId,
-      message: `You have been granted the "${requestable.role.name}" role!`,
+    await invocation.respond({
+      text: `You have been granted the "${requestable.role.name}" role!`,
+      type: 'success',
     });
   }
 
@@ -114,7 +105,10 @@ export default class RequestCommand extends Command {
       invocation.serverConfig,
       requestables
     );
-    await sendMessageBuilder(phil.bot, invocation.channelId, reply);
+    await invocation.respond({
+      text: reply,
+      type: 'plain',
+    });
   }
 
   private composeAllRequestablesList(

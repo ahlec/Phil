@@ -12,7 +12,6 @@ import {
   getMemberRolesInServer,
 } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
-import { sendSuccessMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from '@phil/commands/@types';
 
 interface MemberUniqueRoleCommandBaseDetails {
@@ -61,10 +60,9 @@ export default abstract class MemberUniqueRoleCommandBase<
       newRole.id
     );
 
-    await sendSuccessMessage({
-      bot: phil.bot,
-      channelId: invocation.channelId,
-      message: this.getSuccessMessage(invocation.serverConfig, data),
+    await invocation.respond({
+      text: this.getSuccessMessage(invocation.serverConfig, data),
+      type: 'success',
     });
   }
 

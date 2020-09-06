@@ -36,6 +36,7 @@ export default class CommandRunner extends Logger {
 
   public isCommand(message: PublicMessage): boolean {
     const invocation = CommandInvocation.parseFromMessage(
+      this.bot,
       message.serverConfig,
       message
     );
@@ -44,6 +45,7 @@ export default class CommandRunner extends Logger {
 
   public async runMessage(message: PublicMessage): Promise<void> {
     const invocation = CommandInvocation.parseFromMessage(
+      this.bot,
       message.serverConfig,
       message
     );

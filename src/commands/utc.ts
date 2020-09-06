@@ -1,11 +1,9 @@
 import * as chronoNode from 'chrono-node';
 import * as moment from 'moment-timezone';
 import CommandInvocation from '@phil/CommandInvocation';
-import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import Phil from '@phil/phil';
-import { sendEmbedMessage } from '@phil/promises/discord';
 import UserTimezone from '@phil/timezones/user-timezone';
 import Command, { LoggerDefinition } from './@types';
 
@@ -55,16 +53,16 @@ export default class UtcCommand extends Command {
     }
 
     const reply = this.createReply(inputTime, timezone.timezoneName);
-    await sendEmbedMessage(phil.bot, invocation.channelId, {
-      color: EmbedColor.Timezone,
+    await invocation.respond({
+      color: 'purple',
       description: reply,
-      footer: {
-        text:
-          "Converted from user's local timezone to UTC. If the time provided is incorrect, your timezone might need to be updated. Use " +
-          invocation.serverConfig.commandPrefix +
-          'timezone to change/set.',
-      },
+      fields: null,
+      footer:
+        "Converted from user's local timezone to UTC. If the time provided is incorrect, your timezone might need to be updated. Use " +
+        invocation.serverConfig.commandPrefix +
+        'timezone to change/set.',
       title: 'Timezone Conversion',
+      type: 'embed',
     });
   }
 

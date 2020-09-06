@@ -1,7 +1,6 @@
 import CommandInvocation from '@phil/CommandInvocation';
 import { HelpGroup } from '@phil/help-groups';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 import { getRandomArrayEntry } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
@@ -31,6 +30,9 @@ export default class ApologiseCommand extends Command {
     invocation: CommandInvocation
   ): Promise<void> {
     const apology = getRandomArrayEntry(apologies);
-    await sendMessage(phil.bot, invocation.channelId, apology);
+    await invocation.respond({
+      text: apology,
+      type: 'plain',
+    });
   }
 }

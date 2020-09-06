@@ -3,7 +3,6 @@ import { getServerFeaturesStatus } from '@phil/features/feature-utils';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 import Command, {
   CommandLookup,
   LoggerDefinition,
@@ -113,7 +112,10 @@ export default class HelpCommand extends Command {
     }
 
     for (const helpMessage of builder.messages) {
-      await sendMessage(phil.bot, invocation.channelId, helpMessage);
+      await invocation.respond({
+        text: helpMessage,
+        type: 'plain',
+      });
     }
   }
 }

@@ -1,6 +1,5 @@
 import CommandInvocation from '@phil/CommandInvocation';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 import { searchYouTube } from '@phil/promises/youtube';
 import Command, { LoggerDefinition } from './@types';
 
@@ -31,6 +30,9 @@ export default class YoutubeCommand extends Command {
     }
 
     const link = 'https://youtu.be/' + results[0].id;
-    await sendMessage(phil.bot, invocation.channelId, link);
+    await invocation.respond({
+      text: link,
+      type: 'plain',
+    });
   }
 }

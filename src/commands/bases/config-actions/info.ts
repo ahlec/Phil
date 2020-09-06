@@ -1,7 +1,5 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import EmbedColor from '@phil/embed-color';
 import Phil from '@phil/phil';
-import { sendEmbedMessage } from '@phil/promises/discord';
 import {
   ConfigCommandBase,
   ConfigProperty,
@@ -53,10 +51,13 @@ export default class InfoConfigAction<TModel> implements ConfigAction<TModel> {
     );
     response += `${NEWLINE}**EXAMPLES**${NEWLINE}\`\`\`${invocation.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Set} ${property.key} ${randomDisplayValue}${NEWLINE}${invocation.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Clear} ${property.key}\`\`\``;
 
-    await sendEmbedMessage(phil.bot, invocation.channelId, {
-      color: EmbedColor.Info,
+    await invocation.respond({
+      color: 'powder-blue',
       description: response,
+      fields: null,
+      footer: null,
       title: `${command.titleCaseConfigurationFor} Configuration: ${property.displayName}`,
+      type: 'embed',
     });
   }
 }

@@ -5,7 +5,7 @@ import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
-import { isNumeric, sendErrorMessage, sendSuccessMessage } from '@phil/utils';
+import { isNumeric } from '@phil/utils';
 import Command, { LoggerDefinition } from '@phil/commands/@types';
 
 interface ConfirmRejectResults {
@@ -76,12 +76,7 @@ export default abstract class ConfirmRejectCommandBase extends Command {
       }
     }
 
-    await this.sendCompletionMessage(
-      phil,
-      invocation.serverConfig,
-      invocation.channelId,
-      results
-    );
+    await this.sendCompletionMessage(phil, invocation, results);
   }
 
   protected abstract performActionOnSubmission(
@@ -208,29 +203,26 @@ export default abstract class ConfirmRejectCommandBase extends Command {
 
   private async sendCompletionMessage(
     phil: Phil,
-    serverConfig: ServerConfig,
-    channelId: string,
+    invocation: CommandInvocation,
     results: ConfirmRejectResults
   ): Promise<void> {
     if (results.numSuccessful === 0) {
-      await sendErrorMessage({
-        bot: phil.bot,
-        channelId,
-        message: this.noItemsConfirmedMessage.replace(
+      await invocation.respond({
+        error: this.noItemsConfirmedMessage.replace(
           /\{commandPrefix\}/g,
-          serverConfig.commandPrefix
+          invocation.serverConfig.commandPrefix
         ),
+        type: 'error',
       });
       return;
     }
 
-    await sendSuccessMessage({
-      bot: phil.bot,
-      channelId,
-      message: (results.numSuccessful === 1
+    await invocation.respond({
+      text: (results.numSuccessful === 1
         ? this.oneItemConfirmedMessage
         : this.multipleItemsConfirmedMessage
-      ).replace(/\{commandPrefix\}/g, serverConfig.commandPrefix),
+      ).replace(/\{commandPrefix\}/g, invocation.serverConfig.commandPrefix),
+      type: 'success',
     });
   }
 }

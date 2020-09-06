@@ -4,7 +4,6 @@ import Greeting from '@phil/greeting';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
-import { sendErrorMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
 import MemberTypeDefinition from '@phil/type-definition/member';
@@ -30,20 +29,18 @@ export default class WelcomeCommand extends Command {
     invocation: CommandInvocation
   ): Promise<void> {
     if (!invocation.serverConfig.welcomeMessage) {
-      await sendErrorMessage({
-        bot: phil.bot,
-        channelId: invocation.channelId,
-        message: `Your server is not configured with a welcome message. An admin can ${NOWRAP}change this by using \`${invocation.serverConfig.commandPrefix}config set ${NOWRAP}welcome-message\`.`,
+      await invocation.respond({
+        error: `Your server is not configured with a welcome message. An admin can ${NOWRAP}change this by using \`${invocation.serverConfig.commandPrefix}config set ${NOWRAP}welcome-message\`.`,
+        type: 'error',
       });
       return;
     }
 
     const result = this.getUser(phil, invocation);
     if (result.success !== true) {
-      await sendErrorMessage({
-        bot: phil.bot,
-        channelId: invocation.channelId,
-        message: result.error,
+      await invocation.respond({
+        error: result.error,
+        type: 'error',
       });
       return;
     }

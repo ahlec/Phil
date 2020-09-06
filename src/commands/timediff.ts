@@ -2,7 +2,6 @@ import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 import UserTimezone from '@phil/timezones/user-timezone';
 import Command, { LoggerDefinition } from './@types';
 
@@ -31,7 +30,10 @@ export default class TimediffCommand extends Command {
 
     const mention = invocation.mentions[0];
     if (mention.userId === invocation.userId) {
-      await sendMessage(phil.bot, invocation.channelId, ':unamused:');
+      await invocation.respond({
+        text: ':unamused:',
+        type: 'plain',
+      });
       return;
     }
 
@@ -61,7 +63,10 @@ export default class TimediffCommand extends Command {
 
     const hoursApart = ownTimezone.getHoursApart(theirTimezone);
     const reply = this.composeReply(hoursApart, mention.user);
-    await sendMessage(phil.bot, invocation.channelId, reply);
+    await invocation.respond({
+      text: reply,
+      type: 'plain',
+    });
   }
 
   private composeReply(hoursApart: number, otherUser: string): string {

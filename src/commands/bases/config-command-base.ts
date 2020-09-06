@@ -1,9 +1,8 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import EmbedColor from '@phil/embed-color';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
 import Phil from '@phil/phil';
-import { sendEmbedMessage, EmbedField } from '@phil/promises/discord';
+import { EmbedField } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
 import { TypeDefinition } from '@phil/type-definition/@type-definition';
 import { getRandomArrayEntry } from '@phil/utils';
@@ -150,10 +149,13 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       model
     )}`;
 
-    await sendEmbedMessage(phil.bot, invocation.channelId, {
-      color: EmbedColor.Info,
+    await invocation.respond({
+      color: 'powder-blue',
       description: response,
+      fields: null,
+      footer: null,
       title: this.titleCaseConfigurationFor + ' Configuration',
+      type: 'embed',
     });
   }
 
@@ -178,10 +180,13 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       model
     )}`;
 
-    await sendEmbedMessage(phil.bot, invocation.channelId, {
-      color: EmbedColor.Error,
+    await invocation.respond({
+      color: 'red',
       description: response,
+      fields: null,
+      footer: null,
       title: `${this.titleCaseConfigurationFor} Configuration: Unknown action`,
+      type: 'embed',
     });
   }
 
@@ -239,11 +244,13 @@ export abstract class ConfigCommandBase<TModel> extends Command {
       });
     }
 
-    await sendEmbedMessage(phil.bot, invocation.channelId, {
-      color: EmbedColor.Error,
+    await invocation.respond({
+      color: 'red',
       description: response,
       fields,
+      footer: null,
       title: `${this.titleCaseConfigurationFor} Configuration: Unknown property`,
+      type: 'embed',
     });
   }
 

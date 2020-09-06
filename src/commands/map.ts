@@ -1,8 +1,6 @@
 import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
-import { sendErrorMessage } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
 export default class MapCommand extends Command {
@@ -20,19 +18,17 @@ export default class MapCommand extends Command {
     invocation: CommandInvocation
   ): Promise<void> {
     if (!invocation.serverConfig.fandomMapLink) {
-      await sendErrorMessage({
-        bot: phil.bot,
-        channelId: invocation.channelId,
-        message:
+      await invocation.respond({
+        error:
           'This server has not provided a link to a shared map of the fandom.',
+        type: 'error',
       });
       return;
     }
 
-    await sendMessage(
-      phil.bot,
-      invocation.channelId,
-      invocation.serverConfig.fandomMapLink
-    );
+    await invocation.respond({
+      text: invocation.serverConfig.fandomMapLink,
+      type: 'plain',
+    });
   }
 }

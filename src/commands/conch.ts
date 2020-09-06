@@ -1,7 +1,6 @@
 import CommandInvocation from '@phil/CommandInvocation';
 import { HelpGroup } from '@phil/help-groups';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 import { getRandomArrayEntry } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
 
@@ -35,6 +34,9 @@ export default class ConchCommand extends Command {
   ): Promise<void> {
     const conchReply = getRandomArrayEntry(conchReplies);
     const reply = ':shell: The Magic Conch Shell says: **' + conchReply + '**.';
-    await sendMessage(phil.bot, invocation.channelId, reply);
+    await invocation.respond({
+      text: reply,
+      type: 'plain',
+    });
   }
 }

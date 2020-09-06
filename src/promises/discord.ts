@@ -47,7 +47,7 @@ export interface EmbedData {
   };
   color: EmbedColor;
   description?: string;
-  fields?: EmbedField[];
+  fields?: readonly EmbedField[];
   thumbnail?: {
     url: string;
   };
