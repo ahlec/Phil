@@ -13,7 +13,7 @@ import CommandRunner from './CommandRunner';
 import Database from './database';
 import DirectMessageDispatcher from './DirectMessageDispatcher';
 import GlobalConfig from './GlobalConfig';
-import Greeting from './greeting';
+import { greetMember, shouldAutomaticallyGreetMember } from './greeting';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 import { parseMessage } from './messages/@parsing';
@@ -25,6 +25,9 @@ import { sendErrorMessage } from './utils';
 import CommandInvocation from './CommandInvocation';
 import ServerBucketsCollection from './ServerBucketsCollection';
 import Server from './discord/Server';
+import { sendMessageTemplate } from './utils/discord-migration';
+import Member from './discord/Member';
+import User from './discord/User';
 
 function ignoreDiscordCode(code: number): boolean {
   return code === 1000; // General disconnect code
@@ -193,13 +196,13 @@ export default class Phil extends Logger {
   };
 
   private onMemberAdd = async (
-    member: DiscordIOMember & {
+    rawMember: DiscordIOMember & {
       /* special field for this event */ guild_id: string;
     }
   ): Promise<void> => {
-    const { guild_id: serverId } = member;
+    const { guild_id: serverId } = rawMember;
     const server = this.bot.servers[serverId];
-    this.write(`A new member (${member.id}) has joined server ${serverId}.`);
+    this.write(`A new member (${rawMember.id}) has joined server ${serverId}.`);
     if (!server) {
       this.error(`I do not recognize server ${serverId} as existing.`);
       return;
@@ -208,17 +211,52 @@ export default class Phil extends Logger {
     const serverConfig = await this.serverDirectory.getServerConfig(server);
     if (!serverConfig) {
       this.error(
-        `I wanted to greet new member ${member.id} in server ${server.id}, but I do not have server config for there.`
+        `I wanted to greet new member ${rawMember.id} in server ${server.id}, but I do not have server config for there.`
       );
       return;
     }
 
+    const rawUser = this.bot.users[rawMember.id];
+    if (!rawUser) {
+      this.error(
+        `Couldn't greet member '${rawMember.id}' in server '${server.id}' because they weren't in the users lookup.`
+      );
+      return;
+    }
+
+    const member = new Member(
+      this.bot,
+      rawMember,
+      serverId,
+      new User(rawUser, rawMember.id)
+    );
+
     try {
-      const greeting = new Greeting(this.bot, this.db, serverConfig, member);
-      await greeting.send(serverConfig.introductionsChannel.id);
+      const shouldGreet = await shouldAutomaticallyGreetMember(
+        this.db,
+        serverConfig,
+        member
+      );
+      if (!shouldGreet) {
+        return;
+      }
+
+      const greeting = greetMember(serverConfig, member);
+      if (!greeting.valid) {
+        this.error(
+          `Error greeting member '${rawMember.id}': ${greeting.reason}`
+        );
+        return;
+      }
+
+      await sendMessageTemplate(
+        this.bot,
+        serverConfig.introductionsChannel.id,
+        greeting.message
+      );
     } catch (err) {
       this.error(
-        `Uncaught exception when trying to greet new member ${member.id} in server ${server.id}.`
+        `Uncaught exception when trying to greet new member ${rawMember.id} in server ${server.id}.`
       );
       this.error(err);
     }

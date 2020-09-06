@@ -5,11 +5,13 @@ import {
 
 import Member from './Member';
 import Role from './Role';
+import User from './User';
 
 interface ApiServerMember {
   nick?: string;
   user: {
     id: string;
+    bot: boolean;
     username: string;
   };
   roles: ReadonlyArray<string>;
@@ -32,7 +34,7 @@ class Server {
       }
 
       members.push(
-        new Member(this.internalClient, user, member, this.id, userId)
+        new Member(this.internalClient, member, this.id, new User(user, userId))
       );
     }
 
@@ -54,7 +56,12 @@ class Server {
     const member = this.internalServer.members[userId];
     const user = this.internalClient.users[userId];
     if (member && user) {
-      return new Member(this.internalClient, user, member, this.id, userId);
+      return new Member(
+        this.internalClient,
+        member,
+        this.id,
+        new User(user, userId)
+      );
     }
 
     // Try querying the API directly. This is an attempt to fix a bug where new
@@ -65,10 +72,9 @@ class Server {
       if (apiMember) {
         return new Member(
           this.internalClient,
-          apiMember.user,
           apiMember,
           this.id,
-          userId
+          new User(apiMember.user, userId)
         );
       }
     } catch (err) {

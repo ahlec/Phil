@@ -173,14 +173,14 @@ class BlacklistCommand extends Command {
     member: Member
   ): Promise<void> {
     const result = await requestable.toggleUserBlacklist(
-      member.userId,
+      member.user.id,
       database
     );
 
     if (!result.success) {
       this.error(`requestable: ${requestable.role.id} - ${requestStringUsed}`);
       this.error(`server: ${invocation.context.server.id}`);
-      this.error(`member: ${member.userId}`);
+      this.error(`member: ${member.user.id}`);
       this.error(result.message);
       await invocation.respond({
         color: 'red',
@@ -193,7 +193,7 @@ class BlacklistCommand extends Command {
       return;
     }
 
-    const isOnBlacklist = requestable.blacklistedUserIds.has(member.userId);
+    const isOnBlacklist = requestable.blacklistedUserIds.has(member.user.id);
     await invocation.respond({
       color: 'powder-blue',
       description: `**${member.displayName}** was ${

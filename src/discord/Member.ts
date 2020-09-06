@@ -1,23 +1,19 @@
 import { Client as DiscordIOClient } from 'discord.io';
 
 import Role from './Role';
+import User from './User';
 
 interface InternalMember {
   nick?: string;
   roles: readonly string[];
 }
 
-interface InternalUser {
-  username: string;
-}
-
 class Member {
   public constructor(
     private readonly internalClient: DiscordIOClient,
-    private readonly internalUser: InternalUser,
     private readonly internalMember: InternalMember,
     private readonly serverId: string,
-    public readonly userId: string
+    public readonly user: User
   ) {}
 
   public get displayName(): string {
@@ -25,7 +21,7 @@ class Member {
       return this.internalMember.nick;
     }
 
-    return this.internalUser.username;
+    return this.user.username;
   }
 
   public get roles(): readonly Role[] {
@@ -48,7 +44,7 @@ class Member {
         {
           roleID: role.id,
           serverID: this.serverId,
-          userID: this.userId,
+          userID: this.user.id,
         },
         (err) => {
           if (err) {
@@ -68,7 +64,7 @@ class Member {
         {
           roleID: role.id,
           serverID: this.serverId,
-          userID: this.userId,
+          userID: this.user.id,
         },
         (err) => {
           if (err) {

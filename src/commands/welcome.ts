@@ -1,19 +1,11 @@
-import { User as DiscordIOUser } from 'discord.io';
+import Member from '@phil/discord/Member';
+
+import CommandArgs from '@phil/CommandArgs';
 import CommandInvocation from '@phil/CommandInvocation';
-import Greeting from '@phil/greeting';
+import { greetMember } from '@phil/greeting';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
-import Phil from '@phil/phil';
 import Command, { LoggerDefinition } from './@types';
-
-import MemberTypeDefinition from '@phil/type-definition/member';
-import Database from '@phil/database';
-
-type GetUserResult =
-  | { success: true; user: DiscordIOUser }
-  | { success: false; error: string };
-
-const NOWRAP = '';
 
 class WelcomeCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
@@ -25,82 +17,50 @@ class WelcomeCommand extends Command {
     });
   }
 
-  public async invoke(
-    invocation: CommandInvocation,
-    database: Database,
-    legacyPhil: Phil
-  ): Promise<void> {
-    if (!invocation.context.serverConfig.welcomeMessage) {
+  public async invoke(invocation: CommandInvocation): Promise<void> {
+    const targetMember = await this.getTargetMember(invocation);
+    if (!targetMember) {
       await invocation.respond({
-        error: `Your server is not configured with a welcome message. An admin can ${NOWRAP}change this by using \`${invocation.context.serverConfig.commandPrefix}config set ${NOWRAP}welcome-message\`.`,
+        error:
+          "Hmmm, I don't know who to greet here. Could you try mentioning the user you'd like me to greet?",
         type: 'error',
       });
       return;
     }
 
-    const result = this.getUser(legacyPhil, invocation);
-    if (result.success !== true) {
-      await invocation.respond({
-        error: result.error,
-        type: 'error',
-      });
-      return;
+    const greeting = greetMember(invocation.context.serverConfig, targetMember);
+    if (!greeting.valid) {
+      switch (greeting.reason) {
+        case 'no-configured-welcome-message': {
+          await invocation.respond({
+            error: `Your server is not configured with a welcome message. An admin can change this by using \`${invocation.context.serverConfig.commandPrefix}config set welcome-message\`.`,
+            type: 'error',
+          });
+          return;
+        }
+        default: {
+          // This doesn't produce an error if you exhaustively handle every value in the string union.
+          // If this line is producing an error, don't remove it -- handle the reason!
+          return greeting.reason;
+        }
+      }
     }
 
-    const { user } = result;
-    const member = invocation.context.serverConfig.server.members[user.id];
-    const greeting = new Greeting(
-      legacyPhil.bot,
-      database,
-      invocation.context.serverConfig,
-      member
-    );
-    await greeting.send(invocation.context.channelId);
+    await invocation.respond(greeting.message);
   }
 
-  private getUser(phil: Phil, invocation: CommandInvocation): GetUserResult {
-    if (invocation.commandArgs.length < 1) {
-      return {
-        success: true,
-        user: invocation.user,
-      };
+  private async getTargetMember(
+    invocation: CommandInvocation
+  ): Promise<Member | null> {
+    const args = new CommandArgs(invocation.commandArgs);
+    const member = await args.readMember('target', invocation.context.server, {
+      isOptional: true,
+    });
+    if (!member) {
+      return invocation.context.server.getMember(invocation.userId);
     }
 
-    const parseResult = MemberTypeDefinition.tryParse(
-      invocation.commandArgs[0]
-    );
-    if (parseResult.wasSuccessful !== true) {
-      return {
-        error: parseResult.errorMessage,
-        success: false,
-      };
-    }
-
-    const { parsedValue: userId } = parseResult;
-    const validityResult = MemberTypeDefinition.isValid(
-      userId,
-      phil,
-      invocation.context.serverConfig
-    );
-    if (validityResult.isValid !== true) {
-      return {
-        error: validityResult.errorMessage,
-        success: false,
-      };
-    }
-
-    const user = phil.bot.users[userId];
-    if (!user) {
-      return {
-        error: 'There is no user by that ID',
-        success: false,
-      };
-    }
-
-    return {
-      success: true,
-      user,
-    };
+    return member;
   }
 }
 

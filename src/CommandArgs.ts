@@ -171,7 +171,7 @@ export default class CommandArgs {
     let numToPop = 0;
     const lookup: { [userId: string]: Member } = {};
     server.members.forEach((member): void => {
-      lookup[member.userId] = member;
+      lookup[member.user.id] = member;
     });
 
     const finder = new FuzzyFinder(lookup, memberNameSelector);

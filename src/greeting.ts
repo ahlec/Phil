@@ -1,77 +1,85 @@
-import {
-  Client as DiscordIOClient,
-  Member as DiscordIOMember,
-  User as DiscordIOUser,
-} from 'discord.io';
+import Member from '@phil/discord/Member';
+import MessageTemplate from '@phil/discord/MessageTemplate';
+
 import Database from './database';
 import Features from './features/all-features';
-import Logger from './Logger';
-import LoggerDefinition from './LoggerDefinition';
-import { sendMessage } from './promises/discord';
 import ServerConfig from './server-config';
-import { getUserDisplayName } from './utils';
 
-export default class Greeting extends Logger {
-  private readonly user: DiscordIOUser;
-
-  public constructor(
-    private readonly client: DiscordIOClient,
-    private readonly db: Database,
-    private readonly serverConfig: ServerConfig,
-    private readonly member: DiscordIOMember
-  ) {
-    super(new LoggerDefinition('Greeting'));
-
-    this.user = client.users[member.id];
-    if (!this.user) {
-      this.error(`Unable to retrieve user for member ${member.id}.`);
+export type Greeting =
+  | {
+      valid: false;
+      reason: 'no-configured-welcome-message';
     }
+  | {
+      valid: true;
+      message: MessageTemplate;
+    };
+
+export function greetMember(
+  serverConfig: ServerConfig,
+  member: Member
+): Greeting {
+  if (!serverConfig.welcomeMessage) {
+    return {
+      reason: 'no-configured-welcome-message',
+      valid: false,
+    };
   }
 
-  public async send(channelId: string): Promise<void> {
-    try {
-      const shouldWelcome = await this.shouldWelcomeMember();
-      if (!shouldWelcome) {
-        return;
-      }
+  return {
+    message: {
+      text: serverConfig.welcomeMessage
+        .replace(/\{user\}/g, '<@' + member.user.id + '>')
+        .replace(/\{name\}/g, member.displayName || 'new member'),
+      type: 'plain',
+    },
+    valid: true,
+  };
+}
 
-      const welcomeMessage = this.makeGreetingMessage();
-      if (!welcomeMessage) {
-        return;
-      }
-
-      await sendMessage(this.client, channelId, welcomeMessage);
-    } catch (err) {
-      const summaryMessage = `There was an error sending greeting message for member ${this.member.id} in server ${this.serverConfig.server.id}.`;
-      this.error(summaryMessage);
-      this.error(err);
-      await sendMessage(
-        this.client,
-        this.serverConfig.botControlChannel.id,
-        summaryMessage
-      );
+export type AutomaticGreetingDetermination =
+  | {
+      shouldGreet: false;
+      reason:
+        | 'feature-disabled'
+        | 'user-is-discord-bot'
+        | 'no-configured-welcome-message';
     }
+  | {
+      shouldGreet: true;
+    };
+
+export async function shouldAutomaticallyGreetMember(
+  database: Database,
+  serverConfig: ServerConfig,
+  member: Member
+): Promise<AutomaticGreetingDetermination> {
+  const isEnabled = await Features.WelcomeMessage.getIsEnabled(
+    database,
+    serverConfig.server.id
+  );
+  if (!isEnabled) {
+    return {
+      reason: 'feature-disabled',
+      shouldGreet: false,
+    };
   }
 
-  private makeGreetingMessage(): string | null {
-    if (!this.serverConfig.welcomeMessage) {
-      return null;
-    }
-
-    const displayName = getUserDisplayName(this.user, this.serverConfig.server);
-    return this.serverConfig.welcomeMessage
-      .replace(/\{user\}/g, '<@' + this.user.id + '>')
-      .replace(/\{name\}/g, displayName || 'new member');
+  if (member.user.isBot) {
+    return {
+      reason: 'user-is-discord-bot',
+      shouldGreet: false,
+    };
   }
 
-  private async shouldWelcomeMember(): Promise<boolean> {
-    if (this.user.bot) {
-      return false;
-    }
-
-    return await Features.WelcomeMessage.getIsEnabled(
-      this.db,
-      this.serverConfig.server.id
-    );
+  if (!serverConfig.welcomeMessage) {
+    return {
+      reason: 'no-configured-welcome-message',
+      shouldGreet: false,
+    };
   }
+
+  return {
+    shouldGreet: true,
+  };
 }
