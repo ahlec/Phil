@@ -4,9 +4,6 @@ import {
 } from 'discord.io';
 import * as moment from 'moment';
 import Database from './database';
-import Phil from './phil';
-import ServerConfig from './server-config';
-import { getRandomArrayEntry } from './utils';
 import { getMemberRolesInServer } from './promises/discord';
 
 export enum BucketFrequency {
@@ -26,61 +23,6 @@ const frequencyFromStrings: { [name: string]: BucketFrequency | undefined } = {
   immediately: BucketFrequency.Immediately,
   weekly: BucketFrequency.Weekly,
 };
-
-function multipleUnspecifiedBucketsError(
-  serverConfig: ServerConfig,
-  serverBuckets: Bucket[],
-  commandName: string
-): Error {
-  if (serverBuckets.length === 0) {
-    return new Error('There are no prompt buckets configured on this server.');
-  }
-
-  let message =
-    'This command must be provided the valid reference handle of one of the buckets configured on this server:\n\n';
-
-  for (const bucket of serverBuckets) {
-    message += '`' + bucket.handle + '` - ' + bucket.displayName + ' (';
-
-    if (bucket.isValid) {
-      message += 'posts to <#' + bucket.channelId + '>';
-    } else {
-      message += 'configuration invalid';
-    }
-
-    message += ')\n';
-  }
-
-  const randomBucket = getRandomArrayEntry(serverBuckets);
-  message +=
-    '\nPlease try the command once more, specifying which bucket, like `' +
-    serverConfig.commandPrefix +
-    commandName +
-    ' ' +
-    randomBucket.handle +
-    '`.';
-  return new Error(message);
-}
-
-function getOnlyBucketOnServer(
-  serverConfig: ServerConfig,
-  serverBuckets: Bucket[],
-  commandName: string,
-  allowInvalidServers: boolean
-): Bucket {
-  if (
-    serverBuckets.length === 1 &&
-    (allowInvalidServers || serverBuckets[0].isValid)
-  ) {
-    return serverBuckets[0];
-  }
-
-  throw multipleUnspecifiedBucketsError(
-    serverConfig,
-    serverBuckets,
-    commandName
-  );
-}
 
 interface DbRow {
   bucket_id: string;
@@ -184,50 +126,6 @@ export default class Bucket {
       [serverId]
     );
     return results.rows.map((row) => new Bucket(bot, row));
-  }
-
-  public static async retrieveFromCommandArgs(
-    phil: Phil,
-    commandArgs: ReadonlyArray<string>,
-    serverConfig: ServerConfig,
-    commandName: string,
-    allowInvalidServers: boolean
-  ): Promise<Bucket> {
-    const firstParameter = commandArgs[0];
-    if (!firstParameter || firstParameter.length === 0) {
-      const serverBuckets = await Bucket.getAllForServer(
-        phil.bot,
-        phil.db,
-        serverConfig.server.id
-      );
-      return getOnlyBucketOnServer(
-        serverConfig,
-        serverBuckets,
-        commandName,
-        allowInvalidServers
-      );
-    }
-
-    const bucket = await Bucket.getFromReferenceHandle(
-      phil.bot,
-      phil.db,
-      serverConfig.server,
-      firstParameter
-    );
-    if (bucket === null || (!allowInvalidServers && !bucket.isValid)) {
-      const serverBuckets = await Bucket.getAllForServer(
-        phil.bot,
-        phil.db,
-        serverConfig.server.id
-      );
-      throw multipleUnspecifiedBucketsError(
-        serverConfig,
-        serverBuckets,
-        commandName
-      );
-    }
-
-    return bucket;
   }
 
   private static determineIsBucketValid(

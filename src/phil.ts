@@ -23,6 +23,7 @@ import ReactableProcessor from './reactables/processor';
 import ServerDirectory from './server-directory';
 import { sendErrorMessage } from './utils';
 import CommandInvocation from './CommandInvocation';
+import ServerBucketsCollection from './ServerBucketsCollection';
 
 function ignoreDiscordCode(code: number): boolean {
   return code === 1000; // General disconnect code
@@ -121,6 +122,11 @@ export default class Phil extends Logger {
       const invocation = CommandInvocation.parseFromMessage(
         this.bot,
         {
+          buckets: new ServerBucketsCollection(
+            this.bot,
+            this.db,
+            message.server.id
+          ),
           channelId: message.channelId,
           serverConfig: message.serverConfig,
         },

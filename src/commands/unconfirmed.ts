@@ -1,9 +1,7 @@
-import Bucket from '@phil/buckets';
 import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
-import Phil from '@phil/phil';
 import Submission from '@phil/prompts/submission';
 import Command, { LoggerDefinition } from './@types';
 import Database from '@phil/database';
@@ -24,21 +22,13 @@ class UnconfirmedCommand extends Command {
 
   public async invoke(
     invocation: CommandInvocation,
-    database: Database,
-    legacyPhil: Phil
+    database: Database
   ): Promise<void> {
     await database.query(
       'DELETE FROM submission_confirmation_queue WHERE channel_id = $1',
       [invocation.context.channelId]
     );
-    const bucket = await Bucket.retrieveFromCommandArgs(
-      legacyPhil,
-      invocation.commandArgs,
-      invocation.context.serverConfig,
-      'unconfirmed',
-      false
-    );
-
+    const bucket = await invocation.retrieveBucketFromArguments();
     const submissions = await Submission.getUnconfirmed(
       database,
       bucket,

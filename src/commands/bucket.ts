@@ -3,10 +3,8 @@ import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
-import Phil from '@phil/phil';
 import { EmbedField } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
-import Database from '@phil/database';
 
 type FieldTransformFunc<T> = (bucket: Bucket, value: T) => string;
 
@@ -77,18 +75,10 @@ class BucketCommand extends Command {
     });
   }
 
-  public async invoke(
-    invocation: CommandInvocation,
-    database: Database,
-    legacyPhil: Phil
-  ): Promise<void> {
-    const bucket = await Bucket.retrieveFromCommandArgs(
-      legacyPhil,
-      invocation.commandArgs,
-      invocation.context.serverConfig,
-      'bucket',
-      true
-    );
+  public async invoke(invocation: CommandInvocation): Promise<void> {
+    const bucket = await invocation.retrieveBucketFromArguments({
+      allowInvalid: true,
+    });
     await sendBucketToChannel(invocation, bucket);
   }
 }

@@ -1,4 +1,3 @@
-import Bucket from '@phil/buckets';
 import CommandInvocation from '@phil/CommandInvocation';
 import Database from '@phil/database';
 import { endOngoingDirectMessageProcesses } from '@phil/DirectMessageUtils';
@@ -48,13 +47,7 @@ class SuggestCommand extends Command {
     database: Database,
     legacyPhil: Phil
   ): Promise<void> {
-    const bucket = await Bucket.retrieveFromCommandArgs(
-      legacyPhil,
-      invocation.commandArgs,
-      invocation.context.serverConfig,
-      this.name,
-      false
-    );
+    const bucket = await invocation.retrieveBucketFromArguments();
     if (
       bucket.requiredRoleId &&
       !(await bucket.canUserSubmitTo(legacyPhil.bot, invocation.userId))

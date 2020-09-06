@@ -1,4 +1,3 @@
-import Bucket from '@phil/buckets';
 import CommandInvocation from '@phil/CommandInvocation';
 import Database from '@phil/database';
 import Features from '@phil/features/all-features';
@@ -27,13 +26,7 @@ class QueueCommand extends Command {
     database: Database,
     legacyPhil: Phil
   ): Promise<void> {
-    const bucket = await Bucket.retrieveFromCommandArgs(
-      legacyPhil,
-      invocation.commandArgs,
-      invocation.context.serverConfig,
-      'queue',
-      false
-    );
+    const bucket = await invocation.retrieveBucketFromArguments();
     const queue = await PromptQueue.getPromptQueue(
       legacyPhil.bot,
       database,

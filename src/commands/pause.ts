@@ -1,10 +1,8 @@
-import Bucket from '@phil/buckets';
 import CommandInvocation from '@phil/CommandInvocation';
 import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
-import Phil from '@phil/phil';
 import Command, { LoggerDefinition } from './@types';
 
 class PauseCommand extends Command {
@@ -20,16 +18,11 @@ class PauseCommand extends Command {
 
   public async invoke(
     invocation: CommandInvocation,
-    database: Database,
-    legacyPhil: Phil
+    database: Database
   ): Promise<void> {
-    const bucket = await Bucket.retrieveFromCommandArgs(
-      legacyPhil,
-      invocation.commandArgs,
-      invocation.context.serverConfig,
-      'bucket',
-      true
-    );
+    const bucket = await invocation.retrieveBucketFromArguments({
+      allowInvalid: true,
+    });
     await bucket.setIsPaused(database, true);
 
     const reply =
