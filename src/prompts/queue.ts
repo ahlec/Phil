@@ -1,19 +1,15 @@
-import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
+import { Client as DiscordIOClient } from 'discord.io';
 import Bucket from '@phil/buckets';
 import Database, { DatabaseResult } from '@phil/database';
 import EmbedColor from '@phil/embed-color';
 import { sendEmbedMessage, EmbedData } from '@phil/promises/discord';
-import { PromptQueueReactableFactory } from '@phil/reactables/prompt-queue/factory';
+import PromptQueueReactableFactory from '@phil/reactables/prompt-queue/factory';
 import Prompt from './prompt';
+import { getKnownOutboundMessage } from '@phil/utils/discord-migration';
 
 export interface PromptQueueEntry {
   readonly position: number;
   readonly prompt: Prompt;
-}
-
-interface PromptQueuePostData {
-  readonly channelId: string;
-  readonly user: DiscordIOUser;
 }
 
 interface DbCountResultRow {
@@ -151,15 +147,15 @@ export class PromptQueue {
   public async postToChannel(
     bot: DiscordIOClient,
     db: Database,
-    postData: PromptQueuePostData
+    channelId: string
   ): Promise<string> {
     const messageId = await sendEmbedMessage(
       bot,
-      postData.channelId,
+      channelId,
       this.asEmbedObject()
     );
     if (this.hasMultiplePages) {
-      await this.setupReactable(bot, db, postData, messageId);
+      await this.setupReactable(bot, db, channelId, messageId);
     }
 
     return messageId;
@@ -217,20 +213,24 @@ export class PromptQueue {
   private async setupReactable(
     bot: DiscordIOClient,
     db: Database,
-    postData: PromptQueuePostData,
+    channelId: string,
     messageId: string
   ): Promise<void> {
-    const factory = new PromptQueueReactableFactory(bot, db, {
-      bucket: this.bucket.id,
-      channelId: postData.channelId,
-      currentPage: this.pageNumber,
-      messageId,
-      pageSize: this.pageSize,
-      timeLimit: 10,
-      totalNumberPages: this.totalPages,
-      user: bot.users[postData.user.id],
-    });
+    const factory = new PromptQueueReactableFactory(
+      bot,
+      db,
+      {
+        timeLimit: 10,
+      },
+      {
+        bucket: this.bucket.id,
+        currentPage: this.pageNumber,
+        pageSize: this.pageSize,
+        totalNumberPages: this.totalPages,
+      }
+    );
 
-    await factory.create();
+    const message = getKnownOutboundMessage(bot, messageId, channelId);
+    await factory.create(message);
   }
 }

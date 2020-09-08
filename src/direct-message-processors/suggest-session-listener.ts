@@ -1,10 +1,9 @@
-import EmbedColor from '@phil/embed-color';
 import PrivateMessage from '@phil/messages/private';
 import Phil from '@phil/phil';
-import { sendEmbedMessage } from '@phil/promises/discord';
 import SubmissionSession from '@phil/prompts/submission-session';
 import SuggestSessionReactableFactory from '@phil/reactables/suggest-session/factory';
 import { DirectMessageProcessor, ProcessorActiveToken } from './@base';
+import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 type PromptValidateResult =
   | { isValid: true; validatedMessage: string }
@@ -66,28 +65,32 @@ export default class SuggestSessionListener implements DirectMessageProcessor {
 
     const NOWRAP = '';
     const numSubmissions = token.currentSession.getNumberSubmissions();
-    const messageId = await sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Info,
-      description: `**${validationResults.validatedMessage}** has been sent to the admins ${NOWRAP}for approval.`,
-      footer: {
-        text: `You have made ${numSubmissions} submission${
+    const { finalMessage } = await sendMessageTemplate(
+      phil.bot,
+      message.channelId,
+      {
+        color: 'powder-blue',
+        description: `**${validationResults.validatedMessage}** has been sent to the admins ${NOWRAP}for approval.`,
+        fields: null,
+        footer: `You have made ${numSubmissions} submission${
           numSubmissions !== 1 ? 's' : ''
         } during this session.`,
-      },
-      title: ':pencil: Prompt Received :incoming_envelope:',
-    });
+        title: ':pencil: Prompt Received :incoming_envelope:',
+        type: 'embed',
+      }
+    );
 
     const reactableFactory = new SuggestSessionReactableFactory(
       phil.bot,
       phil.db,
       {
-        canMakeAnonymous: false,
-        channelId: message.channelId,
-        messageId,
         timeLimit: token.currentSession.remainingTime.asMinutes(),
-        user: message.user,
-      }
+      },
+      {
+        userId: message.userId,
+      },
+      false
     );
-    await reactableFactory.create();
+    await reactableFactory.create(finalMessage);
   }
 }

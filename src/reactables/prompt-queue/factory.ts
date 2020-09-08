@@ -1,47 +1,44 @@
 import { Client as DiscordIOClient } from 'discord.io';
+
 import Database from '@phil/database';
-import {
-  ReactableCreateArgsBase,
-  ReactableFactoryBase,
+import ReactableFactoryBase, {
+  ReactableCreationArgs,
 } from '@phil/reactables/factory-base';
-import { Data, Emoji, ReactableHandle } from './shared';
+import { ReactableType } from '@phil/reactables/types';
 
-interface CreateArgs extends ReactableCreateArgsBase, Data {}
+import { Data, Emoji } from './shared';
 
-export class PromptQueueReactableFactory extends ReactableFactoryBase<
-  CreateArgs,
-  Data
+class PromptQueueReactableFactory extends ReactableFactoryBase<
+  ReactableType.PromptQueue
 > {
-  protected readonly handle = ReactableHandle;
-
-  constructor(
-    readonly bot: DiscordIOClient,
-    readonly db: Database,
-    readonly args: CreateArgs
+  public constructor(
+    discordClient: DiscordIOClient,
+    database: Database,
+    creationArgs: ReactableCreationArgs,
+    data: Data
   ) {
-    super(bot, db, args);
+    super(
+      ReactableType.PromptQueue,
+      discordClient,
+      database,
+      creationArgs,
+      data
+    );
   }
 
-  protected getJsonData(): Data {
-    return {
-      bucket: this.args.bucket,
-      currentPage: this.args.currentPage,
-      pageSize: this.args.pageSize,
-      totalNumberPages: this.args.totalNumberPages,
-    };
-  }
-
-  protected getEmojiReactions(): string[] {
+  protected getEmojiReactions(): readonly string[] {
     const reactions: string[] = [];
 
-    if (this.args.currentPage > 1) {
+    if (this.data.currentPage > 1) {
       reactions.push(Emoji.Previous);
     }
 
-    if (this.args.currentPage < this.args.totalNumberPages) {
+    if (this.data.currentPage < this.data.totalNumberPages) {
       reactions.push(Emoji.Next);
     }
 
     return reactions;
   }
 }
+
+export default PromptQueueReactableFactory;

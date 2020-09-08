@@ -5,8 +5,6 @@ export interface Data {
   bucket: number;
 }
 
-export const ReactableHandle = 'prompt-queue';
-
 export const Emoji = {
   Next: '▶',
   Previous: '◀',

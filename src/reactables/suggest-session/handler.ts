@@ -1,24 +1,22 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
-import EmbedColor from '@phil/embed-color';
 import Phil from '@phil/phil';
-import { sendEmbedMessage } from '@phil/promises/discord';
 import SubmissionSession from '@phil/prompts/submission-session';
 import ReactablePost from '@phil/reactables/post';
-import ReactableType from '@phil/reactables/reactable-type';
+import { ReactableHandler, ReactableType } from '@phil/reactables/types';
 import SuggestSessionReactableFactory from './factory';
-import { Emoji, ReactableHandle } from './shared';
+import { Emoji } from './shared';
+import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
-export default class SuggestSessionReactable extends ReactableType {
-  public readonly handle = ReactableHandle;
-
+class SuggestSessionReactableHandler
+  implements ReactableHandler<ReactableType.SuggestSession> {
   public async processReactionAdded(
     phil: Phil,
-    post: ReactablePost,
+    post: ReactablePost<ReactableType.SuggestSession>,
     event: OfficialDiscordReactionEvent
   ): Promise<void> {
     const activeSession = await SubmissionSession.getActiveSession(
       phil,
-      post.user.id
+      post.data.userId
     );
     if (!activeSession) {
       return;
@@ -39,16 +37,19 @@ export default class SuggestSessionReactable extends ReactableType {
 
   private async stopSession(
     phil: Phil,
-    post: ReactablePost,
+    post: ReactablePost<ReactableType.SuggestSession>,
     session: SubmissionSession
   ): Promise<void> {
     await post.remove(phil.db);
 
     await session.end(phil);
-    await sendEmbedMessage(phil.bot, post.user.id, {
-      color: EmbedColor.Info,
+    await sendMessageTemplate(phil.bot, post.data.userId, {
+      color: 'powder-blue',
       description: this.getWrapupMessage(session),
+      fields: null,
+      footer: null,
       title: ':ribbon: Suggestions Session Ended :ribbon:',
+      type: 'embed',
     });
   }
 
@@ -70,30 +71,40 @@ export default class SuggestSessionReactable extends ReactableType {
 
   private async makeSessionAnonymous(
     phil: Phil,
-    post: ReactablePost,
+    post: ReactablePost<ReactableType.SuggestSession>,
     session: SubmissionSession
   ): Promise<void> {
     await post.remove(phil.db);
 
     await session.makeAnonymous(phil);
     const NOWRAP = '';
-    const messageId = await sendEmbedMessage(phil.bot, post.user.id, {
-      color: EmbedColor.Info,
-      description: `All submissions you send during this session will be anonymous. Don't ${NOWRAP}worry though! You'll still get credit for them on the server leaderboard!`,
-      title: ':spy: Anonymous Session Begun :spy:',
-    });
+    const { finalMessage } = await sendMessageTemplate(
+      phil.bot,
+      post.data.userId,
+      {
+        color: 'powder-blue',
+        description: `All submissions you send during this session will be anonymous. Don't ${NOWRAP}worry though! You'll still get credit for them on the server leaderboard!`,
+        fields: null,
+        footer: null,
+        title: ':spy: Anonymous Session Begun :spy:',
+        type: 'embed',
+      }
+    );
 
     const reactableFactory = new SuggestSessionReactableFactory(
       phil.bot,
       phil.db,
       {
-        canMakeAnonymous: false,
-        channelId: post.channelId,
-        messageId,
         timeLimit: session.remainingTime.asMinutes(),
-        user: post.user,
-      }
+      },
+      {
+        userId: post.data.userId,
+      },
+      false
     );
-    await reactableFactory.create();
+
+    await reactableFactory.create(finalMessage);
   }
 }
+
+export default SuggestSessionReactableHandler;

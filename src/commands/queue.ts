@@ -35,10 +35,11 @@ class QueueCommand extends Command {
       MAX_QUEUE_DISPLAY_LENGTH
     );
 
-    await queue.postToChannel(legacyPhil.bot, database, {
-      channelId: invocation.context.channelId,
-      user: invocation.user,
-    });
+    await queue.postToChannel(
+      legacyPhil.bot,
+      database,
+      invocation.context.channelId
+    );
   }
 }
 

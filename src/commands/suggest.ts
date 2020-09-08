@@ -1,16 +1,15 @@
 import CommandInvocation from '@phil/CommandInvocation';
 import Database from '@phil/database';
 import { endOngoingDirectMessageProcesses } from '@phil/DirectMessageUtils';
-import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import Phil from '@phil/phil';
-import { sendEmbedMessage } from '@phil/promises/discord';
 import SubmissionSession from '@phil/prompts/submission-session';
 import SuggestSessionReactableFactory from '@phil/reactables/suggest-session/factory';
 import { Emoji } from '@phil/reactables/suggest-session/shared';
 import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from './@types';
+import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 function getBeginMessage(
   phil: Phil,
@@ -91,24 +90,27 @@ class SuggestCommand extends Command {
     serverConfig: ServerConfig,
     session: SubmissionSession
   ): Promise<void> {
-    const messageId = await sendEmbedMessage(legacyPhil.bot, userId, {
-      color: EmbedColor.Info,
+    const { finalMessage } = await sendMessageTemplate(legacyPhil.bot, userId, {
+      color: 'powder-blue',
       description: getBeginMessage(legacyPhil, serverConfig, session),
+      fields: null,
+      footer: null,
       title: ':pencil: Begin Sending Suggestions :incoming_envelope:',
+      type: 'embed',
     });
 
     const reactableFactory = new SuggestSessionReactableFactory(
       legacyPhil.bot,
       legacyPhil.db,
       {
-        canMakeAnonymous: true,
-        channelId: userId,
-        messageId,
         timeLimit: session.remainingTime.asMinutes(),
-        user: legacyPhil.bot.users[userId],
-      }
+      },
+      {
+        userId,
+      },
+      true
     );
-    await reactableFactory.create();
+    await reactableFactory.create(finalMessage);
   }
 }
 

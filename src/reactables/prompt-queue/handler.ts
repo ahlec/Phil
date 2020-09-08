@@ -1,18 +1,18 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
-import Bucket from '@phil/buckets';
 import Phil from '@phil/phil';
 import { deleteMessage } from '@phil/promises/discord';
-import { PromptQueue } from '@phil/prompts/queue';
 import ReactablePost from '@phil/reactables/post';
-import ReactableType from '@phil/reactables/reactable-type';
-import { Data, Emoji, ReactableHandle } from './shared';
+import { ReactableHandler, ReactableType } from '@phil/reactables/types';
+import { Data, Emoji } from './shared';
+import TextChannel from '@phil/discord/TextChannel';
+import Bucket from '@phil/buckets';
+import { PromptQueue } from '@phil/prompts/queue';
 
-export default class PromptQueueReactable extends ReactableType {
-  public readonly handle = ReactableHandle;
-
+class PromptQueueReactableHandler
+  implements ReactableHandler<ReactableType.PromptQueue> {
   public async processReactionAdded(
     phil: Phil,
-    post: ReactablePost,
+    post: ReactablePost<ReactableType.PromptQueue>,
     event: OfficialDiscordReactionEvent
   ): Promise<void> {
     switch (event.emoji.name) {
@@ -30,21 +30,24 @@ export default class PromptQueueReactable extends ReactableType {
 
   private async movePage(
     phil: Phil,
-    post: ReactablePost,
+    post: ReactablePost<ReactableType.PromptQueue>,
     pageDelta: number
   ): Promise<void> {
-    const data = post.jsonData as Data;
-    const newPageNumber = data.currentPage + pageDelta;
+    const newPageNumber = post.data.currentPage + pageDelta;
 
-    if (!this.canMoveToPage(data, newPageNumber)) {
+    if (!this.canMoveToPage(post.data, newPageNumber)) {
       throw new Error(`Cannot move to page ${newPageNumber}`);
     }
 
-    const bucket = await Bucket.getFromId(phil.bot, phil.db, data.bucket);
+    if (!(post.message.channel instanceof TextChannel)) {
+      throw new Error('Queue is only built to work in public channels.');
+    }
+
+    const bucket = await Bucket.getFromId(phil.bot, phil.db, post.data.bucket);
     if (!bucket) {
       throw new Error(
         'The bucket that this queue is for (`' +
-          data.bucket +
+          post.data.bucket +
           '`) has been deleted.'
       );
     }
@@ -54,16 +57,18 @@ export default class PromptQueueReactable extends ReactableType {
       phil.db,
       bucket,
       newPageNumber,
-      data.pageSize
+      post.data.pageSize
     );
 
     await post.remove(phil.db);
-    await deleteMessage(phil.bot, post.channelId, post.messageId);
+    await deleteMessage(phil.bot, post.message.channel.id, post.message.id);
 
-    await queue.postToChannel(phil.bot, phil.db, post);
+    await queue.postToChannel(phil.bot, phil.db, post.message.channel.id);
   }
 
   private canMoveToPage(data: Data, newPageNumber: number): boolean {
     return newPageNumber > 0 && newPageNumber <= data.totalNumberPages;
   }
 }
+
+export default PromptQueueReactableHandler;

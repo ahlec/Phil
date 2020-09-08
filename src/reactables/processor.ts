@@ -1,10 +1,21 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
 import Phil from '@phil/phil';
-import { ReactableTypeRegistry } from './@registry';
 import ReactablePost from './post';
+import { ReactableType, ReactableHandler } from './types';
+import PromptQueueReactableHandler from './prompt-queue/handler';
+import SuggestSessionReactableHandler from './suggest-session/handler';
 
-export default class ReactableProcessor {
-  constructor(private readonly phil: Phil) {}
+class ReactableProcessor {
+  private readonly handlers: {
+    [type in ReactableType]: ReactableHandler<type>;
+  };
+
+  constructor(private readonly phil: Phil) {
+    this.handlers = {
+      [ReactableType.PromptQueue]: new PromptQueueReactableHandler(),
+      [ReactableType.SuggestSession]: new SuggestSessionReactableHandler(),
+    };
+  }
 
   public async processReactionAdded(
     event: OfficialDiscordReactionEvent
@@ -26,12 +37,12 @@ export default class ReactableProcessor {
       return;
     }
 
-    const reactableType = ReactableTypeRegistry[post.reactableHandle];
+    const reactableType = this.handlers[post.type] as ReactableHandler<
+      ReactableType
+    >;
     if (!reactableType) {
       throw new Error(
-        'Attempted to react to an undefined reactable: `' +
-          post.reactableHandle +
-          '`'
+        `Attempted to react to an unknown reactable type '${post.type}' with on message '${post.message.id}'`
       );
     }
 
@@ -47,3 +58,5 @@ export default class ReactableProcessor {
     return !user.bot;
   }
 }
+
+export default ReactableProcessor;

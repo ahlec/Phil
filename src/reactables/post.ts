@@ -1,6 +1,10 @@
-import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
+import { Client as DiscordIOClient } from 'discord.io';
+
+import OutboundMessage from '@phil/discord/OutboundMessage';
+
 import Database from '@phil/database';
-import { removeOwnReaction } from '@phil/promises/discord';
+import { ReactableType, ReactableTypeData } from './types';
+import { getKnownOutboundMessage } from '@phil/utils/discord-migration';
 
 interface DbRow {
   message_id: string;
@@ -13,76 +17,91 @@ interface DbRow {
   jsondata: string;
 }
 
-export default class ReactablePost {
+class ReactablePost<TType extends ReactableType> {
   public static async getFromMessageId(
-    bot: DiscordIOClient,
+    discordClient: DiscordIOClient,
     db: Database,
     messageId: string
-  ): Promise<ReactablePost | null> {
+  ): Promise<ReactablePost<ReactableType> | null> {
     const results = await db.query<DbRow>(
       'SELECT * FROM reactable_posts WHERE message_id = $1 LIMIT 1',
       [messageId]
     );
+
     if (results.rowCount === 0) {
       return null;
     }
 
-    return new ReactablePost(bot, results.rows[0]);
+    const [row] = results.rows;
+    const message = getKnownOutboundMessage(
+      discordClient,
+      row.message_id,
+      row.channel_id
+    );
+    switch (row.reactable_type) {
+      case ReactableType.PromptQueue:
+      case ReactableType.SuggestSession: {
+        return new ReactablePost(message, row.reactable_type, row);
+      }
+      default: {
+        throw new Error(
+          `Unrecognized reactable type of '${row.reactable_type}' on message ID '${row.message_id}'`
+        );
+      }
+    }
   }
 
-  public static async getAllOfTypeForUser(
-    bot: DiscordIOClient,
+  public static async getAllOfTypeInChannel<TType extends ReactableType>(
+    discordClient: DiscordIOClient,
     db: Database,
-    userId: string,
-    handle: string
-  ): Promise<ReactablePost[]> {
+    channelId: string,
+    type: TType
+  ): Promise<ReactablePost<TType>[]> {
     const results = await db.query<DbRow>(
       `SELECT * FROM reactable_posts
-            WHERE user_id = $1 AND reactable_type = $2`,
-      [userId, handle]
+            WHERE channel_id = $1 AND reactable_type = $2`,
+      [channelId, type]
     );
-    return results.rows.map((row) => new ReactablePost(bot, row));
+    return results.rows.map(
+      (row): ReactablePost<TType> => {
+        const message = getKnownOutboundMessage(
+          discordClient,
+          row.message_id,
+          row.channel_id
+        );
+        return new ReactablePost(message, type, row);
+      }
+    );
   }
 
-  public readonly messageId: string;
-  public readonly channelId: string;
-  public readonly user: DiscordIOUser;
   public readonly created: Date;
   public readonly timeLimit: number;
-  public readonly reactableHandle: string;
   public readonly monitoredReactions: Set<string>;
-  public readonly jsonData: unknown;
+  public readonly data: ReactableTypeData[TType];
 
-  private constructor(private readonly bot: DiscordIOClient, dbRow: DbRow) {
-    this.messageId = dbRow.message_id;
-    this.channelId = dbRow.channel_id;
-    this.user = bot.users[dbRow.user_id];
+  private constructor(
+    public readonly message: OutboundMessage,
+    public readonly type: TType,
+    dbRow: DbRow
+  ) {
     this.created = new Date(dbRow.created);
     this.timeLimit = parseInt(dbRow.timelimit, 10);
-    this.reactableHandle = dbRow.reactable_type;
     this.monitoredReactions = new Set(dbRow.monitored_reactions.split(','));
-    this.jsonData = JSON.parse(dbRow.jsondata);
-  }
-
-  public isValid(): boolean {
-    if (!this.user) {
-      return false;
-    }
-
-    return true;
+    this.data = JSON.parse(dbRow.jsondata);
   }
 
   public async remove(db: Database): Promise<void> {
     await db.query('DELETE FROM reactable_posts WHERE message_id = $1', [
-      this.messageId,
+      this.message.id,
     ]);
-    for (const reaction of this.monitoredReactions) {
-      await removeOwnReaction(
-        this.bot,
-        this.channelId,
-        this.messageId,
-        reaction
-      );
-    }
+
+    await Promise.all(
+      Array.from(this.monitoredReactions).map(
+        (reaction: string): Promise<void> =>
+          this.message.removeReaction(reaction)
+      )
+    );
   }
 }
+
+export default ReactablePost;

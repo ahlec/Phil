@@ -1,40 +1,35 @@
 import { Client as DiscordIOClient } from 'discord.io';
+
 import Database from '@phil/database';
-import {
-  ReactableCreateArgsBase,
-  ReactableFactoryBase,
+import ReactableFactoryBase, {
+  ReactableCreationArgs,
 } from '@phil/reactables/factory-base';
-import { Emoji, ReactableHandle } from './shared';
+import { ReactableType } from '@phil/reactables/types';
 
-interface CreateArgs extends ReactableCreateArgsBase {
-  canMakeAnonymous: boolean;
-}
+import { Data, Emoji } from './shared';
 
-export default class SuggestSessionReactableFactory extends ReactableFactoryBase<
-  CreateArgs,
-  null
+class SuggestSessionReactableFactory extends ReactableFactoryBase<
+  ReactableType.SuggestSession
 > {
-  protected readonly handle = ReactableHandle;
-
-  constructor(
-    readonly bot: DiscordIOClient,
-    readonly db: Database,
-    readonly args: CreateArgs
+  public constructor(
+    discordClient: DiscordIOClient,
+    database: Database,
+    args: ReactableCreationArgs,
+    data: Data,
+    private readonly canMakeAnonymous: boolean
   ) {
-    super(bot, db, args);
+    super(ReactableType.SuggestSession, discordClient, database, args, data);
   }
 
-  protected getJsonData(): null {
-    return null;
-  }
-
-  protected getEmojiReactions(): string[] {
+  protected getEmojiReactions(): readonly string[] {
     const reactions = [Emoji.Stop];
 
-    if (this.args.canMakeAnonymous) {
+    if (this.canMakeAnonymous) {
       reactions.push(Emoji.MakeAnonymous);
     }
 
     return reactions;
   }
 }
+
+export default SuggestSessionReactableFactory;
