@@ -3,10 +3,9 @@ import Bucket from '@phil/buckets';
 import Features from '@phil/features/all-features';
 import Phil from '@phil/phil';
 import Prompt from '@phil/prompts/prompt';
-import { PromptQueue } from '@phil/prompts/queue';
-import Submission from '@phil/prompts/submission';
 import ServerConfig from '@phil/server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
+import ServerBucketsCollection from '@phil/ServerBucketsCollection';
 
 const HANDLE = 'post-new-prompts';
 
@@ -28,11 +27,12 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     serverConfig: ServerConfig,
     now: Moment
   ): Promise<void> {
-    const serverBuckets = await Bucket.getAllForServer(
+    const bucketCollection = new ServerBucketsCollection(
       phil.bot,
       phil.db,
       serverConfig.server.id
     );
+    const serverBuckets = await bucketCollection.getAll();
 
     const processes = serverBuckets.map((bucket) => {
       if (bucket.isPaused || !bucket.isValid) {
@@ -51,11 +51,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     now: Moment,
     bucket: Bucket
   ): Promise<void> {
-    const currentPrompt = await Prompt.getCurrentPrompt(
-      phil.bot,
-      phil.db,
-      bucket
-    );
+    const currentPrompt = await bucket.getCurrentPrompt();
     if (!this.isCurrentPromptOutdated(currentPrompt, now, bucket)) {
       this.write(
         `bucket ${bucket.handle} on server ${serverConfig.serverId} is not ready for a new prompt just yet`
@@ -78,7 +74,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     try {
       await nextPrompt.prompt.publish(phil.bot, phil.db, serverConfig);
       if (!nextPrompt.isReusedPrompt) {
-        await bucket.markAlertedEmptying(phil.db, false);
+        await bucket.markAlertedEmptying(false);
       }
     } catch (err) {
       this.error(
@@ -93,25 +89,16 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     phil: Phil,
     bucket: Bucket
   ): Promise<NextPrompt | null> {
-    const promptQueue = await PromptQueue.getPromptQueue(
-      phil.bot,
-      phil.db,
-      bucket,
-      1,
-      1
-    );
+    const promptQueue = await bucket.getPromptQueue();
 
-    if (promptQueue.count > 0) {
-      return { isReusedPrompt: false, prompt: promptQueue.entries[0].prompt };
+    if (promptQueue.totalLength > 0) {
+      const firstPage = await promptQueue.getPage(1, 1);
+      return { isReusedPrompt: false, prompt: firstPage.entries[0].prompt };
     }
 
-    const [dustiest] = await Submission.getDustiestSubmissions(
-      phil.db,
-      bucket,
-      1
-    );
+    const [dustiest] = await bucket.getDustiestSubmissions(1);
     if (dustiest) {
-      const prompt = await Prompt.queueSubscription(phil.db, dustiest);
+      const prompt = await dustiest.addToQueue();
       if (prompt) {
         return { isReusedPrompt: true, prompt };
       }

@@ -46,11 +46,20 @@ class SuggestCommand extends Command {
     database: Database,
     legacyPhil: Phil
   ): Promise<void> {
+    const invokingMember = await invocation.context.server.getMember(
+      invocation.userId
+    );
+    if (!invokingMember) {
+      await invocation.respond({
+        error:
+          "I don't seem to have met you yet. Hi! Can you let an admin know, something seems to be wrong.",
+        type: 'error',
+      });
+      return;
+    }
+
     const bucket = await invocation.retrieveBucketFromArguments();
-    if (
-      bucket.requiredRoleId &&
-      !(await bucket.canUserSubmitTo(legacyPhil.bot, invocation.userId))
-    ) {
+    if (bucket.requiredRoleId && !bucket.canUserSubmitTo(invokingMember)) {
       const role = invocation.context.server.getRole(bucket.requiredRoleId);
       if (!role) {
         throw new Error(
@@ -76,37 +85,40 @@ class SuggestCommand extends Command {
       throw new Error('Unable to start a new session despite all good input.');
     }
 
-    await this.sendDirectMessage(
-      legacyPhil,
-      invocation.userId,
-      invocation.context.serverConfig,
-      session
-    );
+    await this.sendDirectMessage(legacyPhil, invocation, database, session);
   }
 
   private async sendDirectMessage(
     legacyPhil: Phil,
-    userId: string,
-    serverConfig: ServerConfig,
+    invocation: CommandInvocation,
+    database: Database,
     session: SubmissionSession
   ): Promise<void> {
-    const { finalMessage } = await sendMessageTemplate(legacyPhil.bot, userId, {
-      color: 'powder-blue',
-      description: getBeginMessage(legacyPhil, serverConfig, session),
-      fields: null,
-      footer: null,
-      title: ':pencil: Begin Sending Suggestions :incoming_envelope:',
-      type: 'embed',
-    });
+    const { finalMessage } = await sendMessageTemplate(
+      legacyPhil.bot,
+      invocation.userId,
+      {
+        color: 'powder-blue',
+        description: getBeginMessage(
+          legacyPhil,
+          invocation.context.serverConfig,
+          session
+        ),
+        fields: null,
+        footer: null,
+        title: ':pencil: Begin Sending Suggestions :incoming_envelope:',
+        type: 'embed',
+      }
+    );
 
     const reactableFactory = new SuggestSessionReactableFactory(
       legacyPhil.bot,
-      legacyPhil.db,
+      database,
       {
         timeLimit: session.remainingTime.asMinutes(),
       },
       {
-        userId,
+        userId: invocation.userId,
       },
       true
     );

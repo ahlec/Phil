@@ -29,11 +29,7 @@ class UnconfirmedCommand extends Command {
       [invocation.context.channelId]
     );
     const bucket = await invocation.retrieveBucketFromArguments();
-    const submissions = await Submission.getUnconfirmed(
-      database,
-      bucket,
-      MAX_LIST_LENGTH
-    );
+    const submissions = await bucket.getUnconfirmedSubmissions(MAX_LIST_LENGTH);
     if (submissions.length === 0) {
       await this.outputNoUnconfirmedSubmissions(invocation);
       return;
@@ -62,7 +58,7 @@ class UnconfirmedCommand extends Command {
 
   private async outputList(
     invocation: CommandInvocation,
-    submissions: Submission[]
+    submissions: readonly Submission[]
   ): Promise<void> {
     const are = submissions.length === 1 ? 'is' : 'are';
     const submissionsNoun =

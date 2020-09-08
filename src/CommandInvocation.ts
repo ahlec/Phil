@@ -9,6 +9,7 @@ import PublicMessage from '@phil/messages/public';
 import ServerConfig from './server-config';
 import { deleteMessage } from './promises/discord';
 import ServerBucketsCollection from './ServerBucketsCollection';
+import ServerSubmissionsCollection from './ServerSubmissionsCollection';
 import { getRandomArrayEntry } from './utils';
 import {
   sendMessageTemplate,
@@ -20,6 +21,7 @@ interface InvocationContext {
   channelId: string;
   server: Server;
   serverConfig: ServerConfig;
+  submissions: ServerSubmissionsCollection;
 }
 
 function multipleUnspecifiedBucketsError(

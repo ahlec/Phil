@@ -1,6 +1,7 @@
 import * as moment from 'moment';
 import Bucket from '@phil/buckets';
 import Phil from '@phil/phil';
+import ServerBucketsCollection from '@phil/ServerBucketsCollection';
 
 const SESSION_LENGTH_IN_MINUTES = 25;
 
@@ -12,13 +13,19 @@ export default class SubmissionSession {
     const utcNow = moment.utc();
     const dbRow = await phil.db.querySingle<{
       bucket_id: string;
+      server_id: string;
       started_utc: string;
       timeout_utc: string;
       is_anonymous: string;
       num_submitted: string;
     }>(
       `SELECT
-        pss.*
+        pss.bucket_id,
+        pss.started_utc,
+        pss.timeout_utc,
+        pss.is_anonymous,
+        pss.num_submitted,
+        pb.server_id
       FROM
         prompt_submission_sessions pss
       LEFT JOIN
@@ -36,7 +43,15 @@ export default class SubmissionSession {
     }
 
     const bucketId = parseInt(dbRow.bucket_id, 10);
-    const bucket = await Bucket.getFromId(phil.bot, phil.db, bucketId);
+    const bucketCollection = new ServerBucketsCollection(
+      phil.bot,
+      phil.db,
+      dbRow.server_id
+    );
+    const bucket = await bucketCollection.retrieve({
+      id: bucketId,
+      type: 'id',
+    });
     if (!bucket) {
       return null;
     }

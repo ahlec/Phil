@@ -3,7 +3,6 @@ import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
-import ServerConfig from '@phil/server-config';
 import { isNumeric } from '@phil/utils';
 import Command, { LoggerDefinition } from '@phil/commands/@types';
 import Phil from '@phil/phil';
@@ -64,10 +63,9 @@ abstract class ConfirmRejectCommandBase extends Command {
     for (let confirmNumber of numbers) {
       confirmNumber = confirmNumber - 1; // Public facing, it's 1-based, but in the database it's 0-based
       const result = await this.performAction(
+        invocation,
         legacyPhil,
         database,
-        invocation.context.serverConfig,
-        invocation.context.channelId,
         confirmNumber
       );
       this.write(`result of number ${confirmNumber}: ${result}`);
@@ -82,8 +80,8 @@ abstract class ConfirmRejectCommandBase extends Command {
   }
 
   protected abstract performActionOnSubmission(
+    invocation: CommandInvocation,
     database: Database,
-    serverConfig: ServerConfig,
     submissionId: number,
     legacyPhil: Phil
   ): Promise<boolean>;
@@ -143,10 +141,9 @@ abstract class ConfirmRejectCommandBase extends Command {
   }
 
   private async performAction(
+    invocation: CommandInvocation,
     legacyPhil: Phil,
     database: Database,
-    serverConfig: ServerConfig,
-    channelId: string,
     confirmNumber: number
   ): Promise<PerformResult> {
     try {
@@ -158,7 +155,7 @@ abstract class ConfirmRejectCommandBase extends Command {
         WHERE
           channel_id = $1 AND
           confirm_number = $2`,
-        [channelId, confirmNumber]
+        [invocation.context.channelId, confirmNumber]
       );
       if (results.rowCount === 0) {
         return PerformResult.Skipped;
@@ -166,8 +163,8 @@ abstract class ConfirmRejectCommandBase extends Command {
 
       const submissionId = results.rows[0].submission_id;
       const actionResult = this.performActionOnSubmission(
+        invocation,
         database,
-        serverConfig,
         parseInt(submissionId, 10),
         legacyPhil
       );
@@ -177,7 +174,7 @@ abstract class ConfirmRejectCommandBase extends Command {
 
       await this.removeNumberFromConfirmationQueue(
         database,
-        channelId,
+        invocation.context.channelId,
         confirmNumber
       );
       return PerformResult.Success;

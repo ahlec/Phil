@@ -1,7 +1,7 @@
 import Database from '@phil/database';
-import ServerConfig from '@phil/server-config';
 import { LoggerDefinition } from './@types';
 import ConfirmRejectCommandBase from './bases/confirm-reject-base';
+import CommandInvocation from '@phil/CommandInvocation';
 
 const successMessageEnd =
   'rejected. You may continue using `{commandPrefix}reject` or start over by using `{commandPrefix}unconfirmed`.';
@@ -18,8 +18,8 @@ class RejectCommand extends ConfirmRejectCommandBase {
   }
 
   protected async performActionOnSubmission(
+    invocation: CommandInvocation,
     database: Database,
-    serverConfig: ServerConfig,
     submissionId: number
   ): Promise<boolean> {
     try {

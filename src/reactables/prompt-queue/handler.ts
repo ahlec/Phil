@@ -4,9 +4,9 @@ import { deleteMessage } from '@phil/promises/discord';
 import ReactablePost from '@phil/reactables/post';
 import { ReactableHandler, ReactableType } from '@phil/reactables/types';
 import { Data, Emoji } from './shared';
+import { sendMessageTemplate } from '@phil/utils/discord-migration';
 import TextChannel from '@phil/discord/TextChannel';
-import Bucket from '@phil/buckets';
-import { PromptQueue } from '@phil/prompts/queue';
+import ServerBucketsCollection from '@phil/ServerBucketsCollection';
 
 class PromptQueueReactableHandler
   implements ReactableHandler<ReactableType.PromptQueue> {
@@ -43,7 +43,16 @@ class PromptQueueReactableHandler
       throw new Error('Queue is only built to work in public channels.');
     }
 
-    const bucket = await Bucket.getFromId(phil.bot, phil.db, post.data.bucket);
+    const bucketCollection = new ServerBucketsCollection(
+      phil.bot,
+      phil.db,
+      post.message.channel.server.id
+    );
+
+    const bucket = await bucketCollection.retrieve({
+      id: post.data.bucket,
+      type: 'id',
+    });
     if (!bucket) {
       throw new Error(
         'The bucket that this queue is for (`' +
@@ -52,10 +61,8 @@ class PromptQueueReactableHandler
       );
     }
 
-    const queue = await PromptQueue.getPromptQueue(
-      phil.bot,
-      phil.db,
-      bucket,
+    const queue = await bucket.getPromptQueue();
+    const { reactableFactory, messageTemplate } = await queue.getPage(
       newPageNumber,
       post.data.pageSize
     );
@@ -63,7 +70,15 @@ class PromptQueueReactableHandler
     await post.remove(phil.db);
     await deleteMessage(phil.bot, post.message.channel.id, post.message.id);
 
-    await queue.postToChannel(phil.bot, phil.db, post.message.channel.id);
+    const { finalMessage } = await sendMessageTemplate(
+      phil.bot,
+      post.message.channel.id,
+      messageTemplate
+    );
+
+    if (reactableFactory) {
+      await reactableFactory.create(finalMessage);
+    }
   }
 
   private canMoveToPage(data: Data, newPageNumber: number): boolean {

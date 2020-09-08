@@ -1,10 +1,13 @@
-import {
-  Client as DiscordIOClient,
-  Server as DiscordIOServer,
-} from 'discord.io';
+import { Client as DiscordIOClient } from 'discord.io';
 import * as moment from 'moment';
+
+import Member from '@phil/discord/Member';
+
 import Database from './database';
-import { getMemberRolesInServer } from './promises/discord';
+import Prompt from './prompts/prompt';
+import PromptQueue from './prompts/queue';
+import Submission from './prompts/submission';
+import ServerSubmissionsCollection from './ServerSubmissionsCollection';
 
 export enum BucketFrequency {
   Daily = 0,
@@ -18,141 +21,16 @@ const frequencyDisplayStrings = {
   [BucketFrequency.Immediately]: 'Immediately',
 };
 
-const frequencyFromStrings: { [name: string]: BucketFrequency | undefined } = {
-  daily: BucketFrequency.Daily,
-  immediately: BucketFrequency.Immediately,
-  weekly: BucketFrequency.Weekly,
-};
-
-interface DbRow {
-  bucket_id: string;
-  server_id: string;
-  channel_id: string;
-  reference_handle: string;
-  display_name: string;
-  is_paused: string;
-  required_role_id: string;
-  alert_when_low: string;
-  prompt_title_format: string;
-  alerted_bucket_emptying: string;
-  frequency: string;
+interface SubmissionDbRow {
+  submission_id: number;
+  suggesting_userid: string;
+  date_suggested: number;
+  approved_by_admin: '0' | '1';
+  submitted_anonymously: '0' | '1';
+  submission_text: string;
 }
 
-export default class Bucket {
-  public static async getFromId(
-    bot: DiscordIOClient,
-    db: Database,
-    bucketId: number
-  ): Promise<Bucket | null> {
-    const results = await db.query<DbRow>(
-      'SELECT * FROM prompt_buckets WHERE bucket_id = $1',
-      [bucketId]
-    );
-    if (results.rowCount !== 1) {
-      return null;
-    }
-
-    return new Bucket(bot, results.rows[0]);
-  }
-
-  public static async getFromBatchIds(
-    bot: DiscordIOClient,
-    db: Database,
-    ids: ReadonlySet<number>
-  ): Promise<{ [id: number]: Bucket | undefined }> {
-    const returnValue: { [id: number]: Bucket | undefined } = {};
-    if (!ids.size) {
-      return returnValue;
-    }
-
-    const result = await db.query<DbRow>(
-      `SELECT
-        *
-      FROM
-        prompt_buckets
-      WHERE
-        bucket_id = ANY($1::int[])`,
-      [[...ids]]
-    );
-
-    result.rows.forEach((row) => {
-      const bucket = new Bucket(bot, row);
-      returnValue[bucket.id] = bucket;
-    });
-
-    return returnValue;
-  }
-
-  public static async getFromChannelId(
-    bot: DiscordIOClient,
-    db: Database,
-    channelId: string
-  ): Promise<Bucket | null> {
-    const results = await db.query<DbRow>(
-      'SELECT * FROM prompt_buckets WHERE channel_id = $1',
-      [channelId]
-    );
-    if (results.rowCount !== 1) {
-      return null;
-    }
-
-    return new Bucket(bot, results.rows[0]);
-  }
-
-  public static async getFromReferenceHandle(
-    bot: DiscordIOClient,
-    db: Database,
-    server: DiscordIOServer,
-    referenceHandle: string
-  ): Promise<Bucket | null> {
-    const results = await db.query<DbRow>(
-      'SELECT * FROM prompt_buckets WHERE server_id = $1 AND reference_handle = $2',
-      [server.id, referenceHandle]
-    );
-    if (results.rowCount !== 1) {
-      return null;
-    }
-
-    return new Bucket(bot, results.rows[0]);
-  }
-
-  public static async getAllForServer(
-    bot: DiscordIOClient,
-    db: Database,
-    serverId: string
-  ): Promise<Bucket[]> {
-    const results = await db.query<DbRow>(
-      'SELECT * FROM prompt_buckets WHERE server_id = $1',
-      [serverId]
-    );
-    return results.rows.map((row) => new Bucket(bot, row));
-  }
-
-  private static determineIsBucketValid(
-    bot: DiscordIOClient,
-    dbRow: DbRow
-  ): boolean {
-    const server = bot.servers[dbRow.server_id];
-    if (!server) {
-      return false;
-    }
-
-    if (!(dbRow.channel_id in server.channels)) {
-      return false;
-    }
-
-    if (dbRow.required_role_id) {
-      if (!(dbRow.required_role_id in server.roles)) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  public readonly id: number;
-  public readonly serverId: string;
-  public readonly channelId: string;
+class Bucket {
   public readonly isValid: boolean;
   public readonly handle: string;
   public readonly displayName: string;
@@ -160,39 +38,58 @@ export default class Bucket {
   public readonly requiredRoleId?: string;
   public readonly alertWhenLow: boolean;
   public readonly frequency: BucketFrequency;
-  public readonly frequencyDisplayName: string;
   public readonly promptTitleFormat: string;
   public internalAlertedBucketEmptying: boolean;
 
-  private constructor(bot: DiscordIOClient, dbRow: DbRow) {
-    const isValid = Bucket.determineIsBucketValid(bot, dbRow);
-    let bucketFrequency = frequencyFromStrings[dbRow.frequency];
-    if (bucketFrequency === undefined) {
-      bucketFrequency = BucketFrequency.Daily;
+  public constructor(
+    private readonly discordClient: DiscordIOClient,
+    private readonly database: Database,
+    private readonly submissionsCollection: ServerSubmissionsCollection,
+    public readonly id: number,
+    public readonly serverId: string,
+    public readonly channelId: string,
+    contents: {
+      isValid: boolean;
+      handle: string;
+      displayName: string;
+      isPaused: boolean;
+      requiredRoleId?: string;
+      alertWhenLow: boolean;
+      frequency: BucketFrequency;
+      promptTitleFormat: string;
+      alertedBucketEmptying: boolean;
     }
-
-    this.id = parseInt(dbRow.bucket_id, 10);
-    this.serverId = dbRow.server_id;
-    this.channelId = dbRow.channel_id;
-    this.isValid = isValid;
-    this.handle = dbRow.reference_handle;
-    this.displayName = dbRow.display_name;
-    this.isPaused = parseInt(dbRow.is_paused, 10) === 1;
-    this.requiredRoleId = dbRow.required_role_id;
-    this.alertWhenLow = parseInt(dbRow.alert_when_low, 10) === 1;
-    this.frequency = bucketFrequency;
-    this.frequencyDisplayName = frequencyDisplayStrings[bucketFrequency];
-    this.promptTitleFormat = dbRow.prompt_title_format;
-    this.internalAlertedBucketEmptying =
-      parseInt(dbRow.alerted_bucket_emptying, 10) === 1;
+  ) {
+    this.isValid = contents.isValid;
+    this.handle = contents.handle;
+    this.displayName = contents.displayName;
+    this.isPaused = contents.isPaused;
+    this.requiredRoleId = contents.requiredRoleId;
+    this.alertWhenLow = contents.alertWhenLow;
+    this.frequency = contents.frequency;
+    this.promptTitleFormat = contents.promptTitleFormat;
+    this.internalAlertedBucketEmptying = contents.alertedBucketEmptying;
   }
 
   public get alertedBucketEmptying(): boolean {
     return this.internalAlertedBucketEmptying;
   }
 
-  public async setIsPaused(db: Database, isPaused: boolean): Promise<void> {
-    const rowsModified = await db.execute(
+  public get frequencyDisplayName(): string {
+    return frequencyDisplayStrings[this.frequency];
+  }
+
+  public getPromptQueue(): Promise<PromptQueue> {
+    return PromptQueue.get(
+      this.discordClient,
+      this.database,
+      this.submissionsCollection,
+      this
+    );
+  }
+
+  public async setIsPaused(isPaused: boolean): Promise<void> {
+    const rowsModified = await this.database.execute(
       'UPDATE prompt_buckets SET is_paused = $1 WHERE bucket_id = $2',
       [isPaused ? 1 : 0, this.id]
     );
@@ -234,11 +131,8 @@ export default class Bucket {
     }
   }
 
-  public async markAlertedEmptying(
-    db: Database,
-    hasAlerted: boolean
-  ): Promise<void> {
-    const rowsModified = await db.execute(
+  public async markAlertedEmptying(hasAlerted: boolean): Promise<void> {
+    const rowsModified = await this.database.execute(
       'UPDATE prompt_buckets SET alerted_bucket_emptying = $1 WHERE bucket_id = $2',
       [hasAlerted ? 1 : 0, this.id]
     );
@@ -249,23 +143,142 @@ export default class Bucket {
     this.internalAlertedBucketEmptying = hasAlerted;
   }
 
-  public async canUserSubmitTo(
-    bot: DiscordIOClient,
-    userId: string
-  ): Promise<boolean> {
+  public canUserSubmitTo(member: Member): boolean {
     if (!this.requiredRoleId) {
       return true;
     }
 
-    const memberRoles = await getMemberRolesInServer(
-      bot,
-      this.serverId,
-      userId
+    return member.roles.some(
+      (role): boolean => role.id === this.requiredRoleId
     );
-    if (memberRoles.includes(this.requiredRoleId)) {
-      return true;
+  }
+
+  public async getUnconfirmedSubmissions(
+    maxResults: number
+  ): Promise<readonly Submission[]> {
+    const { rows } = await this.database.query<SubmissionDbRow>(
+      `SELECT
+        submission_id,
+        bucket_id,
+        suggesting_userid,
+        date_suggested,
+        approved_by_admin,
+        submitted_anonymously,
+        submission_text
+      FROM
+        submission
+      WHERE
+        bucket_id = $1 AND
+        approved_by_admin = E'0'
+      ORDER BY
+        date_suggested ASC
+      LIMIT $2`,
+      [this.id, maxResults]
+    );
+
+    return rows.map((dbRow): Submission => this.parseSubmission(dbRow));
+  }
+
+  /**
+   * Gets the submission(s) from the provided bucket that were approved
+   * by an admin and which have already been posted before, ordered so that the first
+   * return entry is the oldest submission that hasn't been repeated yet ("the dustiest").
+   * Not a great name but I don't want a function with 90 words in it.
+   */
+  public async getDustiestSubmissions(
+    maxResults: number
+  ): Promise<readonly Submission[]> {
+    const { rows } = await this.database.query<SubmissionDbRow>(
+      `SELECT
+          s.submission_id,
+          MAX(s.bucket_id) AS "bucket_id",
+          MAX(s.suggesting_userid) AS "suggesting_userid",
+          MAX(s.date_suggested) AS "date_suggested",
+          BIT_AND(s.approved_by_admin) AS "approved_by_admin",
+          BIT_AND(s.submitted_anonymously) AS "submitted_anonymously",
+          MAX(s.submission_text) AS "submission_text",
+          MAX(p.prompt_date) AS "date_last_posted"
+        FROM
+          prompt_v2 AS p
+        JOIN
+          submission AS s
+        ON
+          p.submission_id = s.submission_id
+        WHERE
+          p.prompt_date IS NOT NULL AND
+          s.bucket_id = $1
+        GROUP BY
+          s.submission_id
+        ORDER BY
+          date_last_posted ASC
+        LIMIT $2`,
+      [this.id, maxResults]
+    );
+
+    return rows.map((dbRow): Submission => this.parseSubmission(dbRow));
+  }
+
+  public async getCurrentPrompt(): Promise<Prompt | null> {
+    const result = await this.database.querySingle<{
+      prompt_id: string;
+      submission_id: string;
+      prompt_number: string;
+      prompt_date: string | null;
+      repetition_number: string;
+    }>(
+      `SELECT
+        p.prompt_id,
+        p.submission_id,
+        p.prompt_number,
+        p.prompt_date,
+        p.repetition_number
+      FROM
+        prompt_v2 AS p
+      JOIN
+        submission AS s
+      ON
+        p.submission_id = s.submission_id
+      WHERE
+        s.bucket_id = $1 AND
+        p.prompt_date IS NOT NULL
+      ORDER BY
+        p.prompt_date DESC
+      LIMIT 1`,
+      [this.id]
+    );
+
+    if (!result) {
+      return null;
     }
 
-    return false;
+    const submission = await this.submissionsCollection.retrieve({
+      id: parseInt(result.submission_id, 10),
+      type: 'id',
+    });
+    if (!submission) {
+      throw new Error(
+        `Could not retrieve submission '${result.submission_id}' for prompt '${result.prompt_id}'`
+      );
+    }
+
+    return new Prompt(
+      submission,
+      parseInt(result.prompt_id, 10),
+      parseInt(result.prompt_number, 10),
+      parseInt(result.repetition_number, 10),
+      result.prompt_date ? moment(result.prompt_date) : null
+    );
+  }
+
+  private parseSubmission(dbRow: SubmissionDbRow): Submission {
+    return new Submission(this.database, this, dbRow.submission_id, {
+      approvedByAdmin: parseInt(dbRow.approved_by_admin, 10) === 1,
+      dateSuggested: moment(dbRow.date_suggested),
+      submissionText: dbRow.submission_text,
+      submittedAnonymously: parseInt(dbRow.submitted_anonymously, 10) === 1,
+      suggestingUserId: dbRow.suggesting_userid,
+    });
   }
 }
+
+export default Bucket;

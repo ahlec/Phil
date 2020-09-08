@@ -1,42 +1,11 @@
 import * as Discord from 'discord.io';
 import EmbedColor, { getColorValue } from '@phil/embed-color';
 import MessageBuilder from '@phil/message-builder';
-import { wait } from '@phil/utils/delay';
 
 export interface EmbedField {
   name: string;
   value?: string;
   inline?: boolean;
-}
-
-function isIndexableObject(obj: unknown): obj is { [index: string]: unknown } {
-  return typeof obj === 'object' && obj !== null;
-}
-
-function isRateLimitError(
-  err: unknown
-): err is { statusCode: 429; response: { retry_after: number } } {
-  if (!isIndexableObject(err)) {
-    return false;
-  }
-
-  const { statusCode, response } = err;
-  if (statusCode !== 429) {
-    return false;
-  }
-
-  if (!isIndexableObject(response)) {
-    return false;
-  }
-
-  if (
-    !('retry_after' in response) ||
-    typeof response.retry_after !== 'number'
-  ) {
-    return false;
-  }
-
-  return true;
 }
 
 export interface EmbedData {
@@ -227,77 +196,6 @@ export function pinMessage(
       }
     );
   });
-}
-
-export async function addReaction(
-  bot: Discord.Client,
-  channelId: string,
-  messageId: string,
-  reaction: string
-): Promise<void> {
-  try {
-    await new Promise<void>((resolve, reject) => {
-      bot.addReaction(
-        {
-          channelID: channelId,
-          messageID: messageId,
-          reaction,
-        },
-        (err): void => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          resolve();
-        }
-      );
-    });
-  } catch (err) {
-    if (isRateLimitError(err)) {
-      await wait(err.response.retry_after);
-      await addReaction(bot, channelId, messageId, reaction);
-      return;
-    }
-
-    throw err;
-  }
-}
-
-export async function removeOwnReaction(
-  bot: Discord.Client,
-  channelId: string,
-  messageId: string,
-  reaction: string
-): Promise<void> {
-  try {
-    await new Promise<void>((resolve, reject) => {
-      bot.removeReaction(
-        {
-          channelID: channelId,
-          messageID: messageId,
-          reaction,
-          userID: bot.id,
-        },
-        (err): void => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          resolve();
-        }
-      );
-    });
-  } catch (err) {
-    if (isRateLimitError(err)) {
-      await wait(err.response.retry_after);
-      await removeOwnReaction(bot, channelId, messageId, reaction);
-      return;
-    }
-
-    throw err;
-  }
 }
 
 interface ApiServerMember {

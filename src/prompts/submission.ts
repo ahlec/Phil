@@ -1,186 +1,119 @@
-import { Client as DiscordIOClient } from 'discord.io';
 import * as moment from 'moment';
 import Bucket from '@phil/buckets';
 import Database from '@phil/database';
+import Prompt from '@phil/prompts/prompt';
 
-export interface SubmissionDatabaseSchema {
-  submission_id: number;
-  suggesting_userid: string;
-  date_suggested: number;
-  approved_by_admin: '0' | '1';
-  submitted_anonymously: '0' | '1';
-  submission_text: string;
+export interface PromptDbCreationResult {
+  prompt_id: string;
+  submission_id: string;
+  prompt_number: string;
+  prompt_date: string | null;
+  repetition_number: string;
 }
 
-export default class Submission {
-  public static async getFromId(
-    client: DiscordIOClient,
-    db: Database,
-    submissionId: number
-  ): Promise<Submission | null> {
-    const result = await db.querySingle<
-      SubmissionDatabaseSchema & { bucket_id: number }
-    >(
-      `SELECT
-        submission_id,
-        bucket_id,
-        suggesting_userid,
-        date_suggested,
-        approved_by_admin,
-        submitted_anonymously,
-        submission_text
-      FROM
-        submission
-      WHERE
-        submission_id = $1
-      LIMIT 1`,
-      [submissionId]
-    );
-
-    if (!result) {
-      return null;
-    }
-
-    const bucket = await Bucket.getFromId(client, db, result.bucket_id);
-    if (!bucket) {
-      return null;
-    }
-
-    return new Submission(bucket, result);
-  }
-
-  public static async getFromBatchIds(
-    client: DiscordIOClient,
-    db: Database,
-    ids: ReadonlySet<number>
-  ): Promise<{ [id: number]: Submission | undefined }> {
-    const returnValue: { [id: number]: Submission | undefined } = {};
-    if (!ids.size) {
-      return returnValue;
-    }
-
-    const result = await db.query<
-      SubmissionDatabaseSchema & { bucket_id: number }
-    >(
-      `SELECT
-        submission_id,
-        bucket_id,
-        suggesting_userid,
-        date_suggested,
-        approved_by_admin,
-        submitted_anonymously,
-        submission_text
-      FROM
-        submission
-      WHERE
-        submission_id = ANY($1::int[])`,
-      [[...ids]]
-    );
-
-    if (!result.rowCount) {
-      return returnValue;
-    }
-
-    const bucketIds = new Set<number>();
-    result.rows.forEach(({ bucket_id: bucketId }) => bucketIds.add(bucketId));
-
-    const buckets = await Bucket.getFromBatchIds(client, db, bucketIds);
-    result.rows.forEach((row) => {
-      const bucket = buckets[row.bucket_id];
-      if (!bucket) {
-        return;
-      }
-
-      const submission = new Submission(bucket, row);
-      returnValue[submission.id] = submission;
-    });
-
-    return returnValue;
-  }
-
-  public static async getUnconfirmed(
-    db: Database,
-    bucket: Bucket,
-    maxNumResults: number
-  ): Promise<Submission[]> {
-    const { rows } = await db.query<SubmissionDatabaseSchema>(
-      `SELECT
-        submission_id,
-        bucket_id,
-        suggesting_userid,
-        date_suggested,
-        approved_by_admin,
-        submitted_anonymously,
-        submission_text
-      FROM
-        submission
-      WHERE
-        bucket_id = $1 AND
-        approved_by_admin = E'0'
-      ORDER BY
-        date_suggested ASC
-      LIMIT $2`,
-      [bucket.id, maxNumResults]
-    );
-
-    return rows.map((dbRow) => new Submission(bucket, dbRow));
-  }
-
-  // @description Gets the submission(s) from the provided bucket that were approved
-  // by an admin and which have already been posted before, ordered so that the first
-  // return entry is the oldest submission that hasn't been repeated yet ("the dustiest").
-  // Not a great name but I don't want a function with 90 words in it.
-  public static async getDustiestSubmissions(
-    db: Database,
-    bucket: Bucket,
-    maxNumResults: number
-  ): Promise<Submission[]> {
-    const { rows } = await db.query<SubmissionDatabaseSchema>(
-      `SELECT
-          s.submission_id,
-          MAX(s.bucket_id) AS "bucket_id",
-          MAX(s.suggesting_userid) AS "suggesting_userid",
-          MAX(s.date_suggested) AS "date_suggested",
-          BIT_AND(s.approved_by_admin) AS "approved_by_admin",
-          BIT_AND(s.submitted_anonymously) AS "submitted_anonymously",
-          MAX(s.submission_text) AS "submission_text",
-          MAX(p.prompt_date) AS "date_last_posted"
-        FROM
-          prompt_v2 AS p
-        JOIN
-          submission AS s
-        ON
-          p.submission_id = s.submission_id
-        WHERE
-          p.prompt_date IS NOT NULL AND
-          s.bucket_id = $1
-        GROUP BY
-          s.submission_id
-        ORDER BY
-          date_last_posted ASC
-        LIMIT $2`,
-      [bucket.id, maxNumResults]
-    );
-
-    return rows.map((dbRow) => new Submission(bucket, dbRow));
-  }
-
-  public readonly id: number;
+class Submission {
   public readonly suggestingUserId: string;
   public readonly dateSuggested: moment.Moment;
   public readonly approvedByAdmin: boolean;
   public readonly submittedAnonymously: boolean;
   public readonly submissionText: string;
 
-  private constructor(
+  public constructor(
+    private readonly database: Database,
     public readonly bucket: Bucket,
-    dbRow: SubmissionDatabaseSchema
+    public readonly id: number,
+    contents: {
+      suggestingUserId: string;
+      dateSuggested: moment.Moment;
+      approvedByAdmin: boolean;
+      submittedAnonymously: boolean;
+      submissionText: string;
+    }
   ) {
-    this.id = dbRow.submission_id;
-    this.suggestingUserId = dbRow.suggesting_userid;
-    this.dateSuggested = moment(dbRow.date_suggested);
-    this.approvedByAdmin = parseInt(dbRow.approved_by_admin, 10) === 1;
-    this.submittedAnonymously = parseInt(dbRow.submitted_anonymously, 10) === 1;
-    this.submissionText = dbRow.submission_text;
+    this.suggestingUserId = contents.suggestingUserId;
+    this.dateSuggested = contents.dateSuggested;
+    this.approvedByAdmin = contents.approvedByAdmin;
+    this.submittedAnonymously = contents.submittedAnonymously;
+    this.submissionText = contents.submissionText;
+  }
+
+  /**
+   * Creates a prompt in this submission's bucket (at the end of the
+   * queue) for this submission to appear.
+   *
+   * Submissions have a 1:N relationship with prompts; a single submission
+   * can be queued multiple times as multiple separate prompts. An instance
+   * of a submission in the queue is referred to as a "prompt."
+   */
+  public async addToQueue(): Promise<Prompt> {
+    const lastPromptInBucket = await this.database.querySingle<{
+      prompt_number: string;
+    }>(
+      `SELECT
+        p.prompt_number
+      FROM
+        prompt_v2 AS p
+      JOIN
+        submission AS s
+      ON
+        p.submission_id = s.submission_id
+      WHERE
+        s.bucket_id = $1
+      ORDER BY
+        p.prompt_number DESC
+      LIMIT 1`,
+      [this.bucket.id]
+    );
+    const nextPromptNumber =
+      (lastPromptInBucket
+        ? parseInt(lastPromptInBucket.prompt_number, 10)
+        : 0) + 1;
+
+    const { count: repetitionNumber } = (await this.database.querySingle<{
+      count: string;
+    }>(
+      `SELECT
+        count(*)
+      FROM
+        prompt_v2
+      WHERE
+        submission_id = $1`,
+      [this.id]
+    )) || { count: '0' };
+
+    const creation = await this.database.query<PromptDbCreationResult>(
+      `INSERT INTO
+          prompt_v2(
+            submission_id,
+            prompt_number,
+            repetition_number
+          )
+        VALUES
+          ($1, $2, $3)
+        RETURNING
+          prompt_id,
+          submission_id,
+          prompt_number,
+          prompt_date,
+          repetition_number`,
+      [this.id, nextPromptNumber, repetitionNumber]
+    );
+
+    if (!creation.rowCount) {
+      throw new Error(
+        `Failed to create the prompt in the queue from submission '${this.id}'`
+      );
+    }
+
+    const [row] = creation.rows;
+    return new Prompt(
+      this,
+      parseInt(row.prompt_id, 10),
+      parseInt(row.prompt_number, 10),
+      parseInt(row.repetition_number, 10),
+      row.prompt_date ? moment(row.prompt_date) : null
+    );
   }
 }
+
+export default Submission;

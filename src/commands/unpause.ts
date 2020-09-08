@@ -1,5 +1,4 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
@@ -18,14 +17,11 @@ class UnpauseCommand extends Command {
     });
   }
 
-  public async invoke(
-    invocation: CommandInvocation,
-    database: Database
-  ): Promise<void> {
+  public async invoke(invocation: CommandInvocation): Promise<void> {
     const bucket = await invocation.retrieveBucketFromArguments({
       allowInvalid: true,
     });
-    await bucket.setIsPaused(database, false);
+    await bucket.setIsPaused(false);
 
     const reply =
       '**' +

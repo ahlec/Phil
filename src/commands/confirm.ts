@@ -1,11 +1,9 @@
 import { BucketFrequency } from '@phil/buckets';
 import Database from '@phil/database';
-import Prompt from '@phil/prompts/prompt';
-import Submission from '@phil/prompts/submission';
-import ServerConfig from '@phil/server-config';
 import { LoggerDefinition } from './@types';
 import ConfirmRejectCommandBase from './bases/confirm-reject-base';
 import Phil from '@phil/phil';
+import CommandInvocation from '@phil/CommandInvocation';
 
 const successMessageEnd =
   ' confirmed. You may continue using `{commandPrefix}confirm` or start over by using `{commandPrefix}unconfirmed`.';
@@ -22,8 +20,8 @@ class ConfirmCommand extends ConfirmRejectCommandBase {
   }
 
   protected async performActionOnSubmission(
+    invocation: CommandInvocation,
     database: Database,
-    serverConfig: ServerConfig,
     submissionId: number,
     legacyPhil: Phil
   ): Promise<boolean> {
@@ -41,27 +39,26 @@ class ConfirmCommand extends ConfirmRejectCommandBase {
       return false;
     }
 
-    const submission = await Submission.getFromId(
-      legacyPhil.bot,
-      database,
-      submissionId
-    );
+    const submission = await invocation.context.submissions.retrieve({
+      id: submissionId,
+      type: 'id',
+    });
     if (!submission) {
       return false;
     }
 
-    const prompt = await Prompt.queueSubscription(database, submission);
-    if (!prompt) {
-      return false;
-    }
-
+    const prompt = await submission.addToQueue();
     this.write(`submission #${submissionId} => prompt #${prompt.id}`);
 
     if (submission.bucket.frequency !== BucketFrequency.Immediately) {
       return true;
     }
 
-    await prompt.publish(legacyPhil.bot, database, serverConfig);
+    await prompt.publish(
+      legacyPhil.bot,
+      database,
+      invocation.context.serverConfig
+    );
     return true;
   }
 }

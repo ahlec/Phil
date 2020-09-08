@@ -2,9 +2,9 @@ import Bucket from '@phil/buckets';
 import Features from '@phil/features/all-features';
 import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
-import { PromptQueue } from '@phil/prompts/queue';
 import ServerConfig from '@phil/server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
+import ServerBucketsCollection from '@phil/ServerBucketsCollection';
 
 const PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD = 5;
 
@@ -20,11 +20,12 @@ export default class AlertLowBucketQueueChrono
   }
 
   public async process(phil: Phil, serverConfig: ServerConfig): Promise<void> {
-    const serverBuckets = await Bucket.getAllForServer(
+    const bucketCollection = new ServerBucketsCollection(
       phil.bot,
       phil.db,
       serverConfig.server.id
     );
+    const serverBuckets = await bucketCollection.getAll();
 
     for (const bucket of serverBuckets) {
       if (
@@ -36,12 +37,12 @@ export default class AlertLowBucketQueueChrono
         continue;
       }
 
-      const queueLength = await PromptQueue.getTotalLength(phil.db, bucket);
-      if (queueLength > PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD) {
+      const queue = await bucket.getPromptQueue();
+      if (queue.totalLength > PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD) {
         continue;
       }
 
-      this.alertQueueDwindling(phil, serverConfig, bucket, queueLength);
+      this.alertQueueDwindling(phil, serverConfig, bucket, queue.totalLength);
     }
   }
 
@@ -60,6 +61,6 @@ export default class AlertLowBucketQueueChrono
     }** more ${promptNoun} in the queue.`;
     sendMessage(phil.bot, serverConfig.botControlChannel.id, message);
 
-    bucket.markAlertedEmptying(phil.db, true);
+    bucket.markAlertedEmptying(true);
   }
 }

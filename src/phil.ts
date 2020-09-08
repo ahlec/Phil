@@ -28,6 +28,7 @@ import Server from './discord/Server';
 import { sendMessageTemplate } from './utils/discord-migration';
 import Member from './discord/Member';
 import User from './discord/User';
+import ServerSubmissionsCollection from './ServerSubmissionsCollection';
 
 function ignoreDiscordCode(code: number): boolean {
   return code === 1000; // General disconnect code
@@ -123,17 +124,19 @@ export default class Phil extends Logger {
         this.chronoManager.recordNewMessageInChannel(channelId);
       }
 
+      const buckets = new ServerBucketsCollection(
+        this.bot,
+        this.db,
+        message.server.id
+      );
       const invocation = CommandInvocation.parseFromMessage(
         this.bot,
         {
-          buckets: new ServerBucketsCollection(
-            this.bot,
-            this.db,
-            message.server.id
-          ),
+          buckets,
           channelId: message.channelId,
           server: new Server(this.bot, message.server, message.server.id),
           serverConfig: message.serverConfig,
+          submissions: new ServerSubmissionsCollection(this.db, buckets),
         },
         message
       );
