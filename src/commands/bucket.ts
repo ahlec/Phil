@@ -36,11 +36,11 @@ function formatChannel(bucket: Bucket, value: string): string {
   return '<#' + value + '>';
 }
 
-function sendBucketToChannel(
+async function sendBucketToChannel(
   invocation: CommandInvocation,
   bucket: Bucket
 ): Promise<void> {
-  return invocation.respond({
+  await invocation.respond({
     color: 'powder-blue',
     description: null,
     fields: [

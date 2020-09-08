@@ -10,7 +10,10 @@ import ServerConfig from './server-config';
 import { deleteMessage } from './promises/discord';
 import ServerBucketsCollection from './ServerBucketsCollection';
 import { getRandomArrayEntry } from './utils';
-import { sendMessageTemplate } from './utils/discord-migration';
+import {
+  sendMessageTemplate,
+  SendMessageResult,
+} from './utils/discord-migration';
 
 interface InvocationContext {
   buckets: ServerBucketsCollection;
@@ -128,7 +131,7 @@ class CommandInvocation {
     return this.message.userId;
   }
 
-  public async respond(response: MessageTemplate): Promise<void> {
+  public async respond(response: MessageTemplate): Promise<SendMessageResult> {
     return sendMessageTemplate(
       this.discordClient,
       this.message.channelId,

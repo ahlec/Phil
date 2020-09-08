@@ -34,10 +34,11 @@ class RequestCommand extends Command {
       invocation.commandArgs[0]
     );
     if (!requestable) {
-      return invocation.respond({
+      await invocation.respond({
         error: `There is no requestable by the name of \`${invocation.commandArgs[0]}\`.`,
         type: 'error',
       });
+      return;
     }
 
     const member = await invocation.context.server.getMember(invocation.userId);
@@ -49,16 +50,18 @@ class RequestCommand extends Command {
     if (!requestability.allowed) {
       switch (requestability.reason) {
         case 'on-blacklist': {
-          return invocation.respond({
+          await invocation.respond({
             error: `You are unable to request the "${requestable.role.name}" role at this time.`,
             type: 'error',
           });
+          return;
         }
         case 'already-have-role': {
-          return invocation.respond({
+          await invocation.respond({
             error: `You already have the "${requestable.role.name}" role. You can use \`${invocation.context.serverConfig.commandPrefix}remove\` to remove the role if you wish.`,
             type: 'error',
           });
+          return;
         }
         default: {
           // This doesn't produce an error if we've handled every value in the union.
