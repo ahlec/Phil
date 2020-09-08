@@ -1,11 +1,8 @@
-import { Client as DiscordIOClient } from 'discord.io';
 import * as moment from 'moment';
 import Database from '@phil/database';
-import EmbedColor from '@phil/embed-color';
-import { sendEmbedMessage } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
-import { getUserDisplayName } from '@phil/utils';
 import Submission from './submission';
+import MessageTemplate from '@phil/discord/MessageTemplate';
 
 export interface PromptDatabaseSchema {
   prompt_id: string;
@@ -17,6 +14,8 @@ export interface PromptDatabaseSchema {
 
 class Prompt {
   public constructor(
+    private readonly database: Database,
+    private readonly serverConfig: ServerConfig,
     public readonly submission: Submission,
     public readonly id: number,
     public readonly promptNumber: number,
@@ -28,37 +27,80 @@ class Prompt {
     return this.promptDateInternal;
   }
 
-  public sendToChannel(
-    client: DiscordIOClient,
-    serverConfig: ServerConfig
-  ): Promise<string> {
+  public get messageTemplate(): MessageTemplate {
     const {
-      bucket: { promptTitleFormat, channelId },
+      bucket: { promptTitleFormat },
       submissionText,
     } = this.submission;
 
-    return sendEmbedMessage(client, channelId, {
-      color: EmbedColor.Info,
+    return {
+      color: 'powder-blue',
       description: submissionText,
-      footer: {
-        text: this.getPromptMessageFooter(client, serverConfig),
-      },
+      fields: null,
+      footer: this.promptMessageFooter,
       title: promptTitleFormat.replace(/\{0\}/g, this.promptNumber.toString()),
-    });
+      type: 'embed',
+    };
   }
 
-  public async publish(
-    client: DiscordIOClient,
-    db: Database,
-    serverConfig: ServerConfig
-  ): Promise<void> {
+  private get promptMessageFooter(): string {
+    const firstSentencePieces: string[] = ['This'];
+
+    const { submittedAnonymously, suggestingMember } = this.submission;
+    let includedName: boolean;
+    if (submittedAnonymously) {
+      includedName = true;
+      firstSentencePieces.push('was suggested anonymously');
+    } else if (suggestingMember) {
+      includedName = true;
+      firstSentencePieces.push(
+        'was suggested by',
+        suggestingMember.displayName
+      );
+    } else {
+      includedName = false;
+    }
+
+    const includedRepetitionCount = this.repetitionNumber > 0;
+    if (includedRepetitionCount) {
+      const times = this.repetitionNumber === 1 ? 'time' : 'times';
+
+      if (includedName) {
+        firstSentencePieces.push('and');
+      }
+
+      firstSentencePieces.push(
+        'has been shown',
+        this.repetitionNumber.toString(),
+        times,
+        'before'
+      );
+    }
+
+    let firstSentence: string;
+    if (includedName || includedRepetitionCount) {
+      firstSentence = `${firstSentencePieces.join(' ')}.`;
+    } else {
+      firstSentence = '';
+    }
+
+    const secondSentence = `You can suggest your own by using ${this.serverConfig.commandPrefix}suggest.`;
+
+    if (firstSentence) {
+      return `${firstSentence} ${secondSentence}`;
+    }
+
+    return secondSentence;
+  }
+
+  public async publish(): Promise<void> {
     if (this.promptDate) {
       throw new Error('This prompt has already been published.');
     }
 
     this.promptDateInternal = moment.utc();
     try {
-      const rowsUpdated = await db.execute(
+      const rowsUpdated = await this.database.execute(
         `UPDATE
           prompt_v2
         SET
@@ -75,36 +117,6 @@ class Prompt {
       this.promptDateInternal = null;
       throw e;
     }
-
-    await this.sendToChannel(client, serverConfig);
-  }
-
-  private getPromptMessageFooter(
-    client: DiscordIOClient,
-    serverConfig: ServerConfig
-  ): string {
-    let footer = 'This was suggested ';
-
-    if (this.submission.submittedAnonymously) {
-      footer += 'anonymously';
-    } else {
-      const server = client.servers[this.submission.bucket.serverId];
-      const user = client.users[this.submission.suggestingUserId];
-      const displayName = getUserDisplayName(user, server);
-
-      footer += `by ${displayName}`;
-      if (!server.members[this.submission.suggestingUserId]) {
-        footer += ' (who is no longer in server)';
-      }
-    }
-
-    if (this.repetitionNumber > 0) {
-      const times = this.repetitionNumber === 1 ? 'time' : 'times';
-      footer += ` and has been shown ${this.repetitionNumber} ${times} before`;
-    }
-
-    footer += `. You can suggest your own by using ${serverConfig.commandPrefix}suggest.`;
-    return footer;
   }
 }
 

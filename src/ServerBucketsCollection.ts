@@ -3,6 +3,7 @@ import { Client as DiscordIOClient } from 'discord.io';
 import Bucket, { BucketFrequency } from './buckets';
 import Database from './database';
 import ServerSubmissionsCollection from './ServerSubmissionsCollection';
+import ServerConfig from './server-config';
 
 type BucketRetrieval =
   | {
@@ -49,7 +50,8 @@ class ServerBucketsCollection {
   public constructor(
     private readonly discord: DiscordIOClient,
     private readonly database: Database,
-    private readonly serverId: string
+    private readonly serverId: string,
+    private readonly serverConfig: ServerConfig
   ) {}
 
   public async getAll(): Promise<readonly Bucket[]> {
@@ -129,7 +131,13 @@ class ServerBucketsCollection {
     return new Bucket(
       this.discord,
       this.database,
-      new ServerSubmissionsCollection(this.database, this),
+      new ServerSubmissionsCollection(
+        this.discord,
+        this.database,
+        this,
+        this.serverConfig
+      ),
+      this.serverConfig,
       parseInt(dbRow.bucket_id, 10),
       this.serverId,
       dbRow.channel_id,

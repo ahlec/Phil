@@ -43,10 +43,20 @@ class PromptQueueReactableHandler
       throw new Error('Queue is only built to work in public channels.');
     }
 
+    const serverConfig = await phil.serverDirectory.getServerConfig(
+      phil.bot.servers[post.message.channel.server.id]
+    );
+    if (!serverConfig) {
+      throw new Error(
+        `Could not find server config for a server we're processing the prompt queue for? (message: ${post.message.id}, server: ${post.message.channel.server.id})`
+      );
+    }
+
     const bucketCollection = new ServerBucketsCollection(
       phil.bot,
       phil.db,
-      post.message.channel.server.id
+      post.message.channel.server.id,
+      serverConfig
     );
 
     const bucket = await bucketCollection.retrieve({

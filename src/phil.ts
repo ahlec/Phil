@@ -127,7 +127,8 @@ export default class Phil extends Logger {
       const buckets = new ServerBucketsCollection(
         this.bot,
         this.db,
-        message.server.id
+        message.server.id,
+        message.serverConfig
       );
       const invocation = CommandInvocation.parseFromMessage(
         this.bot,
@@ -136,7 +137,12 @@ export default class Phil extends Logger {
           channelId: message.channelId,
           server: new Server(this.bot, message.server, message.server.id),
           serverConfig: message.serverConfig,
-          submissions: new ServerSubmissionsCollection(this.db, buckets),
+          submissions: new ServerSubmissionsCollection(
+            this.bot,
+            this.db,
+            buckets,
+            message.serverConfig
+          ),
         },
         message
       );

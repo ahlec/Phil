@@ -6,6 +6,7 @@ import Prompt from '@phil/prompts/prompt';
 import ServerConfig from '@phil/server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 import ServerBucketsCollection from '@phil/ServerBucketsCollection';
+import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 const HANDLE = 'post-new-prompts';
 
@@ -30,7 +31,8 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     const bucketCollection = new ServerBucketsCollection(
       phil.bot,
       phil.db,
-      serverConfig.server.id
+      serverConfig.server.id,
+      serverConfig
     );
     const serverBuckets = await bucketCollection.getAll();
 
@@ -72,7 +74,13 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     );
 
     try {
-      await nextPrompt.prompt.publish(phil.bot, phil.db, serverConfig);
+      await nextPrompt.prompt.publish();
+      await sendMessageTemplate(
+        phil.bot,
+        bucket.channelId,
+        nextPrompt.prompt.messageTemplate
+      );
+
       if (!nextPrompt.isReusedPrompt) {
         await bucket.markAlertedEmptying(false);
       }

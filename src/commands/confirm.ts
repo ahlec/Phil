@@ -4,6 +4,7 @@ import { LoggerDefinition } from './@types';
 import ConfirmRejectCommandBase from './bases/confirm-reject-base';
 import Phil from '@phil/phil';
 import CommandInvocation from '@phil/CommandInvocation';
+import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 const successMessageEnd =
   ' confirmed. You may continue using `{commandPrefix}confirm` or start over by using `{commandPrefix}unconfirmed`.';
@@ -54,11 +55,13 @@ class ConfirmCommand extends ConfirmRejectCommandBase {
       return true;
     }
 
-    await prompt.publish(
+    await prompt.publish();
+    await sendMessageTemplate(
       legacyPhil.bot,
-      database,
-      invocation.context.serverConfig
+      submission.bucket.channelId,
+      prompt.messageTemplate
     );
+
     return true;
   }
 }

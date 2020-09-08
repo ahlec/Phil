@@ -8,6 +8,8 @@ import Prompt from './prompts/prompt';
 import PromptQueue from './prompts/queue';
 import Submission from './prompts/submission';
 import ServerSubmissionsCollection from './ServerSubmissionsCollection';
+import ServerConfig from './server-config';
+import { getServerMember } from './utils/discord-migration';
 
 export enum BucketFrequency {
   Daily = 0,
@@ -45,6 +47,7 @@ class Bucket {
     private readonly discordClient: DiscordIOClient,
     private readonly database: Database,
     private readonly submissionsCollection: ServerSubmissionsCollection,
+    private readonly serverConfig: ServerConfig,
     public readonly id: number,
     public readonly serverId: string,
     public readonly channelId: string,
@@ -84,6 +87,7 @@ class Bucket {
       this.discordClient,
       this.database,
       this.submissionsCollection,
+      this.serverConfig,
       this
     );
   }
@@ -262,6 +266,8 @@ class Bucket {
     }
 
     return new Prompt(
+      this.database,
+      this.serverConfig,
       submission,
       parseInt(result.prompt_id, 10),
       parseInt(result.prompt_number, 10),
@@ -271,13 +277,23 @@ class Bucket {
   }
 
   private parseSubmission(dbRow: SubmissionDbRow): Submission {
-    return new Submission(this.database, this, dbRow.submission_id, {
-      approvedByAdmin: parseInt(dbRow.approved_by_admin, 10) === 1,
-      dateSuggested: moment(dbRow.date_suggested),
-      submissionText: dbRow.submission_text,
-      submittedAnonymously: parseInt(dbRow.submitted_anonymously, 10) === 1,
-      suggestingUserId: dbRow.suggesting_userid,
-    });
+    return new Submission(
+      this.database,
+      this.serverConfig,
+      this,
+      dbRow.submission_id,
+      getServerMember(
+        this.discordClient,
+        this.serverId,
+        dbRow.suggesting_userid
+      ),
+      {
+        approvedByAdmin: parseInt(dbRow.approved_by_admin, 10) === 1,
+        dateSuggested: moment(dbRow.date_suggested),
+        submissionText: dbRow.submission_text,
+        submittedAnonymously: parseInt(dbRow.submitted_anonymously, 10) === 1,
+      }
+    );
   }
 }
 

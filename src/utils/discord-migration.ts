@@ -1,8 +1,11 @@
 import { Client as DiscordIOClient } from 'discord.io';
 
+import Member from '@phil/discord/Member';
 import MessageTemplate from '@phil/discord/MessageTemplate';
 import OutboundMessage from '@phil/discord/OutboundMessage';
+import Server from '@phil/discord/Server';
 import TextChannel from '@phil/discord/TextChannel';
+import User from '@phil/discord/User';
 import UsersDirectMessagesChannel from '@phil/discord/UsersDirectMessagesChannel';
 
 import { sendSuccessMessage, sendErrorMessage } from '@phil/utils';
@@ -13,7 +16,6 @@ import {
 } from '@phil/promises/discord';
 import EmbedColor from '@phil/embed-color';
 import MessageBuilder from '@phil/message-builder';
-import Server from '@phil/discord/Server';
 
 export interface SendMessageResult {
   /**
@@ -44,6 +46,25 @@ export function getChannel(
 
   const server = new Server(discordClient, rawServer, rawChannel.guild_id);
   return new TextChannel(server, channelId);
+}
+
+export function getServerMember(
+  discordClient: DiscordIOClient,
+  serverId: string,
+  userId: string
+): Member | null {
+  const internalMember = discordClient.servers[serverId]?.members[userId];
+  const internalUser = discordClient.users[userId];
+  if (!internalUser || !internalMember) {
+    return null;
+  }
+
+  return new Member(
+    discordClient,
+    internalMember,
+    serverId,
+    new User(internalUser, userId)
+  );
 }
 
 /**

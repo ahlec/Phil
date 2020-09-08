@@ -42,14 +42,28 @@ export default class SubmissionSession {
       return null;
     }
 
-    const bucketId = parseInt(dbRow.bucket_id, 10);
+    const rawServer = phil.bot.servers[dbRow.server_id];
+    if (!rawServer) {
+      throw new Error(
+        "Trying to get active session for a submission session for a server Phil isn't in any longer."
+      );
+    }
+
+    const serverConfig = await phil.serverDirectory.getServerConfig(rawServer);
+    if (!serverConfig) {
+      throw new Error(
+        `Could not retrieve server config for a server with configured buckets ('${dbRow.server_id}')`
+      );
+    }
+
     const bucketCollection = new ServerBucketsCollection(
       phil.bot,
       phil.db,
-      dbRow.server_id
+      dbRow.server_id,
+      serverConfig
     );
     const bucket = await bucketCollection.retrieve({
-      id: bucketId,
+      id: parseInt(dbRow.bucket_id, 10),
       type: 'id',
     });
     if (!bucket) {

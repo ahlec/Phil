@@ -1,8 +1,6 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
-import Phil from '@phil/phil';
 import Command, { LoggerDefinition } from './@types';
 
 class PromptCommand extends Command {
@@ -15,11 +13,7 @@ class PromptCommand extends Command {
     });
   }
 
-  public async invoke(
-    invocation: CommandInvocation,
-    database: Database,
-    legacyPhil: Phil
-  ): Promise<void> {
+  public async invoke(invocation: CommandInvocation): Promise<void> {
     const bucket = await invocation.context.buckets.retrieve({
       channelId: invocation.context.channelId,
       type: 'channel',
@@ -37,7 +31,7 @@ class PromptCommand extends Command {
       );
     }
 
-    await prompt.sendToChannel(legacyPhil.bot, invocation.context.serverConfig);
+    await invocation.respond(prompt.messageTemplate);
   }
 }
 

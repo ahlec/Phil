@@ -1,8 +1,12 @@
+import { Client as DiscordIOClient } from 'discord.io';
+
 import Database from './database';
 import ServerBucketsCollection from './ServerBucketsCollection';
 import Submission from './prompts/submission';
 import Bucket from './buckets';
 import moment = require('moment-timezone');
+import ServerConfig from './server-config';
+import { getServerMember } from './utils/discord-migration';
 
 interface SubmissionRetrieval {
   type: 'id';
@@ -25,8 +29,10 @@ interface SubmissionDatabaseSchema {
 
 class ServerSubmissionsCollection {
   public constructor(
+    private readonly discordClient: DiscordIOClient,
     private readonly database: Database,
-    private readonly bucketCollection: ServerBucketsCollection
+    private readonly bucketCollection: ServerBucketsCollection,
+    private readonly serverConfig: ServerConfig
   ) {}
 
   public async retrieve(
@@ -118,13 +124,23 @@ class ServerSubmissionsCollection {
     dbRow: SubmissionDatabaseSchema,
     bucket: Bucket
   ): Submission {
-    return new Submission(this.database, bucket, dbRow.submission_id, {
-      approvedByAdmin: parseInt(dbRow.approved_by_admin, 10) === 1,
-      dateSuggested: moment(dbRow.date_suggested),
-      submissionText: dbRow.submission_text,
-      submittedAnonymously: parseInt(dbRow.submitted_anonymously, 10) === 1,
-      suggestingUserId: dbRow.suggesting_userid,
-    });
+    return new Submission(
+      this.database,
+      this.serverConfig,
+      bucket,
+      dbRow.submission_id,
+      getServerMember(
+        this.discordClient,
+        this.serverConfig.serverId,
+        dbRow.suggesting_userid
+      ),
+      {
+        approvedByAdmin: parseInt(dbRow.approved_by_admin, 10) === 1,
+        dateSuggested: moment(dbRow.date_suggested),
+        submissionText: dbRow.submission_text,
+        submittedAnonymously: parseInt(dbRow.submitted_anonymously, 10) === 1,
+      }
+    );
   }
 }
 

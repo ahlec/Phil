@@ -1,7 +1,11 @@
 import * as moment from 'moment';
+
+import Member from '@phil/discord/Member';
+
 import Bucket from '@phil/buckets';
 import Database from '@phil/database';
 import Prompt from '@phil/prompts/prompt';
+import ServerConfig from '@phil/server-config';
 
 export interface PromptDbCreationResult {
   prompt_id: string;
@@ -12,7 +16,6 @@ export interface PromptDbCreationResult {
 }
 
 class Submission {
-  public readonly suggestingUserId: string;
   public readonly dateSuggested: moment.Moment;
   public readonly approvedByAdmin: boolean;
   public readonly submittedAnonymously: boolean;
@@ -20,17 +23,17 @@ class Submission {
 
   public constructor(
     private readonly database: Database,
+    private readonly serverConfig: ServerConfig,
     public readonly bucket: Bucket,
     public readonly id: number,
+    public readonly suggestingMember: Member | null,
     contents: {
-      suggestingUserId: string;
       dateSuggested: moment.Moment;
       approvedByAdmin: boolean;
       submittedAnonymously: boolean;
       submissionText: string;
     }
   ) {
-    this.suggestingUserId = contents.suggestingUserId;
     this.dateSuggested = contents.dateSuggested;
     this.approvedByAdmin = contents.approvedByAdmin;
     this.submittedAnonymously = contents.submittedAnonymously;
@@ -107,6 +110,8 @@ class Submission {
 
     const [row] = creation.rows;
     return new Prompt(
+      this.database,
+      this.serverConfig,
       this,
       parseInt(row.prompt_id, 10),
       parseInt(row.prompt_number, 10),

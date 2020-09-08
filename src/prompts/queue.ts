@@ -5,6 +5,7 @@ import Database from '@phil/database';
 import Prompt from './prompt';
 import ServerSubmissionsCollection from '@phil/ServerSubmissionsCollection';
 import PromptQueuePage, { PromptQueueEntry } from './PromptQueuePage';
+import ServerConfig from '@phil/server-config';
 
 async function getTotalLength(
   database: Database,
@@ -38,6 +39,7 @@ class PromptQueue {
     discordClient: DiscordIOClient,
     database: Database,
     submissionsCollection: ServerSubmissionsCollection,
+    serverConfig: ServerConfig,
     bucket: Bucket
   ): Promise<PromptQueue> {
     const totalLength = await getTotalLength(database, bucket.id);
@@ -45,6 +47,7 @@ class PromptQueue {
       discordClient,
       database,
       submissionsCollection,
+      serverConfig,
       bucket,
       totalLength
     );
@@ -54,6 +57,7 @@ class PromptQueue {
     private readonly discordClient: DiscordIOClient,
     private readonly database: Database,
     private readonly submissionsCollection: ServerSubmissionsCollection,
+    private readonly serverConfig: ServerConfig,
     public readonly bucket: Bucket,
     public readonly totalLength: number
   ) {}
@@ -115,6 +119,8 @@ class PromptQueue {
           return {
             position: queueStart + index,
             prompt: new Prompt(
+              this.database,
+              this.serverConfig,
               submission,
               parseInt(row.prompt_id, 10),
               parseInt(row.prompt_number, 10),
