@@ -1,5 +1,4 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
@@ -18,10 +17,7 @@ class DefineCommand extends Command {
     });
   }
 
-  public async invoke(
-    invocation: CommandInvocation,
-    database: Database
-  ): Promise<void> {
+  public async invoke(invocation: CommandInvocation): Promise<void> {
     const definition = this.getDefinitionData(invocation);
     if (!Requestable.checkIsValidRequestableName(definition.name)) {
       throw new Error(
@@ -29,21 +25,19 @@ class DefineCommand extends Command {
       );
     }
 
-    const existing = await Requestable.getFromRequestString(
-      invocation.context.server,
-      database,
-      definition.name
-    );
+    const existing = await invocation.context.requestables.retrieve({
+      requestString: definition.name,
+      type: 'request-string',
+    });
     if (existing) {
       throw new Error(
         'There is already a `' + definition.name + '` request string.'
       );
     }
 
-    await Requestable.createRequestable(
-      invocation.context.server,
-      database,
-      definition
+    await invocation.context.requestables.create(
+      definition.name,
+      definition.role
     );
     const reply =
       '`' +

@@ -8,7 +8,6 @@ import Requestable from '@phil/requestables';
 import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry, stitchTogetherArray } from '@phil/utils';
 import Command, { LoggerDefinition } from './@types';
-import Database from '@phil/database';
 
 class RemoveCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
@@ -21,10 +20,7 @@ class RemoveCommand extends Command {
     });
   }
 
-  public async invoke(
-    invocation: CommandInvocation,
-    database: Database
-  ): Promise<void> {
+  public async invoke(invocation: CommandInvocation): Promise<void> {
     const member = await invocation.context.server.getMember(invocation.userId);
     if (!member) {
       await invocation.respond({
@@ -36,14 +32,13 @@ class RemoveCommand extends Command {
     }
 
     if (invocation.commandArgs.length === 0) {
-      return this.processNoCommandArgs(invocation, database, member);
+      return this.processNoCommandArgs(invocation, member);
     }
 
-    const requestable = await Requestable.getFromRequestString(
-      invocation.context.server,
-      database,
-      invocation.commandArgs[0]
-    );
+    const requestable = await invocation.context.requestables.retrieve({
+      requestString: invocation.commandArgs[0],
+      type: 'request-string',
+    });
     if (!requestable) {
       await invocation.respond({
         error:
@@ -75,12 +70,10 @@ class RemoveCommand extends Command {
 
   private async processNoCommandArgs(
     invocation: CommandInvocation,
-    database: Database,
     member: Member
   ): Promise<void> {
     const userRequestables = await this.getAllRequestablesUserHas(
       invocation,
-      database,
       member
     );
     if (userRequestables.length === 0) {
@@ -103,13 +96,9 @@ class RemoveCommand extends Command {
 
   private async getAllRequestablesUserHas(
     invocation: CommandInvocation,
-    database: Database,
     member: Member
   ): Promise<readonly Requestable[]> {
-    const requestables = await Requestable.getAllRequestables(
-      invocation.context.server,
-      database
-    );
+    const requestables = await invocation.context.requestables.getAll();
     if (requestables.length === 0) {
       throw new Error(
         'There are no requestable roles defined. An admin should use `' +

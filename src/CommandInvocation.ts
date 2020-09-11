@@ -9,6 +9,7 @@ import PublicMessage from '@phil/messages/public';
 import ServerConfig from './server-config';
 import { deleteMessage } from './promises/discord';
 import ServerBucketsCollection from './ServerBucketsCollection';
+import ServerRequestablesCollection from './ServerRequestablesCollection';
 import ServerSubmissionsCollection from './ServerSubmissionsCollection';
 import { getRandomArrayEntry } from './utils';
 import {
@@ -19,6 +20,7 @@ import {
 interface InvocationContext {
   buckets: ServerBucketsCollection;
   channelId: string;
+  requestables: ServerRequestablesCollection;
   server: Server;
   serverConfig: ServerConfig;
   submissions: ServerSubmissionsCollection;

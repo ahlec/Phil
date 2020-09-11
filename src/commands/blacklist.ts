@@ -2,7 +2,6 @@ import Member from '@phil/discord/Member';
 
 import CommandInvocation from '@phil/CommandInvocation';
 import CommandArgs from '@phil/CommandArgs';
-import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
@@ -24,21 +23,17 @@ class BlacklistCommand extends Command {
     });
   }
 
-  public async invoke(
-    invocation: CommandInvocation,
-    database: Database
-  ): Promise<void> {
+  public async invoke(invocation: CommandInvocation): Promise<void> {
     const commandArgs = new CommandArgs(invocation.commandArgs);
     if (commandArgs.isEmpty) {
-      return this.processNoCommandArgs(invocation, database);
+      return this.processNoCommandArgs(invocation);
     }
 
     const requestString = commandArgs.readString('requestString');
-    const requestable = await Requestable.getFromRequestString(
-      invocation.context.server,
-      database,
-      requestString
-    );
+    const requestable = await invocation.context.requestables.retrieve({
+      requestString,
+      type: 'request-string',
+    });
     if (!requestable) {
       throw new Error(
         `There is no requestable by the name of ${requestString}'.`
@@ -54,23 +49,13 @@ class BlacklistCommand extends Command {
       return this.replyWithBlacklist(invocation, requestable, requestString);
     }
 
-    await this.toggleMember(
-      invocation,
-      database,
-      requestable,
-      requestString,
-      member
-    );
+    await this.toggleMember(invocation, requestable, requestString, member);
   }
 
   private async processNoCommandArgs(
-    invocation: CommandInvocation,
-    database: Database
+    invocation: CommandInvocation
   ): Promise<void> {
-    const requestables = await Requestable.getAllRequestables(
-      invocation.context.server,
-      database
-    );
+    const requestables = await invocation.context.requestables.getAll();
     if (requestables.length === 0) {
       throw new Error(
         'There are no requestable roles defined. An admin should use `' +
@@ -91,7 +76,7 @@ class BlacklistCommand extends Command {
 
   private composeAllRequestablesList(
     serverConfig: ServerConfig,
-    requestables: Requestable[]
+    requestables: readonly Requestable[]
   ): MessageBuilder {
     const builder = new MessageBuilder();
     builder.append(
@@ -167,15 +152,11 @@ class BlacklistCommand extends Command {
 
   private async toggleMember(
     invocation: CommandInvocation,
-    database: Database,
     requestable: Requestable,
     requestStringUsed: string,
     member: Member
   ): Promise<void> {
-    const result = await requestable.toggleUserBlacklist(
-      member.user.id,
-      database
-    );
+    const result = await requestable.toggleUserBlacklist(member.user.id);
 
     if (!result.success) {
       this.error(`requestable: ${requestable.role.id} - ${requestStringUsed}`);

@@ -1,5 +1,4 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import MessageBuilder from '@phil/message-builder';
@@ -20,19 +19,15 @@ class RequestCommand extends Command {
     });
   }
 
-  public async invoke(
-    invocation: CommandInvocation,
-    database: Database
-  ): Promise<void> {
+  public async invoke(invocation: CommandInvocation): Promise<void> {
     if (invocation.commandArgs.length === 0) {
-      return this.processNoCommandArgs(invocation, database);
+      return this.processNoCommandArgs(invocation);
     }
 
-    const requestable = await Requestable.getFromRequestString(
-      invocation.context.server,
-      database,
-      invocation.commandArgs[0]
-    );
+    const requestable = await invocation.context.requestables.retrieve({
+      requestString: invocation.commandArgs[0],
+      type: 'request-string',
+    });
     if (!requestable) {
       await invocation.respond({
         error: `There is no requestable by the name of \`${invocation.commandArgs[0]}\`.`,
@@ -80,13 +75,9 @@ class RequestCommand extends Command {
   }
 
   private async processNoCommandArgs(
-    invocation: CommandInvocation,
-    database: Database
+    invocation: CommandInvocation
   ): Promise<void> {
-    const requestables = await Requestable.getAllRequestables(
-      invocation.context.server,
-      database
-    );
+    const requestables = await invocation.context.requestables.getAll();
     if (requestables.length === 0) {
       throw new Error(
         'There are no requestable roles defined. An admin should use `' +
@@ -107,7 +98,7 @@ class RequestCommand extends Command {
 
   private composeAllRequestablesList(
     serverConfig: ServerConfig,
-    requestables: Requestable[]
+    requestables: readonly Requestable[]
   ): MessageBuilder {
     const builder = new MessageBuilder();
     builder.append(
