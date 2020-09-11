@@ -49,7 +49,7 @@ export class ServerConfig extends Logger {
       return null;
     }
 
-    return new ServerConfig(server, results.rows[0]);
+    return new ServerConfig(db, server, results.rows[0]);
   }
 
   public static async initializeDefault(
@@ -83,7 +83,7 @@ export class ServerConfig extends Logger {
       );
     }
 
-    return new ServerConfig(server, creation.rows[0]);
+    return new ServerConfig(db, server, creation.rows[0]);
   }
 
   public readonly serverId: string;
@@ -96,7 +96,11 @@ export class ServerConfig extends Logger {
   private adminRoleInternal: discord.Role;
   private welcomeMessageInternal: string | null;
 
-  private constructor(public readonly server: discord.Server, dbRow: DbRow) {
+  private constructor(
+    private readonly database: Database,
+    public readonly server: discord.Server,
+    dbRow: DbRow
+  ) {
     super(new LoggerDefinition('Server Config'));
 
     this.serverId = dbRow.server_id;
@@ -125,15 +129,8 @@ export class ServerConfig extends Logger {
     return this.commandPrefixInternal;
   }
 
-  public async setCommandPrefix(
-    prefix: string,
-    database: Database
-  ): Promise<boolean> {
-    const result = await this.setFieldInDatabase(
-      prefix,
-      database,
-      'command_prefix'
-    );
+  public async setCommandPrefix(prefix: string): Promise<boolean> {
+    const result = await this.setFieldInDatabase(prefix, 'command_prefix');
     if (!result) {
       return false;
     }
@@ -146,13 +143,9 @@ export class ServerConfig extends Logger {
     return this.botControlChannelInternal;
   }
 
-  public async setBotControlChannel(
-    channelId: string,
-    database: Database
-  ): Promise<boolean> {
+  public async setBotControlChannel(channelId: string): Promise<boolean> {
     const result = await this.setFieldInDatabase(
       channelId,
-      database,
       'bot_control_channel_id'
     );
     if (!result) {
@@ -167,15 +160,8 @@ export class ServerConfig extends Logger {
     return this.adminChannelInternal;
   }
 
-  public async setAdminChannel(
-    channelId: string,
-    database: Database
-  ): Promise<boolean> {
-    const result = await this.setFieldInDatabase(
-      channelId,
-      database,
-      'admin_channel_id'
-    );
+  public async setAdminChannel(channelId: string): Promise<boolean> {
+    const result = await this.setFieldInDatabase(channelId, 'admin_channel_id');
     if (!result) {
       return false;
     }
@@ -188,13 +174,9 @@ export class ServerConfig extends Logger {
     return this.introductionsChannelInternal;
   }
 
-  public async setIntroductionsChannel(
-    channelId: string,
-    database: Database
-  ): Promise<boolean> {
+  public async setIntroductionsChannel(channelId: string): Promise<boolean> {
     const result = await this.setFieldInDatabase(
       channelId,
-      database,
       'introductions_channel_id'
     );
     if (!result) {
@@ -209,15 +191,8 @@ export class ServerConfig extends Logger {
     return this.newsChannelInternal;
   }
 
-  public async setNewsChannel(
-    channelId: string,
-    database: Database
-  ): Promise<boolean> {
-    const result = await this.setFieldInDatabase(
-      channelId,
-      database,
-      'news_channel_id'
-    );
+  public async setNewsChannel(channelId: string): Promise<boolean> {
+    const result = await this.setFieldInDatabase(channelId, 'news_channel_id');
     if (!result) {
       return false;
     }
@@ -230,15 +205,8 @@ export class ServerConfig extends Logger {
     return this.adminRoleInternal;
   }
 
-  public async setAdminRole(
-    roleId: string,
-    database: Database
-  ): Promise<boolean> {
-    const result = await this.setFieldInDatabase(
-      roleId,
-      database,
-      'admin_role_id'
-    );
+  public async setAdminRole(roleId: string): Promise<boolean> {
+    const result = await this.setFieldInDatabase(roleId, 'admin_role_id');
     if (!result) {
       return false;
     }
@@ -251,15 +219,8 @@ export class ServerConfig extends Logger {
     return this.welcomeMessageInternal;
   }
 
-  public async setWelcomeMessage(
-    message: string,
-    database: Database
-  ): Promise<boolean> {
-    const result = await this.setFieldInDatabase(
-      message,
-      database,
-      'welcome_message'
-    );
+  public async setWelcomeMessage(message: string): Promise<boolean> {
+    const result = await this.setFieldInDatabase(message, 'welcome_message');
     if (!result) {
       return false;
     }
@@ -366,13 +327,12 @@ export class ServerConfig extends Logger {
 
   private async setFieldInDatabase(
     value: string,
-    database: Database,
     dbColumn: string
   ): Promise<boolean> {
     try {
       const query =
         'UPDATE server_configs SET ' + dbColumn + ' = $1 WHERE server_id = $2';
-      const result = await database.query(query, [value, this.serverId]);
+      const result = await this.database.query(query, [value, this.serverId]);
       return result.rowCount !== 0;
     } catch (err) {
       this.error(err);

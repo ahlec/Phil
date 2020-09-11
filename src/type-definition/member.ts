@@ -1,10 +1,10 @@
-import Phil from '@phil/phil';
-import ServerConfig from '@phil/server-config';
-import { getUserDisplayName } from '@phil/utils';
+import Server from '@phil/discord/Server';
+
 import {
   ParseResult,
   TypeDefinition,
   ValidityResultType,
+  FormatResult,
 } from './@type-definition';
 
 class MemberTypeDefinitionImplementation implements TypeDefinition {
@@ -45,11 +45,10 @@ class MemberTypeDefinitionImplementation implements TypeDefinition {
     };
   }
 
-  public isValid(
+  public async isValid(
     value: string,
-    phil: Phil,
-    serverConfig: ServerConfig
-  ): ValidityResultType {
+    server: Server
+  ): Promise<ValidityResultType> {
     if (!value) {
       return {
         errorMessage: 'No user ID was provided.',
@@ -57,7 +56,7 @@ class MemberTypeDefinitionImplementation implements TypeDefinition {
       };
     }
 
-    const member = serverConfig.server.members[value];
+    const member = await server.getMember(value);
     if (!member) {
       return {
         errorMessage: 'There is no member of this server with that user ID.',
@@ -70,34 +69,29 @@ class MemberTypeDefinitionImplementation implements TypeDefinition {
     };
   }
 
-  public toDisplayFormat(
+  public async format(
     value: string | null,
-    serverConfig: ServerConfig
-  ): string {
+    server: Server
+  ): Promise<FormatResult> {
     if (!value) {
-      return '(None)';
+      return {
+        multilineCodeBlock: '(None)',
+        regularChat: '(None)',
+      };
     }
 
-    const member = serverConfig.server.members[value];
+    const member = await server.getMember(value);
     if (!member) {
-      return '(None)';
+      return {
+        multilineCodeBlock: '(None)',
+        regularChat: '(None)',
+      };
     }
 
-    return '<@' + value + '>';
-  }
-
-  public toMultilineCodeblockDisplayFormat(
-    value: string | null,
-    phil: Phil,
-    serverConfig: ServerConfig
-  ): string {
-    if (!value) {
-      return '(None)';
-    }
-
-    const user = phil.bot.users[value];
-    const displayName = getUserDisplayName(user, serverConfig.server);
-    return displayName || '(None)';
+    return {
+      multilineCodeBlock: member.displayName,
+      regularChat: `<@${value}>`,
+    };
   }
 }
 

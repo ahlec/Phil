@@ -1,6 +1,7 @@
+import Server from '@phil/discord/Server';
+
 import CommandInvocation from '@phil/CommandInvocation';
 import { EmbedField } from '@phil/promises/discord';
-import ServerConfig from '@phil/server-config';
 import {
   ConfigCommandBase,
   ConfigProperty,
@@ -24,16 +25,11 @@ class DisplayConfigAction<TModel> implements ConfigAction<TModel> {
     command: ConfigCommandBase<TModel>,
     model: TModel
   ): Promise<void> {
-    const fields: EmbedField[] = [];
-    for (const property of command.orderedProperties) {
-      fields.push(
-        this.getDisplayRequestField(
-          model,
-          property,
-          invocation.context.serverConfig
-        )
-      );
-    }
+    const fields = await Promise.all(
+      command.orderedProperties.map((property) =>
+        this.getDisplayRequestField(model, property, invocation.context.server)
+      )
+    );
 
     await invocation.respond({
       color: 'powder-blue',
@@ -45,15 +41,15 @@ class DisplayConfigAction<TModel> implements ConfigAction<TModel> {
     });
   }
 
-  private getDisplayRequestField(
+  private async getDisplayRequestField(
     model: TModel,
     property: ConfigProperty<TModel>,
-    serverConfig: ServerConfig
-  ): EmbedField {
+    server: Server
+  ): Promise<EmbedField> {
     const currentValue = property.getValue(model);
-    const displayValue = property.typeDefinition.toDisplayFormat(
+    const { regularChat: displayValue } = await property.typeDefinition.format(
       currentValue,
-      serverConfig
+      server
     );
     return {
       name: `:small_blue_diamond: ${property.displayName} [key: \`${property.key}\`]`,

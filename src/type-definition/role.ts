@@ -1,9 +1,10 @@
-import Phil from '@phil/phil';
-import ServerConfig from '@phil/server-config';
+import Server from '@phil/discord/Server';
+
 import {
   ParseResult,
   TypeDefinition,
   ValidityResultType,
+  FormatResult,
 } from './@type-definition';
 
 const ROLE_LINK_PREFIX = '<@&';
@@ -54,11 +55,10 @@ class RoleTypeDefinitionImplementation implements TypeDefinition {
     };
   }
 
-  public isValid(
+  public async isValid(
     value: string,
-    phil: Phil,
-    serverConfig: ServerConfig
-  ): ValidityResultType {
+    server: Server
+  ): Promise<ValidityResultType> {
     if (!value) {
       return {
         errorMessage: 'No role ID was provided.',
@@ -66,7 +66,7 @@ class RoleTypeDefinitionImplementation implements TypeDefinition {
       };
     }
 
-    const role = serverConfig.server.roles[value];
+    const role = server.getRole(value);
     if (!role) {
       return {
         errorMessage:
@@ -80,37 +80,29 @@ class RoleTypeDefinitionImplementation implements TypeDefinition {
     };
   }
 
-  public toDisplayFormat(
+  public async format(
     value: string | null,
-    serverConfig: ServerConfig
-  ): string {
+    server: Server
+  ): Promise<FormatResult> {
     if (!value) {
-      return '(None)';
+      return {
+        multilineCodeBlock: '(None)',
+        regularChat: '(None)',
+      };
     }
 
-    const role = serverConfig.server.roles[value];
+    const role = server.getRole(value);
     if (!role) {
-      return '(None)';
+      return {
+        multilineCodeBlock: '(None)',
+        regularChat: '(None)',
+      };
     }
 
-    return ROLE_LINK_PREFIX + value + ROLE_LINK_SUFFIX;
-  }
-
-  public toMultilineCodeblockDisplayFormat(
-    value: string | null,
-    phil: Phil,
-    serverConfig: ServerConfig
-  ): string {
-    if (!value) {
-      return '(None)';
-    }
-
-    const role = serverConfig.server.roles[value];
-    if (!role) {
-      return '(None)';
-    }
-
-    return '@' + role.name;
+    return {
+      multilineCodeBlock: `@${role.name}`,
+      regularChat: `${ROLE_LINK_PREFIX}${value}${ROLE_LINK_SUFFIX}`,
+    };
   }
 }
 

@@ -1,6 +1,6 @@
+import Server from '@phil/discord/Server';
+
 import CommandInvocation from '@phil/CommandInvocation';
-import Phil from '@phil/phil';
-import ServerConfig from '@phil/server-config';
 import {
   ConfigCommandBase,
   ConfigProperty,
@@ -33,19 +33,16 @@ abstract class MutateConfigActionBase<TModel> implements ConfigAction<TModel> {
     command: ConfigCommandBase<TModel>,
     model: TModel,
     property: ConfigProperty<TModel>,
-    phil: Phil,
     mutableArgs: string[]
   ): Promise<void> {
-    const newValue = this.getNewValue(
+    const newValue = await this.getNewValue(
       property,
-      phil,
-      invocation.context.serverConfig,
+      invocation.context.server,
       mutableArgs
     );
     if (newValue.wasSuccessful === false) {
       await this.sendInvalidInputResponse(
         command,
-        phil,
         invocation,
         property,
         newValue.errorMessage
@@ -53,9 +50,8 @@ abstract class MutateConfigActionBase<TModel> implements ConfigAction<TModel> {
       return;
     }
 
-    await property.setValue(phil, model, newValue.parsedValue);
+    await property.setValue(model, newValue.parsedValue);
     await this.sendMutateSuccessMessage(
-      phil,
       invocation,
       property,
       newValue.parsedValue
@@ -64,14 +60,12 @@ abstract class MutateConfigActionBase<TModel> implements ConfigAction<TModel> {
 
   protected abstract getNewValue(
     property: ConfigProperty<TModel>,
-    phil: Phil,
-    serverConfig: ServerConfig,
+    server: Server,
     mutableArgs: string[]
-  ): GetNewValueResult;
+  ): Promise<GetNewValueResult>;
 
   private async sendInvalidInputResponse(
     command: ConfigCommandBase<TModel>,
-    phil: Phil,
     invocation: CommandInvocation,
     property: ConfigProperty<TModel>,
     errorMessage: string
@@ -97,20 +91,21 @@ abstract class MutateConfigActionBase<TModel> implements ConfigAction<TModel> {
   }
 
   private async sendMutateSuccessMessage(
-    phil: Phil,
     invocation: CommandInvocation,
     property: ConfigProperty<TModel>,
     newValue: string | null
   ): Promise<void> {
+    const {
+      multilineCodeBlock: formattedNewValue,
+    } = await property.typeDefinition.format(
+      newValue,
+      invocation.context.server
+    );
     await invocation.respond({
       color: 'green',
       description: `The value of the **${property.displayName.toLowerCase()}** has been ${
         this.pastTenseVerb
-      } successfully to now be \`${property.typeDefinition.toMultilineCodeblockDisplayFormat(
-        newValue,
-        phil,
-        invocation.context.serverConfig
-      )}\`.`,
+      } successfully to now be \`${formattedNewValue}\`.`,
       fields: null,
       footer: null,
       title: `${property.displayName} Changed Successfully`,

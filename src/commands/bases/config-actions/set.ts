@@ -1,5 +1,5 @@
-import Phil from '@phil/phil';
-import ServerConfig from '@phil/server-config';
+import Server from '@phil/discord/Server';
+
 import { ConfigProperty } from '@phil/commands/bases/config-command-base';
 import { ConfigActionParameterType, ConfigActionPrimaryKey } from './@action';
 import MutateConfigActionBase, { GetNewValueResult } from './@mutate-base';
@@ -16,12 +16,11 @@ class SetConfigAction<TModel> extends MutateConfigActionBase<TModel> {
 
   protected readonly pastTenseVerb = 'set';
 
-  protected getNewValue(
+  protected async getNewValue(
     property: ConfigProperty<TModel>,
-    phil: Phil,
-    serverConfig: ServerConfig,
+    server: Server,
     mutableArgs: string[]
-  ): GetNewValueResult {
+  ): Promise<GetNewValueResult> {
     const rawInput = mutableArgs.join(' ');
     if (!rawInput) {
       return {
@@ -35,10 +34,9 @@ class SetConfigAction<TModel> extends MutateConfigActionBase<TModel> {
       return result;
     }
 
-    const validityResult = property.typeDefinition.isValid(
+    const validityResult = await property.typeDefinition.isValid(
       result.parsedValue,
-      phil,
-      serverConfig
+      server
     );
     if (validityResult.isValid === false) {
       return {

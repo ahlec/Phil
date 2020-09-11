@@ -6,6 +6,7 @@ import {
 import Member from './Member';
 import Role from './Role';
 import User from './User';
+import TextChannel from './TextChannel';
 
 interface ApiServerMember {
   nick?: string;
@@ -16,6 +17,8 @@ interface ApiServerMember {
   };
   roles: ReadonlyArray<string>;
 }
+
+const DISCORD_CHANNEL_TYPE_TEXT = 0;
 
 class Server {
   public constructor(
@@ -50,6 +53,19 @@ class Server {
       (internalRole): Role =>
         new Role(this.internalClient, internalRole, this.id, internalRole.id)
     );
+  }
+
+  public getTextChannel(channelId: string): TextChannel | null {
+    const channel = this.internalServer.channels[channelId];
+    if (!channel) {
+      return null;
+    }
+
+    if (channel.type !== DISCORD_CHANNEL_TYPE_TEXT) {
+      return null;
+    }
+
+    return new TextChannel(channel, this, channel.id);
   }
 
   public async getMember(userId: string): Promise<Member | null> {
@@ -169,7 +185,6 @@ class Server {
               return;
             }
 
-            console.log(data);
             callServer(data[data.length - 1].user.id);
           }
         );

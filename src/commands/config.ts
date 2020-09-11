@@ -1,7 +1,6 @@
 import { Channel as DiscordIOChannel } from 'discord.io';
 
 import CommandInvocation from '@phil/CommandInvocation';
-import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry } from '@phil/utils';
 import { LoggerDefinition } from './@types';
@@ -50,11 +49,8 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     getValue: (model: ServerConfig): string | null =>
       getChannelId(model.botControlChannel),
     key: 'bot-control-channel',
-    setValue: (
-      phil: Phil,
-      model: ServerConfig,
-      newValue: string
-    ): Promise<boolean> => model.setBotControlChannel(newValue, phil.db),
+    setValue: (model: ServerConfig, newValue: string): Promise<boolean> =>
+      model.setBotControlChannel(newValue),
     typeDefinition: ChannelTypeDefinition,
   },
   {
@@ -65,11 +61,8 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     getValue: (model: ServerConfig): string | null =>
       getChannelId(model.adminChannel),
     key: 'admin-channel',
-    setValue: (
-      phil: Phil,
-      model: ServerConfig,
-      newValue: string
-    ): Promise<boolean> => model.setAdminChannel(newValue, phil.db),
+    setValue: (model: ServerConfig, newValue: string): Promise<boolean> =>
+      model.setAdminChannel(newValue),
     typeDefinition: ChannelTypeDefinition,
   },
   {
@@ -80,11 +73,8 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     getValue: (model: ServerConfig): string | null =>
       getChannelId(model.introductionsChannel),
     key: 'introductions-channel',
-    setValue: (
-      phil: Phil,
-      model: ServerConfig,
-      newValue: string
-    ): Promise<boolean> => model.setIntroductionsChannel(newValue, phil.db),
+    setValue: (model: ServerConfig, newValue: string): Promise<boolean> =>
+      model.setIntroductionsChannel(newValue),
     typeDefinition: ChannelTypeDefinition,
   },
   {
@@ -95,11 +85,8 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     getValue: (model: ServerConfig): string | null =>
       getChannelId(model.newsChannel),
     key: 'news-channel',
-    setValue: (
-      phil: Phil,
-      model: ServerConfig,
-      newValue: string
-    ): Promise<boolean> => model.setNewsChannel(newValue, phil.db),
+    setValue: (model: ServerConfig, newValue: string): Promise<boolean> =>
+      model.setNewsChannel(newValue),
     typeDefinition: ChannelTypeDefinition,
   },
   {
@@ -109,11 +96,8 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     getRandomExampleValue: (): string => 'p!',
     getValue: (model: ServerConfig): string | null => model.commandPrefix,
     key: 'command-prefix',
-    setValue: (
-      phil: Phil,
-      model: ServerConfig,
-      newValue: string
-    ): Promise<boolean> => model.setCommandPrefix(newValue, phil.db),
+    setValue: (model: ServerConfig, newValue: string): Promise<boolean> =>
+      model.setCommandPrefix(newValue),
     typeDefinition: CommandPrefixTypeDefinition,
   },
   {
@@ -130,11 +114,8 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
       return model.adminRole.id;
     },
     key: 'admin-role',
-    setValue: (
-      phil: Phil,
-      model: ServerConfig,
-      newValue: string
-    ): Promise<boolean> => model.setAdminRole(newValue, phil.db),
+    setValue: (model: ServerConfig, newValue: string): Promise<boolean> =>
+      model.setAdminRole(newValue),
     typeDefinition: RoleTypeDefinition,
   },
   {
@@ -144,11 +125,8 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     getRandomExampleValue: (): string => 'Welcome to our server, {user}!',
     getValue: (model: ServerConfig): string | null => model.welcomeMessage,
     key: 'welcome-message',
-    setValue: (
-      phil: Phil,
-      model: ServerConfig,
-      newValue: string
-    ): Promise<boolean> => model.setWelcomeMessage(newValue, phil.db),
+    setValue: (model: ServerConfig, newValue: string): Promise<boolean> =>
+      model.setWelcomeMessage(newValue),
     typeDefinition: WelcomeMessageTypeDefinition,
   },
 ];

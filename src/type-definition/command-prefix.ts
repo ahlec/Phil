@@ -3,6 +3,7 @@ import {
   ParseResult,
   TypeDefinition,
   ValidityResultType,
+  FormatResult,
 } from './@type-definition';
 
 interface InvalidPrefixCharacterDefinition {
@@ -74,18 +75,17 @@ class CommandPrefixTypeDefinitionImplementation implements TypeDefinition {
     };
   }
 
-  public isValid(): ValidityResultType {
+  public async isValid(): Promise<ValidityResultType> {
     return {
       isValid: true,
     };
   }
 
-  public toDisplayFormat(value: string | null): string {
-    return value || '';
-  }
-
-  public toMultilineCodeblockDisplayFormat(value: string | null): string {
-    return value || '';
+  public async format(value: string | null): Promise<FormatResult> {
+    return {
+      multilineCodeBlock: value || '',
+      regularChat: value || '',
+    };
   }
 }
 

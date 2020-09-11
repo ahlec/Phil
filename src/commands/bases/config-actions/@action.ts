@@ -1,5 +1,4 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import Phil from '@phil/phil';
 import {
   ConfigCommandBase,
   ConfigProperty,
@@ -30,7 +29,6 @@ export interface ConfigAction<TModel> {
     command: ConfigCommandBase<TModel>,
     model: TModel,
     property: ConfigProperty<TModel> | null,
-    phil: Phil,
     mutableArgs: string[]
   ): Promise<void>;
 }

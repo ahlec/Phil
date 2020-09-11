@@ -1,5 +1,4 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import Phil from '@phil/phil';
 import {
   ConfigCommandBase,
   ConfigProperty,
@@ -24,17 +23,18 @@ class InfoConfigAction<TModel> implements ConfigAction<TModel> {
     invocation: CommandInvocation,
     command: ConfigCommandBase<TModel>,
     model: TModel,
-    property: ConfigProperty<TModel>,
-    phil: Phil
+    property: ConfigProperty<TModel>
   ): Promise<void> {
     const currentValue = property.getValue(model);
-    const displayValue = property.typeDefinition.toDisplayFormat(
+    const { regularChat: displayValue } = await property.typeDefinition.format(
       currentValue,
-      invocation.context.serverConfig
+      invocation.context.server
     );
-    const displayDefaultValue = property.typeDefinition.toDisplayFormat(
+    const {
+      regularChat: displayDefaultValue,
+    } = await property.typeDefinition.format(
       property.defaultValue,
-      invocation.context.serverConfig
+      invocation.context.server
     );
     let response = `${
       property.description
@@ -43,10 +43,11 @@ class InfoConfigAction<TModel> implements ConfigAction<TModel> {
     )}`;
 
     const randomExample = property.getRandomExampleValue(model);
-    const randomDisplayValue = property.typeDefinition.toMultilineCodeblockDisplayFormat(
+    const {
+      multilineCodeBlock: randomDisplayValue,
+    } = await property.typeDefinition.format(
       randomExample,
-      phil,
-      invocation.context.serverConfig
+      invocation.context.server
     );
     response += `${NEWLINE}**EXAMPLES**${NEWLINE}\`\`\`${invocation.context.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Set} ${property.key} ${randomDisplayValue}${NEWLINE}${invocation.context.serverConfig.commandPrefix}${command.name} ${ConfigActionPrimaryKey.Clear} ${property.key}\`\`\``;
 

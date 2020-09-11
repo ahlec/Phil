@@ -45,7 +45,7 @@ export function getChannel(
   }
 
   const server = new Server(discordClient, rawServer, rawChannel.guild_id);
-  return new TextChannel(server, channelId);
+  return new TextChannel(rawChannel, server, channelId);
 }
 
 export function getServerMember(

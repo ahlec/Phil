@@ -3,6 +3,7 @@ import {
   ParseResult,
   TypeDefinition,
   ValidityResultType,
+  FormatResult,
 } from './@type-definition';
 
 const MAX_CHARACTER_LIMIT = 1800; // Limit is actually 2000, but need to leave room to account for character names
@@ -34,15 +35,18 @@ class WelcomeMessageTypeDefinitionImplementation implements TypeDefinition {
     };
   }
 
-  public isValid(): ValidityResultType {
+  public async isValid(): Promise<ValidityResultType> {
     return {
       isValid: true,
     };
   }
 
-  public toDisplayFormat(value: string | null): string {
+  public async format(value: string | null): Promise<FormatResult> {
     if (!value) {
-      return '(None)';
+      return {
+        multilineCodeBlock: '(None)',
+        regularChat: '(None)',
+      };
     }
 
     let truncated = truncateString(value, DISPLAY_CHARACTER_LIMIT);
@@ -53,11 +57,10 @@ class WelcomeMessageTypeDefinitionImplementation implements TypeDefinition {
       })`;
     }
 
-    return truncated;
-  }
-
-  public toMultilineCodeblockDisplayFormat(value: string | null): string {
-    return this.toDisplayFormat(value);
+    return {
+      multilineCodeBlock: truncated,
+      regularChat: truncated,
+    };
   }
 }
 

@@ -1,6 +1,7 @@
-import Phil from '@phil/phil';
-import ServerConfig from '@phil/server-config';
+import Server from '@phil/discord/Server';
+
 import {
+  FormatResult,
   ParseResult,
   TypeDefinition,
   ValidityResultType,
@@ -47,11 +48,10 @@ class ChannelTypeDefinitionImplementation implements TypeDefinition {
     };
   }
 
-  public isValid(
+  public async isValid(
     value: string,
-    phil: Phil,
-    serverConfig: ServerConfig
-  ): ValidityResultType {
+    server: Server
+  ): Promise<ValidityResultType> {
     if (!value) {
       return {
         errorMessage: 'No channel ID was provided.',
@@ -59,8 +59,8 @@ class ChannelTypeDefinitionImplementation implements TypeDefinition {
       };
     }
 
-    const channel = serverConfig.server.channels[value];
-    if (!channel || channel.guild_id !== serverConfig.serverId) {
+    const channel = server.getTextChannel(value);
+    if (!channel) {
       return {
         errorMessage:
           'No channel with that provided ID exists within this server (at least that I have permissions to know about).',
@@ -73,37 +73,29 @@ class ChannelTypeDefinitionImplementation implements TypeDefinition {
     };
   }
 
-  public toDisplayFormat(
+  public async format(
     value: string | null,
-    serverConfig: ServerConfig
-  ): string {
+    server: Server
+  ): Promise<FormatResult> {
     if (!value) {
-      return '(None)';
+      return {
+        multilineCodeBlock: '(None)',
+        regularChat: '(None)',
+      };
     }
 
-    const channel = serverConfig.server.channels[value];
+    const channel = server.getTextChannel(value);
     if (!channel) {
-      return '(None)';
+      return {
+        multilineCodeBlock: '(None)',
+        regularChat: '(None)',
+      };
     }
 
-    return '<#' + value + '>';
-  }
-
-  public toMultilineCodeblockDisplayFormat(
-    value: string | null,
-    phil: Phil,
-    serverConfig: ServerConfig
-  ): string {
-    if (!value) {
-      return '(None)';
-    }
-
-    const channel = serverConfig.server.channels[value];
-    if (!channel) {
-      return '(None)';
-    }
-
-    return '#' + channel.name;
+    return {
+      multilineCodeBlock: `#${channel.name}`,
+      regularChat: `<#${channel.id}>`,
+    };
   }
 }
 

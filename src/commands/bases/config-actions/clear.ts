@@ -12,11 +12,13 @@ class ClearConfigAction<TModel> extends MutateConfigActionBase<TModel> {
 
   protected readonly pastTenseVerb = 'reset';
 
-  protected getNewValue(property: ConfigProperty<TModel>): GetNewValueResult {
-    return {
+  protected getNewValue(
+    property: ConfigProperty<TModel>
+  ): Promise<GetNewValueResult> {
+    return Promise.resolve({
       parsedValue: property.defaultValue,
       wasSuccessful: true,
-    };
+    });
   }
 }
 
