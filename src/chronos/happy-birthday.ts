@@ -1,3 +1,5 @@
+import { User as DiscordIOUser, Server as DiscordIOServer } from 'discord.io';
+
 import { Moment } from 'moment';
 import Database from '@phil/database';
 import Features from '@phil/features/all-features';
@@ -6,7 +8,6 @@ import { sendMessage } from '@phil/promises/discord';
 import { GROUP_PRONOUNS } from '@phil/pronouns/definitions';
 import { Pronoun } from '@phil/pronouns/pronoun';
 import ServerConfig from '@phil/server-config';
-import { getUserDisplayName } from '@phil/utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 interface HappyBirthdayInfo {
@@ -72,7 +73,7 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
     const names = [];
     for (const userId of userIds) {
       const user = phil.bot.users[userId];
-      const userDisplayName = getUserDisplayName(user, serverConfig.server);
+      const userDisplayName = this.getDisplayName(user, serverConfig.server);
       if (!userDisplayName) {
         continue;
       }
@@ -90,6 +91,22 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
       names,
       pronoun,
     };
+  }
+
+  private getDisplayName(
+    user: DiscordIOUser | undefined,
+    server: DiscordIOServer
+  ): string | null {
+    if (!user) {
+      return null;
+    }
+
+    const member = server.members[user.id];
+    if (member && member.nick) {
+      return member.nick;
+    }
+
+    return user.username;
   }
 
   private createBirthdayWish(info: HappyBirthdayInfo): string {

@@ -8,7 +8,6 @@ import TextChannel from '@phil/discord/TextChannel';
 import User from '@phil/discord/User';
 import UsersDirectMessagesChannel from '@phil/discord/UsersDirectMessagesChannel';
 
-import { sendSuccessMessage, sendErrorMessage } from '@phil/utils';
 import {
   sendEmbedMessage,
   sendMessageBuilder,
@@ -103,6 +102,26 @@ export async function sendMessageTemplate(
   };
 }
 
+function sendErrorMessage(
+  bot: DiscordIOClient,
+  channelId: string,
+  message: string
+): Promise<string> {
+  return sendMessage(bot, channelId, `:no_entry: **ERROR.** ${message}`);
+}
+
+function sendSuccessMessage(
+  bot: DiscordIOClient,
+  channelId: string,
+  message: string
+): Promise<string> {
+  return sendMessage(
+    bot,
+    channelId,
+    `:white_check_mark: **SUCCESS.** ${message}`
+  );
+}
+
 async function sendMessageTemplateInternal(
   discordClient: DiscordIOClient,
   channelId: string,
@@ -122,18 +141,10 @@ async function sendMessageTemplateInternal(
       return sendMessage(discordClient, channelId, template.text);
     }
     case 'success': {
-      return sendSuccessMessage({
-        bot: discordClient,
-        channelId: channelId,
-        message: template.text,
-      });
+      return sendSuccessMessage(discordClient, channelId, template.text);
     }
     case 'error': {
-      return sendErrorMessage({
-        bot: discordClient,
-        channelId: channelId,
-        message: template.error,
-      });
+      return sendErrorMessage(discordClient, channelId, template.error);
     }
     case 'embed': {
       let color: EmbedColor;

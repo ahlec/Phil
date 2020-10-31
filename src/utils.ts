@@ -1,54 +1,6 @@
-import {
-  Client as DiscordIOClient,
-  Role as DiscordIORole,
-  Server as DiscordIOServer,
-  User as DiscordIOUser,
-} from 'discord.io';
-import { sendMessage, getMemberRolesInServer } from './promises/discord';
+import { Role as DiscordIORole } from 'discord.io';
 
 import Role from '@phil/discord/Role';
-
-interface SendErrorMessageOpts {
-  readonly bot: DiscordIOClient;
-  readonly channelId: string;
-  readonly message: string;
-}
-
-interface SendSuccessMessageOpts {
-  readonly bot: DiscordIOClient;
-  readonly channelId: string;
-  readonly message: string;
-}
-
-export function sendErrorMessage(
-  options: SendErrorMessageOpts
-): Promise<string> {
-  const message = ':no_entry: **ERROR.** ' + options.message;
-  return sendMessage(options.bot, options.channelId, message);
-}
-
-export function sendSuccessMessage(
-  options: SendSuccessMessageOpts
-): Promise<string> {
-  const message = ':white_check_mark: **SUCCESS.** ' + options.message;
-  return sendMessage(options.bot, options.channelId, message);
-}
-
-export async function doesMemberUseRole(
-  client: DiscordIOClient,
-  serverId: string,
-  memberId: string,
-  roleId: string
-): Promise<boolean> {
-  const memberRoles = await getMemberRolesInServer(client, serverId, memberId);
-  for (const memberRoleId of memberRoles) {
-    if (memberRoleId === roleId) {
-      return true;
-    }
-  }
-
-  return false;
-}
 
 export function getRandomArrayEntry<T>(arr: ReadonlyArray<T>): T {
   const randomIndex = Math.floor(Math.random() * arr.length);
@@ -100,22 +52,6 @@ export function stitchTogetherArray(values: ReadonlyArray<string>): string {
   }
 
   return str;
-}
-
-export function getUserDisplayName(
-  user: DiscordIOUser,
-  server: DiscordIOServer
-): string | null {
-  if (!user) {
-    return null;
-  }
-
-  const member = server.members[user.id];
-  if (member && member.nick && member.nick.length > 0) {
-    return member.nick;
-  }
-
-  return user.username;
 }
 
 export function truncateString(message: string, maxCharacters: number): string {

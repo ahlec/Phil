@@ -18,7 +18,6 @@ import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 import ReactableProcessor from './reactables/processor';
 import ServerDirectory from './server-directory';
-import { sendErrorMessage } from './utils';
 import CommandInvocation from './CommandInvocation';
 import ServerBucketsCollection from './ServerBucketsCollection';
 import Server from './discord/Server';
@@ -64,7 +63,7 @@ export default class Phil extends Logger {
       token: GlobalConfig.discordBotToken,
     });
     this.serverDirectory = new ServerDirectory(this);
-    this.commandRunner = new CommandRunner(this, this.bot, this.db);
+    this.commandRunner = new CommandRunner(this, this.db);
     this.chronoManager = new ChronoManager(this, this.serverDirectory);
     this.directMessageDispatcher = new DirectMessageDispatcher(this);
     this.reactableProcessor = new ReactableProcessor(this);
@@ -100,10 +99,9 @@ export default class Phil extends Logger {
     this.chronoManager.start();
 
     if (this.shouldSendDisconnectedMessage) {
-      await sendErrorMessage({
-        bot: this.bot,
-        channelId: GlobalConfig.botManagerUserId,
-        message:
+      await sendMessageTemplate(this.bot, GlobalConfig.botManagerUserId, {
+        type: 'error',
+        error:
           "I experienced an unexpected shutdown. The logs should be in Heroku. I've recovered and connected again.",
       });
       this.shouldSendDisconnectedMessage = false;
@@ -176,7 +174,7 @@ export default class Phil extends Logger {
         message
       );
       if (invocation) {
-        this.commandRunner.invoke(invocation, message);
+        this.commandRunner.invoke(invocation);
       }
     } else {
       this.directMessageDispatcher.process(message);
