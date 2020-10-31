@@ -63,7 +63,7 @@ export function getServerMember(
     discordClient,
     internalMember,
     serverId,
-    new User(internalUser, userId)
+    new User(discordClient, internalUser, userId)
   );
 }
 

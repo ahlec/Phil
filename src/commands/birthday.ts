@@ -25,8 +25,8 @@ class BirthdayCommand extends Command {
 
     await this.setBirthdayInDatabase(
       database,
-      invocation.user.username,
-      invocation.userId,
+      invocation.member.user.username,
+      invocation.member.user.id,
       birthday
     );
 

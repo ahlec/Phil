@@ -1,4 +1,4 @@
-import PrivateMessage from '@phil/messages/private';
+import ReceivedDirectMessage from '@phil/discord/ReceivedDirectMessage';
 import Phil from '@phil/phil';
 import {
   isCurrentlyDoingQuestionnaire,
@@ -17,9 +17,9 @@ export default class TimezoneQuestionnaireProcessor
 
   public async canProcess(
     phil: Phil,
-    message: PrivateMessage
+    message: ReceivedDirectMessage
   ): Promise<TimezoneQuestionnaireToken> {
-    const currentStage = await getStageForUser(phil.db, message.userId);
+    const currentStage = await getStageForUser(phil.db, message.sender.id);
     if (!currentStage) {
       return {
         isActive: false,
@@ -40,7 +40,7 @@ export default class TimezoneQuestionnaireProcessor
 
   public async process(
     phil: Phil,
-    message: PrivateMessage,
+    message: ReceivedDirectMessage,
     rawToken: ProcessorActiveToken
   ): Promise<void> {
     const token = rawToken as TimezoneQuestionnaireToken;

@@ -1,11 +1,9 @@
 import { inspect } from 'util';
-import EmbedColor from '@phil/embed-color';
-import { sendEmbedMessage } from '@phil/promises/discord';
 import {
   BotManagerCommand,
   LoggerDefinition,
   Phil,
-  PrivateMessage,
+  ReceivedDirectMessage,
 } from './BotManagerCommand';
 
 export default class EvalBotManagerCommand extends BotManagerCommand {
@@ -15,15 +13,18 @@ export default class EvalBotManagerCommand extends BotManagerCommand {
 
   public async execute(
     phil: Phil,
-    message: PrivateMessage,
+    message: ReceivedDirectMessage,
     args: string
   ): Promise<void> {
     const javascript = args;
     const result = this.evaluateJavascript(phil, javascript);
-    sendEmbedMessage(phil.bot, message.channelId, {
-      color: EmbedColor.Success,
+    await message.respond({
+      color: 'green',
       description: `**Evaluated:**\n${javascript}\n\n**Result:**\n${result}`,
+      fields: null,
+      footer: null,
       title: 'JavaScript evaluation',
+      type: 'embed',
     });
   }
 

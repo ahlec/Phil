@@ -1,21 +1,18 @@
-import { Client as DiscordIOClient, User as DiscordIOUser } from 'discord.io';
+import { Client as DiscordIOClient } from 'discord.io';
 
+import Member from '@phil/discord/Member';
 import MessageTemplate from '@phil/discord/MessageTemplate';
+import ReceivedServerMessage from '@phil/discord/ReceivedServerMessage';
 import Server from '@phil/discord/Server';
 
 import Bucket from './buckets';
-import { Mention } from '@phil/messages/base';
-import PublicMessage from '@phil/messages/public';
 import ServerConfig from './server-config';
 import { deleteMessage } from './promises/discord';
 import ServerBucketsCollection from './ServerBucketsCollection';
 import ServerRequestablesCollection from './ServerRequestablesCollection';
 import ServerSubmissionsCollection from './ServerSubmissionsCollection';
 import { getRandomArrayEntry } from './utils';
-import {
-  sendMessageTemplate,
-  SendMessageResult,
-} from './utils/discord-migration';
+import { SendMessageResult } from './utils/discord-migration';
 
 interface InvocationContext {
   buckets: ServerBucketsCollection;
@@ -85,13 +82,13 @@ class CommandInvocation {
   public static parseFromMessage(
     client: DiscordIOClient,
     context: InvocationContext,
-    message: PublicMessage
+    message: ReceivedServerMessage
   ): CommandInvocation | null {
-    if (!message.content) {
+    if (!message.body) {
       return null;
     }
 
-    const words = message.content
+    const words = message.body
       .split(' ')
       .filter((word) => word.trim().length > 0);
     if (!words.length) {
@@ -119,28 +116,16 @@ class CommandInvocation {
     private readonly discordClient: DiscordIOClient,
     public readonly commandName: string,
     public readonly commandArgs: ReadonlyArray<string>,
-    private readonly message: PublicMessage,
+    private readonly message: ReceivedServerMessage,
     public readonly context: InvocationContext
   ) {}
 
-  public get mentions(): readonly Mention[] {
-    return this.message.mentions;
-  }
-
-  public get user(): DiscordIOUser {
-    return this.message.user;
-  }
-
-  public get userId(): string {
-    return this.message.userId;
+  public get member(): Member {
+    return this.message.sender;
   }
 
   public async respond(response: MessageTemplate): Promise<SendMessageResult> {
-    return sendMessageTemplate(
-      this.discordClient,
-      this.message.channelId,
-      response
-    );
+    return this.message.respond(response);
   }
 
   /**
@@ -197,7 +182,7 @@ class CommandInvocation {
   public deleteInvocationMessage(): Promise<void> {
     return deleteMessage(
       this.discordClient,
-      this.message.channelId,
+      this.message.channel.id,
       this.message.id
     );
   }

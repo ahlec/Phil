@@ -36,12 +36,9 @@ class RequestCommand extends Command {
       return;
     }
 
-    const member = await invocation.context.server.getMember(invocation.userId);
-    if (!member) {
-      return;
-    }
-
-    const requestability = await requestable.determineRequestability(member);
+    const requestability = await requestable.determineRequestability(
+      invocation.member
+    );
     if (!requestability.allowed) {
       switch (requestability.reason) {
         case 'on-blacklist': {
@@ -66,7 +63,7 @@ class RequestCommand extends Command {
       }
     }
 
-    await member.giveRole(requestable.role);
+    await invocation.member.giveRole(requestable.role);
 
     await invocation.respond({
       text: `You have been granted the "${requestable.role.name}" role!`,

@@ -2,9 +2,8 @@ import { CountryStage, DeclinedStage } from './@all-stages';
 import Stage from './@stage';
 import { setStage } from './@utils';
 
-import PrivateMessage from '@phil/messages/private';
+import ReceivedDirectMessage from '@phil/discord/ReceivedDirectMessage';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 
 export default class LetsBeginStage implements Stage {
   public readonly stageNumber = 1;
@@ -15,19 +14,19 @@ export default class LetsBeginStage implements Stage {
 
   public async processInput(
     phil: Phil,
-    message: PrivateMessage
+    message: ReceivedDirectMessage
   ): Promise<void> {
-    const content = message.content.toLowerCase().trim();
+    const content = message.body.toLowerCase().trim();
 
     if (content === 'yes') {
-      await setStage(phil, message.userId, CountryStage);
+      await setStage(phil, message.sender.id, CountryStage);
       return;
     }
 
     if (content === 'no') {
       const results = await phil.db.query<{ timezones: string }>(
         "UPDATE timezones SET will_provide = E'0' WHERE userid = $1",
-        [message.userId]
+        [message.sender.id]
       );
       if (results.rowCount === 0) {
         throw new Error(
@@ -35,14 +34,14 @@ export default class LetsBeginStage implements Stage {
         );
       }
 
-      await setStage(phil, message.userId, DeclinedStage);
+      await setStage(phil, message.sender.id, DeclinedStage);
       return;
     }
 
-    await sendMessage(
-      phil.bot,
-      message.channelId,
-      "I didn't understand that, sorry. Can you please tell me `yes` or `no` for if you'd like to fill out the timezone questionnaire?"
-    );
+    await message.respond({
+      type: 'plain',
+      text:
+        "I didn't understand that, sorry. Can you please tell me `yes` or `no` for if you'd like to fill out the timezone questionnaire?",
+    });
   }
 }

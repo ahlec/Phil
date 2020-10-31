@@ -13,6 +13,7 @@ interface ApiServerMember {
   user: {
     id: string;
     bot: boolean;
+    discriminator: number;
     username: string;
   };
   roles: ReadonlyArray<string>;
@@ -37,7 +38,12 @@ class Server {
       }
 
       members.push(
-        new Member(this.internalClient, member, this.id, new User(user, userId))
+        new Member(
+          this.internalClient,
+          member,
+          this.id,
+          new User(this.internalClient, user, userId)
+        )
       );
     }
 
@@ -76,7 +82,7 @@ class Server {
         this.internalClient,
         member,
         this.id,
-        new User(user, userId)
+        new User(this.internalClient, user, userId)
       );
     }
 
@@ -90,7 +96,7 @@ class Server {
           this.internalClient,
           apiMember,
           this.id,
-          new User(apiMember.user, userId)
+          new User(this.internalClient, apiMember.user, userId)
         );
       }
     } catch (err) {

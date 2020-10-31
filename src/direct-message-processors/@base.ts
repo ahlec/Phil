@@ -1,4 +1,4 @@
-import PrivateMessage from '@phil/messages/private';
+import ReceivedDirectMessage from '@phil/discord/ReceivedDirectMessage';
 import Phil from '@phil/phil';
 
 export interface ProcessorActiveToken {
@@ -10,11 +10,11 @@ export interface DirectMessageProcessor {
   readonly handle: string;
   canProcess(
     phil: Phil,
-    message: PrivateMessage
+    message: ReceivedDirectMessage
   ): Promise<ProcessorActiveToken>;
   process(
     phil: Phil,
-    message: PrivateMessage,
+    message: ReceivedDirectMessage,
     token: ProcessorActiveToken
   ): Promise<void>;
 }

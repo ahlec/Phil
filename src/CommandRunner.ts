@@ -1,12 +1,14 @@
 import { Client as DiscordIOClient } from 'discord.io';
 import { sortBy, uniqBy, values } from 'lodash';
+
+import ReceivedServerMessage from '@phil/discord/ReceivedServerMessage';
+
 import Command, { CommandLookup } from './commands/@types';
 import { instantiateCommands } from './commands/index';
 import CommandInvocation from './CommandInvocation';
 import Database from './database';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
-import PublicMessage from './messages/public';
 import PermissionLevel, { getPermissionLevelName } from './permission-level';
 import Phil from './phil';
 import { sendErrorMessage } from './utils';
@@ -36,7 +38,7 @@ export default class CommandRunner extends Logger {
 
   public async invoke(
     invocation: CommandInvocation,
-    message: PublicMessage
+    message: ReceivedServerMessage
   ): Promise<void> {
     if (invocation === null) {
       return;
@@ -49,10 +51,10 @@ export default class CommandRunner extends Logger {
       return;
     }
 
-    if (command.feature && message.server) {
+    if (command.feature && message.channel.server) {
       const isFeatureEnabled = await command.feature.getIsEnabled(
         this.db,
-        message.server.id
+        message.channel.server.id
       );
       if (!isFeatureEnabled) {
         this.reportInvalidCommand(message, invocation);
@@ -60,7 +62,11 @@ export default class CommandRunner extends Logger {
       }
     }
 
-    const canUseCommand = await this.canUserUseCommand(command, message);
+    const canUseCommand = await this.canUserUseCommand(
+      command,
+      invocation,
+      message
+    );
     if (!canUseCommand) {
       this.reportCannotUseCommand(message, command, invocation);
       return;
@@ -80,11 +86,11 @@ export default class CommandRunner extends Logger {
   }
 
   private logInputReceived(
-    message: PublicMessage,
+    message: ReceivedServerMessage,
     invocation: CommandInvocation
   ): void {
     this.write(
-      `user ${message.user.username}${message.user.discriminator} used command ${message.serverConfig.commandPrefix}${invocation.commandName}`
+      `user ${message.sender.user.fullUsername} used command ${invocation.context.serverConfig.commandPrefix}${invocation.commandName}`
     );
   }
 
@@ -99,26 +105,30 @@ export default class CommandRunner extends Logger {
   }
 
   private async reportInvalidCommand(
-    message: PublicMessage,
+    message: ReceivedServerMessage,
     invocation: CommandInvocation
   ): Promise<void> {
     await sendErrorMessage({
       bot: this.bot,
-      channelId: message.channelId,
-      message: `There is no \`${message.serverConfig.commandPrefix}${invocation.commandName}\` command.`,
+      channelId: message.channel.id,
+      message: `There is no \`${invocation.context.serverConfig.commandPrefix}${invocation.commandName}\` command.`,
     });
   }
 
   private canUserUseCommand(
     command: Command,
-    message: PublicMessage
+    invocation: CommandInvocation,
+    message: ReceivedServerMessage
   ): Promise<boolean> {
     switch (command.permissionLevel) {
       case PermissionLevel.General: {
         return Promise.resolve(true);
       }
       case PermissionLevel.AdminOnly: {
-        return message.serverConfig.isAdmin(this.bot, message.userId);
+        return invocation.context.serverConfig.isAdmin(
+          this.phil.bot,
+          message.sender.user.id
+        );
       }
       default: {
         return command.permissionLevel;
@@ -127,27 +137,27 @@ export default class CommandRunner extends Logger {
   }
 
   private async reportCannotUseCommand(
-    message: PublicMessage,
+    message: ReceivedServerMessage,
     command: Command,
     invocation: CommandInvocation
   ): Promise<void> {
     const permissionLevelName = getPermissionLevelName(command.permissionLevel);
     await sendErrorMessage({
       bot: this.bot,
-      channelId: message.channelId,
-      message: `The \`${message.serverConfig.commandPrefix}${invocation.commandName}\` command requires ${permissionLevelName} privileges to use here.`,
+      channelId: message.channel.id,
+      message: `The \`${invocation.context.serverConfig.commandPrefix}${invocation.commandName}\` command requires ${permissionLevelName} privileges to use here.`,
     });
   }
 
   private async runCommand(
-    message: PublicMessage,
+    message: ReceivedServerMessage,
     command: Command,
     invocation: CommandInvocation
   ): Promise<void> {
     try {
       await command.invoke(invocation, this.phil.db, this.phil);
     } catch (err) {
-      await this.reportCommandError(err, message.channelId);
+      await this.reportCommandError(err, message.channel.id);
     }
   }
 

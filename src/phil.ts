@@ -16,9 +16,6 @@ import GlobalConfig from './GlobalConfig';
 import { greetMember, shouldAutomaticallyGreetMember } from './greeting';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
-import { parseMessage } from './messages/@parsing';
-import MessageBase from './messages/base';
-import PublicMessage from './messages/public';
 import ReactableProcessor from './reactables/processor';
 import ServerDirectory from './server-directory';
 import { sendErrorMessage } from './utils';
@@ -27,17 +24,28 @@ import ServerBucketsCollection from './ServerBucketsCollection';
 import Server from './discord/Server';
 import { sendMessageTemplate } from './utils/discord-migration';
 import Member from './discord/Member';
+import ReceivedServerMessage from './discord/ReceivedServerMessage';
 import User from './discord/User';
 import ServerSubmissionsCollection from './ServerSubmissionsCollection';
 import ServerRequestablesCollection from './ServerRequestablesCollection';
+import TextChannel from './discord/TextChannel';
+import ReceivedDirectMessage from './discord/ReceivedDirectMessage';
 
 function ignoreDiscordCode(code: number): boolean {
   return code === 1000; // General disconnect code
 }
 
-function isPublicMessage(object: MessageBase): object is PublicMessage {
-  return 'serverConfig' in object;
-}
+type ParseResult<T> =
+  | {
+      success: true;
+      data: T;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+type RecognizedReceivedMessage = ReceivedServerMessage | ReceivedDirectMessage;
 
 export default class Phil extends Logger {
   public readonly bot: DiscordIOClient;
@@ -109,7 +117,13 @@ export default class Phil extends Logger {
     msg: string,
     event: OfficialDiscordPayload<OfficialDiscordMessage>
   ): Promise<void> => {
-    const message = await parseMessage(this, event);
+    const parseResult = await this.parseMessage(event);
+    if (!parseResult.success) {
+      this.error(parseResult.error);
+      return;
+    }
+
+    const message = parseResult.data;
 
     if (this.isMessageFromPhil(message)) {
       this.handleOwnMessage(event);
@@ -120,31 +134,43 @@ export default class Phil extends Logger {
       return;
     }
 
-    if (isPublicMessage(message)) {
+    if (message instanceof ReceivedServerMessage) {
       if (this.chronoManager) {
         this.chronoManager.recordNewMessageInChannel(channelId);
+      }
+
+      const serverConfig = await this.serverDirectory.getServerConfig(
+        this.bot.servers[message.channel.server.id]
+      );
+      if (!serverConfig) {
+        this.error(
+          `Received public message in channel '${message.channel.id}' but don't have server config for server '${message.channel.server.id}'.`
+        );
+        return;
       }
 
       const buckets = new ServerBucketsCollection(
         this.bot,
         this.db,
-        message.server.id,
-        message.serverConfig
+        message.channel.server.id,
+        serverConfig
       );
-      const server = new Server(this.bot, message.server, message.server.id);
       const invocation = CommandInvocation.parseFromMessage(
         this.bot,
         {
           buckets,
-          channelId: message.channelId,
-          requestables: new ServerRequestablesCollection(this.db, server),
-          server,
-          serverConfig: message.serverConfig,
+          channelId: message.channel.id,
+          requestables: new ServerRequestablesCollection(
+            this.db,
+            message.channel.server
+          ),
+          server: message.channel.server,
+          serverConfig,
           submissions: new ServerSubmissionsCollection(
             this.bot,
             this.db,
             buckets,
-            message.serverConfig
+            serverConfig
           ),
         },
         message
@@ -158,12 +184,86 @@ export default class Phil extends Logger {
     }
   };
 
-  private isMessageFromPhil(message: MessageBase): boolean {
-    return message.userId === this.bot.id;
+  private async parseMessage(
+    event: OfficialDiscordPayload<OfficialDiscordMessage>
+  ): Promise<ParseResult<RecognizedReceivedMessage>> {
+    if (!event.d.author) {
+      return {
+        success: false,
+        error: `Message '${event.d.id}' does not have an author.`,
+      };
+    }
+
+    const isDirectMessage = event.d.channel_id in this.bot.directMessages;
+    if (isDirectMessage) {
+      const rawUser = this.bot.users[event.d.author.id];
+      if (!rawUser) {
+        return {
+          success: false,
+          error: `Received a direct message from unrecognized user '${event.d.author.id}'.`,
+        };
+      }
+
+      const user = new User(this.bot, rawUser, event.d.author.id);
+      return {
+        success: true,
+        data: new ReceivedDirectMessage(
+          this.bot,
+          event.d.id,
+          event.d.content,
+          user
+        ),
+      };
+    }
+
+    const rawServer = this.getServerFromChannelId(event.d.channel_id);
+    if (!rawServer) {
+      return {
+        success: false,
+        error: `Received a message from channel '${event.d.channel_id}', which is not a channel I recognize.`,
+      };
+    }
+
+    const server = new Server(this.bot, rawServer, rawServer.id);
+    const member = await server.getMember(event.d.author.id);
+    if (!member) {
+      return {
+        success: false,
+        error: `Received message '${event.d.id}' from user '${event.d.author.id}', but they aren't found in server '${server.id}'.`,
+      };
+    }
+
+    const channel = new TextChannel(
+      rawServer.channels[event.d.channel_id],
+      server,
+      event.d.channel_id
+    );
+    return {
+      success: true,
+      data: new ReceivedServerMessage(
+        this.bot,
+        event.d.id,
+        event.d.content,
+        member,
+        channel
+      ),
+    };
   }
 
-  private shouldIgnoreMessage(message: MessageBase): boolean {
-    const user = this.bot.users[message.userId];
+  private getSenderId(message: RecognizedReceivedMessage): string {
+    if (message instanceof ReceivedDirectMessage) {
+      return message.sender.id;
+    }
+
+    return message.sender.user.id;
+  }
+
+  private isMessageFromPhil(message: RecognizedReceivedMessage): boolean {
+    return this.getSenderId(message) === this.bot.id;
+  }
+
+  private shouldIgnoreMessage(message: RecognizedReceivedMessage): boolean {
+    const user = this.bot.users[this.getSenderId(message)];
     if (!user) {
       return true;
     }
@@ -240,7 +340,7 @@ export default class Phil extends Logger {
       this.bot,
       rawMember,
       serverId,
-      new User(rawUser, rawMember.id)
+      new User(this.bot, rawUser, rawMember.id)
     );
 
     try {

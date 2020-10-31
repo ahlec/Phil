@@ -3,9 +3,8 @@ import IStage from './@stage';
 import { setStage } from './@utils';
 
 import Database from '@phil/database';
-import PrivateMessage from '@phil/messages/private';
+import ReceivedDirectMessage from '@phil/discord/ReceivedDirectMessage';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 
 import * as moment from 'moment-timezone';
 
@@ -18,19 +17,19 @@ export default class ConfirmationStage implements IStage {
 
   public async processInput(
     phil: Phil,
-    message: PrivateMessage
+    message: ReceivedDirectMessage
   ): Promise<void> {
-    const content = message.content.toLowerCase().trim();
+    const content = message.body.toLowerCase().trim();
 
     if (content === 'yes') {
-      await setStage(phil, message.userId, FinishedStage);
+      await setStage(phil, message.sender.id, FinishedStage);
       return;
     }
 
     if (content === 'no') {
       const results = await phil.db.query<{ timezones: string }>(
         'UPDATE timezones SET timezone_name = NULL WHERE userid = $1',
-        [message.userId]
+        [message.sender.id]
       );
       if (results.rowCount === 0) {
         throw new Error(
@@ -38,16 +37,19 @@ export default class ConfirmationStage implements IStage {
         );
       }
 
-      await setStage(phil, message.userId, CountryStage);
+      await setStage(phil, message.sender.id, CountryStage);
       return;
     }
 
     const reply = await this.getConfirmationMessage(
       phil.db,
-      message.userId,
+      message.sender.id,
       "Hmmmm, that wasn't one of the answers."
     );
-    await sendMessage(phil.bot, message.channelId, reply);
+    await message.respond({
+      type: 'plain',
+      text: reply,
+    });
   }
 
   private async getConfirmationMessage(

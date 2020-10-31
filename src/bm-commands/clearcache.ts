@@ -1,9 +1,8 @@
-import { sendSuccessMessage } from '@phil/utils';
 import {
   BotManagerCommand,
   LoggerDefinition,
   Phil,
-  PrivateMessage,
+  ReceivedDirectMessage,
 } from './BotManagerCommand';
 
 export default class ClearCacheBotManagerCommand extends BotManagerCommand {
@@ -11,12 +10,14 @@ export default class ClearCacheBotManagerCommand extends BotManagerCommand {
     super('clearcache', parentDefinition);
   }
 
-  public async execute(phil: Phil, message: PrivateMessage): Promise<void> {
+  public async execute(
+    phil: Phil,
+    message: ReceivedDirectMessage
+  ): Promise<void> {
     phil.serverDirectory.clearCache();
-    await sendSuccessMessage({
-      bot: phil.bot,
-      channelId: message.channelId,
-      message: 'Caches have been cleared.',
+    await message.respond({
+      text: 'Caches have been cleared.',
+      type: 'success',
     });
   }
 }

@@ -1,9 +1,9 @@
-import PrivateMessage from '@phil/messages/private';
+import ReceivedDirectMessage from '@phil/discord/ReceivedDirectMessage';
+
 import Phil from '@phil/phil';
 import SubmissionSession from '@phil/prompts/submission-session';
 import SuggestSessionReactableFactory from '@phil/reactables/suggest-session/factory';
 import { DirectMessageProcessor, ProcessorActiveToken } from './@base';
-import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 type PromptValidateResult =
   | { isValid: true; validatedMessage: string }
@@ -31,11 +31,11 @@ export default class SuggestSessionListener implements DirectMessageProcessor {
 
   public async canProcess(
     phil: Phil,
-    message: PrivateMessage
+    message: ReceivedDirectMessage
   ): Promise<SuggestSessionListenerToken> {
     const currentSession = await SubmissionSession.getActiveSession(
       phil,
-      message.userId
+      message.sender.id
     );
     if (!currentSession) {
       return {
@@ -51,11 +51,11 @@ export default class SuggestSessionListener implements DirectMessageProcessor {
 
   public async process(
     phil: Phil,
-    message: PrivateMessage,
+    message: ReceivedDirectMessage,
     rawToken: ProcessorActiveToken
   ): Promise<void> {
     const token = rawToken as SuggestSessionListenerToken;
-    const validationResults = validatePromptSubmission(message.content);
+    const validationResults = validatePromptSubmission(message.body);
     if (!validationResults.isValid || !token.currentSession) {
       // TODO
       return;
@@ -65,20 +65,16 @@ export default class SuggestSessionListener implements DirectMessageProcessor {
 
     const NOWRAP = '';
     const numSubmissions = token.currentSession.getNumberSubmissions();
-    const { finalMessage } = await sendMessageTemplate(
-      phil.bot,
-      message.channelId,
-      {
-        color: 'powder-blue',
-        description: `**${validationResults.validatedMessage}** has been sent to the admins ${NOWRAP}for approval.`,
-        fields: null,
-        footer: `You have made ${numSubmissions} submission${
-          numSubmissions !== 1 ? 's' : ''
-        } during this session.`,
-        title: ':pencil: Prompt Received :incoming_envelope:',
-        type: 'embed',
-      }
-    );
+    const { finalMessage } = await message.respond({
+      color: 'powder-blue',
+      description: `**${validationResults.validatedMessage}** has been sent to the admins ${NOWRAP}for approval.`,
+      fields: null,
+      footer: `You have made ${numSubmissions} submission${
+        numSubmissions !== 1 ? 's' : ''
+      } during this session.`,
+      title: ':pencil: Prompt Received :incoming_envelope:',
+      type: 'embed',
+    });
 
     const reactableFactory = new SuggestSessionReactableFactory(
       phil.bot,
@@ -87,7 +83,7 @@ export default class SuggestSessionListener implements DirectMessageProcessor {
         timeLimit: token.currentSession.remainingTime.asMinutes(),
       },
       {
-        userId: message.userId,
+        userId: message.sender.id,
       },
       false
     );

@@ -3,7 +3,7 @@ import { CountryTimezones, TimezoneData } from './@timezone-data';
 import { setTimezone } from './@utils';
 
 import Database from '@phil/database';
-import PrivateMessage from '@phil/messages/private';
+import ReceivedDirectMessage from '@phil/discord/ReceivedDirectMessage';
 import Phil from '@phil/phil';
 import { sendMessage } from '@phil/promises/discord';
 
@@ -17,19 +17,19 @@ export default class SpecificationStage implements Stage {
 
   public async processInput(
     phil: Phil,
-    message: PrivateMessage
+    message: ReceivedDirectMessage
   ): Promise<void> {
     const timezoneData = await this.getTimezoneDataFromCountryDb(
       phil.db,
-      message.userId
+      message.sender.id
     );
-    let input = parseInt(message.content, 10);
+    let input = parseInt(message.body, 10);
     if (isNaN(input)) {
       const reply = this.getSpecificationList(
         timezoneData,
         "Sorry, that wasn't actually a number. Can you try again?"
       );
-      await sendMessage(phil.bot, message.userId, reply);
+      await sendMessage(phil.bot, message.sender.id, reply);
       return;
     }
 
@@ -39,11 +39,11 @@ export default class SpecificationStage implements Stage {
         timezoneData,
         "That wasn't actually a number with a timezone I can understand. Can we try again?"
       );
-      await sendMessage(phil.bot, message.userId, reply);
+      await sendMessage(phil.bot, message.sender.id, reply);
       return;
     }
 
-    setTimezone(phil, message.userId, timezoneData.timezones[input].name);
+    setTimezone(phil, message.sender.id, timezoneData.timezones[input].name);
   }
 
   private async getTimezoneDataFromCountryDb(

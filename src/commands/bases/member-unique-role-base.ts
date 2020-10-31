@@ -2,7 +2,6 @@ import Member from '@phil/discord/Member';
 import Role from '@phil/discord/Role';
 import Server from '@phil/discord/Server';
 
-import GlobalConfig from '@phil/GlobalConfig';
 import CommandInvocation from '@phil/CommandInvocation';
 import Feature from '@phil/features/feature';
 import { HelpGroup } from '@phil/help-groups';
@@ -37,23 +36,14 @@ abstract class MemberUniqueRoleCommandBase<TData> extends Command {
   }
 
   public async invoke(invocation: CommandInvocation): Promise<void> {
-    const member = await invocation.context.server.getMember(invocation.userId);
-    if (!member) {
-      await invocation.respond({
-        error: `I don't seem to know about you yet. Strange. Maybe <@${GlobalConfig.botManagerUserId}> can help.`,
-        type: 'error',
-      });
-      return;
-    }
-
     const data = this.getDataFromCommandArgs(
       invocation.context.serverConfig,
       invocation.commandArgs
     );
     const role = await this.getRoleFromData(invocation.context.server, data);
 
-    await this.removeAllRolesInPoolFromUser(member);
-    await member.giveRole(role);
+    await this.removeAllRolesInPoolFromUser(invocation.member);
+    await invocation.member.giveRole(role);
 
     await invocation.respond({
       text: this.getSuccessMessage(invocation.context.serverConfig, data),

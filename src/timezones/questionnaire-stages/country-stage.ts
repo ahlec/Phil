@@ -3,9 +3,8 @@ import Stage from './@stage';
 import { CountryTimezones } from './@timezone-data';
 import { setStage, setTimezone } from './@utils';
 
-import PrivateMessage from '@phil/messages/private';
+import ReceivedDirectMessage from '@phil/discord/ReceivedDirectMessage';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 
 export default class CountryStage implements Stage {
   public readonly stageNumber = 2;
@@ -16,33 +15,37 @@ export default class CountryStage implements Stage {
 
   public async processInput(
     phil: Phil,
-    message: PrivateMessage
+    message: ReceivedDirectMessage
   ): Promise<void> {
-    const input = message.content.trim().toLowerCase();
+    const input = message.body.trim().toLowerCase();
     const timezoneData = CountryTimezones[input];
 
     if (!timezoneData) {
-      await sendMessage(
-        phil.bot,
-        message.channelId,
-        "I'm not sure what country that was. I can understand a country by a couple of names, but the easiest is the standard English name of the country."
-      );
+      await message.respond({
+        type: 'plain',
+        text:
+          "I'm not sure what country that was. I can understand a country by a couple of names, but the easiest is the standard English name of the country.",
+      });
       return;
     }
 
     if (timezoneData.timezones.length === 1) {
-      await setTimezone(phil, message.userId, timezoneData.timezones[0].name);
+      await setTimezone(
+        phil,
+        message.sender.id,
+        timezoneData.timezones[0].name
+      );
       return;
     }
 
     const results = await phil.db.query<{ timezones: string }>(
       'UPDATE timezones SET country_name = $1 WHERE userid = $2',
-      [input, message.userId]
+      [input, message.sender.id]
     );
     if (results.rowCount === 0) {
       throw new Error('Could not set the country_name field in the database.');
     }
 
-    await setStage(phil, message.userId, SpecificationStage);
+    await setStage(phil, message.sender.id, SpecificationStage);
   }
 }

@@ -1,3 +1,5 @@
+import ReceivedDirectMessage from '@phil/discord/ReceivedDirectMessage';
+
 import { DirectMessageProcessor } from './direct-message-processors/@base';
 
 import BotManagerCommandListener from './direct-message-processors/BotManagerCommandListener';
@@ -8,7 +10,6 @@ import EmbedColor from './embed-color';
 import GlobalConfig from './GlobalConfig';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
-import PrivateMessage from './messages/private';
 import Phil from './phil';
 import { sendEmbedMessage } from './promises/discord';
 import { inspect } from 'util';
@@ -26,7 +27,7 @@ export default class DirectMessageDispatcher extends Logger {
     super(LOGGER_DEFINITION);
   }
 
-  public async process(message: PrivateMessage): Promise<void> {
+  public async process(message: ReceivedDirectMessage): Promise<void> {
     for (const processor of this.processorsInPriorityOrder) {
       try {
         const token = await processor.canProcess(this.phil, message);

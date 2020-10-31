@@ -1,5 +1,3 @@
-import Member from '@phil/discord/Member';
-
 import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
@@ -21,18 +19,8 @@ class RemoveCommand extends Command {
   }
 
   public async invoke(invocation: CommandInvocation): Promise<void> {
-    const member = await invocation.context.server.getMember(invocation.userId);
-    if (!member) {
-      await invocation.respond({
-        error:
-          "I don't seem to know about you yet. Would you make sure an admin sees this so we can get you sorted out?",
-        type: 'error',
-      });
-      return;
-    }
-
     if (invocation.commandArgs.length === 0) {
-      return this.processNoCommandArgs(invocation, member);
+      return this.processNoCommandArgs(invocation);
     }
 
     const requestable = await invocation.context.requestables.retrieve({
@@ -50,7 +38,7 @@ class RemoveCommand extends Command {
       return;
     }
 
-    const doesMemberHaveRole = member.roles.some(
+    const doesMemberHaveRole = invocation.member.roles.some(
       (role): boolean => role.id === requestable.role.id
     );
     if (!doesMemberHaveRole) {
@@ -61,7 +49,7 @@ class RemoveCommand extends Command {
       return;
     }
 
-    await member.removeRole(requestable.role);
+    await invocation.member.removeRole(requestable.role);
     await invocation.respond({
       text: 'I\'ve removed the "' + requestable.role.name + '" role from you.',
       type: 'success',
@@ -69,13 +57,9 @@ class RemoveCommand extends Command {
   }
 
   private async processNoCommandArgs(
-    invocation: CommandInvocation,
-    member: Member
+    invocation: CommandInvocation
   ): Promise<void> {
-    const userRequestables = await this.getAllRequestablesUserHas(
-      invocation,
-      member
-    );
+    const userRequestables = await this.getAllRequestablesUserHas(invocation);
     if (userRequestables.length === 0) {
       throw new Error(
         "I haven't given you any requestable roles yet. You use `" +
@@ -95,8 +79,7 @@ class RemoveCommand extends Command {
   }
 
   private async getAllRequestablesUserHas(
-    invocation: CommandInvocation,
-    member: Member
+    invocation: CommandInvocation
   ): Promise<readonly Requestable[]> {
     const requestables = await invocation.context.requestables.getAll();
     if (requestables.length === 0) {
@@ -107,7 +90,9 @@ class RemoveCommand extends Command {
       );
     }
 
-    const memberRoleIds = new Set(member.roles.map((role): string => role.id));
+    const memberRoleIds = new Set(
+      invocation.member.roles.map((role): string => role.id)
+    );
     return requestables.filter((requestable): boolean =>
       memberRoleIds.has(requestable.role.id)
     );

@@ -1,3 +1,6 @@
+import Member from '@phil/discord/Member';
+
+import CommandArgs from '@phil/CommandArgs';
 import CommandInvocation from '@phil/CommandInvocation';
 import Database from '@phil/database';
 import Features from '@phil/features/all-features';
@@ -20,7 +23,14 @@ class TimediffCommand extends Command {
     invocation: CommandInvocation,
     database: Database
   ): Promise<void> {
-    if (invocation.mentions.length !== 1) {
+    const commandArgs = new CommandArgs(invocation.commandArgs);
+    const target = await commandArgs.readMember(
+      'targetUser',
+      invocation.context.server,
+      { isOptional: true }
+    );
+
+    if (!target) {
       throw new Error(
         "In order to use this function, you must mention the user you're asking about. For instance, something like `" +
           invocation.context.serverConfig.commandPrefix +
@@ -28,8 +38,7 @@ class TimediffCommand extends Command {
       );
     }
 
-    const mention = invocation.mentions[0];
-    if (mention.userId === invocation.userId) {
+    if (target.user.id === invocation.member.user.id) {
       await invocation.respond({
         text: ':unamused:',
         type: 'plain',
@@ -39,7 +48,7 @@ class TimediffCommand extends Command {
 
     const ownTimezone = await UserTimezone.getForUser(
       database,
-      invocation.userId
+      invocation.member.user.id
     );
     if (!ownTimezone || !ownTimezone.hasProvided) {
       throw new Error(
@@ -51,7 +60,7 @@ class TimediffCommand extends Command {
 
     const theirTimezone = await UserTimezone.getForUser(
       database,
-      mention.userId
+      target.user.id
     );
     if (!theirTimezone || !theirTimezone.hasProvided) {
       throw new Error(
@@ -62,14 +71,14 @@ class TimediffCommand extends Command {
     }
 
     const hoursApart = ownTimezone.getHoursApart(theirTimezone);
-    const reply = this.composeReply(hoursApart, mention.user);
+    const reply = this.composeReply(hoursApart, target);
     await invocation.respond({
       text: reply,
       type: 'plain',
     });
   }
 
-  private composeReply(hoursApart: number, otherUser: string): string {
+  private composeReply(hoursApart: number, target: Member): string {
     if (hoursApart === 0) {
       return 'The two of you are in the same timezone.';
     }
@@ -78,7 +87,7 @@ class TimediffCommand extends Command {
 
     if (hoursApart < 0) {
       return (
-        otherUser +
+        target.displayName +
         ' is **' +
         Math.abs(hoursApart) +
         ' ' +
@@ -88,7 +97,7 @@ class TimediffCommand extends Command {
     }
 
     return (
-      otherUser +
+      target.displayName +
       ' is **' +
       hoursApart +
       ' ' +

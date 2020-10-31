@@ -37,7 +37,10 @@ class UtcCommand extends Command {
       );
     }
 
-    const timezone = await UserTimezone.getForUser(database, invocation.userId);
+    const timezone = await UserTimezone.getForUser(
+      database,
+      invocation.member.user.id
+    );
     if (!timezone || !timezone.hasProvided) {
       throw new Error(
         'In order to use this command, you must first provide your timezone to me so I know how to convert your local time. You can use `' +

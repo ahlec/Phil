@@ -1,10 +1,10 @@
+import ReceivedDirectMessage from '@phil/discord/ReceivedDirectMessage';
+
 import { BotManagerCommand, instantiateCommands } from '@phil/bm-commands';
 import GlobalConfig from '@phil/GlobalConfig';
 import Logger from '@phil/Logger';
 import LoggerDefinition from '@phil/LoggerDefinition';
-import PrivateMessage from '@phil/messages/private';
 import Phil from '@phil/phil';
-import { sendErrorMessage } from '@phil/utils';
 import { DirectMessageProcessor, ProcessorActiveToken } from './@base';
 
 type CommandParseResult =
@@ -30,21 +30,23 @@ export default class BotManagerCommandListener
 
   public async canProcess(
     _: Phil,
-    message: PrivateMessage
+    message: ReceivedDirectMessage
   ): Promise<ProcessorActiveToken> {
     return {
-      isActive: message.userId === GlobalConfig.botManagerUserId,
+      isActive: message.sender.id === GlobalConfig.botManagerUserId,
     };
   }
 
-  public async process(phil: Phil, message: PrivateMessage): Promise<void> {
-    const parseResult = this.parseCommand(message.content);
+  public async process(
+    phil: Phil,
+    message: ReceivedDirectMessage
+  ): Promise<void> {
+    const parseResult = this.parseCommand(message.body);
     if (!parseResult.isValid) {
       if (parseResult.error) {
-        await sendErrorMessage({
-          bot: phil.bot,
-          channelId: message.channelId,
-          message: parseResult.error,
+        await message.respond({
+          error: parseResult.error,
+          type: 'error',
         });
       }
 

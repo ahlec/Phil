@@ -56,11 +56,11 @@ class WelcomeCommand extends Command {
     const member = await args.readMember('target', invocation.context.server, {
       isOptional: true,
     });
-    if (!member) {
-      return invocation.context.server.getMember(invocation.userId);
+    if (member) {
+      return member;
     }
 
-    return member;
+    return invocation.member;
   }
 }
 

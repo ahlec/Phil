@@ -1,10 +1,8 @@
-import EmbedColor from '@phil/embed-color';
-import { sendEmbedMessage } from '@phil/promises/discord';
 import {
   BotManagerCommand,
   LoggerDefinition,
   Phil,
-  PrivateMessage,
+  ReceivedDirectMessage,
 } from './BotManagerCommand';
 
 export default class InviteCommand extends BotManagerCommand {
@@ -12,11 +10,17 @@ export default class InviteCommand extends BotManagerCommand {
     super('invite', parentDefinition);
   }
 
-  public async execute(phil: Phil, message: PrivateMessage): Promise<void> {
-    await sendEmbedMessage(phil.bot, message.userId, {
-      color: EmbedColor.Info,
+  public async execute(
+    phil: Phil,
+    message: ReceivedDirectMessage
+  ): Promise<void> {
+    await message.respond({
+      color: 'powder-blue',
       description: phil.bot.inviteURL,
+      fields: null,
+      footer: null,
       title: ':gift: My Invite Link',
+      type: 'embed',
     });
   }
 }
