@@ -1,3 +1,5 @@
+import Server from '@phil/discord/Server';
+
 import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
 import Phil from '@phil/phil';
@@ -18,10 +20,14 @@ export default class AlertAdminsUnconfirmedSubmissionsChrono
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig): Promise<void> {
+  public async process(
+    phil: Phil,
+    server: Server,
+    serverConfig: ServerConfig
+  ): Promise<void> {
     const unconfirmedTally = await UnconfirmedSubmissionTally.collectForServer(
       phil.db,
-      serverConfig.server.id
+      server.id
     );
     const reply = this.getUnconfimedPromptsMessage(
       serverConfig,

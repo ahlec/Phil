@@ -1,4 +1,7 @@
-import { Server as DiscordIOServer } from 'discord.io';
+import Member from '@phil/discord/Member';
+import Role from '@phil/discord/Role';
+import Server from '@phil/discord/Server';
+
 import EmbedColor from '@phil/embed-color';
 import Phil from '@phil/phil';
 import { deleteRole, sendEmbedMessage } from '@phil/promises/discord';
@@ -22,8 +25,12 @@ export default class RemoveUnusedColorRolesChrono
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig): Promise<void> {
-    const unusedColorRoles = this.getAllUnusedColorRoleIds(serverConfig.server);
+  public async process(
+    phil: Phil,
+    server: Server,
+    serverConfig: ServerConfig
+  ): Promise<void> {
+    const unusedColorRoles = this.getAllUnusedColorRoleIds(server);
     if (unusedColorRoles.length === 0) {
       return;
     }
@@ -31,7 +38,7 @@ export default class RemoveUnusedColorRolesChrono
     let message =
       'The following colour role(s) have been removed automatically because I could not find any users on your server who were still using them:\n';
     for (const role of unusedColorRoles) {
-      await deleteRole(phil.bot, serverConfig.server.id, role.id);
+      await deleteRole(phil.bot, server.id, role.id);
       message += '\n\t' + role.name + ' (ID: ' + role.id + ')';
     }
 
@@ -42,41 +49,45 @@ export default class RemoveUnusedColorRolesChrono
     });
   }
 
-  private getAllUnusedColorRoleIds(server: DiscordIOServer): RoleInfo[] {
-    const colorRoles = [];
-    for (const roleId in server.roles) {
-      const role = server.roles[roleId];
-      if (!role || !isHexColorRole(role)) {
-        continue;
+  private getAllUnusedColorRoleIds(server: Server): RoleInfo[] {
+    // Collect all of the defined color roles without checking whether they're
+    // in use or not.
+    const colorRoleIds = new Set<string>();
+    const colorRoleNames = new Map<string, string>();
+    server.roles.forEach((role: Role): void => {
+      if (!isHexColorRole(role)) {
+        return;
       }
 
-      if (this.isRoleInUse(server, roleId)) {
-        continue;
-      }
+      colorRoleIds.add(role.id);
+      colorRoleNames.set(role.id, role.name);
+    });
 
-      colorRoles.push({
-        id: roleId,
-        name: server.roles[roleId].name,
+    // If we have no color roles, then early out for performance reasons.
+    if (!colorRoleIds.size) {
+      return [];
+    }
+
+    // Go through the server members and remove all color roles from the set
+    // that are in use.
+    server.members.forEach((member: Member): void => {
+      member.roles.forEach((role: Role): void => {
+        colorRoleIds.delete(role.id);
       });
+    });
+
+    // If we have no color roles remaining, then it means that all color roles
+    // are currently in use.
+    if (!colorRoleIds.size) {
+      return [];
     }
 
-    return colorRoles;
-  }
-
-  private isRoleInUse(server: DiscordIOServer, roleId: string): boolean {
-    for (const memberId in server.members) {
-      const member = server.members[memberId];
-      if (!member) {
-        continue;
-      }
-
-      for (const memberRoleId of member.roles) {
-        if (memberRoleId === roleId) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    // Return the data we need for deleting and reporting to the channel.
+    return Array.from(colorRoleIds).map(
+      (roleId: string): RoleInfo => ({
+        id: roleId,
+        name: colorRoleNames.get(roleId) || roleId,
+      })
+    );
   }
 }

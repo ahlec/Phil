@@ -1,5 +1,3 @@
-import { Role as DiscordIORole } from 'discord.io';
-
 import Role from '@phil/discord/Role';
 
 export function getRandomArrayEntry<T>(arr: ReadonlyArray<T>): T {
@@ -11,7 +9,7 @@ export function isValidHexColor(input: string): boolean {
   return /^#[0-9A-F]{6}$/i.test(input);
 }
 
-export function isHexColorRole(role: Role | DiscordIORole): boolean {
+export function isHexColorRole(role: Role): boolean {
   const isHex = isValidHexColor(role.name);
   return isHex;
 }
@@ -77,4 +75,8 @@ export function truncateString(message: string, maxCharacters: number): string {
   }
 
   return message.substr(0, finalIndex);
+}
+
+export function isNotNull<T>(val: T | null): val is T {
+  return val !== null;
 }

@@ -1,6 +1,8 @@
-import { User as DiscordIOUser, Server as DiscordIOServer } from 'discord.io';
-
 import { Moment } from 'moment';
+
+import Member from '@phil/discord/Member';
+import Server from '@phil/discord/Server';
+
 import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import Phil from '@phil/phil';
@@ -8,6 +10,7 @@ import { sendMessage } from '@phil/promises/discord';
 import { GROUP_PRONOUNS } from '@phil/pronouns/definitions';
 import { Pronoun } from '@phil/pronouns/pronoun';
 import ServerConfig from '@phil/server-config';
+import { isNotNull } from '@phil/utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 interface HappyBirthdayInfo {
@@ -26,11 +29,12 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
 
   public async process(
     phil: Phil,
+    server: Server,
     serverConfig: ServerConfig,
     now: Moment
   ): Promise<void> {
-    const userIds = await this.getBirthdayUserIds(phil.db, serverConfig, now);
-    const info = await this.getInfo(phil, serverConfig, userIds);
+    const members = await this.getBirthdayMembers(phil.db, server, now);
+    const info = await this.getInfo(phil, serverConfig, members);
     const birthdayWish = this.createBirthdayWish(info);
     if (birthdayWish === '') {
       return;
@@ -39,11 +43,11 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
     await sendMessage(phil.bot, serverConfig.newsChannel.id, birthdayWish);
   }
 
-  private async getBirthdayUserIds(
+  private async getBirthdayMembers(
     db: Database,
-    serverConfig: ServerConfig,
+    server: Server,
     now: Moment
-  ): Promise<string[]> {
+  ): Promise<readonly Member[]> {
     const day = now.date();
     const month = now.month() + 1;
 
@@ -51,62 +55,35 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
       'SELECT userid FROM birthdays WHERE birthday_day = $1 AND birthday_month = $2',
       [day, month]
     );
-    const userIds = [];
-    for (let index = 0; index < results.rowCount; ++index) {
-      const userId = results.rows[index].userid;
-      const member = serverConfig.server.members[userId];
-      if (!member) {
-        continue;
-      }
 
-      userIds.push(userId);
-    }
+    const members = await Promise.all(
+      results.rows.map(
+        async ({ userid }): Promise<Member | null> => server.getMember(userid)
+      )
+    );
 
-    return userIds;
+    return members.filter(isNotNull);
   }
 
   private async getInfo(
     phil: Phil,
     serverConfig: ServerConfig,
-    userIds: string[]
+    members: readonly Member[]
   ): Promise<HappyBirthdayInfo> {
-    const names = [];
-    for (const userId of userIds) {
-      const user = phil.bot.users[userId];
-      const userDisplayName = this.getDisplayName(user, serverConfig.server);
-      if (!userDisplayName) {
-        continue;
-      }
-
-      names.push(userDisplayName);
-    }
+    const names = members.map((member): string => member.displayName);
 
     let pronoun = GROUP_PRONOUNS;
-    if (userIds.length === 1) {
-      const member = serverConfig.server.members[userIds[0]];
-      pronoun = await serverConfig.getPronounsForMember(phil.bot, member.id);
+    if (members.length === 1) {
+      pronoun = await serverConfig.getPronounsForMember(
+        phil.bot,
+        members[0].user.id
+      );
     }
 
     return {
       names,
       pronoun,
     };
-  }
-
-  private getDisplayName(
-    user: DiscordIOUser | undefined,
-    server: DiscordIOServer
-  ): string | null {
-    if (!user) {
-      return null;
-    }
-
-    const member = server.members[user.id];
-    if (member && member.nick) {
-      return member.nick;
-    }
-
-    return user.username;
   }
 
   private createBirthdayWish(info: HappyBirthdayInfo): string {

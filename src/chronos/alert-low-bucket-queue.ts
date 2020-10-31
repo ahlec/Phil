@@ -1,3 +1,5 @@
+import Server from '@phil/discord/Server';
+
 import Bucket from '@phil/buckets';
 import Features from '@phil/features/all-features';
 import Phil from '@phil/phil';
@@ -19,11 +21,15 @@ export default class AlertLowBucketQueueChrono
     super(new LoggerDefinition(HANDLE, parentDefinition));
   }
 
-  public async process(phil: Phil, serverConfig: ServerConfig): Promise<void> {
+  public async process(
+    phil: Phil,
+    server: Server,
+    serverConfig: ServerConfig
+  ): Promise<void> {
     const bucketCollection = new ServerBucketsCollection(
       phil.bot,
       phil.db,
-      serverConfig.server.id,
+      server.id,
       serverConfig
     );
     const serverBuckets = await bucketCollection.getAll();

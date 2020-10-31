@@ -1,4 +1,7 @@
 import { Moment } from 'moment';
+
+import Server from '@phil/discord/Server';
+
 import Bucket from '@phil/buckets';
 import Features from '@phil/features/all-features';
 import Phil from '@phil/phil';
@@ -25,13 +28,14 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
 
   public async process(
     phil: Phil,
+    server: Server,
     serverConfig: ServerConfig,
     now: Moment
   ): Promise<void> {
     const bucketCollection = new ServerBucketsCollection(
       phil.bot,
       phil.db,
-      serverConfig.server.id,
+      server.id,
       serverConfig
     );
     const serverBuckets = await bucketCollection.getAll();
@@ -41,7 +45,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
         return Promise.resolve();
       }
 
-      return this.processBucket(phil, serverConfig, now, bucket);
+      return this.processBucket(phil, server, now, bucket);
     });
 
     await Promise.all(processes);
@@ -49,14 +53,14 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
 
   private async processBucket(
     phil: Phil,
-    serverConfig: ServerConfig,
+    server: Server,
     now: Moment,
     bucket: Bucket
   ): Promise<void> {
     const currentPrompt = await bucket.getCurrentPrompt();
     if (!this.isCurrentPromptOutdated(currentPrompt, now, bucket)) {
       this.write(
-        `bucket ${bucket.handle} on server ${serverConfig.serverId} is not ready for a new prompt just yet`
+        `bucket ${bucket.handle} on server ${server.id} is not ready for a new prompt just yet`
       );
       return;
     }
@@ -64,13 +68,13 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     const nextPrompt = await this.getNextPrompt(phil, bucket);
     if (!nextPrompt) {
       this.write(
-        `bucket ${bucket.handle} on server ${serverConfig.serverId} has no prompts to post`
+        `bucket ${bucket.handle} on server ${server.id} has no prompts to post`
       );
       return;
     }
 
     this.write(
-      `posting prompt ${nextPrompt.prompt.id} to bucket ${bucket.handle} on server ${serverConfig.serverId}`
+      `posting prompt ${nextPrompt.prompt.id} to bucket ${bucket.handle} on server ${server.id}`
     );
 
     try {
@@ -86,7 +90,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
       }
     } catch (err) {
       this.error(
-        `encountered an error when posting prompt ${nextPrompt.prompt.id} to bucket ${bucket.handle} on server ${serverConfig.serverId}`
+        `encountered an error when posting prompt ${nextPrompt.prompt.id} to bucket ${bucket.handle} on server ${server.id}`
       );
 
       throw err;

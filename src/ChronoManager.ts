@@ -1,5 +1,8 @@
 import * as moment from 'moment';
 import { inspect } from 'util';
+
+import Server from '@phil/discord/Server';
+
 import Chronos, { Chrono } from './chronos/index';
 import EmbedColor from './embed-color';
 import Logger from './Logger';
@@ -115,8 +118,17 @@ export default class ChronoManager extends Logger {
   ): Promise<void> {
     this.write(`Executing ${chronoHandle} for serverId ${serverId}`);
 
-    const server = this.phil.bot.servers[serverId];
-    const serverConfig = await this.serverDirectory.getServerConfig(server);
+    const rawServer = this.phil.bot.servers[serverId];
+    if (!rawServer) {
+      this.error(
+        `Attempted to process '${chronoHandle}' for server '${serverId}', but I could not find it.`
+      );
+      return;
+    }
+
+    const server = new Server(this.phil.bot, rawServer, rawServer.id);
+
+    const serverConfig = await this.serverDirectory.getServerConfig(rawServer);
     if (!serverConfig) {
       this.write(`Phil is no longer part of server with serverId ${serverId}`);
       return;
@@ -144,7 +156,7 @@ export default class ChronoManager extends Logger {
       }
 
       if (shouldProcess) {
-        await chronoDefinition.process(this.phil, serverConfig, now);
+        await chronoDefinition.process(this.phil, server, serverConfig, now);
       }
 
       await this.markChronoProcessed(chronoId, serverId, utcDate);
