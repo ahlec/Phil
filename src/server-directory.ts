@@ -1,4 +1,5 @@
-import { Server as DiscordIOServer } from 'discord.io';
+import Server from '@phil/discord/Server';
+
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 import Phil from './phil';
@@ -20,9 +21,7 @@ export default class ServerDirectory extends Logger {
     this.write('Cache cleared.');
   }
 
-  public async getServerConfig(
-    server: DiscordIOServer
-  ): Promise<ServerConfig | null> {
+  public async getServerConfig(server: Server): Promise<ServerConfig | null> {
     if (!server) {
       throw new Error('Server was not provided to this function!');
     }

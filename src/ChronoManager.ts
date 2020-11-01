@@ -127,7 +127,7 @@ export default class ChronoManager extends Logger {
 
     const server = new Server(this.phil.bot, rawServer, rawServer.id);
 
-    const serverConfig = await this.serverDirectory.getServerConfig(rawServer);
+    const serverConfig = await this.serverDirectory.getServerConfig(server);
     if (!serverConfig) {
       this.write(`Phil is no longer part of server with serverId ${serverId}`);
       return;

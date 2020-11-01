@@ -138,7 +138,7 @@ export default class Phil extends Logger {
       }
 
       const serverConfig = await this.serverDirectory.getServerConfig(
-        this.bot.servers[message.channel.server.id]
+        message.channel.server
       );
       if (!serverConfig) {
         this.error(
@@ -310,13 +310,14 @@ export default class Phil extends Logger {
     }
   ): Promise<void> => {
     const { guild_id: serverId } = rawMember;
-    const server = this.bot.servers[serverId];
+    const rawServer = this.bot.servers[serverId];
     this.write(`A new member (${rawMember.id}) has joined server ${serverId}.`);
-    if (!server) {
+    if (!rawServer) {
       this.error(`I do not recognize server ${serverId} as existing.`);
       return;
     }
 
+    const server = new Server(this.bot, rawServer, serverId);
     const serverConfig = await this.serverDirectory.getServerConfig(server);
     if (!serverConfig) {
       this.error(

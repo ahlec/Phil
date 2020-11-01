@@ -1,15 +1,39 @@
-import { Client as DiscordIOClient, Role as DiscordIORole } from 'discord.io';
+import * as discord from 'discord.io';
+import ServerPermissions from './ServerPermissions';
 
 class Role {
   public constructor(
-    private readonly internalClient: DiscordIOClient,
-    private readonly internalRole: DiscordIORole,
+    private readonly internalClient: discord.Client,
+    private readonly internalRole: discord.Role,
     private readonly serverId: string,
     public readonly id: string
   ) {}
 
   public get name(): string {
     return this.internalRole.name;
+  }
+
+  public hasPermission(permission: ServerPermissions): boolean {
+    let discordIOPermission: number;
+    switch (permission) {
+      case ServerPermissions.GeneralAdministrator: {
+        discordIOPermission = discord.Permissions.GENERAL_ADMINISTRATOR;
+        break;
+      }
+    }
+
+    // TODO: Return to this function and determine if it's actually working?
+    /* tslint:disable:no-bitwise */
+    const binary = (this.internalRole.permissions >>> 0).toString(2).split('');
+    /* tslint:enable:no-bitwise */
+    for (const strBit of binary) {
+      const bit = parseInt(strBit, 10);
+      if (bit === discordIOPermission) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   public edit({

@@ -30,6 +30,15 @@ class Server {
     public readonly id: string
   ) {}
 
+  public get everyoneRole(): Role {
+    return new Role(
+      this.internalClient,
+      this.internalServer.roles[this.id],
+      this.id,
+      this.id
+    );
+  }
+
   public get members(): readonly Member[] {
     const members: Member[] = [];
     for (const userId in this.internalServer.members) {
@@ -61,6 +70,14 @@ class Server {
       (internalRole): Role =>
         new Role(this.internalClient, internalRole, this.id, internalRole.id)
     );
+  }
+
+  public get systemChannel(): TextChannel | null {
+    if (!this.internalServer.system_channel_id) {
+      return null;
+    }
+
+    return this.getTextChannel(this.internalServer.system_channel_id);
   }
 
   public get textChannels(): readonly TextChannel[] {
@@ -120,6 +137,17 @@ class Server {
     }
 
     return null;
+  }
+
+  public async getOwner(): Promise<Member> {
+    const owner = await this.getMember(this.internalServer.owner_id);
+    if (!owner) {
+      throw new Error(
+        `Owner (${this.internalServer.owner_id}) of server '${this.internalServer.id}' is not a member of server.`
+      );
+    }
+
+    return owner;
   }
 
   public getRole(roleId: string): Role | null {

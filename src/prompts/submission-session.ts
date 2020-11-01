@@ -53,7 +53,7 @@ export default class SubmissionSession {
     }
 
     const server = new Server(phil.bot, rawServer, rawServer.id);
-    const serverConfig = await phil.serverDirectory.getServerConfig(rawServer);
+    const serverConfig = await phil.serverDirectory.getServerConfig(server);
     if (!serverConfig) {
       throw new Error(
         `Could not retrieve server config for a server with configured buckets ('${dbRow.server_id}')`

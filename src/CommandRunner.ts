@@ -102,7 +102,6 @@ export default class CommandRunner extends Logger {
       }
       case PermissionLevel.AdminOnly: {
         return invocation.context.serverConfig.isAdmin(
-          this.phil.bot,
           invocation.member.user.id
         );
       }

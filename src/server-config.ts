@@ -1,28 +1,15 @@
-import * as discord from 'discord.io';
+import Role from '@phil/discord/Role';
+import Server from '@phil/discord/Server';
+import ServerPermissions from '@phil/discord/ServerPermissions';
+import TextChannel from '@phil/discord/TextChannel';
+
 import Database from './database';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 import { DEFAULT_PRONOUNS } from './pronouns/definitions';
 import Pronoun from './pronouns/pronoun';
 import { getPronounFromRole } from './pronouns/utils';
-import { getMemberRolesInServer } from './promises/discord';
-
-function doesRoleHavePermission(
-  role: discord.Role,
-  permission: number
-): boolean {
-  // TODO: Return to this function and determine if it's actually working?
-  /* tslint:disable:no-bitwise */
-  const binary = (role.permissions >>> 0).toString(2).split('');
-  /* tslint:enable:no-bitwise */
-  for (const strBit of binary) {
-    const bit = parseInt(strBit, 10);
-    if (bit === permission) {
-      return true;
-    }
-  }
-  return false;
-}
+import { getRandomArrayEntry, isNotNull } from './utils';
 
 interface DbRow {
   server_id: string;
@@ -39,7 +26,7 @@ interface DbRow {
 export class ServerConfig extends Logger {
   public static async getFromId(
     db: Database,
-    server: discord.Server
+    server: Server
   ): Promise<ServerConfig | null> {
     const results = await db.query<DbRow>(
       'SELECT * FROM server_configs WHERE server_id = $1',
@@ -54,12 +41,11 @@ export class ServerConfig extends Logger {
 
   public static async initializeDefault(
     db: Database,
-    server: discord.Server
+    server: Server
   ): Promise<ServerConfig> {
-    let botControlChannel = server.channels[server.id];
+    let botControlChannel = server.getTextChannel(server.id);
     if (!botControlChannel) {
-      const id = Object.keys(server.channels);
-      botControlChannel = server.channels[id[0]];
+      botControlChannel = server.textChannels[0];
       if (!botControlChannel) {
         throw new Error('Could not find a suitable initial bot channel');
       }
@@ -89,35 +75,31 @@ export class ServerConfig extends Logger {
   public readonly serverId: string;
   public readonly fandomMapLink: string | null;
   private commandPrefixInternal: string;
-  private botControlChannelInternal: discord.Channel;
-  private adminChannelInternal: discord.Channel;
-  private introductionsChannelInternal: discord.Channel;
-  private newsChannelInternal: discord.Channel;
-  private adminRoleInternal: discord.Role;
+  private botControlChannelId: string;
+  private adminChannelId: string;
+  private introductionsChannelId: string;
+  private newsChannelId: string;
+  private adminRoleId: string | null;
   private welcomeMessageInternal: string | null;
 
   private constructor(
     private readonly database: Database,
-    private readonly server: discord.Server,
+    private readonly server: Server,
     dbRow: DbRow
   ) {
     super(new LoggerDefinition('Server Config'));
 
     this.serverId = dbRow.server_id;
     this.commandPrefixInternal = dbRow.command_prefix;
-    this.botControlChannelInternal = this.getChannel(
-      dbRow.bot_control_channel_id
-    );
-    this.adminChannelInternal = this.getChannel(dbRow.admin_channel_id);
-    this.introductionsChannelInternal = this.getChannel(
-      dbRow.introductions_channel_id
-    );
-    this.newsChannelInternal = this.getChannel(dbRow.news_channel_id);
+    this.botControlChannelId = dbRow.bot_control_channel_id;
+    this.adminChannelId = dbRow.admin_channel_id;
+    this.introductionsChannelId = dbRow.introductions_channel_id;
+    this.newsChannelId = dbRow.news_channel_id;
     this.welcomeMessageInternal = this.getOptionalString(dbRow.welcome_message);
     this.fandomMapLink = this.getOptionalString(dbRow.fandom_map_link);
 
     if (dbRow.admin_role_id) {
-      this.adminRoleInternal = this.server.roles[dbRow.admin_role_id];
+      this.adminRoleId = dbRow.admin_role_id;
     }
   }
 
@@ -139,8 +121,8 @@ export class ServerConfig extends Logger {
     return true;
   }
 
-  public get botControlChannel(): discord.Channel {
-    return this.botControlChannelInternal;
+  public get botControlChannel(): TextChannel {
+    return this.getChannel(this.botControlChannelId);
   }
 
   public async setBotControlChannel(channelId: string): Promise<boolean> {
@@ -152,12 +134,12 @@ export class ServerConfig extends Logger {
       return false;
     }
 
-    this.botControlChannelInternal = this.server.channels[channelId];
+    this.botControlChannelId = channelId;
     return true;
   }
 
-  public get adminChannel(): discord.Channel {
-    return this.adminChannelInternal;
+  public get adminChannel(): TextChannel {
+    return this.getChannel(this.adminChannelId);
   }
 
   public async setAdminChannel(channelId: string): Promise<boolean> {
@@ -166,12 +148,12 @@ export class ServerConfig extends Logger {
       return false;
     }
 
-    this.adminChannelInternal = this.server.channels[channelId];
+    this.adminChannelId = channelId;
     return true;
   }
 
-  public get introductionsChannel(): discord.Channel {
-    return this.introductionsChannelInternal;
+  public get introductionsChannel(): TextChannel {
+    return this.getChannel(this.introductionsChannelId);
   }
 
   public async setIntroductionsChannel(channelId: string): Promise<boolean> {
@@ -183,12 +165,12 @@ export class ServerConfig extends Logger {
       return false;
     }
 
-    this.introductionsChannelInternal = this.server.channels[channelId];
+    this.introductionsChannelId = channelId;
     return true;
   }
 
-  public get newsChannel(): discord.Channel {
-    return this.newsChannelInternal;
+  public get newsChannel(): TextChannel {
+    return this.getChannel(this.newsChannelId);
   }
 
   public async setNewsChannel(channelId: string): Promise<boolean> {
@@ -197,12 +179,16 @@ export class ServerConfig extends Logger {
       return false;
     }
 
-    this.newsChannelInternal = this.server.channels[channelId];
+    this.newsChannelId = channelId;
     return true;
   }
 
-  public get adminRole(): discord.Role {
-    return this.adminRoleInternal;
+  public get adminRole(): Role | null {
+    if (!this.adminRoleId) {
+      return null;
+    }
+
+    return this.server.getRole(this.adminRoleId);
   }
 
   public async setAdminRole(roleId: string): Promise<boolean> {
@@ -211,7 +197,7 @@ export class ServerConfig extends Logger {
       return false;
     }
 
-    this.adminRoleInternal = this.server.roles[roleId];
+    this.adminRoleId = roleId;
     return true;
   }
 
@@ -233,40 +219,35 @@ export class ServerConfig extends Logger {
   // Utility functions
   // -----------------------------------------------------------------------------
 
-  public async isAdmin(
-    client: discord.Client,
-    memberId: string
-  ): Promise<boolean> {
-    const memberRoles = await getMemberRolesInServer(
-      client,
-      this.serverId,
-      memberId
-    );
-    for (const memberRoleId of memberRoles) {
-      if (this.adminRole && this.adminRole.id === memberRoleId) {
+  public async isAdmin(memberId: string): Promise<boolean> {
+    const member = await this.server.getMember(memberId);
+    if (!member) {
+      return false;
+    }
+
+    const hasAdminRole = member.roles.some((role: Role): boolean => {
+      if (this.adminRoleId === role.id) {
         return true;
       }
 
-      const role = this.server.roles[memberRoleId];
-      if (
-        doesRoleHavePermission(role, discord.Permissions.GENERAL_ADMINISTRATOR)
-      ) {
-        return true;
-      }
+      return role.hasPermission(ServerPermissions.GeneralAdministrator);
+    });
+    if (hasAdminRole) {
+      return true;
     }
 
     // Check @everyone role
     if (
-      doesRoleHavePermission(
-        this.server.roles[this.server.id],
-        discord.Permissions.GENERAL_ADMINISTRATOR
+      this.server.everyoneRole.hasPermission(
+        ServerPermissions.GeneralAdministrator
       )
     ) {
       return true;
     }
 
     // The owner of the server is also an admin
-    return this.server.owner_id === memberId;
+    const owner = await this.server.getOwner();
+    return owner.user.id === memberId;
   }
 
   public isAdminChannel(channelId: string): boolean {
@@ -280,41 +261,32 @@ export class ServerConfig extends Logger {
     );
   }
 
-  public async getPronounsForMember(
-    client: discord.Client,
-    memberId: string
-  ): Promise<Pronoun> {
-    const memberRoles = await getMemberRolesInServer(
-      client,
-      this.serverId,
-      memberId
-    );
-    for (const roleId of memberRoles) {
-      const role = this.server.roles[roleId];
-      if (!role) {
-        continue;
-      }
-
-      const pronoun = getPronounFromRole(role);
-      if (pronoun) {
-        return pronoun;
-      }
+  public async getPronounsForMember(memberId: string): Promise<Pronoun> {
+    const member = await this.server.getMember(memberId);
+    if (!member) {
+      return DEFAULT_PRONOUNS;
     }
 
-    return DEFAULT_PRONOUNS;
+    const uniquePronouns = member.roles
+      .map((role): Pronoun | null => getPronounFromRole(role))
+      .filter(isNotNull);
+
+    if (uniquePronouns.length === 1) {
+      return uniquePronouns[0];
+    }
+
+    return getRandomArrayEntry(uniquePronouns);
   }
 
-  private getChannel(channelId: string): discord.Channel {
-    if (channelId && this.server.channels[channelId]) {
-      return this.server.channels[channelId];
+  private getChannel(channelId: string): TextChannel {
+    if (channelId) {
+      const channel = this.server.getTextChannel(channelId);
+      if (channel) {
+        return channel;
+      }
     }
 
-    const { system_channel_id: systemChannelId } = this.server;
-    if (systemChannelId && this.server.channels[systemChannelId]) {
-      return this.server.channels[systemChannelId];
-    }
-
-    return this.server.channels[0]; // If we don't have ANY channels, got a lot bigger problems.
+    return this.server.systemChannel || this.server.textChannels[0]; // If we don't have ANY channels, got a lot bigger problems.
   }
 
   private getOptionalString(str: string): string | null {

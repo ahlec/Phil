@@ -43,7 +43,7 @@ class PromptQueueReactableHandler
     }
 
     const serverConfig = await phil.serverDirectory.getServerConfig(
-      phil.bot.servers[post.message.channel.server.id]
+      post.message.channel.server
     );
     if (!serverConfig) {
       throw new Error(
