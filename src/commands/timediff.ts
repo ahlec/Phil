@@ -23,12 +23,13 @@ class TimediffCommand extends Command {
     invocation: CommandInvocation,
     database: Database
   ): Promise<void> {
-    const commandArgs = new CommandArgs(invocation.commandArgs);
-    const target = await commandArgs.readMember(
-      'targetUser',
+    const commandArgs = new CommandArgs(
       invocation.context.server,
-      { isOptional: true }
+      invocation.commandArgs
     );
+    const target = await commandArgs.readMember('targetUser', {
+      isOptional: true,
+    });
 
     if (!target) {
       throw new Error(

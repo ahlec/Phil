@@ -1,8 +1,8 @@
 import * as chronoNode from 'chrono-node';
-import { Role as DiscordIORole, Server as DiscordIOServer } from 'discord.io';
 import * as moment from 'moment';
 
 import Member from '@phil/discord/Member';
+import Role from '@phil/discord/Role';
 import Server from '@phil/discord/Server';
 
 import FuzzyFinder from './FuzzyFinder';
@@ -11,7 +11,7 @@ function memberNameSelector(member: Member): string {
   return member.displayName;
 }
 
-function roleNameSelector(role: DiscordIORole): string {
+function roleNameSelector(role: Role): string {
   return role.name;
 }
 
@@ -20,7 +20,10 @@ const USER_MENTION_REGEX = /^<@(\d+)>$/;
 export default class CommandArgs {
   private readonly queue: string[];
 
-  public constructor(argPieces: ReadonlyArray<string>) {
+  public constructor(
+    private readonly server: Server,
+    argPieces: ReadonlyArray<string>
+  ) {
     this.queue = [...argPieces];
   }
 
@@ -132,17 +135,14 @@ export default class CommandArgs {
 
   public readMember(
     name: string,
-    server: Server,
     options?: { isOptional?: false }
   ): Promise<Member>;
   public readMember(
     name: string,
-    server: Server,
     options: { isOptional: true }
   ): Promise<Member | null>;
   public async readMember(
     name: string,
-    server: Server,
     { isOptional = false }: { isOptional?: boolean } = {}
   ): Promise<Member | null> {
     const firstPiece = this.queue.shift();
@@ -154,14 +154,14 @@ export default class CommandArgs {
       return null;
     }
 
-    let member = await server.getMember(firstPiece);
+    let member = await this.server.getMember(firstPiece);
     if (member) {
       return member;
     }
 
     const mentionResults = firstPiece.match(USER_MENTION_REGEX);
     if (mentionResults && mentionResults.length >= 2) {
-      member = await server.getMember(mentionResults[1]);
+      member = await this.server.getMember(mentionResults[1]);
       if (member) {
         return member;
       }
@@ -170,7 +170,7 @@ export default class CommandArgs {
     let searchString = firstPiece;
     let numToPop = 0;
     const lookup: { [userId: string]: Member } = {};
-    server.members.forEach((member): void => {
+    this.server.members.forEach((member): void => {
       lookup[member.user.id] = member;
     });
 
@@ -193,17 +193,9 @@ export default class CommandArgs {
     return null;
   }
 
-  public readRole(name: string, server: DiscordIOServer): DiscordIORole;
-  public readRole(
-    name: string,
-    server: DiscordIOServer,
-    optional: true
-  ): DiscordIORole | undefined;
-  public readRole(
-    name: string,
-    server: DiscordIOServer,
-    optional?: true
-  ): DiscordIORole | undefined {
+  public readRole(name: string): Role;
+  public readRole(name: string, optional: true): Role | undefined;
+  public readRole(name: string, optional?: true): Role | undefined {
     const firstPiece = this.queue.shift();
     if (!firstPiece && !optional) {
       throw new Error(`'${name}' was not provided.`);
@@ -213,14 +205,19 @@ export default class CommandArgs {
       return undefined;
     }
 
-    let role: DiscordIORole | null | undefined = server.roles[firstPiece];
+    let role: Role | null = this.server.getRole(firstPiece);
     if (role) {
       return role;
     }
 
     let searchString = firstPiece;
     let numToPop = 0;
-    const finder = new FuzzyFinder(server.roles, roleNameSelector);
+    const lookup: { [roleId: string]: Role } = {};
+    this.server.roles.forEach((role): void => {
+      lookup[role.id] = role;
+    });
+
+    const finder = new FuzzyFinder(lookup, roleNameSelector);
     while (numToPop <= this.queue.length) {
       role = finder.search(searchString);
       if (role) {

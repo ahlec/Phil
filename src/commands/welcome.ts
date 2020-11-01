@@ -52,8 +52,11 @@ class WelcomeCommand extends Command {
   private async getTargetMember(
     invocation: CommandInvocation
   ): Promise<Member | null> {
-    const args = new CommandArgs(invocation.commandArgs);
-    const member = await args.readMember('target', invocation.context.server, {
+    const args = new CommandArgs(
+      invocation.context.server,
+      invocation.commandArgs
+    );
+    const member = await args.readMember('target', {
       isOptional: true,
     });
     if (member) {

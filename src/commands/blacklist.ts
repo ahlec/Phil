@@ -24,7 +24,10 @@ class BlacklistCommand extends Command {
   }
 
   public async invoke(invocation: CommandInvocation): Promise<void> {
-    const commandArgs = new CommandArgs(invocation.commandArgs);
+    const commandArgs = new CommandArgs(
+      invocation.context.server,
+      invocation.commandArgs
+    );
     if (commandArgs.isEmpty) {
       return this.processNoCommandArgs(invocation);
     }
@@ -40,11 +43,9 @@ class BlacklistCommand extends Command {
       );
     }
 
-    const member = await commandArgs.readMember(
-      'targetUser',
-      invocation.context.server,
-      { isOptional: true }
-    );
+    const member = await commandArgs.readMember('targetUser', {
+      isOptional: true,
+    });
     if (!member) {
       return this.replyWithBlacklist(invocation, requestable, requestString);
     }
