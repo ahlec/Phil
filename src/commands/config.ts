@@ -1,4 +1,4 @@
-import { Channel as DiscordIOChannel } from 'discord.io';
+import Server from '@phil/discord/Server';
 
 import CommandInvocation from '@phil/CommandInvocation';
 import ServerConfig from '@phil/server-config';
@@ -20,17 +20,9 @@ import WelcomeMessageTypeDefinition from '@phil/type-definition/welcome-message'
 // Utilities
 // -----------------------------------------------------------------------------------
 
-function getChannelId(channel: DiscordIOChannel): string | null {
-  if (!channel) {
-    return null;
-  }
-
-  return channel.id;
-}
-
-function getRandomChannelId(serverConfig: ServerConfig): string {
-  const channelIds = Object.keys(serverConfig.server.channels);
-  return getRandomArrayEntry(channelIds);
+function getRandomChannelId(server: Server): string {
+  const randomChannel = getRandomArrayEntry(server.textChannels);
+  return randomChannel.id;
 }
 
 // -----------------------------------------------------------------------------------
@@ -46,8 +38,14 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     description: `This is an optional channel for admins intended for performing admin bot ${NOWRAP}commands in. If provided, Phil will also send all admin-intended messages to ${NOWRAP}this channel. This can be a channel that is used for other properties/purposes ${NOWRAP}or one that is unique to this purpose.`,
     displayName: 'Bot Control Channel',
     getRandomExampleValue: getRandomChannelId,
-    getValue: (model: ServerConfig): string | null =>
-      getChannelId(model.botControlChannel),
+    getValue: (model: ServerConfig): string | null => {
+      const channel = model.botControlChannel;
+      if (!channel) {
+        return null;
+      }
+
+      return channel.id;
+    },
     key: 'bot-control-channel',
     setValue: (model: ServerConfig, newValue: string): Promise<boolean> =>
       model.setBotControlChannel(newValue),
@@ -58,8 +56,14 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     description: `This is the optional designated admin channel for this server. This can be ${NOWRAP}a channel that is used for other properties/purposes or one that is unique to ${NOWRAP}this purpose.`,
     displayName: 'Admin Channel',
     getRandomExampleValue: getRandomChannelId,
-    getValue: (model: ServerConfig): string | null =>
-      getChannelId(model.adminChannel),
+    getValue: (model: ServerConfig): string | null => {
+      const channel = model.adminChannel;
+      if (!channel) {
+        return null;
+      }
+
+      return channel.id;
+    },
     key: 'admin-channel',
     setValue: (model: ServerConfig, newValue: string): Promise<boolean> =>
       model.setAdminChannel(newValue),
@@ -70,8 +74,14 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     description: `This is the optional channel where Phil will post welcome messages for new ${NOWRAP}users, if configured to do so. This can be a channel that is used for other ${NOWRAP}properties/purposes or one that is unique to this purpose.`,
     displayName: 'Introductions Channel',
     getRandomExampleValue: getRandomChannelId,
-    getValue: (model: ServerConfig): string | null =>
-      getChannelId(model.introductionsChannel),
+    getValue: (model: ServerConfig): string | null => {
+      const channel = model.introductionsChannel;
+      if (!channel) {
+        return null;
+      }
+
+      return channel.id;
+    },
     key: 'introductions-channel',
     setValue: (model: ServerConfig, newValue: string): Promise<boolean> =>
       model.setIntroductionsChannel(newValue),
@@ -82,8 +92,14 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     description: `This is the optional channel where Phil will post calendar and birthday ${NOWRAP}notifications, and where the \`news\` command will echo output to. This can be ${NOWRAP}a channel that is used for other properties/purposes or one that is unique to ${NOWRAP}this purpose.`,
     displayName: 'News Channel',
     getRandomExampleValue: getRandomChannelId,
-    getValue: (model: ServerConfig): string | null =>
-      getChannelId(model.newsChannel),
+    getValue: (model: ServerConfig): string | null => {
+      const channel = model.newsChannel;
+      if (!channel) {
+        return null;
+      }
+
+      return channel.id;
+    },
     key: 'news-channel',
     setValue: (model: ServerConfig, newValue: string): Promise<boolean> =>
       model.setNewsChannel(newValue),
@@ -104,8 +120,10 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     defaultValue: null,
     description: `This is a role that a user must have in order to make use of any of the ${NOWRAP}admin-only commands. The server owner is capable of making use of the admin-${NOWRAP}only commands at all times, but for all other members of the server, they must ${NOWRAP}have the role specified here in order to user the higher privilege commands.${NEWLINE}${NEWLINE}Note that while admin commands may be used in any channel within the server, ${NOWRAP}admin-only commands will only appear in the \`help\` command list if you use ${NOWRAP}the command within the **Admin Channel** (property key: \`admin-channel\`) or ${NOWRAP}within the **Bot Control Channel** (property key: \`bot-control-channel\`).`,
     displayName: 'Admin Role',
-    getRandomExampleValue: (model: ServerConfig): string =>
-      getRandomArrayEntry(Object.keys(model.server.roles)),
+    getRandomExampleValue: (server: Server): string => {
+      const randomRole = getRandomArrayEntry(server.roles);
+      return randomRole.id;
+    },
     getValue: (model: ServerConfig): string | null => {
       if (!model.adminRole) {
         return null;

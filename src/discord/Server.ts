@@ -8,6 +8,8 @@ import Role from './Role';
 import User from './User';
 import TextChannel from './TextChannel';
 
+import { isNotNull } from '@phil/utils';
+
 interface ApiServerMember {
   nick?: string;
   user: {
@@ -59,6 +61,18 @@ class Server {
       (internalRole): Role =>
         new Role(this.internalClient, internalRole, this.id, internalRole.id)
     );
+  }
+
+  public get textChannels(): readonly TextChannel[] {
+    return Object.values(this.internalServer.channels)
+      .map((internalChannel): TextChannel | null => {
+        if (internalChannel.type !== DISCORD_CHANNEL_TYPE_TEXT) {
+          return null;
+        }
+
+        return new TextChannel(internalChannel, this, internalChannel.id);
+      })
+      .filter(isNotNull);
   }
 
   public getTextChannel(channelId: string): TextChannel | null {

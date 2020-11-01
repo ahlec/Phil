@@ -35,7 +35,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     const bucketCollection = new ServerBucketsCollection(
       phil.bot,
       phil.db,
-      server.id,
+      server,
       serverConfig
     );
     const serverBuckets = await bucketCollection.getAll();

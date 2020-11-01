@@ -150,7 +150,7 @@ export default class Phil extends Logger {
       const buckets = new ServerBucketsCollection(
         this.bot,
         this.db,
-        message.channel.server.id,
+        message.channel.server,
         serverConfig
       );
       const invocation = CommandInvocation.parseFromMessage(
@@ -164,9 +164,9 @@ export default class Phil extends Logger {
           server: message.channel.server,
           serverConfig,
           submissions: new ServerSubmissionsCollection(
-            this.bot,
             this.db,
             buckets,
+            message.channel.server,
             serverConfig
           ),
         },
@@ -343,6 +343,7 @@ export default class Phil extends Logger {
     try {
       const shouldGreet = await shouldAutomaticallyGreetMember(
         this.db,
+        serverId,
         serverConfig,
         member
       );

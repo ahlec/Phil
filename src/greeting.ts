@@ -51,12 +51,13 @@ export type AutomaticGreetingDetermination =
 
 export async function shouldAutomaticallyGreetMember(
   database: Database,
+  serverId: string,
   serverConfig: ServerConfig,
   member: Member
 ): Promise<AutomaticGreetingDetermination> {
   const isEnabled = await Features.WelcomeMessage.getIsEnabled(
     database,
-    serverConfig.server.id
+    serverId
   );
   if (!isEnabled) {
     return {

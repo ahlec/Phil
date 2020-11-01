@@ -29,7 +29,7 @@ export default class AlertLowBucketQueueChrono
     const bucketCollection = new ServerBucketsCollection(
       phil.bot,
       phil.db,
-      server.id,
+      server,
       serverConfig
     );
     const serverBuckets = await bucketCollection.getAll();

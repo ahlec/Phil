@@ -1,5 +1,7 @@
 import { Client as DiscordIOClient } from 'discord.io';
 
+import Server from '@phil/discord/Server';
+
 import Bucket, { BucketFrequency } from './buckets';
 import Database from './database';
 import ServerSubmissionsCollection from './ServerSubmissionsCollection';
@@ -50,14 +52,14 @@ class ServerBucketsCollection {
   public constructor(
     private readonly discord: DiscordIOClient,
     private readonly database: Database,
-    private readonly serverId: string,
+    private readonly server: Server,
     private readonly serverConfig: ServerConfig
   ) {}
 
   public async getAll(): Promise<readonly Bucket[]> {
     const results = await this.database.query<DbRow>(
       'SELECT * FROM prompt_buckets WHERE server_id = $1',
-      [this.serverId]
+      [this.server.id]
     );
     return results.rows.map((row): Bucket => this.parseBucket(row));
   }
@@ -75,7 +77,7 @@ class ServerBucketsCollection {
       case 'reference-handle': {
         query = this.database.querySingle<DbRow>(
           'SELECT * FROM prompt_buckets WHERE server_id = $1 AND reference_handle = $2',
-          [this.serverId, retrieval.handle]
+          [this.server.id, retrieval.handle]
         );
         break;
       }
@@ -89,7 +91,7 @@ class ServerBucketsCollection {
     }
 
     const dbRow = await query;
-    if (!dbRow || dbRow.server_id !== this.serverId) {
+    if (!dbRow || dbRow.server_id !== this.server.id) {
       return null;
     }
 
@@ -116,7 +118,7 @@ class ServerBucketsCollection {
     const result: Record<number, Bucket | null> = {};
     dbResult.rows.forEach((row): void => {
       const bucketId = parseInt(row.bucket_id, 10);
-      if (row.server_id !== this.serverId) {
+      if (row.server_id !== this.server.id) {
         result[bucketId] = null;
         return;
       }
@@ -132,14 +134,14 @@ class ServerBucketsCollection {
       this.discord,
       this.database,
       new ServerSubmissionsCollection(
-        this.discord,
         this.database,
         this,
+        this.server,
         this.serverConfig
       ),
       this.serverConfig,
       parseInt(dbRow.bucket_id, 10),
-      this.serverId,
+      this.server.id,
       dbRow.channel_id,
       {
         alertWhenLow: parseInt(dbRow.alert_when_low, 10) === 1,

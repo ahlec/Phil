@@ -98,7 +98,7 @@ export class ServerConfig extends Logger {
 
   private constructor(
     private readonly database: Database,
-    public readonly server: discord.Server,
+    private readonly server: discord.Server,
     dbRow: DbRow
   ) {
     super(new LoggerDefinition('Server Config'));

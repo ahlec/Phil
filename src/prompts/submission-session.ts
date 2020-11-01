@@ -1,4 +1,7 @@
 import * as moment from 'moment';
+
+import Server from '@phil/discord/Server';
+
 import Bucket from '@phil/buckets';
 import Phil from '@phil/phil';
 import ServerBucketsCollection from '@phil/ServerBucketsCollection';
@@ -49,6 +52,7 @@ export default class SubmissionSession {
       );
     }
 
+    const server = new Server(phil.bot, rawServer, rawServer.id);
     const serverConfig = await phil.serverDirectory.getServerConfig(rawServer);
     if (!serverConfig) {
       throw new Error(
@@ -59,7 +63,7 @@ export default class SubmissionSession {
     const bucketCollection = new ServerBucketsCollection(
       phil.bot,
       phil.db,
-      dbRow.server_id,
+      server,
       serverConfig
     );
     const bucket = await bucketCollection.retrieve({

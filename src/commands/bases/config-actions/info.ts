@@ -42,7 +42,9 @@ class InfoConfigAction<TModel> implements ConfigAction<TModel> {
       property
     )}`;
 
-    const randomExample = property.getRandomExampleValue(model);
+    const randomExample = property.getRandomExampleValue(
+      invocation.context.server
+    );
     const {
       multilineCodeBlock: randomDisplayValue,
     } = await property.typeDefinition.format(

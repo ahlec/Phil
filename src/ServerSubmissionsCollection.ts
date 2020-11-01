@@ -1,4 +1,4 @@
-import { Client as DiscordIOClient } from 'discord.io';
+import Server from '@phil/discord/Server';
 
 import Database from './database';
 import ServerBucketsCollection from './ServerBucketsCollection';
@@ -6,7 +6,6 @@ import Submission from './prompts/submission';
 import Bucket from './buckets';
 import moment = require('moment-timezone');
 import ServerConfig from './server-config';
-import { getServerMember } from './utils/discord-migration';
 
 interface SubmissionRetrieval {
   type: 'id';
@@ -29,9 +28,9 @@ interface SubmissionDatabaseSchema {
 
 class ServerSubmissionsCollection {
   public constructor(
-    private readonly discordClient: DiscordIOClient,
     private readonly database: Database,
     private readonly bucketCollection: ServerBucketsCollection,
+    private readonly server: Server,
     private readonly serverConfig: ServerConfig
   ) {}
 
@@ -107,33 +106,37 @@ class ServerSubmissionsCollection {
     });
 
     const lookup: Record<number, Submission | null> = {};
-    result.rows.forEach((row) => {
-      const bucket = buckets[row.bucket_id];
-      if (!bucket) {
-        lookup[row.submission_id] = null;
-        return;
-      }
 
-      lookup[row.submission_id] = this.parseSubmission(row, bucket);
-    });
+    await Promise.all(
+      result.rows.map(
+        async (row): Promise<void> => {
+          const bucket = buckets[row.bucket_id];
+          if (!bucket) {
+            lookup[row.submission_id] = null;
+            return;
+          }
+
+          lookup[row.submission_id] = await this.parseSubmission(row, bucket);
+        }
+      )
+    );
 
     return lookup;
   }
 
-  private parseSubmission(
+  private async parseSubmission(
     dbRow: SubmissionDatabaseSchema,
     bucket: Bucket
-  ): Submission {
+  ): Promise<Submission> {
+    const suggestingMember = await this.server.getMember(
+      dbRow.suggesting_userid
+    );
     return new Submission(
       this.database,
       this.serverConfig,
       bucket,
       dbRow.submission_id,
-      getServerMember(
-        this.discordClient,
-        this.serverConfig.serverId,
-        dbRow.suggesting_userid
-      ),
+      suggestingMember,
       {
         approvedByAdmin: parseInt(dbRow.approved_by_admin, 10) === 1,
         dateSuggested: moment(dbRow.date_suggested),

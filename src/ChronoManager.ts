@@ -144,12 +144,12 @@ export default class ChronoManager extends Logger {
       if (chronoDefinition.requiredFeature) {
         shouldProcess = await chronoDefinition.requiredFeature.getIsEnabled(
           this.phil.db,
-          serverConfig.serverId
+          serverId
         );
 
         if (!shouldProcess) {
           this.write(
-            `Feature ${chronoDefinition.requiredFeature.displayName} is disabled on server ${serverConfig.serverId}, skipping processing ${chronoDefinition.handle}.`
+            `Feature ${chronoDefinition.requiredFeature.displayName} is disabled on server ${serverId}, skipping processing ${chronoDefinition.handle}.`
           );
         }
       }
@@ -160,7 +160,7 @@ export default class ChronoManager extends Logger {
 
       await this.markChronoProcessed(chronoId, serverId, utcDate);
     } catch (err) {
-      await this.reportChronoError(err, serverConfig, chronoHandle);
+      await this.reportChronoError(err, serverId, serverConfig, chronoHandle);
     }
   }
 
@@ -179,12 +179,11 @@ export default class ChronoManager extends Logger {
 
   private async reportChronoError(
     err: Error | string,
+    serverId: string,
     serverConfig: ServerConfig,
     chronoHandle: string
   ): Promise<void> {
-    this.error(
-      `error running ${chronoHandle} for server ${serverConfig.server.id}`
-    );
+    this.error(`error running ${chronoHandle} for server ${serverId}`);
     this.error(err);
     await sendMessageTemplate(
       this.phil.bot,

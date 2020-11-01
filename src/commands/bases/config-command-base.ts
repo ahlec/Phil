@@ -1,4 +1,5 @@
 import { EmbedField } from '@phil/discord/MessageTemplate';
+import Server from '@phil/discord/Server';
 
 import CommandInvocation from '@phil/CommandInvocation';
 import { HelpGroup } from '@phil/help-groups';
@@ -19,7 +20,7 @@ export interface ConfigProperty<TModel> {
   readonly typeDefinition: TypeDefinition;
 
   getValue(model: TModel): string | null;
-  getRandomExampleValue(model: TModel): string;
+  getRandomExampleValue(server: Server): string;
   setValue(model: TModel, newValue: string | null): Promise<boolean>;
 }
 
@@ -86,13 +87,13 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     const mutableArgs: string[] = [...invocation.commandArgs];
     const model = await this.getModel(invocation);
     if (!mutableArgs.length) {
-      await this.processNoAction(invocation, model);
+      await this.processNoAction(invocation);
       return;
     }
 
     const action = this.determineAction(mutableArgs);
     if (!action) {
-      await this.sendUnknownActionResponse(invocation, model);
+      await this.sendUnknownActionResponse(invocation);
       return;
     }
 
@@ -124,11 +125,8 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     return aKey < bKey ? -1 : 1;
   }
 
-  private async processNoAction(
-    invocation: CommandInvocation,
-    model: TModel
-  ): Promise<void> {
-    const explanation = await this.getActionsExplanation(invocation, model);
+  private async processNoAction(invocation: CommandInvocation): Promise<void> {
+    const explanation = await this.getActionsExplanation(invocation);
 
     const response = `This is the command for changing ${this.configurationFor} configuration. ${NOWRAP}Within this command, there are numerous actions you can take to allow you to ${NOWRAP}understand Phil, his configuration, and how you can make him fit your server's ${NOWRAP}needs.${NEWLINE}${NEWLINE}${explanation}`;
 
@@ -153,10 +151,9 @@ export abstract class ConfigCommandBase<TModel> extends Command {
   }
 
   private async sendUnknownActionResponse(
-    invocation: CommandInvocation,
-    model: TModel
+    invocation: CommandInvocation
   ): Promise<void> {
-    const explanation = await this.getActionsExplanation(invocation, model);
+    const explanation = await this.getActionsExplanation(invocation);
 
     const response = `You attempted to use an unrecognized action with this command.${NEWLINE}${NEWLINE}${explanation}`;
 
@@ -180,7 +177,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
     if (action.isPropertyRequired) {
       property = this.getSpecifiedProperty(mutableArgs);
       if (!property) {
-        await this.sendUnknownPropertyResponse(invocation, action, model);
+        await this.sendUnknownPropertyResponse(invocation, action);
         return;
       }
     }
@@ -202,8 +199,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
 
   private async sendUnknownPropertyResponse(
     invocation: CommandInvocation,
-    action: ConfigAction<TModel>,
-    model: TModel
+    action: ConfigAction<TModel>
   ): Promise<void> {
     const response = `You attempted to use an unknown property with the **${action.primaryKey}** action.${NEWLINE}${NEWLINE}**PROPERTIES**${NEWLINE}The following are all of the properties that are recognized with the ${invocation.context.serverConfig.commandPrefix}${this.name} command:`;
 
@@ -213,8 +209,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
           const exampleUse = await this.createActionExampleUse(
             invocation,
             action,
-            property,
-            model
+            property
           );
 
           return {
@@ -236,8 +231,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
   }
 
   private async getActionsExplanation(
-    invocation: CommandInvocation,
-    model: TModel
+    invocation: CommandInvocation
   ): Promise<string> {
     const demoProp = getRandomArrayEntry(this.orderedProperties);
     let explanation = `**ACTIONS**${NEWLINE}The various actions that you can take with \`${invocation.context.serverConfig.commandPrefix}${this.name}\` are as follows:\`\`\``;
@@ -256,8 +250,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
           const usage = await this.createActionExampleUse(
             invocation,
             action,
-            demoProp,
-            model
+            demoProp
           );
           return {
             // Bulleted list so grammatically, all lines end with semicolon except last
@@ -297,19 +290,13 @@ export abstract class ConfigCommandBase<TModel> extends Command {
   private async createActionExampleUse(
     invocation: CommandInvocation,
     action: ConfigAction<TModel>,
-    demoProperty: ConfigProperty<TModel>,
-    model: TModel
+    demoProperty: ConfigProperty<TModel>
   ): Promise<string> {
     const example = `${invocation.context.serverConfig.commandPrefix}${this.name} ${action.primaryKey}`;
 
     const exampleValues = await Promise.all(
       action.parameters.map((parameter) =>
-        this.getActionParameterExampleValue(
-          invocation,
-          parameter,
-          demoProperty,
-          model
-        )
+        this.getActionParameterExampleValue(invocation, parameter, demoProperty)
       )
     );
 
@@ -319,15 +306,16 @@ export abstract class ConfigCommandBase<TModel> extends Command {
   private async getActionParameterExampleValue(
     invocation: CommandInvocation,
     parameterType: ConfigActionParameterType,
-    demoProperty: ConfigProperty<TModel>,
-    model: TModel
+    demoProperty: ConfigProperty<TModel>
   ): Promise<string> {
     switch (parameterType) {
       case ConfigActionParameterType.PropertyKey: {
         return demoProperty.key;
       }
       case ConfigActionParameterType.NewPropertyValue: {
-        const randomValue = demoProperty.getRandomExampleValue(model);
+        const randomValue = demoProperty.getRandomExampleValue(
+          invocation.context.server
+        );
         const {
           multilineCodeBlock: formattedValue,
         } = await demoProperty.typeDefinition.format(
