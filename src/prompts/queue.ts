@@ -1,5 +1,3 @@
-import { Client as DiscordIOClient } from 'discord.io';
-
 import Bucket from '@phil/buckets';
 import Database from '@phil/database';
 import Prompt from './prompt';
@@ -36,7 +34,6 @@ async function getTotalLength(
 
 class PromptQueue {
   public static async get(
-    discordClient: DiscordIOClient,
     database: Database,
     submissionsCollection: ServerSubmissionsCollection,
     serverConfig: ServerConfig,
@@ -44,7 +41,6 @@ class PromptQueue {
   ): Promise<PromptQueue> {
     const totalLength = await getTotalLength(database, bucket.id);
     return new PromptQueue(
-      discordClient,
       database,
       submissionsCollection,
       serverConfig,
@@ -54,7 +50,6 @@ class PromptQueue {
   }
 
   public constructor(
-    private readonly discordClient: DiscordIOClient,
     private readonly database: Database,
     private readonly submissionsCollection: ServerSubmissionsCollection,
     private readonly serverConfig: ServerConfig,
@@ -103,7 +98,6 @@ class PromptQueue {
 
     const queueStart = (pageNum - 1) * pageSize + 1;
     return new PromptQueuePage(
-      this.discordClient,
       this.database,
       this.bucket,
       dbResults.rows.map(

@@ -1,5 +1,3 @@
-import { Client as DiscordIOClient } from 'discord.io';
-
 import MessageTemplate from '@phil/discord/MessageTemplate';
 
 import Bucket from '@phil/buckets';
@@ -17,7 +15,6 @@ class PromptQueuePage {
   private readonly totalNumPages: number;
 
   public constructor(
-    private readonly discordClient: DiscordIOClient,
     private readonly database: Database,
     public readonly bucket: Bucket,
     public readonly entries: readonly PromptQueueEntry[],
@@ -48,7 +45,6 @@ class PromptQueuePage {
     }
 
     return new PromptQueueReactableFactory(
-      this.discordClient,
       this.database,
       {
         timeLimit: 10,

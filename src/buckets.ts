@@ -1,4 +1,3 @@
-import { Client as DiscordIOClient } from 'discord.io';
 import * as moment from 'moment';
 
 import Member from '@phil/discord/Member';
@@ -44,7 +43,6 @@ class Bucket {
   public internalAlertedBucketEmptying: boolean;
 
   public constructor(
-    private readonly discordClient: DiscordIOClient,
     private readonly database: Database,
     private readonly submissionsCollection: ServerSubmissionsCollection,
     private readonly serverConfig: ServerConfig,
@@ -84,7 +82,6 @@ class Bucket {
 
   public getPromptQueue(): Promise<PromptQueue> {
     return PromptQueue.get(
-      this.discordClient,
       this.database,
       this.submissionsCollection,
       this.serverConfig,

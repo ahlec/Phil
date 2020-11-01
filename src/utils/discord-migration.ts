@@ -28,7 +28,7 @@ export function getChannel(
 ): TextChannel | UsersDirectMessagesChannel {
   const rawChannel = discordClient.channels[channelId];
   if (!rawChannel) {
-    return new UsersDirectMessagesChannel(channelId);
+    return new UsersDirectMessagesChannel(discordClient, channelId);
   }
 
   const rawServer = discordClient.servers[rawChannel.guild_id];
@@ -39,7 +39,7 @@ export function getChannel(
   }
 
   const server = new Server(discordClient, rawServer, rawChannel.guild_id);
-  return new TextChannel(rawChannel, server, channelId);
+  return new TextChannel(discordClient, channelId, rawChannel, server);
 }
 
 export function getServerMember(

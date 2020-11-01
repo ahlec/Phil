@@ -1,5 +1,3 @@
-import { Client as DiscordIOClient } from 'discord.io';
-
 import Database from '@phil/database';
 import ReactableFactoryBase, {
   ReactableCreationArgs,
@@ -12,13 +10,12 @@ class SuggestSessionReactableFactory extends ReactableFactoryBase<
   ReactableType.SuggestSession
 > {
   public constructor(
-    discordClient: DiscordIOClient,
     database: Database,
     args: ReactableCreationArgs,
     data: Data,
     private readonly canMakeAnonymous: boolean
   ) {
-    super(ReactableType.SuggestSession, discordClient, database, args, data);
+    super(ReactableType.SuggestSession, database, args, data);
   }
 
   protected getEmojiReactions(): readonly string[] {

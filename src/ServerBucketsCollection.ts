@@ -131,7 +131,6 @@ class ServerBucketsCollection {
 
   private parseBucket(dbRow: DbRow): Bucket {
     return new Bucket(
-      this.discord,
       this.database,
       new ServerSubmissionsCollection(
         this.database,

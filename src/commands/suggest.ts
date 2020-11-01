@@ -73,11 +73,10 @@ class SuggestCommand extends Command {
       throw new Error('Unable to start a new session despite all good input.');
     }
 
-    await this.sendDirectMessage(legacyPhil, invocation, database, session);
+    await this.sendDirectMessage(invocation, database, session);
   }
 
   private async sendDirectMessage(
-    legacyPhil: Phil,
     invocation: CommandInvocation,
     database: Database,
     session: SubmissionSession
@@ -92,7 +91,6 @@ class SuggestCommand extends Command {
     });
 
     const reactableFactory = new SuggestSessionReactableFactory(
-      legacyPhil.bot,
       database,
       {
         timeLimit: session.remainingTime.asMinutes(),

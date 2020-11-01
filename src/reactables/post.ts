@@ -1,10 +1,10 @@
-import { Client as DiscordIOClient } from 'discord.io';
-
 import OutboundMessage from '@phil/discord/OutboundMessage';
+import TextChannel from '@phil/discord/TextChannel';
+import UsersDirectMessagesChannel from '@phil/discord/UsersDirectMessagesChannel';
 
 import Database from '@phil/database';
 import { ReactableType, ReactableTypeData } from './types';
-import { getKnownOutboundMessage } from '@phil/utils/discord-migration';
+import { isNotNull } from '@phil/utils';
 
 interface DbRow {
   message_id: string;
@@ -18,14 +18,13 @@ interface DbRow {
 }
 
 class ReactablePost<TType extends ReactableType> {
-  public static async getFromMessageId(
-    discordClient: DiscordIOClient,
+  public static async getFromMessage(
     db: Database,
-    messageId: string
+    message: OutboundMessage
   ): Promise<ReactablePost<ReactableType> | null> {
     const results = await db.query<DbRow>(
       'SELECT * FROM reactable_posts WHERE message_id = $1 LIMIT 1',
-      [messageId]
+      [message.id]
     );
 
     if (results.rowCount === 0) {
@@ -33,11 +32,6 @@ class ReactablePost<TType extends ReactableType> {
     }
 
     const [row] = results.rows;
-    const message = getKnownOutboundMessage(
-      discordClient,
-      row.message_id,
-      row.channel_id
-    );
     switch (row.reactable_type) {
       case ReactableType.PromptQueue:
       case ReactableType.SuggestSession: {
@@ -52,26 +46,25 @@ class ReactablePost<TType extends ReactableType> {
   }
 
   public static async getAllOfTypeInChannel<TType extends ReactableType>(
-    discordClient: DiscordIOClient,
     db: Database,
-    channelId: string,
+    channel: TextChannel | UsersDirectMessagesChannel,
     type: TType
   ): Promise<ReactablePost<TType>[]> {
     const results = await db.query<DbRow>(
       `SELECT * FROM reactable_posts
             WHERE channel_id = $1 AND reactable_type = $2`,
-      [channelId, type]
+      [channel.id, type]
     );
-    return results.rows.map(
-      (row): ReactablePost<TType> => {
-        const message = getKnownOutboundMessage(
-          discordClient,
-          row.message_id,
-          row.channel_id
-        );
+    return results.rows
+      .map((row): ReactablePost<TType> | null => {
+        const message = channel.getOutboundMessageById(row.message_id);
+        if (!message) {
+          return null;
+        }
+
         return new ReactablePost(message, type, row);
-      }
-    );
+      })
+      .filter(isNotNull);
   }
 
   public readonly created: Date;

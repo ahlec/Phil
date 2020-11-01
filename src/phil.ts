@@ -231,9 +231,10 @@ export default class Phil extends Logger {
     }
 
     const channel = new TextChannel(
+      this.bot,
+      event.d.channel_id,
       rawServer.channels[event.d.channel_id],
-      server,
-      event.d.channel_id
+      server
     );
     return {
       success: true,

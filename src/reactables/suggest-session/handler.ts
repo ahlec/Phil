@@ -92,7 +92,6 @@ class SuggestSessionReactableHandler
     );
 
     const reactableFactory = new SuggestSessionReactableFactory(
-      phil.bot,
       phil.db,
       {
         timeLimit: session.remainingTime.asMinutes(),

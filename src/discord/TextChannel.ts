@@ -1,13 +1,20 @@
-import { Channel as DiscordIOChannel } from 'discord.io';
+import {
+  Channel as DiscordIOChannel,
+  Client as DiscordIOClient,
+} from 'discord.io';
 
+import BaseChannel from '@phil/discord/BaseChannel';
 import Server from './Server';
 
-class TextChannel {
+class TextChannel extends BaseChannel {
   public constructor(
+    internalClient: DiscordIOClient,
+    id: string,
     private readonly internalChannel: DiscordIOChannel,
-    public readonly server: Server,
-    public readonly id: string
-  ) {}
+    public readonly server: Server
+  ) {
+    super(internalClient, id);
+  }
 
   public get name(): string {
     return this.internalChannel.name;

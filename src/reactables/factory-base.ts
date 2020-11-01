@@ -1,5 +1,3 @@
-import { Client as DiscordIOClient } from 'discord.io';
-
 import OutboundMessage from '@phil/discord/OutboundMessage';
 
 import Database from '@phil/database';
@@ -13,7 +11,6 @@ export interface ReactableCreationArgs {
 abstract class ReactableFactoryBase<TType extends ReactableType> {
   protected constructor(
     private readonly type: TType,
-    private readonly discordClient: DiscordIOClient,
     private readonly database: Database,
     private readonly creationArgs: ReactableCreationArgs,
     protected readonly data: ReactableTypeData[TType]
@@ -77,9 +74,8 @@ abstract class ReactableFactoryBase<TType extends ReactableType> {
     message: OutboundMessage
   ): Promise<void> {
     const posts = await ReactablePost.getAllOfTypeInChannel(
-      this.discordClient,
       this.database,
-      message.channel.id,
+      message.channel,
       this.type
     );
 

@@ -77,7 +77,6 @@ export default class SuggestSessionListener implements DirectMessageProcessor {
     });
 
     const reactableFactory = new SuggestSessionReactableFactory(
-      phil.bot,
       phil.db,
       {
         timeLimit: token.currentSession.remainingTime.asMinutes(),

@@ -87,7 +87,12 @@ class Server {
           return null;
         }
 
-        return new TextChannel(internalChannel, this, internalChannel.id);
+        return new TextChannel(
+          this.internalClient,
+          internalChannel.id,
+          internalChannel,
+          this
+        );
       })
       .filter(isNotNull);
   }
@@ -102,7 +107,7 @@ class Server {
       return null;
     }
 
-    return new TextChannel(channel, this, channel.id);
+    return new TextChannel(this.internalClient, channel.id, channel, this);
   }
 
   public async getMember(userId: string): Promise<Member | null> {

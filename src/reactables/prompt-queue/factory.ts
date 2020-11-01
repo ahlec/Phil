@@ -1,5 +1,3 @@
-import { Client as DiscordIOClient } from 'discord.io';
-
 import Database from '@phil/database';
 import ReactableFactoryBase, {
   ReactableCreationArgs,
@@ -12,18 +10,11 @@ class PromptQueueReactableFactory extends ReactableFactoryBase<
   ReactableType.PromptQueue
 > {
   public constructor(
-    discordClient: DiscordIOClient,
     database: Database,
     creationArgs: ReactableCreationArgs,
     data: Data
   ) {
-    super(
-      ReactableType.PromptQueue,
-      discordClient,
-      database,
-      creationArgs,
-      data
-    );
+    super(ReactableType.PromptQueue, database, creationArgs, data);
   }
 
   protected getEmojiReactions(): readonly string[] {

@@ -4,6 +4,7 @@ import ReactablePost from './post';
 import { ReactableType, ReactableHandler } from './types';
 import PromptQueueReactableHandler from './prompt-queue/handler';
 import SuggestSessionReactableHandler from './suggest-session/handler';
+import { getKnownOutboundMessage } from '@phil/utils/discord-migration';
 
 class ReactableProcessor {
   private readonly handlers: {
@@ -24,11 +25,13 @@ class ReactableProcessor {
       return;
     }
 
-    const post = await ReactablePost.getFromMessageId(
+    const message = getKnownOutboundMessage(
       this.phil.bot,
-      this.phil.db,
-      event.message_id
+      event.message_id,
+      event.channel_id
     );
+
+    const post = await ReactablePost.getFromMessage(this.phil.db, message);
     if (!post) {
       return;
     }
