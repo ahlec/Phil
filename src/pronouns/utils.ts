@@ -1,5 +1,3 @@
-import { Role as DiscordIORole } from 'discord.io';
-
 import Role from '@phil/discord/Role';
 
 import { AllPronouns } from './definitions';
@@ -12,7 +10,7 @@ for (const pronoun of AllPronouns) {
   roleToPronounLookup[pronoun.roleName] = pronoun;
 }
 
-export function getPronounFromRole(role: Role | DiscordIORole): Pronoun | null {
+export function getPronounFromRole(role: Role): Pronoun | null {
   const pronoun = roleToPronounLookup[role.name];
   if (pronoun) {
     return pronoun;

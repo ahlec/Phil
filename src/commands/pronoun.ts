@@ -1,14 +1,15 @@
 import Role from '@phil/discord/Role';
 
 import Features from '@phil/features/all-features';
-import { EditRoleOptions } from '@phil/promises/discord';
 import { AllPronouns } from '@phil/pronouns/definitions';
 import { Pronoun } from '@phil/pronouns/pronoun';
 import { getPronounFromRole } from '@phil/pronouns/utils';
 import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry } from '@phil/utils';
 import { LoggerDefinition } from './@types';
-import MemberUniqueRoleCommandBase from './bases/member-unique-role-base';
+import MemberUniqueRoleCommandBase, {
+  RoleConfig,
+} from './bases/member-unique-role-base';
 
 const pronounUsageToPronouns: { [pronoun: string]: Pronoun } = {};
 for (const pronoun of AllPronouns) {
@@ -71,7 +72,7 @@ class PronounCommand extends MemberUniqueRoleCommandBase<Pronoun> {
     return data === rolePronoun;
   }
 
-  protected getRoleConfig(data: Pronoun): EditRoleOptions {
+  protected getRoleConfig(data: Pronoun): RoleConfig {
     return {
       name: data.roleName,
     };

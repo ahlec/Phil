@@ -11,16 +11,14 @@ import ServerConfig from '@phil/server-config';
 import Command, { LoggerDefinition } from './@types';
 
 function getBeginMessage(
-  phil: Phil,
   serverConfig: ServerConfig,
   session: SubmissionSession
 ): string {
-  const server = phil.bot.servers[session.bucket.serverId];
   const NOWRAP = '';
   return `For the next **${session.remainingTime.asMinutes()} minutes**, every ${NOWRAP}message you send to me will be submitted as a new prompt to the **${
     session.bucket.displayName
   }** on the **${
-    server.name
+    session.bucket.server.name
   }** server.\n\nWhen ${NOWRAP}you're finished, hit the ${
     Emoji.Stop
   } reaction ${NOWRAP}or simply do nothing until your session runs out of time. ${NOWRAP}If you want to change which server or bucket you're submitting to, ${NOWRAP}use the \`${
@@ -86,11 +84,7 @@ class SuggestCommand extends Command {
   ): Promise<void> {
     const { finalMessage } = await invocation.member.user.sendDirectMessage({
       color: 'powder-blue',
-      description: getBeginMessage(
-        legacyPhil,
-        invocation.context.serverConfig,
-        session
-      ),
+      description: getBeginMessage(invocation.context.serverConfig, session),
       fields: null,
       footer: null,
       title: ':pencil: Begin Sending Suggestions :incoming_envelope:',

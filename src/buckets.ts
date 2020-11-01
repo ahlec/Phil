@@ -2,6 +2,7 @@ import { Client as DiscordIOClient } from 'discord.io';
 import * as moment from 'moment';
 
 import Member from '@phil/discord/Member';
+import Server from '@phil/discord/Server';
 
 import Database from './database';
 import Prompt from './prompts/prompt';
@@ -9,7 +10,6 @@ import PromptQueue from './prompts/queue';
 import Submission from './prompts/submission';
 import ServerSubmissionsCollection from './ServerSubmissionsCollection';
 import ServerConfig from './server-config';
-import { getServerMember } from './utils/discord-migration';
 
 export enum BucketFrequency {
   Daily = 0,
@@ -49,7 +49,7 @@ class Bucket {
     private readonly submissionsCollection: ServerSubmissionsCollection,
     private readonly serverConfig: ServerConfig,
     public readonly id: number,
-    public readonly serverId: string,
+    public readonly server: Server,
     public readonly channelId: string,
     contents: {
       isValid: boolean;
@@ -180,7 +180,9 @@ class Bucket {
       [this.id, maxResults]
     );
 
-    return rows.map((dbRow): Submission => this.parseSubmission(dbRow));
+    return Promise.all(
+      rows.map((dbRow): Promise<Submission> => this.parseSubmission(dbRow))
+    );
   }
 
   /**
@@ -219,7 +221,9 @@ class Bucket {
       [this.id, maxResults]
     );
 
-    return rows.map((dbRow): Submission => this.parseSubmission(dbRow));
+    return Promise.all(
+      rows.map((dbRow): Promise<Submission> => this.parseSubmission(dbRow))
+    );
   }
 
   public async getCurrentPrompt(): Promise<Prompt | null> {
@@ -276,17 +280,14 @@ class Bucket {
     );
   }
 
-  private parseSubmission(dbRow: SubmissionDbRow): Submission {
+  private async parseSubmission(dbRow: SubmissionDbRow): Promise<Submission> {
+    const member = await this.server.getMember(dbRow.suggesting_userid);
     return new Submission(
       this.database,
       this.serverConfig,
       this,
       dbRow.submission_id,
-      getServerMember(
-        this.discordClient,
-        this.serverId,
-        dbRow.suggesting_userid
-      ),
+      member,
       {
         approvedByAdmin: parseInt(dbRow.approved_by_admin, 10) === 1,
         dateSuggested: moment(dbRow.date_suggested),

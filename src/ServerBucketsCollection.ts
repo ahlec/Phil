@@ -141,7 +141,7 @@ class ServerBucketsCollection {
       ),
       this.serverConfig,
       parseInt(dbRow.bucket_id, 10),
-      this.server.id,
+      this.server,
       dbRow.channel_id,
       {
         alertWhenLow: parseInt(dbRow.alert_when_low, 10) === 1,

@@ -1,7 +1,6 @@
 import Role from '@phil/discord/Role';
 
 import Features from '@phil/features/all-features';
-import { EditRoleOptions } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
 import {
   getRandomArrayEntry,
@@ -9,7 +8,9 @@ import {
   isHexColorRole,
 } from '@phil/utils';
 import { LoggerDefinition } from './@types';
-import MemberUniqueRoleCommandBase from './bases/member-unique-role-base';
+import MemberUniqueRoleCommandBase, {
+  RoleConfig,
+} from './bases/member-unique-role-base';
 
 const decemberLinks = [
   'http://www.december.com/html/spec/color0.html',
@@ -80,7 +81,7 @@ class ColourCommand extends MemberUniqueRoleCommandBase<string> {
     return role.name === data;
   }
 
-  protected getRoleConfig(data: string): EditRoleOptions {
+  protected getRoleConfig(data: string): RoleConfig {
     const hexColorNumber = parseInt(data.replace('#', '0x'), 16);
     return {
       color: hexColorNumber,
