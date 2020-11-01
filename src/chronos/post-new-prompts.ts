@@ -1,10 +1,11 @@
 import { Moment } from 'moment';
 
+import Client from '@phil/discord/Client';
 import Server from '@phil/discord/Server';
 
 import Bucket from '@phil/buckets';
+import Database from '@phil/database';
 import Features from '@phil/features/all-features';
-import Phil from '@phil/phil';
 import Prompt from '@phil/prompts/prompt';
 import ServerConfig from '@phil/server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
@@ -26,28 +27,26 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
   }
 
   public async process(
-    phil: Phil,
+    discordClient: Client,
+    database: Database,
     server: Server,
     serverConfig: ServerConfig,
     now: Moment
   ): Promise<void> {
     const bucketCollection = new ServerBucketsCollection(
-      phil.bot,
-      phil.db,
+      discordClient,
+      database,
       server,
       serverConfig
     );
     const serverBuckets = await bucketCollection.getAll();
 
     await Promise.all(
-      serverBuckets.map((bucket) =>
-        this.processBucket(phil, server, now, bucket)
-      )
+      serverBuckets.map((bucket) => this.processBucket(server, now, bucket))
     );
   }
 
   private async processBucket(
-    phil: Phil,
     server: Server,
     now: Moment,
     bucket: Bucket
@@ -64,7 +63,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
       return;
     }
 
-    const nextPrompt = await this.getNextPrompt(phil, bucket);
+    const nextPrompt = await this.getNextPrompt(bucket);
     if (!nextPrompt) {
       this.write(
         `bucket ${bucket.handle} on server ${server.id} has no prompts to post`
@@ -92,10 +91,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     }
   }
 
-  private async getNextPrompt(
-    phil: Phil,
-    bucket: Bucket
-  ): Promise<NextPrompt | null> {
+  private async getNextPrompt(bucket: Bucket): Promise<NextPrompt | null> {
     const promptQueue = await bucket.getPromptQueue();
 
     if (promptQueue.totalLength > 0) {

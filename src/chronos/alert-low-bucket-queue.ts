@@ -1,8 +1,9 @@
+import Client from '@phil/discord/Client';
 import Server from '@phil/discord/Server';
 
 import Bucket from '@phil/buckets';
+import Database from '@phil/database';
 import Features from '@phil/features/all-features';
-import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 import ServerBucketsCollection from '@phil/ServerBucketsCollection';
@@ -21,13 +22,14 @@ export default class AlertLowBucketQueueChrono
   }
 
   public async process(
-    phil: Phil,
+    discordClient: Client,
+    database: Database,
     server: Server,
     serverConfig: ServerConfig
   ): Promise<void> {
     const bucketCollection = new ServerBucketsCollection(
-      phil.bot,
-      phil.db,
+      discordClient,
+      database,
       server,
       serverConfig
     );

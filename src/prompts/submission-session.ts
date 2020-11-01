@@ -1,7 +1,5 @@
 import * as moment from 'moment';
 
-import Server from '@phil/discord/Server';
-
 import Bucket from '@phil/buckets';
 import Database from '@phil/database';
 import Phil from '@phil/phil';
@@ -46,14 +44,13 @@ export default class SubmissionSession {
       return null;
     }
 
-    const rawServer = phil.bot.servers[dbRow.server_id];
-    if (!rawServer) {
+    const server = phil.discordClient.getServer(dbRow.server_id);
+    if (!server) {
       throw new Error(
         "Trying to get active session for a submission session for a server Phil isn't in any longer."
       );
     }
 
-    const server = new Server(phil.bot, rawServer, rawServer.id);
     const serverConfig = await phil.serverDirectory.getServerConfig(server);
     if (!serverConfig) {
       throw new Error(
@@ -62,7 +59,7 @@ export default class SubmissionSession {
     }
 
     const bucketCollection = new ServerBucketsCollection(
-      phil.bot,
+      phil.discordClient,
       phil.db,
       server,
       serverConfig

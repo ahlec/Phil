@@ -1,9 +1,10 @@
 import { Moment } from 'moment';
 
+import Client from '@phil/discord/Client';
 import Server from '@phil/discord/Server';
 
+import Database from '@phil/database';
 import Feature from '@phil/features/feature';
-import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 
 export default interface Chrono {
@@ -11,7 +12,8 @@ export default interface Chrono {
   readonly requiredFeature: Feature | null;
 
   process(
-    phil: Phil,
+    discordClient: Client,
+    database: Database,
     server: Server,
     serverConfig: ServerConfig,
     now: Moment

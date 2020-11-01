@@ -29,6 +29,7 @@ import ServerSubmissionsCollection from './ServerSubmissionsCollection';
 import ServerRequestablesCollection from './ServerRequestablesCollection';
 import TextChannel from './discord/TextChannel';
 import ReceivedDirectMessage from './discord/ReceivedDirectMessage';
+import Client from './discord/Client';
 
 function ignoreDiscordCode(code: number): boolean {
   return code === 1000; // General disconnect code
@@ -47,7 +48,7 @@ type ParseResult<T> =
 type RecognizedReceivedMessage = ReceivedServerMessage | ReceivedDirectMessage;
 
 export default class Phil extends Logger {
-  public readonly bot: DiscordIOClient;
+  public readonly discordClient: Client;
   public readonly serverDirectory: ServerDirectory;
   private readonly commandRunner: CommandRunner;
   private readonly chronoManager: ChronoManager;
@@ -55,16 +56,24 @@ export default class Phil extends Logger {
   private readonly reactableProcessor: ReactableProcessor;
   private shouldSendDisconnectedMessage: boolean;
 
+  private readonly internalDiscordClient: DiscordIOClient;
+
   constructor(public readonly db: Database) {
     super(new LoggerDefinition('Phil'));
 
-    this.bot = new DiscordIOClient({
+    this.internalDiscordClient = new DiscordIOClient({
       autorun: true,
       token: GlobalConfig.discordBotToken,
     });
+    this.discordClient = new Client(this.internalDiscordClient);
+
     this.serverDirectory = new ServerDirectory(this);
     this.commandRunner = new CommandRunner(this, this.db);
-    this.chronoManager = new ChronoManager(this, this.serverDirectory);
+    this.chronoManager = new ChronoManager(
+      this.discordClient,
+      this.db,
+      this.serverDirectory
+    );
     this.directMessageDispatcher = new DirectMessageDispatcher(this);
     this.reactableProcessor = new ReactableProcessor(this);
   }
@@ -72,20 +81,20 @@ export default class Phil extends Logger {
   public start(): void {
     this.shouldSendDisconnectedMessage = false;
 
-    this.bot.on('ready', this.onReady);
-    this.bot.on('message', this.onMessage);
-    this.bot.on('disconnect', this.onDisconnect);
-    this.bot.on('guildMemberAdd', this.onMemberAdd);
-    this.bot.on('any', this.onRawWebSocketEvent);
+    this.internalDiscordClient.on('ready', this.onReady);
+    this.internalDiscordClient.on('message', this.onMessage);
+    this.internalDiscordClient.on('disconnect', this.onDisconnect);
+    this.internalDiscordClient.on('guildMemberAdd', this.onMemberAdd);
+    this.internalDiscordClient.on('any', this.onRawWebSocketEvent);
   }
 
   public getServerFromChannelId(channelId: string): DiscordIOServer | null {
-    if (!this.bot.channels[channelId]) {
+    if (!this.internalDiscordClient.channels[channelId]) {
       return null;
     }
 
-    const serverId = this.bot.channels[channelId].guild_id;
-    const server = this.bot.servers[serverId];
+    const serverId = this.internalDiscordClient.channels[channelId].guild_id;
+    const server = this.internalDiscordClient.servers[serverId];
     if (!server) {
       return null;
     }
@@ -94,16 +103,22 @@ export default class Phil extends Logger {
   }
 
   private onReady = async (): Promise<void> => {
-    this.write(`Logged in as ${this.bot.username} - ${this.bot.id}`);
+    this.write(
+      `Logged in as ${this.internalDiscordClient.username} - ${this.internalDiscordClient.id}`
+    );
 
     this.chronoManager.start();
 
     if (this.shouldSendDisconnectedMessage) {
-      await sendMessageTemplate(this.bot, GlobalConfig.botManagerUserId, {
-        type: 'error',
-        error:
-          "I experienced an unexpected shutdown. The logs should be in Heroku. I've recovered and connected again.",
-      });
+      await sendMessageTemplate(
+        this.internalDiscordClient,
+        GlobalConfig.botManagerUserId,
+        {
+          type: 'error',
+          error:
+            "I experienced an unexpected shutdown. The logs should be in Heroku. I've recovered and connected again.",
+        }
+      );
       this.shouldSendDisconnectedMessage = false;
     }
   };
@@ -148,7 +163,7 @@ export default class Phil extends Logger {
       }
 
       const buckets = new ServerBucketsCollection(
-        this.bot,
+        this.discordClient,
         this.db,
         message.channel.server,
         serverConfig
@@ -191,9 +206,10 @@ export default class Phil extends Logger {
       };
     }
 
-    const isDirectMessage = event.d.channel_id in this.bot.directMessages;
+    const isDirectMessage =
+      event.d.channel_id in this.internalDiscordClient.directMessages;
     if (isDirectMessage) {
-      const rawUser = this.bot.users[event.d.author.id];
+      const rawUser = this.internalDiscordClient.users[event.d.author.id];
       if (!rawUser) {
         return {
           success: false,
@@ -201,11 +217,15 @@ export default class Phil extends Logger {
         };
       }
 
-      const user = new User(this.bot, rawUser, event.d.author.id);
+      const user = new User(
+        this.internalDiscordClient,
+        rawUser,
+        event.d.author.id
+      );
       return {
         success: true,
         data: new ReceivedDirectMessage(
-          this.bot,
+          this.internalDiscordClient,
           event.d.id,
           event.d.content,
           user
@@ -221,7 +241,11 @@ export default class Phil extends Logger {
       };
     }
 
-    const server = new Server(this.bot, rawServer, rawServer.id);
+    const server = new Server(
+      this.internalDiscordClient,
+      rawServer,
+      rawServer.id
+    );
     const member = await server.getMember(event.d.author.id);
     if (!member) {
       return {
@@ -231,7 +255,7 @@ export default class Phil extends Logger {
     }
 
     const channel = new TextChannel(
-      this.bot,
+      this.internalDiscordClient,
       event.d.channel_id,
       rawServer.channels[event.d.channel_id],
       server
@@ -239,7 +263,7 @@ export default class Phil extends Logger {
     return {
       success: true,
       data: new ReceivedServerMessage(
-        this.bot,
+        this.internalDiscordClient,
         event.d.id,
         event.d.content,
         member,
@@ -257,11 +281,11 @@ export default class Phil extends Logger {
   }
 
   private isMessageFromPhil(message: RecognizedReceivedMessage): boolean {
-    return this.getSenderId(message) === this.bot.id;
+    return this.getSenderId(message) === this.internalDiscordClient.id;
   }
 
   private shouldIgnoreMessage(message: RecognizedReceivedMessage): boolean {
-    const user = this.bot.users[this.getSenderId(message)];
+    const user = this.internalDiscordClient.users[this.getSenderId(message)];
     if (!user) {
       return true;
     }
@@ -287,7 +311,7 @@ export default class Phil extends Logger {
       `Posted an empty message (id ${event.d.id}) to channel ${event.d.channel_id}. Deleting.`
     );
     try {
-      this.bot.deleteMessage({
+      this.internalDiscordClient.deleteMessage({
         channelID: event.d.channel_id,
         messageID: event.d.id,
       });
@@ -302,7 +326,7 @@ export default class Phil extends Logger {
     this.error(err);
     this.write('Attempting to reconnect now...');
     this.shouldSendDisconnectedMessage = !ignoreDiscordCode(code);
-    this.bot.connect();
+    this.internalDiscordClient.connect();
   };
 
   private onMemberAdd = async (
@@ -311,14 +335,14 @@ export default class Phil extends Logger {
     }
   ): Promise<void> => {
     const { guild_id: serverId } = rawMember;
-    const rawServer = this.bot.servers[serverId];
+    const rawServer = this.internalDiscordClient.servers[serverId];
     this.write(`A new member (${rawMember.id}) has joined server ${serverId}.`);
     if (!rawServer) {
       this.error(`I do not recognize server ${serverId} as existing.`);
       return;
     }
 
-    const server = new Server(this.bot, rawServer, serverId);
+    const server = new Server(this.internalDiscordClient, rawServer, serverId);
     const serverConfig = await this.serverDirectory.getServerConfig(server);
     if (!serverConfig) {
       this.error(
@@ -327,7 +351,7 @@ export default class Phil extends Logger {
       return;
     }
 
-    const rawUser = this.bot.users[rawMember.id];
+    const rawUser = this.internalDiscordClient.users[rawMember.id];
     if (!rawUser) {
       this.error(
         `Couldn't greet member '${rawMember.id}' in server '${server.id}' because they weren't in the users lookup.`
@@ -336,10 +360,10 @@ export default class Phil extends Logger {
     }
 
     const member = new Member(
-      this.bot,
+      this.internalDiscordClient,
       rawMember,
       serverId,
-      new User(this.bot, rawUser, rawMember.id)
+      new User(this.internalDiscordClient, rawUser, rawMember.id)
     );
 
     try {
@@ -362,7 +386,7 @@ export default class Phil extends Logger {
       }
 
       await sendMessageTemplate(
-        this.bot,
+        this.internalDiscordClient,
         serverConfig.introductionsChannel.id,
         greeting.message
       );
@@ -379,6 +403,7 @@ export default class Phil extends Logger {
   ): void => {
     if (event.t === 'MESSAGE_REACTION_ADD') {
       this.reactableProcessor.processReactionAdded(
+        this.internalDiscordClient,
         event.d as OfficialDiscordReactionEvent
       );
     }

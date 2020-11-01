@@ -5,7 +5,6 @@ import ReactablePost from '@phil/reactables/post';
 import { ReactableHandler, ReactableType } from '@phil/reactables/types';
 import SuggestSessionReactableFactory from './factory';
 import { Emoji } from './shared';
-import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 class SuggestSessionReactableHandler
   implements ReactableHandler<ReactableType.SuggestSession> {
@@ -43,7 +42,13 @@ class SuggestSessionReactableHandler
     await post.remove(phil.db);
 
     await session.end();
-    await sendMessageTemplate(phil.bot, post.data.userId, {
+
+    const user = phil.discordClient.getUser(post.data.userId);
+    if (!user) {
+      return;
+    }
+
+    await user.sendDirectMessage({
       color: 'powder-blue',
       description: this.getWrapupMessage(session),
       fields: null,
@@ -78,18 +83,20 @@ class SuggestSessionReactableHandler
 
     await session.makeAnonymous();
     const NOWRAP = '';
-    const { finalMessage } = await sendMessageTemplate(
-      phil.bot,
-      post.data.userId,
-      {
-        color: 'powder-blue',
-        description: `All submissions you send during this session will be anonymous. Don't ${NOWRAP}worry though! You'll still get credit for them on the server leaderboard!`,
-        fields: null,
-        footer: null,
-        title: ':spy: Anonymous Session Begun :spy:',
-        type: 'embed',
-      }
-    );
+
+    const user = phil.discordClient.getUser(post.data.userId);
+    if (!user) {
+      return;
+    }
+
+    const { finalMessage } = await user.sendDirectMessage({
+      color: 'powder-blue',
+      description: `All submissions you send during this session will be anonymous. Don't ${NOWRAP}worry though! You'll still get credit for them on the server leaderboard!`,
+      fields: null,
+      footer: null,
+      title: ':spy: Anonymous Session Begun :spy:',
+      type: 'embed',
+    });
 
     const reactableFactory = new SuggestSessionReactableFactory(
       phil.db,

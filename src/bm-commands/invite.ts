@@ -16,7 +16,7 @@ export default class InviteCommand extends BotManagerCommand {
   ): Promise<void> {
     await message.respond({
       color: 'powder-blue',
-      description: phil.bot.inviteURL,
+      description: phil.discordClient.inviteUrl,
       fields: null,
       footer: null,
       title: ':gift: My Invite Link',

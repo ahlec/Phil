@@ -1,5 +1,4 @@
-import { Client as DiscordIOClient } from 'discord.io';
-
+import Client from '@phil/discord/Client';
 import Server from '@phil/discord/Server';
 
 import Bucket, { BucketFrequency } from './buckets';
@@ -50,7 +49,7 @@ const FREQUENCY_FROM_STRINGS: {
 
 class ServerBucketsCollection {
   public constructor(
-    private readonly discord: DiscordIOClient,
+    private readonly discordClient: Client,
     private readonly database: Database,
     private readonly server: Server,
     private readonly serverConfig: ServerConfig
@@ -161,17 +160,19 @@ class ServerBucketsCollection {
   }
 
   private determineIsBucketValid(dbRow: DbRow): boolean {
-    const server = this.discord.servers[dbRow.server_id];
+    const server = this.discordClient.getServer(dbRow.server_id);
     if (!server) {
       return false;
     }
 
-    if (!(dbRow.channel_id in server.channels)) {
+    const channel = server.getTextChannel(dbRow.channel_id);
+    if (!channel) {
       return false;
     }
 
     if (dbRow.required_role_id) {
-      if (!(dbRow.required_role_id in server.roles)) {
+      const requiredRole = server.getRole(dbRow.required_role_id);
+      if (!requiredRole) {
         return false;
       }
     }

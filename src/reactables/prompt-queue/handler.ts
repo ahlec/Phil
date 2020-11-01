@@ -51,7 +51,7 @@ class PromptQueueReactableHandler
     }
 
     const bucketCollection = new ServerBucketsCollection(
-      phil.bot,
+      phil.discordClient,
       phil.db,
       post.message.channel.server,
       serverConfig

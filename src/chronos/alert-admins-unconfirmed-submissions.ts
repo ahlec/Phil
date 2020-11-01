@@ -1,7 +1,8 @@
+import Client from '@phil/discord/Client';
 import Server from '@phil/discord/Server';
 
+import Database from '@phil/database';
 import Features from '@phil/features/all-features';
-import Phil from '@phil/phil';
 import UnconfirmedSubmissionTally from '@phil/prompts/unconfirmed-submission-tally';
 import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry } from '@phil/utils';
@@ -19,12 +20,13 @@ export default class AlertAdminsUnconfirmedSubmissionsChrono
   }
 
   public async process(
-    phil: Phil,
+    discordClient: Client,
+    database: Database,
     server: Server,
     serverConfig: ServerConfig
   ): Promise<void> {
     const unconfirmedTally = await UnconfirmedSubmissionTally.collectForServer(
-      phil.db,
+      database,
       server.id
     );
     const reply = this.getUnconfimedPromptsMessage(

@@ -1,4 +1,6 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
+import { Client as DiscordIOClient } from 'discord.io';
+
 import Phil from '@phil/phil';
 import ReactablePost from './post';
 import { ReactableType, ReactableHandler } from './types';
@@ -19,6 +21,7 @@ class ReactableProcessor {
   }
 
   public async processReactionAdded(
+    discordIOClient: DiscordIOClient,
     event: OfficialDiscordReactionEvent
   ): Promise<void> {
     if (!this.shouldProcessEvent(event)) {
@@ -26,7 +29,7 @@ class ReactableProcessor {
     }
 
     const message = getKnownOutboundMessage(
-      this.phil.bot,
+      discordIOClient,
       event.message_id,
       event.channel_id
     );
@@ -53,12 +56,12 @@ class ReactableProcessor {
   }
 
   private shouldProcessEvent(event: OfficialDiscordReactionEvent): boolean {
-    const user = this.phil.bot.users[event.user_id];
+    const user = this.phil.discordClient.getUser(event.user_id);
     if (!user) {
       return false;
     }
 
-    return !user.bot;
+    return !user.isBot;
   }
 }
 

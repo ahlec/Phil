@@ -1,12 +1,12 @@
 import * as moment from 'moment';
 import { inspect } from 'util';
 
-import Server from '@phil/discord/Server';
+import Client from '@phil/discord/Client';
 
 import Chronos, { Chrono } from './chronos/index';
+import Database from './database';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
-import Phil from './phil';
 import ServerConfig from './server-config';
 import ServerDirectory from './server-directory';
 
@@ -18,7 +18,8 @@ export default class ChronoManager extends Logger {
   private readonly chronos: { [handle: string]: Chrono | undefined } = {};
 
   constructor(
-    private readonly phil: Phil,
+    private readonly discordClient: Client,
+    private readonly db: Database,
     private readonly serverDirectory: ServerDirectory
   ) {
     super(Definition);
@@ -72,7 +73,7 @@ export default class ChronoManager extends Logger {
     const date = now.format('YYYY-M-DD');
     this.write(`processing chronos with UTC hour = ${hour} on UTC ${date}'`);
 
-    const results = await this.phil.db.query<{
+    const results = await this.db.query<{
       server_id: string;
       chrono_id: string;
       chrono_handle: string;
@@ -116,15 +117,13 @@ export default class ChronoManager extends Logger {
   ): Promise<void> {
     this.write(`Executing ${chronoHandle} for serverId ${serverId}`);
 
-    const rawServer = this.phil.bot.servers[serverId];
-    if (!rawServer) {
+    const server = this.discordClient.getServer(serverId);
+    if (!server) {
       this.error(
         `Attempted to process '${chronoHandle}' for server '${serverId}', but I could not find it.`
       );
       return;
     }
-
-    const server = new Server(this.phil.bot, rawServer, rawServer.id);
 
     const serverConfig = await this.serverDirectory.getServerConfig(server);
     if (!serverConfig) {
@@ -142,7 +141,7 @@ export default class ChronoManager extends Logger {
       let shouldProcess = true;
       if (chronoDefinition.requiredFeature) {
         shouldProcess = await chronoDefinition.requiredFeature.getIsEnabled(
-          this.phil.db,
+          this.db,
           serverId
         );
 
@@ -154,7 +153,13 @@ export default class ChronoManager extends Logger {
       }
 
       if (shouldProcess) {
-        await chronoDefinition.process(this.phil, server, serverConfig, now);
+        await chronoDefinition.process(
+          this.discordClient,
+          this.db,
+          server,
+          serverConfig,
+          now
+        );
       }
 
       await this.markChronoProcessed(chronoId, serverId, utcDate);
@@ -168,7 +173,7 @@ export default class ChronoManager extends Logger {
     serverId: string,
     utcDate: string
   ): Promise<void> {
-    await this.phil.db.query(
+    await this.db.query(
       `UPDATE server_chronos
             SET date_last_ran = $1
             WHERE server_id = $2 AND chrono_id = $3`,

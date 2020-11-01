@@ -1,8 +1,10 @@
+import Database from '@phil/database';
+
+import Client from '@phil/discord/Client';
 import Member from '@phil/discord/Member';
 import Role from '@phil/discord/Role';
 import Server from '@phil/discord/Server';
 
-import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 import { isHexColorRole } from '@phil/utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
@@ -19,7 +21,8 @@ export default class RemoveUnusedColorRolesChrono
   }
 
   public async process(
-    phil: Phil,
+    discordClient: Client,
+    database: Database,
     server: Server,
     serverConfig: ServerConfig
   ): Promise<void> {

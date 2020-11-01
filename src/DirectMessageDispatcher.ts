@@ -11,7 +11,6 @@ import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 import Phil from './phil';
 import { inspect } from 'util';
-import { sendMessageTemplate } from './utils/discord-migration';
 
 const LOGGER_DEFINITION = new LoggerDefinition('Direct Message Dispatcher');
 
@@ -44,7 +43,15 @@ export default class DirectMessageDispatcher extends Logger {
     processor: DirectMessageProcessor
   ): Promise<void> {
     this.error(err);
-    await sendMessageTemplate(this.phil.bot, GlobalConfig.botManagerUserId, {
+
+    const botManager = this.phil.discordClient.getUser(
+      GlobalConfig.botManagerUserId
+    );
+    if (!botManager) {
+      return;
+    }
+
+    await botManager.sendDirectMessage({
       color: 'red',
       description: inspect(err),
       fields: null,

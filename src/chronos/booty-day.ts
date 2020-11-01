@@ -1,9 +1,11 @@
+import { Moment } from 'moment';
+
+import Client from '@phil/discord/Client';
 import Server from '@phil/discord/Server';
 
-import { Moment } from 'moment';
+import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import GlobalConfig from '@phil/GlobalConfig';
-import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
@@ -17,7 +19,8 @@ export default class BootyDayChrono extends Logger implements Chrono {
   }
 
   public async process(
-    phil: Phil,
+    discordClient: Client,
+    database: Database,
     server: Server,
     serverConfig: ServerConfig,
     now: Moment

@@ -1,11 +1,11 @@
 import { Moment } from 'moment';
 
+import Client from '@phil/discord/Client';
 import Member from '@phil/discord/Member';
 import Server from '@phil/discord/Server';
 
 import Database from '@phil/database';
 import Features from '@phil/features/all-features';
-import Phil from '@phil/phil';
 import { GROUP_PRONOUNS } from '@phil/pronouns/definitions';
 import { Pronoun } from '@phil/pronouns/pronoun';
 import ServerConfig from '@phil/server-config';
@@ -27,12 +27,13 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
   }
 
   public async process(
-    phil: Phil,
+    discordClient: Client,
+    database: Database,
     server: Server,
     serverConfig: ServerConfig,
     now: Moment
   ): Promise<void> {
-    const members = await this.getBirthdayMembers(phil.db, server, now);
+    const members = await this.getBirthdayMembers(database, server, now);
     const info = await this.getInfo(serverConfig, members);
     const birthdayWish = this.createBirthdayWish(info);
     if (birthdayWish === '') {
