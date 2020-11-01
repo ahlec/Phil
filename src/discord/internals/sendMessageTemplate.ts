@@ -1,99 +1,27 @@
 import { Client as DiscordIOClient } from 'discord.io';
 
-import Member from '@phil/discord/Member';
 import MessageTemplate, { EmbedField } from '@phil/discord/MessageTemplate';
 import OutboundMessage from '@phil/discord/OutboundMessage';
-import Server from '@phil/discord/Server';
 import TextChannel from '@phil/discord/TextChannel';
-import User from '@phil/discord/User';
 import UsersDirectMessagesChannel from '@phil/discord/UsersDirectMessagesChannel';
+import { SendMessageResult } from '@phil/discord/types';
 
 import EmbedColor, { getColorValue } from '@phil/embed-color';
 import MessageBuilder from '@phil/message-builder';
 
-export interface SendMessageResult {
-  /**
-   * The Discord message for the final message sent.
-   * Some messages will actually require multiple Discord messages
-   * to be completely sent due to maximum message length; this is the
-   * the final message, which can be useful for adding reactions
-   * and other things to the visual "end" of the post.
-   */
-  finalMessage: OutboundMessage;
-}
-
-export function getChannel(
-  discordClient: DiscordIOClient,
-  channelId: string
-): TextChannel | UsersDirectMessagesChannel {
-  const rawChannel = discordClient.channels[channelId];
-  if (!rawChannel) {
-    return new UsersDirectMessagesChannel(discordClient, channelId);
-  }
-
-  const rawServer = discordClient.servers[rawChannel.guild_id];
-  if (!rawServer) {
-    throw new Error(
-      `Could not find server '${rawChannel.guild_id}' supposedly containing '${channelId}'.`
-    );
-  }
-
-  const server = new Server(discordClient, rawServer, rawChannel.guild_id);
-  return new TextChannel(discordClient, channelId, rawChannel, server);
-}
-
-export function getServerMember(
-  discordClient: DiscordIOClient,
-  serverId: string,
-  userId: string
-): Member | null {
-  const internalMember = discordClient.servers[serverId]?.members[userId];
-  const internalUser = discordClient.users[userId];
-  if (!internalUser || !internalMember) {
-    return null;
-  }
-
-  return new Member(
-    discordClient,
-    internalMember,
-    serverId,
-    new User(discordClient, internalUser, userId)
-  );
-}
-
-/**
- * Utility function that should only be called in circumstances where
- * we know that the message was sent by the bot.
- */
-export function getKnownOutboundMessage(
-  discordClient: DiscordIOClient,
-  messageId: string,
-  channelId: string
-): OutboundMessage {
-  return new OutboundMessage(
-    discordClient,
-    getChannel(discordClient, channelId),
-    messageId
-  );
-}
-
 export async function sendMessageTemplate(
   discordClient: DiscordIOClient,
-  channelId: string,
+  channel: TextChannel | UsersDirectMessagesChannel,
   template: MessageTemplate
 ): Promise<SendMessageResult> {
   const finalMessageId = await sendMessageTemplateInternal(
     discordClient,
-    channelId,
+    channel.id,
     template
   );
 
   return {
-    finalMessage: getKnownOutboundMessage(
-      discordClient,
-      finalMessageId,
-      channelId
-    ),
+    finalMessage: new OutboundMessage(discordClient, channel, finalMessageId),
   };
 }
 

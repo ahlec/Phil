@@ -2,11 +2,9 @@ import { Client as DiscordIOClient } from 'discord.io';
 
 import MessageTemplate from './MessageTemplate';
 import OutboundMessage from './OutboundMessage';
+import { SendMessageResult } from './types';
 
-import {
-  SendMessageResult,
-  sendMessageTemplate,
-} from '@phil/utils/discord-migration';
+import { sendMessageTemplate } from './internals/sendMessageTemplate';
 
 /**
  * A base class for all channels (public and private).
@@ -37,7 +35,7 @@ abstract class BaseChannel {
   }
 
   public sendMessage(template: MessageTemplate): Promise<SendMessageResult> {
-    return sendMessageTemplate(this.internalClient, this.id, template);
+    return sendMessageTemplate(this.internalClient, this, template);
   }
 }
 

@@ -1,12 +1,36 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
 import { Client as DiscordIOClient } from 'discord.io';
 
+import OutboundMessage from '@phil/discord/OutboundMessage';
+import Server from '@phil/discord/Server';
+import TextChannel from '@phil/discord/TextChannel';
+import UsersDirectMessagesChannel from '@phil/discord/UsersDirectMessagesChannel';
+
 import Phil from '@phil/phil';
 import ReactablePost from './post';
 import { ReactableType, ReactableHandler } from './types';
 import PromptQueueReactableHandler from './prompt-queue/handler';
 import SuggestSessionReactableHandler from './suggest-session/handler';
-import { getKnownOutboundMessage } from '@phil/utils/discord-migration';
+
+export function getChannel(
+  discordClient: DiscordIOClient,
+  channelId: string
+): TextChannel | UsersDirectMessagesChannel {
+  const rawChannel = discordClient.channels[channelId];
+  if (!rawChannel) {
+    return new UsersDirectMessagesChannel(discordClient, channelId);
+  }
+
+  const rawServer = discordClient.servers[rawChannel.guild_id];
+  if (!rawServer) {
+    throw new Error(
+      `Could not find server '${rawChannel.guild_id}' supposedly containing '${channelId}'.`
+    );
+  }
+
+  const server = new Server(discordClient, rawServer, rawChannel.guild_id);
+  return new TextChannel(discordClient, channelId, rawChannel, server);
+}
 
 class ReactableProcessor {
   private readonly handlers: {
@@ -28,10 +52,10 @@ class ReactableProcessor {
       return;
     }
 
-    const message = getKnownOutboundMessage(
+    const message = new OutboundMessage(
       discordIOClient,
-      event.message_id,
-      event.channel_id
+      getChannel(discordIOClient, event.channel_id),
+      event.message_id
     );
 
     const post = await ReactablePost.getFromMessage(this.phil.db, message);

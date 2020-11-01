@@ -1,10 +1,10 @@
 import { Client as DiscordIOClient } from 'discord.io';
 
-import {
-  SendMessageResult,
-  sendMessageTemplate,
-} from '@phil/utils/discord-migration';
 import MessageTemplate from './MessageTemplate';
+import UsersDirectMessagesChannel from './UsersDirectMessagesChannel';
+import { SendMessageResult } from './types';
+
+import { sendMessageTemplate } from './internals/sendMessageTemplate';
 
 interface InternalUser {
   bot: boolean;
@@ -38,7 +38,11 @@ class User {
   public sendDirectMessage(
     template: MessageTemplate
   ): Promise<SendMessageResult> {
-    return sendMessageTemplate(this.internalClient, this.id, template);
+    return sendMessageTemplate(
+      this.internalClient,
+      new UsersDirectMessagesChannel(this.internalClient, this.id),
+      template
+    );
   }
 }
 

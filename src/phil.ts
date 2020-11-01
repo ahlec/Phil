@@ -21,7 +21,6 @@ import ServerDirectory from './server-directory';
 import CommandInvocation from './CommandInvocation';
 import ServerBucketsCollection from './ServerBucketsCollection';
 import Server from './discord/Server';
-import { sendMessageTemplate } from './utils/discord-migration';
 import Member from './discord/Member';
 import ReceivedServerMessage from './discord/ReceivedServerMessage';
 import User from './discord/User';
@@ -110,15 +109,17 @@ export default class Phil extends Logger {
     this.chronoManager.start();
 
     if (this.shouldSendDisconnectedMessage) {
-      await sendMessageTemplate(
-        this.internalDiscordClient,
-        GlobalConfig.botManagerUserId,
-        {
+      const botManager = this.discordClient.getUser(
+        GlobalConfig.botManagerUserId
+      );
+      if (botManager) {
+        await botManager.sendDirectMessage({
           type: 'error',
           error:
             "I experienced an unexpected shutdown. The logs should be in Heroku. I've recovered and connected again.",
-        }
-      );
+        });
+      }
+
       this.shouldSendDisconnectedMessage = false;
     }
   };
@@ -385,11 +386,7 @@ export default class Phil extends Logger {
         return;
       }
 
-      await sendMessageTemplate(
-        this.internalDiscordClient,
-        serverConfig.introductionsChannel.id,
-        greeting.message
-      );
+      await serverConfig.introductionsChannel.sendMessage(greeting.message);
     } catch (err) {
       this.error(
         `Uncaught exception when trying to greet new member ${rawMember.id} in server ${server.id}.`

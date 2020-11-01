@@ -2,6 +2,7 @@ import Member from '@phil/discord/Member';
 import MessageTemplate from '@phil/discord/MessageTemplate';
 import ReceivedServerMessage from '@phil/discord/ReceivedServerMessage';
 import Server from '@phil/discord/Server';
+import { SendMessageResult } from '@phil/discord/types';
 
 import Bucket from './buckets';
 import ServerConfig from './server-config';
@@ -9,7 +10,6 @@ import ServerBucketsCollection from './ServerBucketsCollection';
 import ServerRequestablesCollection from './ServerRequestablesCollection';
 import ServerSubmissionsCollection from './ServerSubmissionsCollection';
 import { getRandomArrayEntry } from './utils';
-import { SendMessageResult } from './utils/discord-migration';
 
 interface InvocationContext {
   buckets: ServerBucketsCollection;
