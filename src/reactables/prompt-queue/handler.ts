@@ -1,6 +1,5 @@
 import { OfficialDiscordReactionEvent } from 'official-discord';
 import Phil from '@phil/phil';
-import { deleteMessage } from '@phil/promises/discord';
 import ReactablePost from '@phil/reactables/post';
 import { ReactableHandler, ReactableType } from '@phil/reactables/types';
 import { Data, Emoji } from './shared';
@@ -78,7 +77,7 @@ class PromptQueueReactableHandler
     );
 
     await post.remove(phil.db);
-    await deleteMessage(phil.bot, post.message.channel.id, post.message.id);
+    await post.message.delete();
 
     const { finalMessage } = await sendMessageTemplate(
       phil.bot,

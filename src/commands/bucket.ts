@@ -1,9 +1,10 @@
+import { EmbedField } from '@phil/discord/MessageTemplate';
+
 import Bucket from '@phil/buckets';
 import CommandInvocation from '@phil/CommandInvocation';
 import Features from '@phil/features/all-features';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
-import { EmbedField } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
 
 type FieldTransformFunc<T> = (bucket: Bucket, value: T) => string;

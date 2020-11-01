@@ -1,7 +1,7 @@
+import { EmbedField } from '@phil/discord/MessageTemplate';
 import Server from '@phil/discord/Server';
 
 import CommandInvocation from '@phil/CommandInvocation';
-import { EmbedField } from '@phil/promises/discord';
 import {
   ConfigCommandBase,
   ConfigProperty,

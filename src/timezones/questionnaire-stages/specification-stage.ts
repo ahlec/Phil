@@ -5,7 +5,7 @@ import { setTimezone } from './@utils';
 import Database from '@phil/database';
 import ReceivedDirectMessage from '@phil/discord/ReceivedDirectMessage';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
+import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 export default class SpecificationStage implements Stage {
   public readonly stageNumber = 3;
@@ -29,7 +29,10 @@ export default class SpecificationStage implements Stage {
         timezoneData,
         "Sorry, that wasn't actually a number. Can you try again?"
       );
-      await sendMessage(phil.bot, message.sender.id, reply);
+      await sendMessageTemplate(phil.bot, message.sender.id, {
+        text: reply,
+        type: 'plain',
+      });
       return;
     }
 
@@ -39,7 +42,10 @@ export default class SpecificationStage implements Stage {
         timezoneData,
         "That wasn't actually a number with a timezone I can understand. Can we try again?"
       );
-      await sendMessage(phil.bot, message.sender.id, reply);
+      await sendMessageTemplate(phil.bot, message.sender.id, {
+        text: reply,
+        type: 'plain',
+      });
       return;
     }
 

@@ -1,10 +1,7 @@
 import CommandInvocation from '@phil/CommandInvocation';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
-import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 import Command, { LoggerDefinition } from './@types';
-import Database from '@phil/database';
 
 class NewsCommand extends Command {
   public constructor(parentDefinition: LoggerDefinition) {
@@ -17,17 +14,12 @@ class NewsCommand extends Command {
     });
   }
 
-  public async invoke(
-    invocation: CommandInvocation,
-    database: Database,
-    legacyPhil: Phil
-  ): Promise<void> {
+  public async invoke(invocation: CommandInvocation): Promise<void> {
     const echoedMessage = this.getEchoedStatementFromInvocation(invocation);
-    await sendMessage(
-      legacyPhil.bot,
-      invocation.context.serverConfig.newsChannel.id,
-      echoedMessage
-    );
+    await invocation.respond({
+      text: echoedMessage,
+      type: 'plain',
+    });
   }
 
   private getEchoedStatementFromInvocation(

@@ -10,7 +10,7 @@ class ReceivedDirectMessage extends ReceivedMessage {
     body: string,
     public readonly sender: User
   ) {
-    super(internalClient, id, body, sender.id);
+    super(internalClient, id, sender.id, body);
   }
 }
 

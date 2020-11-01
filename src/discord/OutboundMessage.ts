@@ -1,5 +1,6 @@
 import { Client as DiscordIOClient } from 'discord.io';
 
+import Message from './Message';
 import TextChannel from './TextChannel';
 import UsersDirectMessagesChannel from './UsersDirectMessagesChannel';
 
@@ -37,12 +38,14 @@ function isRateLimitError(
  * sent by any other user or any other bot). This is not limited to messages sent during
  * the lifetime of this process, however.
  */
-class OutboundMessage {
+class OutboundMessage extends Message {
   public constructor(
-    private readonly internalClient: DiscordIOClient,
+    internalClient: DiscordIOClient,
     public readonly channel: TextChannel | UsersDirectMessagesChannel,
-    public readonly id: string
-  ) {}
+    id: string
+  ) {
+    super(internalClient, id, channel.id);
+  }
 
   public async addReaction(reaction: string): Promise<void> {
     try {

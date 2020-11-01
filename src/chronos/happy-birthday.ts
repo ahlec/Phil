@@ -6,12 +6,12 @@ import Server from '@phil/discord/Server';
 import Database from '@phil/database';
 import Features from '@phil/features/all-features';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 import { GROUP_PRONOUNS } from '@phil/pronouns/definitions';
 import { Pronoun } from '@phil/pronouns/pronoun';
 import ServerConfig from '@phil/server-config';
 import { isNotNull } from '@phil/utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
+import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 interface HappyBirthdayInfo {
   readonly names: ReadonlyArray<string>;
@@ -40,7 +40,10 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
       return;
     }
 
-    await sendMessage(phil.bot, serverConfig.newsChannel.id, birthdayWish);
+    await sendMessageTemplate(phil.bot, serverConfig.newsChannel.id, {
+      text: birthdayWish,
+      type: 'plain',
+    });
   }
 
   private async getBirthdayMembers(

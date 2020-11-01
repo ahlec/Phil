@@ -3,10 +3,10 @@ import Server from '@phil/discord/Server';
 import Bucket from '@phil/buckets';
 import Features from '@phil/features/all-features';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 import ServerBucketsCollection from '@phil/ServerBucketsCollection';
+import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 const PROMPT_QUEUE_EMPTY_ALERT_THRESHOLD = 5;
 
@@ -49,16 +49,21 @@ export default class AlertLowBucketQueueChrono
         continue;
       }
 
-      this.alertQueueDwindling(phil, serverConfig, bucket, queue.totalLength);
+      await this.alertQueueDwindling(
+        phil,
+        serverConfig,
+        bucket,
+        queue.totalLength
+      );
     }
   }
 
-  private alertQueueDwindling(
+  private async alertQueueDwindling(
     phil: Phil,
     serverConfig: ServerConfig,
     bucket: Bucket,
     queueLength: number
-  ): void {
+  ): Promise<void> {
     const are = queueLength === 1 ? 'is' : 'are';
     const promptNoun = queueLength === 1 ? 'prompt' : 'prompts';
     const message = `:warning: The queue for **${bucket.displayName}** (\`${
@@ -66,7 +71,10 @@ export default class AlertLowBucketQueueChrono
     }\`) is growing short. There ${are}  **${
       queueLength > 0 ? queueLength : 'no'
     }** more ${promptNoun} in the queue.`;
-    sendMessage(phil.bot, serverConfig.botControlChannel.id, message);
+    await sendMessageTemplate(phil.bot, serverConfig.botControlChannel.id, {
+      text: message,
+      type: 'plain',
+    });
 
     bucket.markAlertedEmptying(true);
   }

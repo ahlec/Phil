@@ -1,7 +1,12 @@
 import MessageBuilder from '@phil/message-builder';
-import { EmbedField } from '@phil/promises/discord';
 
 type RecognizedEmbedColor = 'purple' | 'powder-blue' | 'red' | 'green';
+
+export interface EmbedField {
+  name: string;
+  value?: string;
+  inline?: boolean;
+}
 
 type MessageTemplate =
   | {

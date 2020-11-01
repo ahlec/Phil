@@ -3,6 +3,7 @@ import {
   sendMessageTemplate,
 } from '@phil/utils/discord-migration';
 import { Client as DiscordIOClient } from 'discord.io';
+import Message from './Message';
 import MessageTemplate from './MessageTemplate';
 
 /**
@@ -10,13 +11,15 @@ import MessageTemplate from './MessageTemplate';
  * bot. This could be a message sent to a server that the bot is in, or a
  * direct message received by the bot.
  */
-abstract class ReceivedMessage {
+abstract class ReceivedMessage extends Message {
   public constructor(
-    protected readonly internalClient: DiscordIOClient,
-    public readonly id: string,
-    public readonly body: string,
-    private readonly channelId: string
-  ) {}
+    internalClient: DiscordIOClient,
+    id: string,
+    channelId: string,
+    public readonly body: string
+  ) {
+    super(internalClient, id, channelId);
+  }
 
   public respond(response: MessageTemplate): Promise<SendMessageResult> {
     return sendMessageTemplate(this.internalClient, this.channelId, response);

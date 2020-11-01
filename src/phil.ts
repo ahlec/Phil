@@ -154,7 +154,6 @@ export default class Phil extends Logger {
         serverConfig
       );
       const invocation = CommandInvocation.parseFromMessage(
-        this.bot,
         {
           buckets,
           channelId: message.channel.id,

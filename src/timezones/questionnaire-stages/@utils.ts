@@ -2,7 +2,7 @@ import { ConfirmationStage } from './@all-stages';
 import Stage from './@stage';
 
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
+import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 export async function sendStageMessage(
   phil: Phil,
@@ -10,7 +10,10 @@ export async function sendStageMessage(
   stage: Stage
 ): Promise<void> {
   const message = await stage.getMessage(phil.db, userId);
-  await sendMessage(phil.bot, userId, message);
+  await sendMessageTemplate(phil.bot, userId, {
+    text: message,
+    type: 'plain',
+  });
 }
 
 export async function setStage(

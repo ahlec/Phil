@@ -4,9 +4,9 @@ import { Moment } from 'moment';
 import Features from '@phil/features/all-features';
 import GlobalConfig from '@phil/GlobalConfig';
 import Phil from '@phil/phil';
-import { sendMessage } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
+import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 const HANDLE = 'booty-day';
 export default class BootyDayChrono extends Logger implements Chrono {
@@ -33,11 +33,11 @@ export default class BootyDayChrono extends Logger implements Chrono {
       return;
     }
 
-    await sendMessage(
-      phil.bot,
-      serverConfig.newsChannel.id,
-      process.env.CUSTOM_EMOJI_PEEK +
-        " It's booty day! Post your Hijack booties!"
-    );
+    await sendMessageTemplate(phil.bot, serverConfig.newsChannel.id, {
+      text:
+        process.env.CUSTOM_EMOJI_PEEK +
+        " It's booty day! Post your Hijack booties!",
+      type: 'plain',
+    });
   }
 }

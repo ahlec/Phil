@@ -6,13 +6,12 @@ import BotManagerCommandListener from './direct-message-processors/BotManagerCom
 import SuggestSessionListener from './direct-message-processors/suggest-session-listener';
 import TimezoneQuestionnaireProcessor from './direct-message-processors/timezone-questionnaire';
 
-import EmbedColor from './embed-color';
 import GlobalConfig from './GlobalConfig';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
 import Phil from './phil';
-import { sendEmbedMessage } from './promises/discord';
 import { inspect } from 'util';
+import { sendMessageTemplate } from './utils/discord-migration';
 
 const LOGGER_DEFINITION = new LoggerDefinition('Direct Message Dispatcher');
 
@@ -45,13 +44,13 @@ export default class DirectMessageDispatcher extends Logger {
     processor: DirectMessageProcessor
   ): Promise<void> {
     this.error(err);
-    await sendEmbedMessage(this.phil.bot, GlobalConfig.botManagerUserId, {
-      color: EmbedColor.Error,
+    await sendMessageTemplate(this.phil.bot, GlobalConfig.botManagerUserId, {
+      color: 'red',
       description: inspect(err),
-      footer: {
-        text: 'processor: ' + processor.handle,
-      },
+      fields: null,
+      footer: 'processor: ' + processor.handle,
       title: ':no_entry: Processor Error',
+      type: 'embed',
     });
   }
 }

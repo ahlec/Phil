@@ -12,7 +12,7 @@ class ReceivedServerMessage extends ReceivedMessage {
     public readonly sender: Member,
     public readonly channel: TextChannel
   ) {
-    super(internalClient, id, body, channel.id);
+    super(internalClient, id, channel.id, body);
   }
 }
 

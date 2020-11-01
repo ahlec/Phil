@@ -1,7 +1,8 @@
+import { EmbedField } from '@phil/discord/MessageTemplate';
+
 import CommandInvocation from '@phil/CommandInvocation';
 import { HelpGroup } from '@phil/help-groups';
 import PermissionLevel from '@phil/permission-level';
-import { EmbedField } from '@phil/promises/discord';
 import { TypeDefinition } from '@phil/type-definition/@type-definition';
 import { getRandomArrayEntry } from '@phil/utils';
 import Command, { LoggerDefinition } from '@phil/commands/@types';

@@ -2,17 +2,11 @@ import Member from '@phil/discord/Member';
 import Role from '@phil/discord/Role';
 import Server from '@phil/discord/Server';
 
-import EmbedColor from '@phil/embed-color';
 import Phil from '@phil/phil';
-import { deleteRole, sendEmbedMessage } from '@phil/promises/discord';
 import ServerConfig from '@phil/server-config';
 import { isHexColorRole } from '@phil/utils';
+import { sendMessageTemplate } from '@phil/utils/discord-migration';
 import Chrono, { Logger, LoggerDefinition } from './@types';
-
-interface RoleInfo {
-  id: string;
-  name: string;
-}
 
 const HANDLE = 'remove-unused-colour-roles';
 export default class RemoveUnusedColorRolesChrono
@@ -31,40 +25,41 @@ export default class RemoveUnusedColorRolesChrono
     serverConfig: ServerConfig
   ): Promise<void> {
     const unusedColorRoles = this.getAllUnusedColorRoleIds(server);
-    if (unusedColorRoles.length === 0) {
+    if (!unusedColorRoles.length) {
       return;
     }
 
-    let message =
-      'The following colour role(s) have been removed automatically because I could not find any users on your server who were still using them:\n';
-    for (const role of unusedColorRoles) {
-      await deleteRole(phil.bot, server.id, role.id);
-      message += '\n\t' + role.name + ' (ID: ' + role.id + ')';
-    }
+    // Delete all of the roles
+    await Promise.all(unusedColorRoles.map((role) => role.delete()));
 
-    sendEmbedMessage(phil.bot, serverConfig.botControlChannel.id, {
-      color: EmbedColor.Info,
+    const message = `The following colour role(s) have been removed automatically because I could not find any users on your server who were still using them:\n${unusedColorRoles
+      .map((role): string => `${role.name} (ID: ${role.id})`)
+      .join('\n\t')}`;
+
+    await sendMessageTemplate(phil.bot, serverConfig.botControlChannel.id, {
+      color: 'powder-blue',
       description: message,
+      fields: null,
+      footer: null,
       title: ':scroll: Unused Colour Roles Removed',
+      type: 'embed',
     });
   }
 
-  private getAllUnusedColorRoleIds(server: Server): RoleInfo[] {
+  private getAllUnusedColorRoleIds(server: Server): readonly Role[] {
     // Collect all of the defined color roles without checking whether they're
     // in use or not.
-    const colorRoleIds = new Set<string>();
-    const colorRoleNames = new Map<string, string>();
+    const allColorRoles = new Map<string, Role>();
     server.roles.forEach((role: Role): void => {
       if (!isHexColorRole(role)) {
         return;
       }
 
-      colorRoleIds.add(role.id);
-      colorRoleNames.set(role.id, role.name);
+      allColorRoles.set(role.id, role);
     });
 
     // If we have no color roles, then early out for performance reasons.
-    if (!colorRoleIds.size) {
+    if (!allColorRoles.size) {
       return [];
     }
 
@@ -72,22 +67,17 @@ export default class RemoveUnusedColorRolesChrono
     // that are in use.
     server.members.forEach((member: Member): void => {
       member.roles.forEach((role: Role): void => {
-        colorRoleIds.delete(role.id);
+        allColorRoles.delete(role.id);
       });
     });
 
     // If we have no color roles remaining, then it means that all color roles
     // are currently in use.
-    if (!colorRoleIds.size) {
+    if (!allColorRoles.size) {
       return [];
     }
 
     // Return the data we need for deleting and reporting to the channel.
-    return Array.from(colorRoleIds).map(
-      (roleId: string): RoleInfo => ({
-        id: roleId,
-        name: colorRoleNames.get(roleId) || roleId,
-      })
-    );
+    return Array.from(allColorRoles.values());
   }
 }

@@ -1,12 +1,11 @@
 import Server from '@phil/discord/Server';
 
-import EmbedColor from '@phil/embed-color';
 import Features from '@phil/features/all-features';
 import Phil from '@phil/phil';
-import { sendEmbedMessage } from '@phil/promises/discord';
 import UnconfirmedSubmissionTally from '@phil/prompts/unconfirmed-submission-tally';
 import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry } from '@phil/utils';
+import { sendMessageTemplate } from '@phil/utils/discord-migration';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 const HANDLE = 'alert-admins-unconfirmed-submissions';
@@ -37,10 +36,13 @@ export default class AlertAdminsUnconfirmedSubmissionsChrono
       return;
     }
 
-    await sendEmbedMessage(phil.bot, serverConfig.botControlChannel.id, {
-      color: EmbedColor.Info,
+    await sendMessageTemplate(phil.bot, serverConfig.botControlChannel.id, {
+      color: 'powder-blue',
       description: reply,
+      fields: null,
+      footer: null,
       title: ':ballot_box: Unconfirmed Submissions',
+      type: 'embed',
     });
   }
 

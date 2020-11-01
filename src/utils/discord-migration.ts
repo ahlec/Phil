@@ -1,19 +1,14 @@
 import { Client as DiscordIOClient } from 'discord.io';
 
 import Member from '@phil/discord/Member';
-import MessageTemplate from '@phil/discord/MessageTemplate';
+import MessageTemplate, { EmbedField } from '@phil/discord/MessageTemplate';
 import OutboundMessage from '@phil/discord/OutboundMessage';
 import Server from '@phil/discord/Server';
 import TextChannel from '@phil/discord/TextChannel';
 import User from '@phil/discord/User';
 import UsersDirectMessagesChannel from '@phil/discord/UsersDirectMessagesChannel';
 
-import {
-  sendEmbedMessage,
-  sendMessageBuilder,
-  sendMessage,
-} from '@phil/promises/discord';
-import EmbedColor from '@phil/embed-color';
+import EmbedColor, { getColorValue } from '@phil/embed-color';
 import MessageBuilder from '@phil/message-builder';
 
 export interface SendMessageResult {
@@ -100,6 +95,97 @@ export async function sendMessageTemplate(
       channelId
     ),
   };
+}
+
+function sendMessage(
+  bot: DiscordIOClient,
+  channelId: string,
+  message: string
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    bot.sendMessage(
+      {
+        message,
+        to: channelId,
+      },
+      (err, response) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(response.id);
+      }
+    );
+  });
+}
+
+async function sendMessageBuilder(
+  bot: DiscordIOClient,
+  channelId: string,
+  messageBuilder: MessageBuilder
+): Promise<string[]> {
+  const messageIds = [];
+  for (const message of messageBuilder.messages) {
+    const messageId = await this.sendMessage(bot, channelId, message);
+    messageIds.push(messageId);
+  }
+
+  return messageIds;
+}
+
+interface EmbedData {
+  author?: {
+    icon_url?: string;
+    name: string;
+    url?: string;
+  };
+  color: EmbedColor;
+  description?: string;
+  fields?: readonly EmbedField[];
+  thumbnail?: {
+    url: string;
+  };
+  title: string;
+  timestamp?: Date;
+  url?: string;
+  footer?: {
+    icon_url?: string;
+    text: string;
+  };
+}
+
+function sendEmbedMessage(
+  bot: DiscordIOClient,
+  channelId: string,
+  embedData: EmbedData
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    bot.sendMessage(
+      {
+        embed: {
+          author: embedData.author,
+          color: getColorValue(embedData.color),
+          description: embedData.description,
+          fields: embedData.fields as [EmbedField],
+          footer: embedData.footer,
+          thumbnail: embedData.thumbnail,
+          timestamp: embedData.timestamp,
+          title: embedData.title,
+          url: embedData.url,
+        },
+        to: channelId,
+      },
+      (err, response) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(response.id);
+      }
+    );
+  });
 }
 
 function sendErrorMessage(

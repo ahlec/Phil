@@ -1,5 +1,3 @@
-import { Client as DiscordIOClient } from 'discord.io';
-
 import Member from '@phil/discord/Member';
 import MessageTemplate from '@phil/discord/MessageTemplate';
 import ReceivedServerMessage from '@phil/discord/ReceivedServerMessage';
@@ -7,7 +5,6 @@ import Server from '@phil/discord/Server';
 
 import Bucket from './buckets';
 import ServerConfig from './server-config';
-import { deleteMessage } from './promises/discord';
 import ServerBucketsCollection from './ServerBucketsCollection';
 import ServerRequestablesCollection from './ServerRequestablesCollection';
 import ServerSubmissionsCollection from './ServerSubmissionsCollection';
@@ -80,7 +77,6 @@ function getOnlyBucketOnServer(
 
 class CommandInvocation {
   public static parseFromMessage(
-    client: DiscordIOClient,
     context: InvocationContext,
     message: ReceivedServerMessage
   ): CommandInvocation | null {
@@ -103,17 +99,10 @@ class CommandInvocation {
     const commandName = prompt.substr(
       context.serverConfig.commandPrefix.length
     );
-    return new CommandInvocation(
-      client,
-      commandName,
-      words.slice(1),
-      message,
-      context
-    );
+    return new CommandInvocation(commandName, words.slice(1), message, context);
   }
 
   private constructor(
-    private readonly discordClient: DiscordIOClient,
     public readonly commandName: string,
     public readonly commandArgs: ReadonlyArray<string>,
     private readonly message: ReceivedServerMessage,
@@ -180,11 +169,7 @@ class CommandInvocation {
    * this will delete the user-sent message that triggered this command.
    */
   public deleteInvocationMessage(): Promise<void> {
-    return deleteMessage(
-      this.discordClient,
-      this.message.channel.id,
-      this.message.id
-    );
+    return this.message.delete();
   }
 }
 

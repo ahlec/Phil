@@ -42,6 +42,25 @@ class Role {
       );
     });
   }
+
+  public delete(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.internalClient.deleteRole(
+        {
+          roleID: this.id,
+          serverID: this.serverId,
+        },
+        (err) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          resolve();
+        }
+      );
+    });
+  }
 }
 
 export default Role;
