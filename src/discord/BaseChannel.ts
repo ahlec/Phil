@@ -1,6 +1,12 @@
 import { Client as DiscordIOClient } from 'discord.io';
 
+import MessageTemplate from './MessageTemplate';
 import OutboundMessage from './OutboundMessage';
+
+import {
+  SendMessageResult,
+  sendMessageTemplate,
+} from '@phil/utils/discord-migration';
 
 /**
  * A base class for all channels (public and private).
@@ -28,6 +34,10 @@ abstract class BaseChannel {
     // TODO: Actually validate that the message was sent by the bot.
 
     return new OutboundMessage(this.internalClient, this, messageId);
+  }
+
+  public sendMessage(template: MessageTemplate): Promise<SendMessageResult> {
+    return sendMessageTemplate(this.internalClient, this.id, template);
   }
 }
 

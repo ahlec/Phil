@@ -6,7 +6,6 @@ import GlobalConfig from '@phil/GlobalConfig';
 import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
-import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 const HANDLE = 'booty-day';
 export default class BootyDayChrono extends Logger implements Chrono {
@@ -33,7 +32,7 @@ export default class BootyDayChrono extends Logger implements Chrono {
       return;
     }
 
-    await sendMessageTemplate(phil.bot, serverConfig.newsChannel.id, {
+    await serverConfig.newsChannel.sendMessage({
       text:
         process.env.CUSTOM_EMOJI_PEEK +
         " It's booty day! Post your Hijack booties!",

@@ -2,9 +2,7 @@ import { BucketFrequency } from '@phil/buckets';
 import Database from '@phil/database';
 import { LoggerDefinition } from './@types';
 import ConfirmRejectCommandBase from './bases/confirm-reject-base';
-import Phil from '@phil/phil';
 import CommandInvocation from '@phil/CommandInvocation';
-import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 const successMessageEnd =
   ' confirmed. You may continue using `{commandPrefix}confirm` or start over by using `{commandPrefix}unconfirmed`.';
@@ -23,8 +21,7 @@ class ConfirmCommand extends ConfirmRejectCommandBase {
   protected async performActionOnSubmission(
     invocation: CommandInvocation,
     database: Database,
-    submissionId: number,
-    legacyPhil: Phil
+    submissionId: number
   ): Promise<boolean> {
     const numApproved = await database.execute(
       `UPDATE
@@ -55,12 +52,12 @@ class ConfirmCommand extends ConfirmRejectCommandBase {
       return true;
     }
 
+    if (!submission.bucket.channel) {
+      return true;
+    }
+
     await prompt.publish();
-    await sendMessageTemplate(
-      legacyPhil.bot,
-      submission.bucket.channelId,
-      prompt.messageTemplate
-    );
+    await submission.bucket.channel.sendMessage(prompt.messageTemplate);
 
     return true;
   }

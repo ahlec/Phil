@@ -130,6 +130,8 @@ class ServerBucketsCollection {
   }
 
   private parseBucket(dbRow: DbRow): Bucket {
+    const channel = this.server.getTextChannel(dbRow.channel_id);
+
     return new Bucket(
       this.database,
       new ServerSubmissionsCollection(
@@ -141,7 +143,7 @@ class ServerBucketsCollection {
       this.serverConfig,
       parseInt(dbRow.bucket_id, 10),
       this.server,
-      dbRow.channel_id,
+      channel,
       {
         alertWhenLow: parseInt(dbRow.alert_when_low, 10) === 1,
         alertedBucketEmptying:

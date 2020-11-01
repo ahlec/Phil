@@ -2,6 +2,7 @@ import * as moment from 'moment';
 
 import Member from '@phil/discord/Member';
 import Server from '@phil/discord/Server';
+import TextChannel from '@phil/discord/TextChannel';
 
 import Database from './database';
 import Prompt from './prompts/prompt';
@@ -48,7 +49,14 @@ class Bucket {
     private readonly serverConfig: ServerConfig,
     public readonly id: number,
     public readonly server: Server,
-    public readonly channelId: string,
+    /**
+     * The server channel this bucket is configured to post in. While this is
+     * usually going to be defined, it's possible for this to be null in cases
+     * where the channel was deleted. In these situations, the bucket is
+     * considered invalid until an admin steps in and rebinds this bucket to a
+     * new, existing channel.
+     */
+    public readonly channel: TextChannel | null,
     contents: {
       isValid: boolean;
       handle: string;

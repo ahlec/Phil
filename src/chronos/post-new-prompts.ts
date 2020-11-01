@@ -9,7 +9,6 @@ import Prompt from '@phil/prompts/prompt';
 import ServerConfig from '@phil/server-config';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 import ServerBucketsCollection from '@phil/ServerBucketsCollection';
-import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 const HANDLE = 'post-new-prompts';
 
@@ -40,15 +39,11 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     );
     const serverBuckets = await bucketCollection.getAll();
 
-    const processes = serverBuckets.map((bucket) => {
-      if (bucket.isPaused || !bucket.isValid) {
-        return Promise.resolve();
-      }
-
-      return this.processBucket(phil, server, now, bucket);
-    });
-
-    await Promise.all(processes);
+    await Promise.all(
+      serverBuckets.map((bucket) =>
+        this.processBucket(phil, server, now, bucket)
+      )
+    );
   }
 
   private async processBucket(
@@ -57,6 +52,10 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
     now: Moment,
     bucket: Bucket
   ): Promise<void> {
+    if (bucket.isPaused || !bucket.isValid || !bucket.channel) {
+      return;
+    }
+
     const currentPrompt = await bucket.getCurrentPrompt();
     if (!this.isCurrentPromptOutdated(currentPrompt, now, bucket)) {
       this.write(
@@ -79,11 +78,7 @@ export default class PostNewPromptsChrono extends Logger implements Chrono {
 
     try {
       await nextPrompt.prompt.publish();
-      await sendMessageTemplate(
-        phil.bot,
-        bucket.channelId,
-        nextPrompt.prompt.messageTemplate
-      );
+      await bucket.channel.sendMessage(nextPrompt.prompt.messageTemplate);
 
       if (!nextPrompt.isReusedPrompt) {
         await bucket.markAlertedEmptying(false);

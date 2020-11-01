@@ -61,7 +61,7 @@ export default class SuggestSessionListener implements DirectMessageProcessor {
       return;
     }
 
-    await token.currentSession.submit(phil, validationResults.validatedMessage);
+    await token.currentSession.submit(validationResults.validatedMessage);
 
     const NOWRAP = '';
     const numSubmissions = token.currentSession.getNumberSubmissions();

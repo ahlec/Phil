@@ -23,7 +23,7 @@ class TimezoneCommand extends Command {
     database: Database,
     legacyPhil: Phil
   ): Promise<void> {
-    await startQuestionnaire(legacyPhil, invocation.member.user.id, true);
+    await startQuestionnaire(invocation.member.user, legacyPhil, true);
   }
 }
 

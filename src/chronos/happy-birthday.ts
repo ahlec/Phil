@@ -11,7 +11,6 @@ import { Pronoun } from '@phil/pronouns/pronoun';
 import ServerConfig from '@phil/server-config';
 import { isNotNull } from '@phil/utils';
 import Chrono, { Logger, LoggerDefinition } from './@types';
-import { sendMessageTemplate } from '@phil/utils/discord-migration';
 
 interface HappyBirthdayInfo {
   readonly names: ReadonlyArray<string>;
@@ -40,7 +39,7 @@ export default class HappyBirthdayChrono extends Logger implements Chrono {
       return;
     }
 
-    await sendMessageTemplate(phil.bot, serverConfig.newsChannel.id, {
+    await serverConfig.newsChannel.sendMessage({
       text: birthdayWish,
       type: 'plain',
     });

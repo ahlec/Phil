@@ -5,7 +5,6 @@ import Phil from '@phil/phil';
 import UnconfirmedSubmissionTally from '@phil/prompts/unconfirmed-submission-tally';
 import ServerConfig from '@phil/server-config';
 import { getRandomArrayEntry } from '@phil/utils';
-import { sendMessageTemplate } from '@phil/utils/discord-migration';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 const HANDLE = 'alert-admins-unconfirmed-submissions';
@@ -36,7 +35,7 @@ export default class AlertAdminsUnconfirmedSubmissionsChrono
       return;
     }
 
-    await sendMessageTemplate(phil.bot, serverConfig.botControlChannel.id, {
+    await serverConfig.botControlChannel.sendMessage({
       color: 'powder-blue',
       description: reply,
       fields: null,

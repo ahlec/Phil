@@ -22,7 +22,7 @@ export default class ConfirmationStage implements IStage {
     const content = message.body.toLowerCase().trim();
 
     if (content === 'yes') {
-      await setStage(phil, message.sender.id, FinishedStage);
+      await setStage(phil.db, message.sender, FinishedStage);
       return;
     }
 
@@ -37,7 +37,7 @@ export default class ConfirmationStage implements IStage {
         );
       }
 
-      await setStage(phil, message.sender.id, CountryStage);
+      await setStage(phil.db, message.sender, CountryStage);
       return;
     }
 

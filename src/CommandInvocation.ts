@@ -35,8 +35,8 @@ function multipleUnspecifiedBucketsError(
   for (const bucket of serverBuckets) {
     message += '`' + bucket.handle + '` - ' + bucket.displayName + ' (';
 
-    if (bucket.isValid) {
-      message += 'posts to <#' + bucket.channelId + '>';
+    if (bucket.isValid && bucket.channel) {
+      message += 'posts to <#' + bucket.channel.id + '>';
     } else {
       message += 'configuration invalid';
     }

@@ -42,7 +42,7 @@ class SuggestSessionReactableHandler
   ): Promise<void> {
     await post.remove(phil.db);
 
-    await session.end(phil);
+    await session.end();
     await sendMessageTemplate(phil.bot, post.data.userId, {
       color: 'powder-blue',
       description: this.getWrapupMessage(session),
@@ -76,7 +76,7 @@ class SuggestSessionReactableHandler
   ): Promise<void> {
     await post.remove(phil.db);
 
-    await session.makeAnonymous(phil);
+    await session.makeAnonymous();
     const NOWRAP = '';
     const { finalMessage } = await sendMessageTemplate(
       phil.bot,

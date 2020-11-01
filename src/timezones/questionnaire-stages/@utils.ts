@@ -1,29 +1,30 @@
+import User from '@phil/discord/User';
+
 import { ConfirmationStage } from './@all-stages';
 import Stage from './@stage';
 
-import Phil from '@phil/phil';
-import { sendMessageTemplate } from '@phil/utils/discord-migration';
+import Database from '@phil/database';
 
 export async function sendStageMessage(
-  phil: Phil,
-  userId: string,
+  db: Database,
+  user: User,
   stage: Stage
 ): Promise<void> {
-  const message = await stage.getMessage(phil.db, userId);
-  await sendMessageTemplate(phil.bot, userId, {
+  const message = await stage.getMessage(db, user.id);
+  await user.sendDirectMessage({
     text: message,
     type: 'plain',
   });
 }
 
 export async function setStage(
-  phil: Phil,
-  userId: string,
+  db: Database,
+  user: User,
   stage: Stage
 ): Promise<void> {
-  const results = await phil.db.query(
+  const results = await db.query(
     'UPDATE timezones SET stage = $1 WHERE userid = $2',
-    [stage.stageNumber, userId]
+    [stage.stageNumber, user.id]
   );
   if (results.rowCount === 0) {
     throw new Error(
@@ -31,21 +32,21 @@ export async function setStage(
     );
   }
 
-  await sendStageMessage(phil, userId, stage);
+  await sendStageMessage(db, user, stage);
 }
 
 export async function setTimezone(
-  phil: Phil,
-  userId: string,
+  db: Database,
+  user: User,
   timezoneName: string
 ): Promise<void> {
-  const results = await phil.db.query(
+  const results = await db.query(
     'UPDATE timezones SET timezone_name = $1 WHERE userid = $2',
-    [timezoneName, userId]
+    [timezoneName, user.id]
   );
   if (results.rowCount === 0) {
     throw new Error('Could not update the timezone field in the database.');
   }
 
-  setStage(phil, userId, ConfirmationStage);
+  setStage(db, user, ConfirmationStage);
 }

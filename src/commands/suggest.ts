@@ -65,7 +65,7 @@ class SuggestCommand extends Command {
     );
 
     const session = await SubmissionSession.startNewSession(
-      legacyPhil,
+      database,
       invocation.member.user.id,
       bucket
     );

@@ -15,7 +15,7 @@ export async function endOngoingDirectMessageProcesses(
     userId
   );
   if (submissionSession) {
-    await submissionSession.end(phil);
+    await submissionSession.end();
   }
 
   const questionnaireStage = await getStageForUser(phil.db, userId);

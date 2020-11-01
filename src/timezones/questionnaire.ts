@@ -1,3 +1,5 @@
+import User from '@phil/discord/User';
+
 import {
   CountryStage,
   LetsBeginStage,
@@ -41,33 +43,32 @@ export function isCurrentlyDoingQuestionnaire(stage: IStage): boolean {
 }
 
 export async function startQuestionnaire(
+  user: User,
   phil: Phil,
-  userId: string,
   manuallyStartedQuestionnaire: boolean
 ): Promise<boolean> {
   const canStart = await canStartQuestionnaire(
     phil.db,
-    userId,
+    user.id,
     manuallyStartedQuestionnaire
   );
   if (!canStart) {
     return false;
   }
 
-  await endOngoingDirectMessageProcesses(phil, userId);
+  await endOngoingDirectMessageProcesses(phil, user.id);
 
-  await phil.db.query('DELETE FROM timezones WHERE userid = $1', [userId]);
+  await phil.db.query('DELETE FROM timezones WHERE userid = $1', [user.id]);
 
   const initialStage = manuallyStartedQuestionnaire
     ? CountryStage
     : LetsBeginStage;
-  const username = phil.bot.users[userId].username;
   await phil.db.query(
     'INSERT INTO timezones(username, userid, stage) VALUES($1, $2, $3)',
-    [username, userId, initialStage.stageNumber]
+    [user.username, user.id, initialStage.stageNumber]
   );
 
-  await sendStageMessage(phil, userId, initialStage);
+  await sendStageMessage(phil.db, user, initialStage);
   return true;
 }
 

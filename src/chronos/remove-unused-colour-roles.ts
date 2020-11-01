@@ -5,7 +5,6 @@ import Server from '@phil/discord/Server';
 import Phil from '@phil/phil';
 import ServerConfig from '@phil/server-config';
 import { isHexColorRole } from '@phil/utils';
-import { sendMessageTemplate } from '@phil/utils/discord-migration';
 import Chrono, { Logger, LoggerDefinition } from './@types';
 
 const HANDLE = 'remove-unused-colour-roles';
@@ -36,7 +35,7 @@ export default class RemoveUnusedColorRolesChrono
       .map((role): string => `${role.name} (ID: ${role.id})`)
       .join('\n\t')}`;
 
-    await sendMessageTemplate(phil.bot, serverConfig.botControlChannel.id, {
+    await serverConfig.botControlChannel.sendMessage({
       color: 'powder-blue',
       description: message,
       fields: null,

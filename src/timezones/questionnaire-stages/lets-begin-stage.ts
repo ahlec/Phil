@@ -19,7 +19,7 @@ export default class LetsBeginStage implements Stage {
     const content = message.body.toLowerCase().trim();
 
     if (content === 'yes') {
-      await setStage(phil, message.sender.id, CountryStage);
+      await setStage(phil.db, message.sender, CountryStage);
       return;
     }
 
@@ -34,7 +34,7 @@ export default class LetsBeginStage implements Stage {
         );
       }
 
-      await setStage(phil, message.sender.id, DeclinedStage);
+      await setStage(phil.db, message.sender, DeclinedStage);
       return;
     }
 

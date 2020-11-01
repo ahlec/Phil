@@ -33,10 +33,6 @@ function formatBoolean(bucket: Bucket, value: boolean): string {
   return value ? 'Yes' : 'No';
 }
 
-function formatChannel(bucket: Bucket, value: string): string {
-  return '<#' + value + '>';
-}
-
 async function sendBucketToChannel(
   invocation: CommandInvocation,
   bucket: Bucket
@@ -49,7 +45,11 @@ async function sendBucketToChannel(
       createField(bucket, 'Display Name', bucket.displayName),
       createField(bucket, 'Database ID', bucket.id),
       createField(bucket, 'Is Valid', bucket.isValid, formatBoolean),
-      createField(bucket, 'Channel', bucket.channelId, formatChannel),
+      createField(
+        bucket,
+        'Channel',
+        bucket.channel ? `<#${bucket.channel.id}>` : 'None'
+      ),
       createField(
         bucket,
         'Required Member Role',

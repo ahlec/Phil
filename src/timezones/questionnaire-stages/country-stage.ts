@@ -31,8 +31,8 @@ export default class CountryStage implements Stage {
 
     if (timezoneData.timezones.length === 1) {
       await setTimezone(
-        phil,
-        message.sender.id,
+        phil.db,
+        message.sender,
         timezoneData.timezones[0].name
       );
       return;
@@ -46,6 +46,6 @@ export default class CountryStage implements Stage {
       throw new Error('Could not set the country_name field in the database.');
     }
 
-    await setStage(phil, message.sender.id, SpecificationStage);
+    await setStage(phil.db, message.sender, SpecificationStage);
   }
 }

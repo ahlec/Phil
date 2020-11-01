@@ -3,6 +3,7 @@ import * as moment from 'moment';
 import Server from '@phil/discord/Server';
 
 import Bucket from '@phil/buckets';
+import Database from '@phil/database';
 import Phil from '@phil/phil';
 import ServerBucketsCollection from '@phil/ServerBucketsCollection';
 
@@ -79,6 +80,7 @@ export default class SubmissionSession {
     const isAnonymous = parseInt(dbRow.is_anonymous, 10) === 1;
     const numSubmitted = parseInt(dbRow.num_submitted, 10);
     return new SubmissionSession(
+      phil.db,
       userId,
       bucket,
       startedUtc,
@@ -89,11 +91,11 @@ export default class SubmissionSession {
   }
 
   public static async startNewSession(
-    phil: Phil,
+    db: Database,
     userId: string,
     bucket: Bucket
   ): Promise<SubmissionSession> {
-    await phil.db.execute(
+    await db.execute(
       `DELETE FROM
         prompt_submission_sessions
       WHERE
@@ -103,7 +105,7 @@ export default class SubmissionSession {
 
     const now = moment.utc();
     const timeout = moment(now).add(SESSION_LENGTH_IN_MINUTES, 'minutes');
-    const rowsAdded = await phil.db.execute(
+    const rowsAdded = await db.execute(
       `INSERT INTO
           prompt_submission_sessions(
             user_id,
@@ -121,12 +123,13 @@ export default class SubmissionSession {
       throw new Error('Unable to begin session in the database.');
     }
 
-    return new SubmissionSession(userId, bucket, now, timeout, false, 0);
+    return new SubmissionSession(db, userId, bucket, now, timeout, false, 0);
   }
 
   public readonly remainingTime: moment.Duration;
 
   private constructor(
+    private readonly db: Database,
     private readonly userId: string,
     public readonly bucket: Bucket,
     public readonly startedUtc: moment.Moment,
@@ -145,9 +148,9 @@ export default class SubmissionSession {
     return this.isAnonymous;
   }
 
-  public async submit(phil: Phil, prompt: string): Promise<void> {
+  public async submit(prompt: string): Promise<void> {
     const isAnonymousBit = this.isAnonymous ? 1 : 0;
-    const promptsAdded = await phil.db.execute(
+    const promptsAdded = await this.db.execute(
       `INSERT INTO
         submission(
           bucket_id,
@@ -164,7 +167,7 @@ export default class SubmissionSession {
       throw new Error('Unable to commit the prompt to the database.');
     }
 
-    const sessionUpdated = await phil.db.execute(
+    const sessionUpdated = await this.db.execute(
       `UPDATE
         prompt_submission_sessions
       SET
@@ -182,12 +185,12 @@ export default class SubmissionSession {
     this.numSubmitted++;
   }
 
-  public async makeAnonymous(phil: Phil): Promise<void> {
+  public async makeAnonymous(): Promise<void> {
     if (this.isAnonymous) {
       return;
     }
 
-    const updateSessionResult = await phil.db.query(
+    const updateSessionResult = await this.db.query(
       `UPDATE prompt_submission_sessions
              SET is_anonymous = E'1'
              WHERE user_id = $1`,
@@ -200,8 +203,8 @@ export default class SubmissionSession {
     this.isAnonymous = true;
   }
 
-  public async end(phil: Phil): Promise<void> {
-    await phil.db.query(
+  public async end(): Promise<void> {
+    await this.db.query(
       `DELETE FROM prompt_submission_sessions WHERE user_id = $1`,
       [this.userId]
     );

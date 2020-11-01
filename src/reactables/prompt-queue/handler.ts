@@ -3,7 +3,6 @@ import Phil from '@phil/phil';
 import ReactablePost from '@phil/reactables/post';
 import { ReactableHandler, ReactableType } from '@phil/reactables/types';
 import { Data, Emoji } from './shared';
-import { sendMessageTemplate } from '@phil/utils/discord-migration';
 import TextChannel from '@phil/discord/TextChannel';
 import ServerBucketsCollection from '@phil/ServerBucketsCollection';
 
@@ -79,9 +78,7 @@ class PromptQueueReactableHandler
     await post.remove(phil.db);
     await post.message.delete();
 
-    const { finalMessage } = await sendMessageTemplate(
-      phil.bot,
-      post.message.channel.id,
+    const { finalMessage } = await post.message.channel.sendMessage(
       messageTemplate
     );
 

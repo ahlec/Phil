@@ -9,7 +9,6 @@ import LoggerDefinition from './LoggerDefinition';
 import Phil from './phil';
 import ServerConfig from './server-config';
 import ServerDirectory from './server-directory';
-import { sendMessageTemplate } from './utils/discord-migration';
 
 const Definition = new LoggerDefinition('Chrono Manager');
 
@@ -185,17 +184,13 @@ export default class ChronoManager extends Logger {
   ): Promise<void> {
     this.error(`error running ${chronoHandle} for server ${serverId}`);
     this.error(err);
-    await sendMessageTemplate(
-      this.phil.bot,
-      serverConfig.botControlChannel.id,
-      {
-        color: 'red',
-        description: inspect(err),
-        fields: null,
-        footer: 'chrono: ' + chronoHandle,
-        title: ':no_entry: Chrono Error',
-        type: 'embed',
-      }
-    );
+    await serverConfig.botControlChannel.sendMessage({
+      color: 'red',
+      description: inspect(err),
+      fields: null,
+      footer: 'chrono: ' + chronoHandle,
+      title: ':no_entry: Chrono Error',
+      type: 'embed',
+    });
   }
 }
