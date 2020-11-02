@@ -11,6 +11,12 @@
   "plugins": ["promise"],
   "rules": {
     "no-console": "error",
+    "prefer-const": [
+      "error",
+      {
+        "ignoreReadBeforeAssign": true
+      }
+    ],
     "sort-keys": [
       "error",
       "asc",

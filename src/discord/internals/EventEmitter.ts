@@ -1,10 +1,10 @@
 class EventEmitter<
   TEventMap extends {
-    [eventName: string]: (...args: any[]) => void;
+    [eventName: string]: (...args: unknown[]) => void;
   }
 > {
   private readonly handlers: {
-    [eventName: string]: Array<(...args: any[]) => void>;
+    [eventName: string]: Array<(...args: unknown[]) => void>;
   } = {};
 
   public on<TEventName extends keyof TEventMap>(

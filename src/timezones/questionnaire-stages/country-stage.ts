@@ -22,9 +22,9 @@ export default class CountryStage implements Stage {
 
     if (!timezoneData) {
       await message.respond({
-        type: 'plain',
         text:
           "I'm not sure what country that was. I can understand a country by a couple of names, but the easiest is the standard English name of the country.",
+        type: 'plain',
       });
       return;
     }

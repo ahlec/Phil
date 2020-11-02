@@ -47,8 +47,8 @@ export default class ConfirmationStage implements IStage {
       "Hmmmm, that wasn't one of the answers."
     );
     await message.respond({
-      type: 'plain',
       text: reply,
+      type: 'plain',
     });
   }
 

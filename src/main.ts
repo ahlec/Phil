@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import Client from '@phil/discord/Client';
 
 import Database from './database';
@@ -27,7 +29,7 @@ async function main(): Promise<void> {
     webPortal.start();
     webPortal.beginKeepAliveHeartbeat();
   } catch (err) {
-    console.error(err); /* eslint-disable-line no-console */
+    console.error(err);
     process.exit(1);
   }
 }

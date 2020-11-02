@@ -16,8 +16,8 @@ export default class VersionBotManagerCommand extends BotManagerCommand {
     message: ReceivedDirectMessage
   ): Promise<void> {
     await message.respond({
-      type: 'plain',
       text: `**Code**: v${CODE_VERSION.displayString}\n**Database**: v${DATABASE_VERSION}`,
+      type: 'plain',
     });
   }
 }

@@ -39,9 +39,9 @@ export default class LetsBeginStage implements Stage {
     }
 
     await message.respond({
-      type: 'plain',
       text:
         "I didn't understand that, sorry. Can you please tell me `yes` or `no` for if you'd like to fill out the timezone questionnaire?",
+      type: 'plain',
     });
   }
 }

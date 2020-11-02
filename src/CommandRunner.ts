@@ -117,8 +117,8 @@ export default class CommandRunner extends Logger {
   ): Promise<void> {
     const permissionLevelName = getPermissionLevelName(command.permissionLevel);
     await invocation.respond({
-      type: 'error',
       error: `The \`${invocation.context.serverConfig.commandPrefix}${invocation.commandName}\` command requires ${permissionLevelName} privileges to use here.`,
+      type: 'error',
     });
   }
 
@@ -131,8 +131,8 @@ export default class CommandRunner extends Logger {
     } catch (err) {
       this.error(err);
       await invocation.respond({
-        type: 'error',
         error: err instanceof Error ? err.message : String(err),
+        type: 'error',
       });
     }
   }

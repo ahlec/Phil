@@ -55,15 +55,11 @@ class Client extends EventEmitter<{
       let removeEventListeners: () => void;
 
       const handleDisconnect = (): void => {
-        console.log('error!!!!');
-        console.log(arguments);
         removeEventListeners();
         reject(new Error('Encountered error while trying to connect.'));
       };
 
       const handleReady = (): void => {
-        console.log('ready!!!');
-        console.log(arguments);
         removeEventListeners();
         resolve(new Client(internalClient));
       };
@@ -129,11 +125,11 @@ class Client extends EventEmitter<{
 
     this.emit('error', [
       {
-        message: 'Discord client disconnected due to an error',
         data: {
           code,
           message,
         },
+        message: 'Discord client disconnected due to an error',
       },
     ]);
   };
@@ -147,10 +143,10 @@ class Client extends EventEmitter<{
   ): Promise<void> => {
     if (!event.d.author) {
       this.emitWarning({
-        message: 'Received a message that had no author information.',
         data: {
           messageId: event.d.id,
         },
+        message: 'Received a message that had no author information.',
       });
       return;
     }
@@ -170,12 +166,12 @@ class Client extends EventEmitter<{
       const user = this.getUser(event.d.author.id);
       if (!user) {
         this.emitWarning({
+          data: {
+            channelId: event.d.channel_id,
+            messageId: event.d.id,
+          },
           message:
             'Received a direct message from a user that could not be retrieved.',
-          data: {
-            messageId: event.d.id,
-            channelId: event.d.channel_id,
-          },
         });
         return;
       }
@@ -190,12 +186,12 @@ class Client extends EventEmitter<{
       const rawChannel = this.internalClient.channels[event.d.channel_id];
       if (!rawChannel) {
         this.emitWarning({
+          data: {
+            channelId: event.d.channel_id,
+            messageId: event.d.id,
+          },
           message:
             "Received a message that doesn't appear to be a direct message, but couldn't be found in channels lookup.",
-          data: {
-            messageId: event.d.id,
-            channelId: event.d.channel_id,
-          },
         });
         return;
       }
@@ -203,13 +199,13 @@ class Client extends EventEmitter<{
       const server = this.getServer(rawChannel.guild_id);
       if (!server) {
         this.emitWarning({
-          message:
-            "Received a public message from a channel whose server couldn't be found.",
           data: {
-            messageId: event.d.id,
             channelId: event.d.channel_id,
+            messageId: event.d.id,
             serverId: rawChannel.guild_id,
           },
+          message:
+            "Received a public message from a channel whose server couldn't be found.",
         });
         return;
       }
@@ -217,14 +213,14 @@ class Client extends EventEmitter<{
       const member = await server.getMember(event.d.author.id);
       if (!member) {
         this.emitWarning({
-          message:
-            'Received a public message in a server from a user whose membership information could not be retrieved.',
           data: {
-            messageId: event.d.id,
             channelId: event.d.channel_id,
+            messageId: event.d.id,
             serverId: server.id,
             userId: event.d.author.id,
           },
+          message:
+            'Received a public message in a server from a user whose membership information could not be retrieved.',
         });
         return;
       }
@@ -254,11 +250,11 @@ class Client extends EventEmitter<{
     const server = this.getServer(rawMember.guild_id);
     if (!server) {
       this.emitWarning({
-        message:
-          'Received a member-joined-server event for a server that cannot be found.',
         data: {
           serverId: rawMember.guild_id,
         },
+        message:
+          'Received a member-joined-server event for a server that cannot be found.',
       });
       return;
     }
@@ -266,12 +262,12 @@ class Client extends EventEmitter<{
     const user = this.getUser(rawMember.id);
     if (!user) {
       this.emitWarning({
-        message:
-          "Received a member-joined-server event for a user who couldn't be found.",
         data: {
           serverId: rawMember.guild_id,
           userId: rawMember.id,
         },
+        message:
+          "Received a member-joined-server event for a user who couldn't be found.",
       });
       return;
     }
@@ -287,34 +283,34 @@ class Client extends EventEmitter<{
   };
 
   private handleRawWebSocketEvent = (
-    event: OfficialDiscordPayload<any>
+    event: OfficialDiscordPayload<unknown>
   ): void => {
     if (event.t !== 'MESSAGE_REACTION_ADD') {
       return;
     }
 
-    const reactionEvent: OfficialDiscordReactionEvent = event.d;
+    const reactionEvent = event.d as OfficialDiscordReactionEvent;
     this.internalClient.getMessage(
       {
         channelID: reactionEvent.channel_id,
         messageID: reactionEvent.message_id,
       },
-      (err, data): void => {
+      (err): void => {
         if (err) {
           this.emitWarning({
-            message:
-              'Received an error attempting to look up a message involved in a reaction-added event.',
             data: {
               channelId: reactionEvent.channel_id,
               messageId: reactionEvent.message_id,
             },
+            message:
+              'Received an error attempting to look up a message involved in a reaction-added event.',
           });
           return;
         }
 
-        console.log('alec!!');
-        console.log(data);
-        console.log(typeof data);
+        throw new Error(
+          'TOOD: Still need to investigate the data to implement this pathway.'
+        );
       }
     );
   };
