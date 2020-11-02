@@ -1,4 +1,5 @@
-import { OfficialDiscordReactionEvent } from 'official-discord';
+import { Reaction } from '@phil/discord/types';
+
 import Phil from '@phil/phil';
 import ReactablePost from '@phil/reactables/post';
 import { ReactableHandler, ReactableType } from '@phil/reactables/types';
@@ -11,9 +12,9 @@ class PromptQueueReactableHandler
   public async processReactionAdded(
     phil: Phil,
     post: ReactablePost<ReactableType.PromptQueue>,
-    event: OfficialDiscordReactionEvent
+    reaction: Reaction
   ): Promise<void> {
-    switch (event.emoji.name) {
+    switch (reaction.name) {
       case Emoji.Previous: {
         await this.movePage(phil, post, -1);
         break;

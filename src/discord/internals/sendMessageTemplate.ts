@@ -6,7 +6,6 @@ import TextChannel from '@phil/discord/TextChannel';
 import UsersDirectMessagesChannel from '@phil/discord/UsersDirectMessagesChannel';
 import { SendMessageResult } from '@phil/discord/types';
 
-import EmbedColor, { getColorValue } from '@phil/embed-color';
 import MessageBuilder from '@phil/message-builder';
 
 export async function sendMessageTemplate(
@@ -68,7 +67,7 @@ interface EmbedData {
     name: string;
     url?: string;
   };
-  color: EmbedColor;
+  color: number;
   description?: string;
   fields?: readonly EmbedField[];
   thumbnail?: {
@@ -93,7 +92,7 @@ function sendEmbedMessage(
       {
         embed: {
           author: embedData.author,
-          color: getColorValue(embedData.color),
+          color: embedData.color,
           description: embedData.description,
           fields: embedData.fields as [EmbedField],
           footer: embedData.footer,
@@ -161,28 +160,32 @@ async function sendMessageTemplateInternal(
       return sendErrorMessage(discordClient, channelId, template.error);
     }
     case 'embed': {
-      let color: EmbedColor;
+      let colorHex: number;
       switch (template.color) {
         case 'powder-blue': {
-          color = EmbedColor.Info;
+          colorHex = 0xb0e0e6;
           break;
         }
         case 'purple': {
-          color = EmbedColor.Timezone;
+          colorHex = 0x7a378b;
           break;
         }
         case 'green': {
-          color = EmbedColor.Success;
+          colorHex = 0x61b329;
           break;
         }
         case 'red': {
-          color = EmbedColor.Error;
+          colorHex = 0xcd5555;
+          break;
+        }
+        case 'yellow': {
+          colorHex = 0xfcdc3b;
           break;
         }
       }
 
       return sendEmbedMessage(discordClient, channelId, {
-        color,
+        color: colorHex,
         description:
           typeof template.description === 'string'
             ? template.description

@@ -1,36 +1,12 @@
-import { OfficialDiscordReactionEvent } from 'official-discord';
-import { Client as DiscordIOClient } from 'discord.io';
-
 import OutboundMessage from '@phil/discord/OutboundMessage';
-import Server from '@phil/discord/Server';
-import TextChannel from '@phil/discord/TextChannel';
-import UsersDirectMessagesChannel from '@phil/discord/UsersDirectMessagesChannel';
 
 import Phil from '@phil/phil';
 import ReactablePost from './post';
 import { ReactableType, ReactableHandler } from './types';
 import PromptQueueReactableHandler from './prompt-queue/handler';
 import SuggestSessionReactableHandler from './suggest-session/handler';
-
-export function getChannel(
-  discordClient: DiscordIOClient,
-  channelId: string
-): TextChannel | UsersDirectMessagesChannel {
-  const rawChannel = discordClient.channels[channelId];
-  if (!rawChannel) {
-    return new UsersDirectMessagesChannel(discordClient, channelId);
-  }
-
-  const rawServer = discordClient.servers[rawChannel.guild_id];
-  if (!rawServer) {
-    throw new Error(
-      `Could not find server '${rawChannel.guild_id}' supposedly containing '${channelId}'.`
-    );
-  }
-
-  const server = new Server(discordClient, rawServer, rawChannel.guild_id);
-  return new TextChannel(discordClient, channelId, rawChannel, server);
-}
+import { Reaction } from '@phil/discord/types';
+import Message from '@phil/discord/Message';
 
 class ReactableProcessor {
   private readonly handlers: {
@@ -45,25 +21,24 @@ class ReactableProcessor {
   }
 
   public async processReactionAdded(
-    discordIOClient: DiscordIOClient,
-    event: OfficialDiscordReactionEvent
+    reaction: Reaction,
+    message: Message
   ): Promise<void> {
-    if (!this.shouldProcessEvent(event)) {
+    if (reaction.user.isBot) {
       return;
     }
 
-    const message = new OutboundMessage(
-      discordIOClient,
-      getChannel(discordIOClient, event.channel_id),
-      event.message_id
-    );
+    if (!(message instanceof OutboundMessage)) {
+      // We only care about reactions that are left on one of Phil's messages.
+      return;
+    }
 
     const post = await ReactablePost.getFromMessage(this.phil.db, message);
     if (!post) {
       return;
     }
 
-    if (!post.monitoredReactions.has(event.emoji.name)) {
+    if (!post.monitoredReactions.has(reaction.name)) {
       return;
     }
 
@@ -76,16 +51,7 @@ class ReactableProcessor {
       );
     }
 
-    reactableType.processReactionAdded(this.phil, post, event);
-  }
-
-  private shouldProcessEvent(event: OfficialDiscordReactionEvent): boolean {
-    const user = this.phil.discordClient.getUser(event.user_id);
-    if (!user) {
-      return false;
-    }
-
-    return !user.isBot;
+    reactableType.processReactionAdded(this.phil, post, reaction);
   }
 }
 

@@ -1,4 +1,4 @@
-import { OfficialDiscordReactionEvent } from 'official-discord';
+import { Reaction } from '@phil/discord/types';
 
 import Phil from '@phil/phil';
 
@@ -20,6 +20,6 @@ export interface ReactableHandler<TType extends ReactableType> {
   processReactionAdded(
     phil: Phil,
     post: ReactablePost<TType>,
-    event: OfficialDiscordReactionEvent
+    reaction: Reaction
   ): Promise<void>;
 }

@@ -1,6 +1,11 @@
 import MessageBuilder from '@phil/message-builder';
 
-type RecognizedEmbedColor = 'purple' | 'powder-blue' | 'red' | 'green';
+type RecognizedEmbedColor =
+  | 'purple'
+  | 'powder-blue'
+  | 'red'
+  | 'green'
+  | 'yellow';
 
 export interface EmbedField {
   name: string;

@@ -1,4 +1,5 @@
-import { OfficialDiscordReactionEvent } from 'official-discord';
+import { Reaction } from '@phil/discord/types';
+
 import Phil from '@phil/phil';
 import SubmissionSession from '@phil/prompts/submission-session';
 import ReactablePost from '@phil/reactables/post';
@@ -11,7 +12,7 @@ class SuggestSessionReactableHandler
   public async processReactionAdded(
     phil: Phil,
     post: ReactablePost<ReactableType.SuggestSession>,
-    event: OfficialDiscordReactionEvent
+    reaction: Reaction
   ): Promise<void> {
     const activeSession = await SubmissionSession.getActiveSession(
       phil,
@@ -21,7 +22,7 @@ class SuggestSessionReactableHandler
       return;
     }
 
-    switch (event.emoji.name) {
+    switch (reaction.name) {
       case Emoji.Stop: {
         await this.stopSession(phil, post, activeSession);
         break;
