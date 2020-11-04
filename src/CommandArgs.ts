@@ -15,7 +15,8 @@ function roleNameSelector(role: Role): string {
   return role.name;
 }
 
-const USER_MENTION_REGEX = /^<@(\d+)>$/;
+const ONLY_NUMERALS_REGEX = /^\d+$/;
+const USER_MENTION_REGEX = /^<@!?(\d+)>$/;
 
 export default class CommandArgs {
   private readonly queue: string[];
@@ -154,9 +155,13 @@ export default class CommandArgs {
       return null;
     }
 
-    let member = await this.server.getMember(firstPiece);
-    if (member) {
-      return member;
+    let member: Member | null = null;
+
+    if (ONLY_NUMERALS_REGEX.test(firstPiece)) {
+      member = await this.server.getMember(firstPiece);
+      if (member) {
+        return member;
+      }
     }
 
     const mentionResults = firstPiece.match(USER_MENTION_REGEX);

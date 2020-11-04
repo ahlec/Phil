@@ -54,7 +54,7 @@ async function sendMessageBuilder(
 ): Promise<string[]> {
   const messageIds = [];
   for (const message of messageBuilder.messages) {
-    const messageId = await this.sendMessage(bot, channelId, message);
+    const messageId = await sendMessage(bot, channelId, message);
     messageIds.push(messageId);
   }
 

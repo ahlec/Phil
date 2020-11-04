@@ -16,7 +16,7 @@ class NewsCommand extends Command {
 
   public async invoke(invocation: CommandInvocation): Promise<void> {
     const echoedMessage = this.getEchoedStatementFromInvocation(invocation);
-    await invocation.respond({
+    await invocation.context.serverConfig.newsChannel.sendMessage({
       text: echoedMessage,
       type: 'plain',
     });

@@ -190,13 +190,20 @@ export default class Phil extends Logger {
     }
 
     try {
-      const shouldGreet = await shouldAutomaticallyGreetMember(
+      const determination = await shouldAutomaticallyGreetMember(
         this.db,
         server.id,
         serverConfig,
         member
       );
-      if (!shouldGreet) {
+      if (!determination.shouldGreet) {
+        if (determination.messageToShareWithAdmins) {
+          await serverConfig.botControlChannel.sendMessage({
+            text: `${member.displayName} joined the server just now, but I didn't greet them because: ${determination.messageToShareWithAdmins}`,
+            type: 'plain',
+          });
+        }
+
         return;
       }
 

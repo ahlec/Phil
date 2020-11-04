@@ -44,6 +44,7 @@ export type AutomaticGreetingDetermination =
         | 'feature-disabled'
         | 'user-is-discord-bot'
         | 'no-configured-welcome-message';
+      messageToShareWithAdmins: string | null;
     }
   | {
       shouldGreet: true;
@@ -61,6 +62,7 @@ export async function shouldAutomaticallyGreetMember(
   );
   if (!isEnabled) {
     return {
+      messageToShareWithAdmins: null,
       reason: 'feature-disabled',
       shouldGreet: false,
     };
@@ -68,6 +70,7 @@ export async function shouldAutomaticallyGreetMember(
 
   if (member.user.isBot) {
     return {
+      messageToShareWithAdmins: null,
       reason: 'user-is-discord-bot',
       shouldGreet: false,
     };
@@ -75,6 +78,7 @@ export async function shouldAutomaticallyGreetMember(
 
   if (!serverConfig.welcomeMessage) {
     return {
+      messageToShareWithAdmins: `Your server has not been configured with a welcome message. You can do so with \`${serverConfig.commandPrefix}config set welcome-message Welcome to the server {user}!\`.`,
       reason: 'no-configured-welcome-message',
       shouldGreet: false,
     };
