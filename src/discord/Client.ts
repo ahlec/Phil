@@ -24,8 +24,20 @@ import TextChannel from './TextChannel';
 import Member from './Member';
 
 import EventEmitter from './internals/EventEmitter';
+import OutboundMessage from './OutboundMessage';
+import UsersDirectMessagesChannel from './UsersDirectMessagesChannel';
 
 const DISCORD_ROUTINE_RECONNECT_REQUEST_DISCONNECT_CODE = 1000;
+const DISCORD_AUTHENTICATION_FAILED_CODE = 4004;
+
+interface DiscordIOGetMessage {
+  author: {
+    id: string;
+    username: string;
+    bot: boolean;
+  };
+  content: string;
+}
 
 interface UndocumentedDiscordIOEmitter {
   once: (
@@ -54,9 +66,19 @@ class Client extends EventEmitter<{
     return new Promise<Client>((resolve, reject): void => {
       let removeEventListeners: () => void;
 
-      const handleDisconnect = (): void => {
+      const handleDisconnect = (message: string, code: number): void => {
         removeEventListeners();
-        reject(new Error('Encountered error while trying to connect.'));
+
+        if (code === DISCORD_AUTHENTICATION_FAILED_CODE) {
+          reject(new Error('Bot token failed to authenticate'));
+          return;
+        }
+
+        reject(
+          new Error(
+            `(${code}) Encountered error while trying to connect: '${message}'`
+          )
+        );
       };
 
       const handleReady = (): void => {
@@ -295,7 +317,7 @@ class Client extends EventEmitter<{
         channelID: reactionEvent.channel_id,
         messageID: reactionEvent.message_id,
       },
-      (err): void => {
+      async (err, data: DiscordIOGetMessage): Promise<void> => {
         if (err) {
           this.emitWarning({
             data: {
@@ -308,9 +330,81 @@ class Client extends EventEmitter<{
           return;
         }
 
-        throw new Error(
-          'TOOD: Still need to investigate the data to implement this pathway.'
-        );
+        if (data.author.id !== this.internalClient.id) {
+          // Not a message sent by the bot
+          return;
+        }
+
+        let channel: TextChannel | UsersDirectMessagesChannel;
+        if (this.internalClient.channels[reactionEvent.channel_id]) {
+          const internalChannel = this.internalClient.channels[
+            reactionEvent.channel_id
+          ];
+          const server = this.getServer(internalChannel.guild_id);
+          if (!server) {
+            this.emitWarning({
+              data: {
+                channelId: reactionEvent.channel_id,
+                messageId: reactionEvent.message_id,
+                serverId: internalChannel.guild_id,
+              },
+              message:
+                "Received a reaction event on a public server whose channel could be found but the server couldn't.",
+            });
+            return;
+          }
+
+          channel = new TextChannel(
+            this.internalClient,
+            reactionEvent.channel_id,
+            internalChannel,
+            server
+          );
+        } else if (
+          this.internalClient.directMessages[reactionEvent.channel_id]
+        ) {
+          channel = new UsersDirectMessagesChannel(
+            this.internalClient,
+            reactionEvent.user_id
+          );
+        } else {
+          this.emitWarning({
+            data: {
+              channelId: reactionEvent.channel_id,
+              messageId: reactionEvent.message_id,
+              userId: reactionEvent.user_id,
+            },
+            message:
+              "Received a reaction event in an unknown channel. This could be a direct message channel with a user who hasn't otherwise communicated with me during this instance.",
+          });
+          return;
+        }
+
+        const user = this.getUser(reactionEvent.user_id);
+        if (!user) {
+          this.emitWarning({
+            data: {
+              channelId: reactionEvent.channel_id,
+              messageId: reactionEvent.message_id,
+              userId: reactionEvent.user_id,
+            },
+            message:
+              "Received a reaction event from a user who couldn't be found by the bot.",
+          });
+          return;
+        }
+
+        this.emit('reaction-added', [
+          {
+            name: reactionEvent.emoji.name,
+            user,
+          },
+          new OutboundMessage(
+            this.internalClient,
+            channel,
+            reactionEvent.message_id
+          ),
+        ]);
       }
     );
   };
