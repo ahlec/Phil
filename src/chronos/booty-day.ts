@@ -11,6 +11,7 @@ import Chrono, { Logger, LoggerDefinition } from './@types';
 
 const HANDLE = 'booty-day';
 export default class BootyDayChrono extends Logger implements Chrono {
+  public readonly databaseId = 3;
   public readonly handle = HANDLE;
   public readonly requiredFeature = Features.Prompts;
 

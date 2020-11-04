@@ -19,6 +19,7 @@ interface NextPrompt {
 }
 
 export default class PostNewPromptsChrono extends Logger implements Chrono {
+  public readonly databaseId = 1;
   public readonly handle = HANDLE;
   public readonly requiredFeature = Features.Prompts;
 

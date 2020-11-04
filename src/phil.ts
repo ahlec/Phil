@@ -26,7 +26,7 @@ type RecognizedReceivedMessage = ReceivedServerMessage | ReceivedDirectMessage;
 export default class Phil extends Logger {
   public readonly serverDirectory: ServerDirectory;
   private readonly commandRunner: CommandRunner;
-  private readonly chronoManager: ChronoManager;
+  public readonly chronoManager: ChronoManager;
   private readonly directMessageDispatcher: DirectMessageDispatcher;
   private readonly reactableProcessor: ReactableProcessor;
 

@@ -14,6 +14,7 @@ const HANDLE = 'alert-low-bucket-queue';
 export default class AlertLowBucketQueueChrono
   extends Logger
   implements Chrono {
+  public readonly databaseId = 6;
   public readonly handle = HANDLE;
   public readonly requiredFeature = Features.Prompts;
 

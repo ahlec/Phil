@@ -9,6 +9,7 @@ import ServerConfig from '@phil/server-config';
 
 export default interface Chrono {
   readonly handle: string;
+  readonly databaseId: number;
   readonly requiredFeature: Feature | null;
 
   process(

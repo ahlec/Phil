@@ -19,6 +19,7 @@ interface HappyBirthdayInfo {
 
 const HANDLE = 'happy-birthday';
 export default class HappyBirthdayChrono extends Logger implements Chrono {
+  public readonly databaseId = 4;
   public readonly handle = HANDLE;
   public readonly requiredFeature = Features.Calendar;
 

@@ -1,21 +1,35 @@
 import * as moment from 'moment';
-import { inspect } from 'util';
 
 import Client from '@phil/discord/Client';
+import Server from '@phil/discord/Server';
 
 import Chronos, { Chrono } from './chronos/index';
 import Database from './database';
 import Logger from './Logger';
 import LoggerDefinition from './LoggerDefinition';
-import ServerConfig from './server-config';
 import ServerDirectory from './server-directory';
+import GlobalConfig from './GlobalConfig';
 
 const Definition = new LoggerDefinition('Chrono Manager');
+
+export type ChronoProcessingResult =
+  | {
+      error: string;
+      success: false;
+      shouldReportOnRoutineProcessing: boolean;
+    }
+  | {
+      didRunChrono: boolean;
+      success: true;
+    };
 
 export default class ChronoManager extends Logger {
   private readonly channelsLastMessageTable: { [channelId: string]: Date };
   private hasBeenStarted: boolean;
   private readonly chronos: { [handle: string]: Chrono | undefined } = {};
+  private readonly chronoIdsToHandles: {
+    [databaseId: number]: string | undefined;
+  } = {};
 
   constructor(
     private readonly discordClient: Client,
@@ -38,11 +52,25 @@ export default class ChronoManager extends Logger {
     for (const constructor of Chronos) {
       const chrono = new constructor(Definition);
       this.chronos[chrono.handle] = chrono;
+      this.chronoIdsToHandles[chrono.databaseId] = chrono.handle;
       this.write(` > Registered '${chrono.handle}'.`);
     }
 
     setInterval(this.processChronos, 1000 * 60 * 15); // Run every 15 minutes
     this.processChronos(); // Also run at startup to make sure you get anything that ran earlier that day
+  }
+
+  public isRegisteredChrono(handle: string): boolean {
+    return !!this.chronos[handle];
+  }
+
+  public getChronoHandleFromDatabaseId(chronoId: number): string | null {
+    const handle = this.chronoIdsToHandles[chronoId];
+    if (typeof handle === 'string') {
+      return handle;
+    }
+
+    return null;
   }
 
   public getMinutesSinceLastMessageInChannel(
@@ -65,6 +93,26 @@ export default class ChronoManager extends Logger {
 
   public recordNewMessageInChannel(channelId: string): void {
     this.channelsLastMessageTable[channelId] = new Date();
+  }
+
+  public forceRunChrono(
+    chronoHandle: string,
+    server: Server
+  ): Promise<ChronoProcessingResult> {
+    const chrono = this.chronos[chronoHandle];
+    if (!chrono) {
+      throw new Error(`Attempted to force an invalid chrono '${chronoHandle}'`);
+    }
+
+    const now = moment.utc();
+    const date = now.format('YYYY-M-DD');
+    return this.processChronoInstance(
+      now,
+      chronoHandle,
+      chrono.databaseId,
+      server.id,
+      date
+    );
   }
 
   private processChronos = async (): Promise<void> => {
@@ -97,15 +145,50 @@ export default class ChronoManager extends Logger {
       [hour, date]
     );
 
-    for (const dbRow of results.rows) {
-      this.processChronoInstance(
-        now,
-        dbRow.chrono_handle,
-        parseInt(dbRow.chrono_id, 10),
-        dbRow.server_id,
-        date
-      );
-    }
+    const botManager = this.discordClient.getUser(
+      GlobalConfig.botManagerUserId
+    );
+
+    await Promise.all(
+      results.rows.map(
+        async (dbRow): Promise<void> => {
+          const results = await this.processChronoInstance(
+            now,
+            dbRow.chrono_handle,
+            parseInt(dbRow.chrono_id, 10),
+            dbRow.server_id,
+            date
+          );
+
+          if (results.success || !results.shouldReportOnRoutineProcessing) {
+            return;
+          }
+
+          if (!botManager) {
+            this.error(results.error);
+            return;
+          }
+
+          await botManager.sendDirectMessage({
+            color: 'red',
+            description: results.error,
+            fields: [
+              {
+                name: 'server ID',
+                value: dbRow.server_id,
+              },
+              {
+                name: 'chrono handle',
+                value: dbRow.chrono_handle,
+              },
+            ],
+            footer: null,
+            title: ':no_entry: Scheduled chrono execution error',
+            type: 'embed',
+          });
+        }
+      )
+    );
   };
 
   private async processChronoInstance(
@@ -114,27 +197,34 @@ export default class ChronoManager extends Logger {
     chronoId: number,
     serverId: string,
     utcDate: string
-  ): Promise<void> {
+  ): Promise<ChronoProcessingResult> {
     this.write(`Executing ${chronoHandle} for serverId ${serverId}`);
 
     const server = this.discordClient.getServer(serverId);
     if (!server) {
-      this.error(
-        `Attempted to process '${chronoHandle}' for server '${serverId}', but I could not find it.`
-      );
-      return;
+      return {
+        error: `Attempted to process '${chronoHandle}' for server '${serverId}', but I could not find it.`,
+        shouldReportOnRoutineProcessing: false,
+        success: false,
+      };
     }
 
     const serverConfig = await this.serverDirectory.getServerConfig(server);
     if (!serverConfig) {
-      this.write(`Phil is no longer part of server with serverId ${serverId}`);
-      return;
+      return {
+        error: `Phil is no longer part of server '${serverId}'.`,
+        shouldReportOnRoutineProcessing: false,
+        success: false,
+      };
     }
 
     const chronoDefinition = this.chronos[chronoHandle];
     if (!chronoDefinition) {
-      this.error(`there is no chrono with the handle ${chronoHandle}`);
-      return;
+      return {
+        error: `Could not find chrono '${chronoHandle}'.`,
+        shouldReportOnRoutineProcessing: true,
+        success: false,
+      };
     }
 
     try {
@@ -144,12 +234,6 @@ export default class ChronoManager extends Logger {
           this.db,
           serverId
         );
-
-        if (!shouldProcess) {
-          this.write(
-            `Feature ${chronoDefinition.requiredFeature.displayName} is disabled on server ${serverId}, skipping processing ${chronoDefinition.handle}.`
-          );
-        }
       }
 
       if (shouldProcess) {
@@ -162,40 +246,25 @@ export default class ChronoManager extends Logger {
         );
       }
 
-      await this.markChronoProcessed(chronoId, serverId, utcDate);
+      await this.db.query(
+        `UPDATE server_chronos
+              SET date_last_ran = $1
+              WHERE server_id = $2 AND chrono_id = $3`,
+        [utcDate, serverId, chronoId]
+      );
+
+      return {
+        didRunChrono: shouldProcess,
+        success: true,
+      };
     } catch (err) {
-      await this.reportChronoError(err, serverId, serverConfig, chronoHandle);
+      return {
+        error: `Encountered an error when processing the chrono: ${
+          err instanceof Error ? err.message : JSON.stringify(err)
+        }`,
+        shouldReportOnRoutineProcessing: true,
+        success: false,
+      };
     }
-  }
-
-  private async markChronoProcessed(
-    chronoId: number,
-    serverId: string,
-    utcDate: string
-  ): Promise<void> {
-    await this.db.query(
-      `UPDATE server_chronos
-            SET date_last_ran = $1
-            WHERE server_id = $2 AND chrono_id = $3`,
-      [utcDate, serverId, chronoId]
-    );
-  }
-
-  private async reportChronoError(
-    err: Error | string,
-    serverId: string,
-    serverConfig: ServerConfig,
-    chronoHandle: string
-  ): Promise<void> {
-    this.error(`error running ${chronoHandle} for server ${serverId}`);
-    this.error(err);
-    await serverConfig.botControlChannel.sendMessage({
-      color: 'red',
-      description: inspect(err),
-      fields: null,
-      footer: 'chrono: ' + chronoHandle,
-      title: ':no_entry: Chrono Error',
-      type: 'embed',
-    });
   }
 }

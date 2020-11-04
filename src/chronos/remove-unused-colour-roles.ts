@@ -13,6 +13,7 @@ const HANDLE = 'remove-unused-colour-roles';
 export default class RemoveUnusedColorRolesChrono
   extends Logger
   implements Chrono {
+  public readonly databaseId = 5;
   public readonly handle = HANDLE;
   public readonly requiredFeature = null; // Even if not using, still clean up
 

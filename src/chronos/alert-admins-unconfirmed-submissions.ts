@@ -12,6 +12,7 @@ const HANDLE = 'alert-admins-unconfirmed-submissions';
 export default class AlertAdminsUnconfirmedSubmissionsChrono
   extends Logger
   implements Chrono {
+  public readonly databaseId = 2;
   public readonly handle = HANDLE;
   public readonly requiredFeature = Features.Prompts;
 
