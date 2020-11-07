@@ -145,7 +145,7 @@ export default class ChronoManager extends Logger {
       [hour, date]
     );
 
-    const botManager = this.discordClient.getUser(
+    const botManager = await this.discordClient.getUser(
       GlobalConfig.botManagerUserId
     );
 
@@ -200,7 +200,7 @@ export default class ChronoManager extends Logger {
   ): Promise<ChronoProcessingResult> {
     this.write(`Executing ${chronoHandle} for serverId ${serverId}`);
 
-    const server = this.discordClient.getServer(serverId);
+    const server = await this.discordClient.getServer(serverId);
     if (!server) {
       return {
         error: `Attempted to process '${chronoHandle}' for server '${serverId}', but I could not find it.`,

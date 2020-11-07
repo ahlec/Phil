@@ -24,7 +24,10 @@ type ParseResults =
 
 const ONLY_DIGITS_REGEX = /^\d+$/;
 
-function parseCommandArgs(rawArgs: string, phil: Phil): ParseResults {
+async function parseCommandArgs(
+  rawArgs: string,
+  phil: Phil
+): Promise<ParseResults> {
   const pieces = rawArgs.split(' ');
   if (pieces.length !== 2) {
     return {
@@ -33,7 +36,7 @@ function parseCommandArgs(rawArgs: string, phil: Phil): ParseResults {
     };
   }
 
-  const server = phil.discordClient.getServer(pieces[0]);
+  const server = await phil.discordClient.getServer(pieces[0]);
   if (!server) {
     return {
       error: `Could not retrieve server '${pieces[0]}'.`,
@@ -90,7 +93,7 @@ class ForceChronoBotManagerCommand extends BotManagerCommand {
     message: ReceivedDirectMessage,
     rawArgs: string
   ): Promise<void> {
-    const args = parseCommandArgs(rawArgs, phil);
+    const args = await parseCommandArgs(rawArgs, phil);
     if (!args.success) {
       await message.respond({
         color: 'red',

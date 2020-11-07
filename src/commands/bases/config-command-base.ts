@@ -20,7 +20,7 @@ export interface ConfigProperty<TModel> {
   readonly typeDefinition: TypeDefinition;
 
   getValue(model: TModel): string | null;
-  getRandomExampleValue(server: Server): string;
+  getRandomExampleValue(server: Server): string | Promise<string>;
   setValue(model: TModel, newValue: string | null): Promise<boolean>;
 }
 
@@ -313,7 +313,7 @@ export abstract class ConfigCommandBase<TModel> extends Command {
         return demoProperty.key;
       }
       case ConfigActionParameterType.NewPropertyValue: {
-        const randomValue = demoProperty.getRandomExampleValue(
+        const randomValue = await demoProperty.getRandomExampleValue(
           invocation.context.server
         );
         const {

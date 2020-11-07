@@ -14,9 +14,10 @@ export default class InviteCommand extends BotManagerCommand {
     phil: Phil,
     message: ReceivedDirectMessage
   ): Promise<void> {
+    const url = await phil.discordClient.getInviteUrl();
     await message.respond({
       color: 'powder-blue',
-      description: phil.discordClient.inviteUrl,
+      description: url,
       fields: null,
       footer: null,
       title: ':gift: My Invite Link',

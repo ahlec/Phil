@@ -44,7 +44,7 @@ export default class DirectMessageDispatcher extends Logger {
   ): Promise<void> {
     this.error(err);
 
-    const botManager = this.phil.discordClient.getUser(
+    const botManager = await this.phil.discordClient.getUser(
       GlobalConfig.botManagerUserId
     );
     if (!botManager) {

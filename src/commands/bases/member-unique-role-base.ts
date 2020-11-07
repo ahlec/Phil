@@ -100,7 +100,8 @@ abstract class MemberUniqueRoleCommandBase<TData> extends Command {
   }
 
   private async getRoleFromData(server: Server, data: TData): Promise<Role> {
-    const existing = server.roles.find((role): boolean =>
+    const allRoles = await server.getAllRoles();
+    const existing = allRoles.find((role): boolean =>
       this.doesRoleMatchData(role, data)
     );
     if (existing) {

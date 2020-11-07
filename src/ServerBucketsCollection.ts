@@ -60,7 +60,9 @@ class ServerBucketsCollection {
       'SELECT * FROM prompt_buckets WHERE server_id = $1',
       [this.server.id]
     );
-    return results.rows.map((row): Bucket => this.parseBucket(row));
+    return Promise.all(
+      results.rows.map((row): Promise<Bucket> => this.parseBucket(row))
+    );
   }
 
   public async retrieve(retrieval: BucketRetrieval): Promise<Bucket | null> {
@@ -115,21 +117,26 @@ class ServerBucketsCollection {
     );
 
     const result: Record<number, Bucket | null> = {};
-    dbResult.rows.forEach((row): void => {
-      const bucketId = parseInt(row.bucket_id, 10);
-      if (row.server_id !== this.server.id) {
-        result[bucketId] = null;
-        return;
-      }
+    await Promise.all(
+      dbResult.rows.map(
+        async (row): Promise<void> => {
+          const bucketId = parseInt(row.bucket_id, 10);
+          if (row.server_id !== this.server.id) {
+            result[bucketId] = null;
+            return;
+          }
 
-      result[bucketId] = this.parseBucket(row);
-    });
+          result[bucketId] = await this.parseBucket(row);
+        }
+      )
+    );
 
     return result;
   }
 
-  private parseBucket(dbRow: DbRow): Bucket {
+  private async parseBucket(dbRow: DbRow): Promise<Bucket> {
     const channel = this.server.getTextChannel(dbRow.channel_id);
+    const isValid = await this.determineIsBucketValid(dbRow);
 
     return new Bucket(
       this.database,
@@ -152,15 +159,15 @@ class ServerBucketsCollection {
           FREQUENCY_FROM_STRINGS[dbRow.frequency] || BucketFrequency.Daily,
         handle: dbRow.reference_handle,
         isPaused: parseInt(dbRow.is_paused, 10) === 1,
-        isValid: this.determineIsBucketValid(dbRow),
+        isValid,
         promptTitleFormat: dbRow.prompt_title_format,
         requiredRoleId: dbRow.required_role_id,
       }
     );
   }
 
-  private determineIsBucketValid(dbRow: DbRow): boolean {
-    const server = this.discordClient.getServer(dbRow.server_id);
+  private async determineIsBucketValid(dbRow: DbRow): Promise<boolean> {
+    const server = await this.discordClient.getServer(dbRow.server_id);
     if (!server) {
       return false;
     }

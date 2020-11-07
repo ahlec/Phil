@@ -1,4 +1,7 @@
-import { Client as DiscordIOClient } from 'discord.io';
+import {
+  Message as DiscordJsMessage,
+  TextChannel as DiscordJsTextChannel,
+} from 'discord.js';
 
 import Member from './Member';
 import Message from './Message';
@@ -7,20 +10,30 @@ import TextChannel from './TextChannel';
 import { SendMessageResult } from './types';
 
 import { sendMessageTemplate } from './internals/sendMessageTemplate';
+import OutboundMessage from './OutboundMessage';
 
 class ReceivedServerMessage extends Message {
   public constructor(
-    internalClient: DiscordIOClient,
-    id: string,
-    public readonly body: string,
+    internalMessage: DiscordJsMessage,
+    private readonly internalChannel: DiscordJsTextChannel,
     public readonly sender: Member,
     public readonly channel: TextChannel
   ) {
-    super(internalClient, id, channel.id);
+    super(internalMessage);
   }
 
-  public respond(response: MessageTemplate): Promise<SendMessageResult> {
-    return sendMessageTemplate(this.internalClient, this.channel, response);
+  public get body(): string {
+    return this.internalMessage.content;
+  }
+
+  public async respond(response: MessageTemplate): Promise<SendMessageResult> {
+    const finalInternalMessage = await sendMessageTemplate(
+      this.internalChannel,
+      response
+    );
+    return {
+      finalMessage: new OutboundMessage(finalInternalMessage, this.channel),
+    };
   }
 }
 

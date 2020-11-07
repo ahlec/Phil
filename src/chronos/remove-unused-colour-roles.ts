@@ -27,7 +27,7 @@ export default class RemoveUnusedColorRolesChrono
     server: Server,
     serverConfig: ServerConfig
   ): Promise<void> {
-    const unusedColorRoles = this.getAllUnusedColorRoleIds(server);
+    const unusedColorRoles = await this.getAllUnusedColorRoleIds(server);
     if (!unusedColorRoles.length) {
       return;
     }
@@ -49,11 +49,14 @@ export default class RemoveUnusedColorRolesChrono
     });
   }
 
-  private getAllUnusedColorRoleIds(server: Server): readonly Role[] {
+  private async getAllUnusedColorRoleIds(
+    server: Server
+  ): Promise<readonly Role[]> {
     // Collect all of the defined color roles without checking whether they're
     // in use or not.
     const allColorRoles = new Map<string, Role>();
-    server.roles.forEach((role: Role): void => {
+    const roles = await server.getAllRoles();
+    roles.forEach((role: Role): void => {
       if (!isHexColorRole(role)) {
         return;
       }
@@ -68,7 +71,8 @@ export default class RemoveUnusedColorRolesChrono
 
     // Go through the server members and remove all color roles from the set
     // that are in use.
-    server.members.forEach((member: Member): void => {
+    const members = await server.getAllMembers();
+    members.forEach((member: Member): void => {
       member.roles.forEach((role: Role): void => {
         allColorRoles.delete(role.id);
       });

@@ -19,7 +19,12 @@ import ReceivedDirectMessage from './discord/ReceivedDirectMessage';
 import Client from './discord/Client';
 import Message from './discord/Message';
 import { EmbedField } from './discord/MessageTemplate';
-import { ClientError, ClientWarning, Reaction } from './discord/types';
+import {
+  ClientDebugData,
+  ClientError,
+  ClientWarning,
+  Reaction,
+} from './discord/types';
 
 type RecognizedReceivedMessage = ReceivedServerMessage | ReceivedDirectMessage;
 
@@ -49,6 +54,7 @@ export default class Phil extends Logger {
     discordClient.on('message-received', this.onMessage);
     discordClient.on('member-joined-server', this.handleMemberJoinedServer);
     discordClient.on('reaction-added', this.handleReactionAdded);
+    discordClient.on('debug', this.handleDebug);
     discordClient.on('error', this.handleError);
     discordClient.on('warning', this.handleWarning);
 
@@ -122,6 +128,13 @@ export default class Phil extends Logger {
     return isBot;
   }
 
+  private handleDebug = (debug: ClientDebugData): void => {
+    this.write(debug.message);
+    Object.entries(debug.data).forEach(([key, value]): void => {
+      this.write(`> '${key}': ${value}`);
+    });
+  };
+
   private handleError = (error: ClientError): void => {
     this.handleErrorOrWarningReport('error', error);
   };
@@ -130,10 +143,10 @@ export default class Phil extends Logger {
     this.handleErrorOrWarningReport('warning', warning);
   };
 
-  private handleErrorOrWarningReport(
+  private async handleErrorOrWarningReport(
     type: 'error' | 'warning',
     event: ClientError | ClientWarning
-  ): void {
+  ): Promise<void> {
     let log: (message: string) => void;
     let embedColor: 'yellow' | 'red';
     let emoji: string;
@@ -157,7 +170,7 @@ export default class Phil extends Logger {
       log(`> '${key}': ${value}`);
     });
 
-    const botManager = this.discordClient.getUser(
+    const botManager = await this.discordClient.getUser(
       GlobalConfig.botManagerUserId
     );
     if (botManager) {

@@ -120,8 +120,9 @@ const properties: ReadonlyArray<ConfigProperty<ServerConfig>> = [
     defaultValue: null,
     description: `This is a role that a user must have in order to make use of any of the ${NOWRAP}admin-only commands. The server owner is capable of making use of the admin-${NOWRAP}only commands at all times, but for all other members of the server, they must ${NOWRAP}have the role specified here in order to user the higher privilege commands.${NEWLINE}${NEWLINE}Note that while admin commands may be used in any channel within the server, ${NOWRAP}admin-only commands will only appear in the \`help\` command list if you use ${NOWRAP}the command within the **Admin Channel** (property key: \`admin-channel\`) or ${NOWRAP}within the **Bot Control Channel** (property key: \`bot-control-channel\`).`,
     displayName: 'Admin Role',
-    getRandomExampleValue: (server: Server): string => {
-      const randomRole = getRandomArrayEntry(server.roles);
+    getRandomExampleValue: async (server: Server): Promise<string> => {
+      const roles = await server.getAllRoles();
+      const randomRole = getRandomArrayEntry(roles);
       return randomRole.id;
     },
     getValue: (model: ServerConfig): string | null => {

@@ -1,23 +1,24 @@
-import { Client as DiscordIOClient } from 'discord.io';
+import { User as DiscordJSUser } from 'discord.js';
 
 import MessageTemplate from './MessageTemplate';
+import OutboundMessage from './OutboundMessage';
 import UsersDirectMessagesChannel from './UsersDirectMessagesChannel';
-import { SendMessageResult } from './types';
 
+import { SendMessageResult } from './types';
 import { sendMessageTemplate } from './internals/sendMessageTemplate';
 
-interface InternalUser {
-  bot: boolean;
-  discriminator: number;
-  username: string;
-}
-
 class User {
-  public constructor(
-    private readonly internalClient: DiscordIOClient,
-    private readonly internalUser: InternalUser,
-    public readonly id: string
-  ) {}
+  public constructor(private readonly internalUser: DiscordJSUser) {
+    if (internalUser.partial) {
+      throw new Error(
+        `Cannot construct a User class with a partial DiscordJS user (ID: ${internalUser.id})`
+      );
+    }
+  }
+
+  public get id(): string {
+    return this.internalUser.id;
+  }
 
   public get isBot(): boolean {
     return this.internalUser.bot;
@@ -35,14 +36,17 @@ class User {
     return this.internalUser.username;
   }
 
-  public sendDirectMessage(
+  public async sendDirectMessage(
     template: MessageTemplate
   ): Promise<SendMessageResult> {
-    return sendMessageTemplate(
-      this.internalClient,
-      new UsersDirectMessagesChannel(this.internalClient, this.id),
-      template
-    );
+    const rawChannel = await this.internalUser.createDM();
+    const finalRawMessage = await sendMessageTemplate(rawChannel, template);
+    return {
+      finalMessage: new OutboundMessage(
+        finalRawMessage,
+        new UsersDirectMessagesChannel(rawChannel)
+      ),
+    };
   }
 }
 

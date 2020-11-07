@@ -44,7 +44,7 @@ export default class SubmissionSession {
       return null;
     }
 
-    const server = phil.discordClient.getServer(dbRow.server_id);
+    const server = await phil.discordClient.getServer(dbRow.server_id);
     if (!server) {
       throw new Error(
         "Trying to get active session for a submission session for a server Phil isn't in any longer."

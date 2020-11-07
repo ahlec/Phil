@@ -44,7 +44,7 @@ class SuggestSessionReactableHandler
 
     await session.end();
 
-    const user = phil.discordClient.getUser(post.data.userId);
+    const user = await phil.discordClient.getUser(post.data.userId);
     if (!user) {
       return;
     }
@@ -85,7 +85,7 @@ class SuggestSessionReactableHandler
     await session.makeAnonymous();
     const NOWRAP = '';
 
-    const user = phil.discordClient.getUser(post.data.userId);
+    const user = await phil.discordClient.getUser(post.data.userId);
     if (!user) {
       return;
     }

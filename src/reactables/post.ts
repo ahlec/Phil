@@ -55,16 +55,19 @@ class ReactablePost<TType extends ReactableType> {
             WHERE channel_id = $1 AND reactable_type = $2`,
       [channel.id, type]
     );
-    return results.rows
-      .map((row): ReactablePost<TType> | null => {
-        const message = channel.getOutboundMessageById(row.message_id);
-        if (!message) {
-          return null;
-        }
+    const mixedPosts = await Promise.all(
+      results.rows.map(
+        async (row): Promise<ReactablePost<TType> | null> => {
+          const message = await channel.getOutboundMessageById(row.message_id);
+          if (!message) {
+            return null;
+          }
 
-        return new ReactablePost(message, type, row);
-      })
-      .filter(isNotNull);
+          return new ReactablePost(message, type, row);
+        }
+      )
+    );
+    return mixedPosts.filter(isNotNull);
   }
 
   public readonly created: Date;

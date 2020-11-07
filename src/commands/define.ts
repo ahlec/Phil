@@ -18,7 +18,7 @@ class DefineCommand extends Command {
   }
 
   public async invoke(invocation: CommandInvocation): Promise<void> {
-    const definition = this.getDefinitionData(invocation);
+    const definition = await this.getDefinitionData(invocation);
     if (!Requestable.checkIsValidRequestableName(definition.name)) {
       throw new Error(
         "The name you provided isn't valid to use as a requestable. It must be at least two characters in length and made up only of alphanumeric characters and dashes."
@@ -53,9 +53,9 @@ class DefineCommand extends Command {
     });
   }
 
-  private getDefinitionData(
+  private async getDefinitionData(
     invocation: CommandInvocation
-  ): RequestableCreationDefinition {
+  ): Promise<RequestableCreationDefinition> {
     if (invocation.commandArgs.length < 2) {
       throw new Error(
         '`' +
@@ -82,7 +82,8 @@ class DefineCommand extends Command {
       .join(' ')
       .trim()
       .toLowerCase();
-    const role = invocation.context.server.roles.find(
+    const allRoles = await invocation.context.server.getAllRoles();
+    const role = allRoles.find(
       (r): boolean => r.name.toLowerCase() === roleName
     );
     if (role) {

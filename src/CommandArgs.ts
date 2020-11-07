@@ -2,17 +2,12 @@ import * as chronoNode from 'chrono-node';
 import * as moment from 'moment';
 
 import Member from '@phil/discord/Member';
-import Role from '@phil/discord/Role';
 import Server from '@phil/discord/Server';
 
 import FuzzyFinder from './FuzzyFinder';
 
 function memberNameSelector(member: Member): string {
   return member.displayName;
-}
-
-function roleNameSelector(role: Role): string {
-  return role.name;
 }
 
 const ONLY_NUMERALS_REGEX = /^\d+$/;
@@ -175,7 +170,8 @@ export default class CommandArgs {
     let searchString = firstPiece;
     let numToPop = 0;
     const lookup: { [userId: string]: Member } = {};
-    this.server.members.forEach((member): void => {
+    const allMembers = await this.server.getAllMembers();
+    allMembers.forEach((member): void => {
       lookup[member.user.id] = member;
     });
 
@@ -196,48 +192,5 @@ export default class CommandArgs {
     }
 
     return null;
-  }
-
-  public readRole(name: string): Role;
-  public readRole(name: string, optional: true): Role | undefined;
-  public readRole(name: string, optional?: true): Role | undefined {
-    const firstPiece = this.queue.shift();
-    if (!firstPiece && !optional) {
-      throw new Error(`'${name}' was not provided.`);
-    }
-
-    if (!firstPiece) {
-      return undefined;
-    }
-
-    let role: Role | null = this.server.getRole(firstPiece);
-    if (role) {
-      return role;
-    }
-
-    let searchString = firstPiece;
-    let numToPop = 0;
-    const lookup: { [roleId: string]: Role } = {};
-    this.server.roles.forEach((role): void => {
-      lookup[role.id] = role;
-    });
-
-    const finder = new FuzzyFinder(lookup, roleNameSelector);
-    while (numToPop <= this.queue.length) {
-      role = finder.search(searchString);
-      if (role) {
-        this.queue.splice(0, numToPop);
-        return role;
-      }
-
-      searchString = `${searchString} ${this.queue[numToPop]}`;
-      ++numToPop;
-    }
-
-    if (!optional) {
-      throw new Error(`Could not find a role from '${searchString}'.`);
-    }
-
-    return undefined;
   }
 }

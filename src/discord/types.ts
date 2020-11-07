@@ -1,5 +1,6 @@
 import Member from './Member';
 import Message from './Message';
+import MessageTemplate from './MessageTemplate';
 import OutboundMessage from './OutboundMessage';
 import ReceivedDirectMessage from './ReceivedDirectMessage';
 import ReceivedServerMessage from './ReceivedServerMessage';
@@ -15,6 +16,30 @@ export interface SendMessageResult {
    * and other things to the visual "end" of the post.
    */
   finalMessage: OutboundMessage;
+}
+
+export interface BaseChannel {
+  readonly id: string;
+
+  /**
+   * Fetches a message that was sent by this bot (whether in this session or a
+   * previous session) in this channel, by the unique message Snowflake.
+   *
+   * If there is no message found, this will return `null`.
+   *
+   * @throws If the message was found, but was NOT sent by the bot. If the
+   * message is not found, it will not throw an error.
+   * @param messageId The snowflake for the message that was sent in this
+   * channel, by this bot user.
+   */
+  getOutboundMessageById(messageId: string): Promise<OutboundMessage | null>;
+
+  sendMessage(template: MessageTemplate): Promise<SendMessageResult>;
+}
+
+export interface ClientDebugData {
+  message: string;
+  data: Record<string, string | number>;
 }
 
 export interface ClientWarning {
@@ -39,6 +64,7 @@ export interface Reaction {
   user: User;
 }
 
+export type DebugEventHandler = (contents: ClientDebugData) => void;
 export type ErrorEventHandler = (error: ClientError) => void;
 export type MemberJoinedServerEventHandler = (
   member: Member,
