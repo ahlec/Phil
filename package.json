@@ -19,6 +19,7 @@
     "@types/lodash": "^4.14.165",
     "@types/moment-timezone": "^0.5.30",
     "@types/node": "^14.14.6",
+    "@types/node-fetch": "^2.5.7",
     "@types/pg": "^7.14.6",
     "@types/ws": "^7.2.9",
     "bufferutil": "^4.0.2",
@@ -29,12 +30,12 @@
     "fuse.js": "^3.4.2",
     "lodash": "^4.17.20",
     "moment-timezone": "0.5.31",
+    "node-fetch": "^2.6.1",
     "pg": "8.4.2",
     "ts-node": "^9.0.0",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^4.0.5",
-    "utf-8-validate": "^5.0.3",
-    "youtube-node": "https://github.com/ahlec/youtube-node.git#fix-callback-typing"
+    "utf-8-validate": "^5.0.3"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.6.1",

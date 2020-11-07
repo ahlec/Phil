@@ -1,5 +1,7 @@
 import CommandInvocation from '@phil/CommandInvocation';
-import { searchYouTube } from '@phil/promises/youtube';
+import GlobalConfig from '@phil/GlobalConfig';
+import YouTubeClient from '@phil/YouTubeClient';
+
 import Command, { LoggerDefinition } from './@types';
 
 class YoutubeCommand extends Command {
@@ -15,19 +17,25 @@ class YoutubeCommand extends Command {
   public async invoke(invocation: CommandInvocation): Promise<void> {
     const query = invocation.commandArgs.join(' ').trim();
     if (query.length === 0) {
-      throw new Error(
-        'You must provide some text to tell me what to search for.'
-      );
+      await invocation.respond({
+        error: 'You must provide some text to tell me what to search for.',
+        type: 'error',
+      });
+      return;
     }
 
-    const results = await searchYouTube(query);
-    if (results.length === 0 || !results[0].id) {
-      throw new Error('There were no results on YouTube for you search.');
+    const client = new YouTubeClient(GlobalConfig.youtubeApiKey);
+    const [foundVideo] = await client.search(query, 1);
+    if (!foundVideo) {
+      await invocation.respond({
+        error: 'There were no results on YouTube for your search.',
+        type: 'error',
+      });
+      return;
     }
 
-    const link = 'https://youtu.be/' + results[0].id;
     await invocation.respond({
-      text: link,
+      text: foundVideo.url,
       type: 'plain',
     });
   }
