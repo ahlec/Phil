@@ -3,9 +3,11 @@ import GlobalConfig from '@phil/GlobalConfig';
 import Logger from '@phil/Logger';
 import LoggerDefinition from '@phil/LoggerDefinition';
 import { DATABASE_VERSION } from '@phil/versions';
+
+import InfoField from './InfoField';
 import DatabaseResult from './result';
 
-export { default as DatabaseResult } from './result';
+export { DatabaseResult };
 
 const EMPTY_ARRAY: unknown[] = [];
 
@@ -39,6 +41,10 @@ export default class Database extends Logger {
 
     this.write(`Database is at current version of ${DATABASE_VERSION}.`);
     return true;
+  }
+
+  public makeInfoField(key: string): InfoField {
+    return new InfoField(this, key);
   }
 
   public query<TRow = unknown>(

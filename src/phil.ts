@@ -25,6 +25,7 @@ import {
   ClientWarning,
   Reaction,
 } from './discord/types';
+import YouTubeKeyPreserverDaemon from './daemons/YouTubeKeyPreserverDaemon';
 
 type RecognizedReceivedMessage = ReceivedServerMessage | ReceivedDirectMessage;
 
@@ -34,6 +35,7 @@ export default class Phil extends Logger {
   public readonly chronoManager: ChronoManager;
   private readonly directMessageDispatcher: DirectMessageDispatcher;
   private readonly reactableProcessor: ReactableProcessor;
+  private readonly youtubePreserverDaemon: YouTubeKeyPreserverDaemon;
 
   constructor(
     public readonly discordClient: Client,
@@ -50,6 +52,11 @@ export default class Phil extends Logger {
     );
     this.directMessageDispatcher = new DirectMessageDispatcher(this);
     this.reactableProcessor = new ReactableProcessor(this);
+    this.youtubePreserverDaemon = new YouTubeKeyPreserverDaemon(
+      this.definition,
+      this.discordClient,
+      this.db
+    );
 
     discordClient.on('message-received', this.onMessage);
     discordClient.on('member-joined-server', this.handleMemberJoinedServer);
@@ -59,6 +66,7 @@ export default class Phil extends Logger {
     discordClient.on('warning', this.handleWarning);
 
     this.chronoManager.start();
+    this.youtubePreserverDaemon.start();
   }
 
   private onMessage = async (
