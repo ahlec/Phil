@@ -2,9 +2,11 @@ import {
   Client as DiscordJsClient,
   DiscordAPIError,
   DMChannel as DiscordJsDMChannel,
+  Guild as DiscordJsGuild,
   GuildMember as DiscordJsGuildMember,
   Message as DiscordJsMessage,
   MessageReaction as DiscordJsMessageReaction,
+  NewsChannel as DiscordJsNewsChannel,
   PermissionString as DiscordJsPermissionString,
   TextChannel as DiscordJsTextChannel,
   User as DiscordJsUser,
@@ -68,6 +70,76 @@ function getDataFieldsFromError(err: unknown): Record<string, string | number> {
   return {
     type: 'unknown',
     typeof: typeof err,
+  };
+}
+
+function getDataFieldsForServer(
+  guild: DiscordJsGuild
+): Record<string, string | number> {
+  return {
+    serverId: guild.id,
+    serverName: `${guild.nameAcronym} ${guild.name}`,
+  };
+}
+
+function getDataFieldsForChannel(
+  channel: DiscordJsTextChannel | DiscordJsDMChannel | DiscordJsNewsChannel
+): Record<string, string | number> {
+  if (channel instanceof DiscordJsDMChannel) {
+    if (channel.partial) {
+      return {
+        'channel is partial': 'true',
+        'channel type': 'dm',
+        channelId: channel.id,
+      };
+    }
+
+    return {
+      'channel type': 'dm',
+      channelId: channel.id,
+    };
+  }
+
+  return {
+    ...getDataFieldsForServer(channel.guild),
+    'channel type':
+      channel instanceof DiscordJsNewsChannel
+        ? 'server (news)'
+        : 'server (regular)',
+    channelId: channel.id,
+    channelName: channel.name,
+  };
+}
+
+function getDataFieldsForUser(
+  user: DiscordJsUser
+): Record<string, string | number> {
+  if (user.partial) {
+    return {
+      'user is partial': 'true',
+      userId: user.id,
+    };
+  }
+
+  return {
+    userId: user.id,
+    userName: `${user.username}#${user.discriminator}`,
+  };
+}
+
+function getDataFieldsForMember(
+  member: DiscordJsGuildMember
+): Record<string, string | number> {
+  if (member.partial) {
+    return {
+      'member is partial': 'true',
+      userId: member.id,
+    };
+  }
+
+  return {
+    ...getDataFieldsForUser(member.user),
+    ...getDataFieldsForServer(member.guild),
   };
 }
 
@@ -207,8 +279,8 @@ class Client extends EventEmitter<{
         this.emit('debug', [
           {
             data: {
+              ...getDataFieldsForUser(internalMessage.author),
               messageId: internalMessage.id,
-              userId: internalMessage.author.id,
             },
             message: 'Resolved a partial author of a received message.',
           },
@@ -218,8 +290,8 @@ class Client extends EventEmitter<{
           {
             data: {
               ...getDataFieldsFromError(e),
+              ...getDataFieldsForUser(internalMessage.author),
               messageId: internalMessage.id,
-              userId: internalMessage.author.id,
             },
             message:
               'Encountered an error fetching the partial author of a message in a message received event.',
@@ -247,9 +319,9 @@ class Client extends EventEmitter<{
           this.emit('debug', [
             {
               data: {
-                channelId: internalMessage.channel.id,
+                ...getDataFieldsForChannel(internalMessage.channel),
+                ...getDataFieldsForUser(internalMessage.author),
                 messageId: internalMessage.id,
-                userId: internalMessage.author.id,
               },
               message:
                 'Resolved a partial DM channel encountered in a message received event.',
@@ -260,9 +332,9 @@ class Client extends EventEmitter<{
             {
               data: {
                 ...getDataFieldsFromError(e),
-                channelId: internalMessage.channel.id,
+                ...getDataFieldsForChannel(internalMessage.channel),
+                ...getDataFieldsForUser(internalMessage.author),
                 messageId: internalMessage.id,
-                userId: internalMessage.author.id,
               },
               message:
                 'Encountered an error fetching the partial DM channel in a message received event.',
@@ -283,10 +355,9 @@ class Client extends EventEmitter<{
         this.emit('error', [
           {
             data: {
-              channelId: internalMessage.channel.id,
+              ...getDataFieldsForChannel(internalMessage.channel),
+              ...getDataFieldsForUser(internalMessage.author),
               messageId: internalMessage.id,
-              serverId: internalMessage.channel.guild.id,
-              userId: internalMessage.author.id,
             },
             message:
               "Received a message in a server channel from a user whose member information couldn't be found.",
@@ -304,10 +375,9 @@ class Client extends EventEmitter<{
     } else {
       this.emitWarning({
         data: {
-          channelId: internalMessage.channel.id,
+          ...getDataFieldsForChannel(internalMessage.channel),
+          ...getDataFieldsForUser(internalMessage.author),
           messageId: internalMessage.id,
-          serverId: internalMessage.channel.guild.id,
-          userId: internalMessage.author.id,
         },
         message:
           "Received a message in a news channel, which I don't know how to process.",
@@ -326,9 +396,7 @@ class Client extends EventEmitter<{
         await internalMember.fetch();
         this.emit('debug', [
           {
-            data: {
-              userId: internalMember.id,
-            },
+            data: getDataFieldsForMember(internalMember),
             message: 'Fetched a partial member from a guild member add event',
           },
         ]);
@@ -337,7 +405,7 @@ class Client extends EventEmitter<{
           {
             data: {
               ...getDataFieldsFromError(e),
-              userId: internalMember.id,
+              ...getDataFieldsForMember(internalMember),
             },
             message:
               'Encountered an error fetching the partial member in a guild member add event.',
@@ -352,10 +420,7 @@ class Client extends EventEmitter<{
         await internalMember.user.fetch();
         this.emit('debug', [
           {
-            data: {
-              serverId: internalMember.guild.id,
-              userId: internalMember.id,
-            },
+            data: getDataFieldsForMember(internalMember),
             message:
               'Fetched a partial user for a member from a guild member add event',
           },
@@ -365,8 +430,7 @@ class Client extends EventEmitter<{
           {
             data: {
               ...getDataFieldsFromError(e),
-              serverId: internalMember.guild.id,
-              userId: internalMember.id,
+              ...getDataFieldsForMember(internalMember),
             },
             message:
               'Encountered an error fetching the partial user for a member in a guild member add event.',
@@ -391,7 +455,7 @@ class Client extends EventEmitter<{
         this.emit('debug', [
           {
             data: {
-              channelId: internalReaction.message.channel.id,
+              ...getDataFieldsForChannel(internalReaction.message.channel),
               emoji: internalReaction.emoji.toString(),
               isReactionPartial: internalReaction.partial ? 'true' : 'false',
               messageId: internalReaction.message.id,
@@ -421,7 +485,7 @@ class Client extends EventEmitter<{
         this.emit('debug', [
           {
             data: {
-              channelId: internalReaction.message.channel.id,
+              ...getDataFieldsForChannel(internalReaction.message.channel),
               emoji: internalReaction.emoji.toString(),
               messageId: internalReaction.message.id,
             },
@@ -434,7 +498,7 @@ class Client extends EventEmitter<{
           {
             data: {
               ...getDataFieldsFromError(e),
-              channelId: internalReaction.message.channel.id,
+              ...getDataFieldsForChannel(internalReaction.message.channel),
               emoji: internalReaction.emoji.toString(),
               messageId: internalReaction.message.id,
             },
@@ -452,10 +516,10 @@ class Client extends EventEmitter<{
         this.emit('debug', [
           {
             data: {
-              channelId: internalReaction.message.channel.id,
+              ...getDataFieldsForChannel(internalReaction.message.channel),
+              ...getDataFieldsForUser(user),
               emoji: internalReaction.emoji.toString(),
               messageId: internalReaction.message.id,
-              userId: user.id,
             },
             message:
               'Fetched a partial user for a message reaction added event',
@@ -466,10 +530,10 @@ class Client extends EventEmitter<{
           {
             data: {
               ...getDataFieldsFromError(e),
-              channelId: internalReaction.message.channel.id,
+              ...getDataFieldsForChannel(internalReaction.message.channel),
+              ...getDataFieldsForUser(user),
               emoji: internalReaction.emoji.toString(),
               messageId: internalReaction.message.id,
-              userId: user.id,
             },
             message:
               'Encountered an error fetching the partial user for a message reaction added event.',
@@ -492,10 +556,9 @@ class Client extends EventEmitter<{
     } else {
       this.emitWarning({
         data: {
-          channelId: internalReaction.message.channel.id,
+          ...getDataFieldsForChannel(internalReaction.message.channel),
           emoji: internalReaction.emoji.toString(),
           messageId: internalReaction.message.id,
-          serverId: internalReaction.message.channel.guild.id,
         },
         message: 'Received a reaction event in an unsupported channel type.',
       });
