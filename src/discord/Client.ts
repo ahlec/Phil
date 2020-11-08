@@ -1,5 +1,6 @@
 import {
   Client as DiscordJsClient,
+  DiscordAPIError,
   DMChannel as DiscordJsDMChannel,
   GuildMember as DiscordJsGuildMember,
   Message as DiscordJsMessage,
@@ -44,6 +45,31 @@ const REQUIRED_BOT_PERMISSIONS: readonly DiscordJsPermissionString[] = [
   'USE_EXTERNAL_EMOJIS',
   'ADD_REACTIONS',
 ];
+
+function getDataFieldsFromError(err: unknown): Record<string, string | number> {
+  if (err instanceof DiscordAPIError) {
+    return {
+      code: err.code,
+      'http code': err.httpStatus,
+      message: err.message,
+      type: 'DiscordAPIError',
+    };
+  }
+
+  if (err instanceof Error) {
+    return {
+      message: err.message,
+      name: err.name,
+      type: 'Error',
+      typeof: typeof err,
+    };
+  }
+
+  return {
+    type: 'unknown',
+    typeof: typeof err,
+  };
+}
 
 class Client extends EventEmitter<{
   debug: DebugEventHandler;
@@ -139,11 +165,7 @@ class Client extends EventEmitter<{
   private handleError = (err: Error): void => {
     this.emit('error', [
       {
-        data: {
-          message: err instanceof Error ? err.message : String(err),
-          stack: (err instanceof Error && err.stack) || '<none>',
-          type: typeof err,
-        },
+        data: getDataFieldsFromError(err),
         message: 'DiscordJS client encountered an error',
       },
     ]);
@@ -168,7 +190,7 @@ class Client extends EventEmitter<{
         this.emit('error', [
           {
             data: {
-              error: e instanceof Error ? e.message : String(e),
+              ...getDataFieldsFromError(e),
               messageId: internalMessage.id,
             },
             message:
@@ -195,7 +217,7 @@ class Client extends EventEmitter<{
         this.emit('error', [
           {
             data: {
-              error: e instanceof Error ? e.message : String(e),
+              ...getDataFieldsFromError(e),
               messageId: internalMessage.id,
               userId: internalMessage.author.id,
             },
@@ -237,8 +259,8 @@ class Client extends EventEmitter<{
           this.emit('error', [
             {
               data: {
+                ...getDataFieldsFromError(e),
                 channelId: internalMessage.channel.id,
-                error: e instanceof Error ? e.message : String(e),
                 messageId: internalMessage.id,
                 userId: internalMessage.author.id,
               },
@@ -314,7 +336,7 @@ class Client extends EventEmitter<{
         this.emit('error', [
           {
             data: {
-              error: e instanceof Error ? e.message : String(e),
+              ...getDataFieldsFromError(e),
               userId: internalMember.id,
             },
             message:
@@ -342,7 +364,7 @@ class Client extends EventEmitter<{
         this.emit('error', [
           {
             data: {
-              error: e instanceof Error ? e.message : String(e),
+              ...getDataFieldsFromError(e),
               serverId: internalMember.guild.id,
               userId: internalMember.id,
             },
@@ -382,7 +404,7 @@ class Client extends EventEmitter<{
         this.emit('error', [
           {
             data: {
-              error: e instanceof Error ? e.message : String(e),
+              ...getDataFieldsFromError(e),
               messageId: internalReaction.message.id,
             },
             message:
@@ -411,9 +433,9 @@ class Client extends EventEmitter<{
         this.emit('error', [
           {
             data: {
+              ...getDataFieldsFromError(e),
               channelId: internalReaction.message.channel.id,
               emoji: internalReaction.emoji.toString(),
-              error: e instanceof Error ? e.message : String(e),
               messageId: internalReaction.message.id,
             },
             message:
@@ -443,9 +465,9 @@ class Client extends EventEmitter<{
         this.emit('error', [
           {
             data: {
+              ...getDataFieldsFromError(e),
               channelId: internalReaction.message.channel.id,
               emoji: internalReaction.emoji.toString(),
-              error: e instanceof Error ? e.message : String(e),
               messageId: internalReaction.message.id,
               userId: user.id,
             },
