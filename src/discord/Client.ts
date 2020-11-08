@@ -349,9 +349,26 @@ class Client extends EventEmitter<{
       message = new ReceivedDirectMessage(internalMessage);
     } else if (internalMessage.channel instanceof DiscordJsTextChannel) {
       const server = new Server(internalMessage.channel.guild);
-      const internalMember = internalMessage.channel.members.get(
-        internalMessage.author.id
-      );
+      let internalMember: DiscordJsGuildMember;
+      try {
+        internalMember = await internalMessage.channel.guild.members.fetch(
+          internalMessage.author.id
+        );
+      } catch (e) {
+        this.emit('error', [
+          {
+            data: {
+              ...getDataFieldsFromError(e),
+              ...getDataFieldsForChannel(internalMessage.channel),
+              ...getDataFieldsForUser(internalMessage.author),
+              messageId: internalMessage.id,
+            },
+            message:
+              'Encountered an error attempting to fetch the membership information for a message received in guild channel.',
+          },
+        ]);
+        return;
+      }
 
       if (!internalMember) {
         this.emit('error', [
