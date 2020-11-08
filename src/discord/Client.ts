@@ -54,24 +54,24 @@ function getDataFieldsFromError(err: unknown): Record<string, string | number> {
   if (err instanceof DiscordAPIError) {
     return {
       code: err.code,
+      'error type': 'DiscordAPIError',
       'http code': err.httpStatus,
       message: err.message,
-      type: 'DiscordAPIError',
     };
   }
 
   if (err instanceof Error) {
     return {
+      'error type': 'Error',
+      'error typeof': typeof err,
       message: err.message,
       name: err.name,
-      type: 'Error',
-      typeof: typeof err,
     };
   }
 
   return {
-    type: 'unknown',
-    typeof: typeof err,
+    'error type': 'unknown',
+    'error typeof': typeof err,
   };
 }
 
@@ -80,7 +80,7 @@ function getDataFieldsForServer(
 ): Record<string, string | number> {
   return {
     serverId: guild.id,
-    serverName: `${guild.nameAcronym} ${guild.name}`,
+    serverName: `[${guild.nameAcronym}] ${guild.name}`,
   };
 }
 
@@ -109,7 +109,7 @@ function getDataFieldsForChannel(
         ? 'server (news)'
         : 'server (regular)',
     channelId: channel.id,
-    channelName: channel.name,
+    channelName: `#${channel.name}`,
   };
 }
 
