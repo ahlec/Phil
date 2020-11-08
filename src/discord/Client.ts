@@ -24,6 +24,8 @@ import {
   MemberJoinedServerEventHandler,
   ReactionAddedToMessageEventHandler,
   WarningEventHandler,
+  ClientDebugData,
+  ClientError,
 } from './types';
 import TextChannel from './TextChannel';
 import Member from './Member';
@@ -449,98 +451,81 @@ class Client extends EventEmitter<{
     internalReaction: DiscordJsMessageReaction,
     user: DiscordJsUser
   ): Promise<void> => {
-    if (internalReaction.message.partial) {
-      try {
-        await internalReaction.message.fetch();
-        this.emit('debug', [
-          {
-            data: {
-              ...getDataFieldsForChannel(internalReaction.message.channel),
-              emoji: internalReaction.emoji.toString(),
-              isReactionPartial: internalReaction.partial ? 'true' : 'false',
-              messageId: internalReaction.message.id,
-            },
-            message:
-              'Fetched a partial message for a message reaction added event',
-          },
-        ]);
-      } catch (e) {
-        this.emit('error', [
-          {
-            data: {
-              ...getDataFieldsFromError(e),
-              messageId: internalReaction.message.id,
-            },
-            message:
-              'Encountered an error fetching the partial message for a message reaction added event.',
-          },
-        ]);
-        return;
-      }
+    const messageIsFull = await this.resolvePartial(
+      internalReaction.message,
+      () => ({
+        data: {
+          ...getDataFieldsForChannel(internalReaction.message.channel),
+          emoji: internalReaction.emoji.toString(),
+          isReactionPartial: internalReaction.partial ? 'true' : 'false',
+          messageId: internalReaction.message.id,
+        },
+        message: 'Fetched a partial message for a message reaction added event',
+      }),
+      (err) => ({
+        data: {
+          ...getDataFieldsFromError(err),
+          messageId: internalReaction.message.id,
+        },
+        message:
+          'Encountered an error fetching the partial message for a message reaction added event.',
+      })
+    );
+    if (!messageIsFull) {
+      return;
     }
 
-    if (internalReaction.partial) {
-      try {
-        await internalReaction.fetch();
-        this.emit('debug', [
-          {
-            data: {
-              ...getDataFieldsForChannel(internalReaction.message.channel),
-              emoji: internalReaction.emoji.toString(),
-              messageId: internalReaction.message.id,
-            },
-            message:
-              'Fetched a partial reaction object for a message reaction added event',
-          },
-        ]);
-      } catch (e) {
-        this.emit('error', [
-          {
-            data: {
-              ...getDataFieldsFromError(e),
-              ...getDataFieldsForChannel(internalReaction.message.channel),
-              emoji: internalReaction.emoji.toString(),
-              messageId: internalReaction.message.id,
-            },
-            message:
-              'Encountered an error fetching the partial reaction for a message reaction added event.',
-          },
-        ]);
-        return;
-      }
+    const reactionIsFull = await this.resolvePartial(
+      internalReaction,
+      () => ({
+        data: {
+          ...getDataFieldsForChannel(internalReaction.message.channel),
+          emoji: internalReaction.emoji.toString(),
+          messageId: internalReaction.message.id,
+        },
+        message:
+          'Fetched a partial reaction object for a message reaction added event',
+      }),
+      (err) => ({
+        data: {
+          ...getDataFieldsFromError(err),
+          ...getDataFieldsForChannel(internalReaction.message.channel),
+          emoji: internalReaction.emoji.toString(),
+          messageId: internalReaction.message.id,
+        },
+        message:
+          'Encountered an error fetching the partial reaction for a message reaction added event.',
+      })
+    );
+    if (!reactionIsFull) {
+      return;
     }
 
-    if (user.partial) {
-      try {
-        await user.fetch();
-        this.emit('debug', [
-          {
-            data: {
-              ...getDataFieldsForChannel(internalReaction.message.channel),
-              ...getDataFieldsForUser(user),
-              emoji: internalReaction.emoji.toString(),
-              messageId: internalReaction.message.id,
-            },
-            message:
-              'Fetched a partial user for a message reaction added event',
-          },
-        ]);
-      } catch (e) {
-        this.emit('error', [
-          {
-            data: {
-              ...getDataFieldsFromError(e),
-              ...getDataFieldsForChannel(internalReaction.message.channel),
-              ...getDataFieldsForUser(user),
-              emoji: internalReaction.emoji.toString(),
-              messageId: internalReaction.message.id,
-            },
-            message:
-              'Encountered an error fetching the partial user for a message reaction added event.',
-          },
-        ]);
-        return;
-      }
+    const userIsFull = await this.resolvePartial(
+      user,
+      () => ({
+        data: {
+          ...getDataFieldsForChannel(internalReaction.message.channel),
+          ...getDataFieldsForUser(user),
+          emoji: internalReaction.emoji.toString(),
+          messageId: internalReaction.message.id,
+        },
+        message: 'Fetched a partial user for a message reaction added event',
+      }),
+      (err) => ({
+        data: {
+          ...getDataFieldsFromError(err),
+          ...getDataFieldsForChannel(internalReaction.message.channel),
+          ...getDataFieldsForUser(user),
+          emoji: internalReaction.emoji.toString(),
+          messageId: internalReaction.message.id,
+        },
+        message:
+          'Encountered an error fetching the partial user for a message reaction added event.',
+      })
+    );
+    if (!userIsFull) {
+      return;
     }
 
     let channel: TextChannel | UsersDirectMessagesChannel;
@@ -550,6 +535,34 @@ class Client extends EventEmitter<{
         new Server(internalReaction.message.channel.guild)
       );
     } else if (internalReaction.message.channel instanceof DiscordJsDMChannel) {
+      const channelIsFull = await this.resolvePartial(
+        internalReaction.message.channel,
+        () => ({
+          data: {
+            ...getDataFieldsForChannel(internalReaction.message.channel),
+            ...getDataFieldsForUser(user),
+            emoji: internalReaction.emoji.toString(),
+            messageId: internalReaction.message.id,
+          },
+          message:
+            'Fetched a partial DM channel for a message reaction added event',
+        }),
+        (err) => ({
+          data: {
+            ...getDataFieldsFromError(err),
+            ...getDataFieldsForChannel(internalReaction.message.channel),
+            ...getDataFieldsForUser(user),
+            emoji: internalReaction.emoji.toString(),
+            messageId: internalReaction.message.id,
+          },
+          message:
+            'Encountered an error fetching the partial DM channel for a message reaction added event.',
+        })
+      );
+      if (!channelIsFull) {
+        return;
+      }
+
       channel = new UsersDirectMessagesChannel(
         internalReaction.message.channel
       );
@@ -576,6 +589,27 @@ class Client extends EventEmitter<{
 
   private emitWarning(warning: ClientWarning): void {
     this.emit('warning', [warning]);
+  }
+
+  private async resolvePartial<
+    T extends { partial: boolean; fetch: () => Promise<unknown> }
+  >(
+    entity: T,
+    makeSuccessDebug: () => ClientDebugData,
+    makeErrorData: (e: unknown) => ClientError
+  ): Promise<boolean> {
+    if (!entity.partial) {
+      return true;
+    }
+
+    try {
+      await entity.fetch();
+      this.emit('debug', [makeSuccessDebug()]);
+      return true;
+    } catch (e) {
+      this.emit('error', [makeErrorData(e)]);
+      return false;
+    }
   }
 }
 

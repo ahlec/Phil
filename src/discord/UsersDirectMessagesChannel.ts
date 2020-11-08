@@ -11,7 +11,13 @@ import { BaseChannel, SendMessageResult } from './types';
 import { sendMessageTemplate } from './internals/sendMessageTemplate';
 
 class UsersDirectMessagesChannel implements BaseChannel {
-  public constructor(private readonly internalChannel: DiscordJSDMChannel) {}
+  public constructor(private readonly internalChannel: DiscordJSDMChannel) {
+    if (internalChannel.partial) {
+      throw new Error(
+        `Cannot construct a new UsersDirectMessageChannel from a partial DiscordJS channel (ID: ${internalChannel.id})`
+      );
+    }
+  }
 
   public get id(): string {
     return this.internalChannel.id;
