@@ -27,8 +27,6 @@ import {
 } from './discord/types';
 import YouTubeKeyPreserverDaemon from './daemons/YouTubeKeyPreserverDaemon';
 
-type RecognizedReceivedMessage = ReceivedServerMessage | ReceivedDirectMessage;
-
 export default class Phil extends Logger {
   public readonly serverDirectory: ServerDirectory;
   private readonly commandRunner: CommandRunner;
@@ -58,7 +56,7 @@ export default class Phil extends Logger {
       this.db
     );
 
-    discordClient.on('message-received', this.onMessage);
+    discordClient.on('user-message-received', this.onUserMessageReceived);
     discordClient.on('member-joined-server', this.handleMemberJoinedServer);
     discordClient.on('reaction-added', this.handleReactionAdded);
     discordClient.on('debug', this.handleDebug);
@@ -69,13 +67,9 @@ export default class Phil extends Logger {
     this.youtubePreserverDaemon.start();
   }
 
-  private onMessage = async (
+  private onUserMessageReceived = async (
     message: ReceivedDirectMessage | ReceivedServerMessage
   ): Promise<void> => {
-    if (this.shouldIgnoreMessage(message)) {
-      return;
-    }
-
     if (message instanceof ReceivedServerMessage) {
       if (this.chronoManager) {
         this.chronoManager.recordNewMessageInChannel(message.channel.id);
@@ -124,17 +118,6 @@ export default class Phil extends Logger {
       return;
     }
   };
-
-  private shouldIgnoreMessage(message: RecognizedReceivedMessage): boolean {
-    let isBot: boolean;
-    if (message instanceof ReceivedServerMessage) {
-      isBot = message.sender.user.isBot;
-    } else {
-      isBot = message.sender.isBot;
-    }
-
-    return isBot;
-  }
 
   private handleDebug = (debug: ClientDebugData): void => {
     this.write(debug.message);

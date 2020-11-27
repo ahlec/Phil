@@ -148,9 +148,9 @@ function getDataFieldsForMember(
 class Client extends EventEmitter<{
   debug: DebugEventHandler;
   error: ErrorEventHandler;
-  'message-received': MessageReceivedEventHandler;
   'member-joined-server': MemberJoinedServerEventHandler;
   'reaction-added': ReactionAddedToMessageEventHandler;
+  'user-message-received': MessageReceivedEventHandler;
   warning: WarningEventHandler;
 }> {
   public static async connect(token: string): Promise<Client> {
@@ -313,6 +313,20 @@ class Client extends EventEmitter<{
       return;
     }
 
+    if (internalMessage.author.bot) {
+      // We're only concerned about reporting messages from users here, and we
+      // ignore messages from bots. This is in part because there's no interactions
+      // between the two, and then also to handle edge cases.
+      //
+      // For example, Carl-bot (https://carl.gg/) doesn't play nicely with this
+      // bot. Carl-bot will exist in a server with Snowflake A user ID, but then
+      // will use webhooks to post to that server with Snowflake B user ID, who
+      // isn't part of the server, so calls to look up this user will fail.
+      // Furthermore, "Snowflake B" seems to be a pool of IDs or perhaps be
+      // variable such that a hardcoded mapping doesn't appear feasible.
+      return;
+    }
+
     let message: ReceivedServerMessage | ReceivedDirectMessage;
     if (internalMessage.channel instanceof DiscordJsDMChannel) {
       if (internalMessage.channel.partial) {
@@ -404,7 +418,7 @@ class Client extends EventEmitter<{
       return;
     }
 
-    this.emit('message-received', [message]);
+    this.emit('user-message-received', [message]);
   };
 
   private handleGuildMemberAdd = async (
