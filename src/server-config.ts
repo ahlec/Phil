@@ -271,8 +271,8 @@ export class ServerConfig extends Logger {
       .map((role): Pronoun | null => getPronounFromRole(role))
       .filter(isNotNull);
 
-    if (uniquePronouns.length === 1) {
-      return uniquePronouns[0];
+    if (!uniquePronouns.length) {
+      return DEFAULT_PRONOUNS;
     }
 
     return getRandomArrayEntry(uniquePronouns);
