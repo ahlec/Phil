@@ -124,6 +124,10 @@ class ForceChronoBotManagerCommand extends BotManagerCommand {
             name: 'chrono handle',
             value: args.args.chronoHandle,
           },
+          {
+            name: 'error stack',
+            value: results.errorStack || '<null>',
+          },
         ],
         footer: null,
         title: ':no_entry: Chrono invocation error',

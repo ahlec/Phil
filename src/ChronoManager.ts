@@ -15,6 +15,7 @@ const Definition = new LoggerDefinition('Chrono Manager');
 export type ChronoProcessingResult =
   | {
       error: string;
+      errorStack: string | null;
       success: false;
       shouldReportOnRoutineProcessing: boolean;
     }
@@ -181,6 +182,10 @@ export default class ChronoManager extends Logger {
                 name: 'chrono handle',
                 value: dbRow.chrono_handle,
               },
+              {
+                name: 'error stack',
+                value: results.errorStack || '<null>',
+              },
             ],
             footer: null,
             title: ':no_entry: Scheduled chrono execution error',
@@ -204,6 +209,7 @@ export default class ChronoManager extends Logger {
     if (!server) {
       return {
         error: `Attempted to process '${chronoHandle}' for server '${serverId}', but I could not find it.`,
+        errorStack: null,
         shouldReportOnRoutineProcessing: false,
         success: false,
       };
@@ -213,6 +219,7 @@ export default class ChronoManager extends Logger {
     if (!serverConfig) {
       return {
         error: `Phil is no longer part of server '${serverId}'.`,
+        errorStack: null,
         shouldReportOnRoutineProcessing: false,
         success: false,
       };
@@ -222,6 +229,7 @@ export default class ChronoManager extends Logger {
     if (!chronoDefinition) {
       return {
         error: `Could not find chrono '${chronoHandle}'.`,
+        errorStack: null,
         shouldReportOnRoutineProcessing: true,
         success: false,
       };
@@ -262,6 +270,7 @@ export default class ChronoManager extends Logger {
         error: `Encountered an error when processing the chrono: ${
           err instanceof Error ? err.message : JSON.stringify(err)
         }`,
+        errorStack: (err instanceof Error && err.stack) || null,
         shouldReportOnRoutineProcessing: true,
         success: false,
       };
