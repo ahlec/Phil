@@ -162,7 +162,7 @@ abstract class ConfirmRejectCommandBase extends Command {
       }
 
       const submissionId = results.rows[0].submission_id;
-      const actionResult = this.performActionOnSubmission(
+      const actionResult = await this.performActionOnSubmission(
         invocation,
         database,
         parseInt(submissionId, 10),
