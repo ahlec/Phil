@@ -16,7 +16,12 @@ export default class Database extends Logger {
 
   constructor() {
     super(new LoggerDefinition('Database'));
-    this.pool = new Pool({ connectionString: GlobalConfig.databaseUrl });
+    this.pool = new Pool({
+      connectionString: GlobalConfig.databaseUrl,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    });
   }
 
   public async checkIsCurrentVersion(): Promise<boolean> {
