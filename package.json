@@ -28,7 +28,7 @@
     "discord.js": "^12.4.1",
     "erlpack": "^0.1.3",
     "fuse.js": "^3.4.2",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "moment-timezone": "0.5.31",
     "node-fetch": "^2.6.1",
     "pg": "8.4.2",
