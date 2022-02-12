@@ -29,7 +29,6 @@ class GlobalConfig {
   public readonly botManagerUserId: string;
   public readonly minCommandPrefixLength = 2;
   public readonly maxCommandPrefixLength = 5;
-  public readonly hijackServerId: string;
 
   constructor() {
     this.discordBotToken = getRequiredString('DISCORD_BOT_TOKEN');
@@ -38,7 +37,6 @@ class GlobalConfig {
     this.databaseUrl = getRequiredString('DATABASE_URL');
     this.youtubeApiKey = getRequiredString('YOUTUBE_API_KEY');
     this.botManagerUserId = getRequiredString('BOT_MANAGER_USER_ID');
-    this.hijackServerId = getRequiredString('HIJACK_SERVER_ID');
   }
 }
 

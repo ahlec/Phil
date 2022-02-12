@@ -1,7 +1,6 @@
 import Server from '@phil/discord/Server';
 
 import Database from '@phil/database';
-import GlobalConfig from '@phil/GlobalConfig';
 import { AllMonths, MonthDefinition } from './month-definition';
 
 type DayEventCollection = ReadonlyArray<string[]>;
@@ -14,7 +13,6 @@ class CalendarMonth {
   ): Promise<CalendarMonth> {
     const calendar = new CalendarMonth(month);
     await calendar.addBirthdaysForMonth(server, database);
-    calendar.addServerEventsForMonth(server);
     return calendar;
   }
 
@@ -60,12 +58,6 @@ class CalendarMonth {
         }
       )
     );
-  }
-
-  private addServerEventsForMonth(server: Server): void {
-    if (server.id === GlobalConfig.hijackServerId) {
-      this.addEvent(3, 'Hijack Booty Day.');
-    }
   }
 }
 
