@@ -1,4 +1,5 @@
 import Role from '@phil/discord/Role';
+import Server from '@phil/discord/Server';
 
 import { AllPronouns } from './definitions';
 import Pronoun from './pronoun';
@@ -17,4 +18,20 @@ export function getPronounFromRole(role: Role): Pronoun | null {
   }
 
   return null;
+}
+
+export async function getServerPronounRoles(
+  server: Server
+): Promise<ReadonlyMap<Pronoun, Role>> {
+  const result = new Map<Pronoun, Role>();
+  const allRoles = await server.getAllRoles();
+  allRoles.forEach((role): void => {
+    const pronoun = getPronounFromRole(role);
+    if (!pronoun) {
+      return;
+    }
+
+    result.set(pronoun, role);
+  });
+  return result;
 }

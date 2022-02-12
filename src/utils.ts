@@ -80,3 +80,7 @@ export function truncateString(message: string, maxCharacters: number): string {
 export function isNotNull<T>(val: T | null): val is T {
   return val !== null;
 }
+
+export function sanitizeMarkdown(text: string): string {
+  return text.replace(/(\*|_|`|~|\\)/g, '');
+}
