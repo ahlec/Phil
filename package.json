@@ -28,7 +28,7 @@
     "discord.js": "^12.4.1",
     "fuse.js": "^3.4.2",
     "lodash": "^4.17.20",
-    "moment-timezone": "0.5.31",
+    "moment-timezone": "0.5.35",
     "node-fetch": "^2.6.1",
     "pg": "8.4.2",
     "ts-node": "^9.0.0",
